@@ -2,11 +2,13 @@
   "expo": {
     "name": "Bible",
     "slug": "bible",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "assetBundlePatterns": ["assets/db/*"],
+    "assetBundlePatterns": [
+      "assets/db/*"
+    ],
     "plugins": [
       [
         "expo-splash-screen",
@@ -20,7 +22,8 @@
             "backgroundColor": "#15130F"
           }
         }
-      ]
+      ],
+      "./plugins/withAndroidRelease"
     ],
     "ios": {
       "supportsTablet": true,

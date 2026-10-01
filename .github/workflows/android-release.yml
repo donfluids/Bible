@@ -1,0 +1,94 @@
+name: Android APK
+
+# Builds a release APK on every push to the main development branch, on manual
+# request, and on version tags. Tags also get a GitHub release with the APK attached.
+#
+# Signing: add these repository secrets so builds are signed with the release key
+# (Settings > Secrets and variables > Actions):
+#   ANDROID_KEYSTORE_BASE64   the .jks file, base64 encoded (base64 -w0 bible-release.jks)
+#   ANDROID_KEYSTORE_PASSWORD
+#   ANDROID_KEY_ALIAS
+#   ANDROID_KEY_PASSWORD
+# Without them the APK is signed with the debug key, which cannot update a
+# release-signed install.
+
+on:
+  push:
+    branches: [ccr-39027e0d-8m0rpn, main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools platforms;android-36 build-tools;36.0.0
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Restore release keystore
+        if: ${{ env.KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "BIBLE_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+          echo "BIBLE_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> "$GITHUB_ENV"
+          echo "BIBLE_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> "$GITHUB_ENV"
+          echo "BIBLE_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> "$GITHUB_ENV"
+
+      - name: Generate the Android project
+        env:
+          BIBLE_VERSION_CODE: ${{ github.run_number }}
+          CI: 1
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Build release APK
+        env:
+          BIBLE_VERSION_CODE: ${{ github.run_number }}
+        run: |
+          cd android
+          ./gradlew assembleRelease --no-daemon
+          VERSION=$(node -p "require('../app.json').expo.version")
+          cp app/build/outputs/apk/release/app-release.apk "../Bible-$VERSION-build${{ github.run_number }}.apk"
+          echo "APK=Bible-$VERSION-build${{ github.run_number }}.apk" >> "$GITHUB_ENV"
+
+      - name: Report signing
+        run: |
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$APK" | grep -E 'DN|SHA-256'
+          ls -la "$APK"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APK }}
+          path: ${{ env.APK }}
+          retention-days: 90
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.APK }}
+          generate_release_notes: true

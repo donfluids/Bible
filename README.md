@@ -51,11 +51,47 @@ No native build is needed: every module the app uses is included in Expo Go.
 Expo Go shows its own splash screen; the app's own icon and splash appear in a
 development or store build, made with `npx eas-cli build`.
 
+## Android builds and releases
+
+`.github/workflows/android-release.yml` builds a release APK on every push to the
+development branch and on manual runs, and attaches it to a GitHub release when a
+tag such as `v0.2.1` is pushed. Each build's Android version code is the workflow
+run number, so every build can be installed over the previous one.
+
+Release signing is configured by `plugins/withAndroidRelease.js`, which also turns
+on code and resource shrinking and limits the APK to 64-bit ARM. It reads the key
+from these environment variables, and falls back to the debug key when they are
+unset:
+
+```
+BIBLE_KEYSTORE_PATH       path to the .jks file
+BIBLE_KEYSTORE_PASSWORD
+BIBLE_KEY_ALIAS
+BIBLE_KEY_PASSWORD
+```
+
+For the workflow, store the same values as repository secrets named
+`ANDROID_KEYSTORE_BASE64` (the file, base64 encoded), `ANDROID_KEYSTORE_PASSWORD`,
+`ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD`. Keep the keystore file and its
+password somewhere safe and never in the repo: Android only accepts updates signed
+with the same key, so losing it means users must uninstall to update.
+
+To build locally:
+
+```bash
+npx expo prebuild --platform android --no-install
+cd android && ./gradlew assembleRelease
+```
+
+Built APKs are published on the `apk-builds` branch.
+
 ## Project layout
 
 ```
 App.tsx                  App shell: database provider, screen stack, word sheet
-src/db.ts                Database asset and on-device database name
+src/db.ts                Database asset, on-device database name, stale copy cleanup
+plugins/                 Expo config plugin for Android release signing and shrinking
+app.config.js            Per-build values (Android version code) layered over app.json
 src/navigation.ts        Screen names and parameters for the native stack
 src/refs.ts              Parses typed references like "1 Cor 13:4"
 src/theme.ts             Light, sepia and dark palettes and the serif face

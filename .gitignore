@@ -45,3 +45,6 @@ data/raw
 
 # Local APK builds
 *.apk
+
+# Release signing key and passwords, never committed
+credentials/

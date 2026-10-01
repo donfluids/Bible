@@ -7,7 +7,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
-import { DATABASE_ASSET, DATABASE_NAME } from './src/db';
+import { DATABASE_ASSET, DATABASE_NAME, removeStaleDatabases } from './src/db';
 import { navigationRef } from './src/navigation';
 import type { RootStackParamList } from './src/navigation';
 import { getBooks } from './src/queries';
@@ -67,6 +67,8 @@ function Shell() {
 
   useEffect(() => {
     getBooks(db).then(setBooks);
+    // The current database is open by now, so older copies can go.
+    removeStaleDatabases();
   }, [db]);
 
   // Remember the last chapter visited in each book, for the chapter picker.
