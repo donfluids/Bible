@@ -42,3 +42,6 @@ yarn-error.*
 
 # Bible source texts (fetched by scripts/fetch-data.sh)
 data/raw
+
+# Local APK builds
+*.apk
