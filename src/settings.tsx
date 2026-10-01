@@ -43,7 +43,7 @@ export interface Settings {
   lastChapters: Record<string, number>;
 }
 
-const BASE_DEFAULTS = {
+const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
   fontSize: 19,
   theme: 'system',
   serif: false,
