@@ -220,6 +220,16 @@ npm run build-db                           # apply the links
 Words with no link (words added for sense, auxiliary words, uncertain cases) are not
 tappable. Links are made by a language model and are not hand-checked.
 
+### Corrections to the Malayalam source
+
+The eBible mal2015 edition repeats Titus 1 in place of Titus 2 and 3, and Titus 1:1
+starts with the stray words "Testing ag live sync"; eBible.org's own web edition has
+the same faults. `data/overrides/text-corrections.json` replaces Titus 2 and 3 with
+the 1910 text from [Malayalam Wikisource](https://ml.wikisource.org/wiki/സത്യവേദപുസ്തകം/തീത്തൊസ്)
+(public domain) and removes the stray words; `scripts/build-db.mjs` applies it.
+Wikisource's transcription joins and splits a few compound words differently from
+eBible's, so these two chapters may differ slightly in spacing from the rest.
+
 ## Malayalam interface
 
 The Malayalam strings in `src/i18n.ts` were written for this project and have not

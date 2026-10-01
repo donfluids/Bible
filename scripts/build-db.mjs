@@ -362,6 +362,16 @@ function loadStrongs(file, varName) {
   return JSON.parse(src.slice(start, end + 1));
 }
 
+// Known faults in a source text, corrected from another public-domain copy.
+// See data/overrides/text-corrections.json for what is replaced and why.
+function loadCorrections() {
+  try {
+    return JSON.parse(readFileSync(join(ROOT, 'data', 'overrides', 'text-corrections.json'), 'utf8'));
+  } catch {
+    return { strip: {} };
+  }
+}
+
 // Word-level links from Malayalam words to Strong's numbers, made by
 // scripts/align-malayalam.mjs. Only confident links (c = 2) are used.
 function loadAlignments() {
@@ -423,6 +433,7 @@ function buildEdition(edition) {
   const chapterCounts = new Map();
   const stats = {};
   const alignments = loadAlignments();
+  const corrections = loadCorrections();
   for (const t of TRANSLATIONS) {
     const files = readdirSync(join(RAW, t.dir));
     const conc = new Map(); // strongs -> array of [b,c,v]
@@ -433,6 +444,16 @@ function buildEdition(edition) {
       const file = files.find((f) => f.endsWith(book.osis + t.suffix));
       if (!file) throw new Error(`${t.id}: no file for ${book.osis}`);
       const { chapters, headings, notes, paras, bookName } = parseBook(join(RAW, t.dir, file));
+      // Replace chapters the source gets wrong, and strip stray text it contains.
+      for (const [ch, versesById] of Object.entries(corrections[t.id]?.[book.id] ?? {})) {
+        chapters.set(Number(ch), new Map(Object.entries(versesById).map(([v, text]) => [Number(v), text])));
+        for (const k of [...paras.keys()]) if (k.startsWith(`${ch}:`)) paras.delete(k);
+      }
+      for (const [ref, junk] of Object.entries(corrections.strip?.[t.id] ?? {})) {
+        const [b, ch, v] = ref.split(':').map(Number);
+        const raw = b === book.id ? chapters.get(ch)?.get(v) : undefined;
+        if (raw !== undefined) chapters.get(ch).set(v, raw.replace(junk, ''));
+      }
       if (bookName) insBookName.run(t.id, book.id, bookName);
       for (const h of headings) {
         const text = splitTags(cleanVerse(h.raw)).text;
