@@ -23,6 +23,8 @@ export interface VerseRow extends Ref {
   text: string;
   /** Offset encoded Strong's tags, see scripts/build-db.mjs. */
   tags: string;
+  /** 1 when the translation omits this verse; `text` then holds the translators' note. */
+  omitted: number;
 }
 
 export interface Heading {

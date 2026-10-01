@@ -5,8 +5,9 @@
 //
 // Output schema (all text is UTF-8):
 //   books(id, osis, name, testament, chapters)
-//   verses(translation, book, chapter, verse, text, tags)
-//     text = the verse as plain text
+//   verses(translation, book, chapter, verse, text, tags, omitted)
+//     text = the verse as plain text; for an omitted verse (WEB only, a verse the
+//            translation leaves out) text holds the translators' footnote and omitted = 1
 //     tags = Strong's tags as "gap,length,number" triples separated by spaces, e.g.
 //            "7,9,7225 1,3,430 1,7,1254": gap is the number of characters since the
 //            end of the previous tag (or the start of the verse), length is the tagged
@@ -138,6 +139,10 @@ function splitTags(tagged) {
 
 function parseBook(path) {
   let src = readFileSync(path, 'utf8').replace(/^﻿/, '');
+  // A verse whose only content is a footnote is one the translation omits. Keep the
+  // note, marked with U+2205, so the app can show the gap honestly.
+  src = src.replace(/^(\\v\s+\d+\s*)\\f\s+\+\s+(?:\\fr\s+[^\\\n]*)?\\ft\s+([^\n]*?)\\f\*[ \t]*$/gm,
+    (_, v, note) => `${v}\u2205${note.replace(/\\\+?[a-z]+\*?/g, '').trim()}`);
   // Footnotes and cross references can span lines; remove them whole.
   src = src.replace(/\\f\s[\s\S]*?\\f\*/g, '').replace(/\\x\s[\s\S]*?\\x\*/g, '');
   const chapters = new Map(); // chapter -> Map(verse -> raw)
@@ -302,7 +307,8 @@ function main() {
     PRAGMA page_size = 4096;
     CREATE TABLE books(id INTEGER PRIMARY KEY, osis TEXT NOT NULL, name TEXT NOT NULL, testament TEXT NOT NULL, chapters INTEGER NOT NULL);
     CREATE TABLE verses(translation TEXT NOT NULL, book INTEGER NOT NULL, chapter INTEGER NOT NULL, verse INTEGER NOT NULL,
-                        text TEXT NOT NULL, tags TEXT NOT NULL, PRIMARY KEY(translation, book, chapter, verse)) WITHOUT ROWID;
+                        text TEXT NOT NULL, tags TEXT NOT NULL, omitted INTEGER NOT NULL DEFAULT 0,
+                        PRIMARY KEY(translation, book, chapter, verse)) WITHOUT ROWID;
     CREATE TABLE headings(translation TEXT NOT NULL, book INTEGER NOT NULL, chapter INTEGER NOT NULL, before_verse INTEGER NOT NULL,
                         text TEXT NOT NULL, PRIMARY KEY(translation, book, chapter, before_verse)) WITHOUT ROWID;
     CREATE TABLE strongs(id TEXT PRIMARY KEY, lemma TEXT, translit TEXT, pron TEXT, derivation TEXT, definition TEXT, kjv_usage TEXT) WITHOUT ROWID;
@@ -313,7 +319,7 @@ function main() {
     CREATE TABLE meta(key TEXT PRIMARY KEY, value TEXT NOT NULL) WITHOUT ROWID;
   `);
 
-  const insVerse = db.prepare('INSERT INTO verses VALUES (?,?,?,?,?,?)');
+  const insVerse = db.prepare('INSERT INTO verses VALUES (?,?,?,?,?,?,?)');
   const insHeading = db.prepare('INSERT OR REPLACE INTO headings VALUES (?,?,?,?,?)');
   const insBook = db.prepare('INSERT INTO books VALUES (?,?,?,?,?)');
   const insStrongs = db.prepare('INSERT INTO strongs VALUES (?,?,?,?,?,?,?)');
@@ -325,7 +331,7 @@ function main() {
   for (const t of TRANSLATIONS) {
     const files = readdirSync(join(RAW, t.dir));
     const conc = new Map(); // strongs -> array of [b,c,v]
-    let verses = 0, tagCount = 0;
+    let verses = 0, tagCount = 0, omitted = 0;
     db.exec('BEGIN');
     for (const book of BOOKS) {
       const file = files.find((f) => f.endsWith(book.osis + t.suffix));
@@ -341,8 +347,13 @@ function main() {
         for (const [verse, raw] of [...vmap.entries()].sort((a, b) => a[0] - b[0])) {
           const tagged = cleanVerse(raw);
           if (!tagged) continue;
+          if (tagged.startsWith('\u2205')) {
+            insVerse.run(t.id, book.id, chapter, verse, tagged.slice(1).trim(), '', 1);
+            omitted++;
+            continue;
+          }
           const { text, tags } = splitTags(tagged);
-          insVerse.run(t.id, book.id, chapter, verse, text, tags);
+          insVerse.run(t.id, book.id, chapter, verse, text, tags, 0);
           verses++;
           const seen = new Set();
           for (const m of tagged.matchAll(/⟨[^|⟩]*\|([HG]\d+)⟩/g)) {
@@ -359,7 +370,7 @@ function main() {
       insConc.run(strongs, t.id, refs.length / 3, new Uint8Array(refs));
     }
     db.exec('COMMIT');
-    stats[t.id] = { verses, tags: tagCount, strongsNumbers: conc.size };
+    stats[t.id] = { verses, omittedVerses: omitted, tags: tagCount, strongsNumbers: conc.size };
   }
 
   db.exec('BEGIN');
@@ -374,7 +385,7 @@ function main() {
       nStrongs++;
     }
   }
-  insMeta.run('schema', '2');
+  insMeta.run('schema', '3');
   insMeta.run('built', new Date().toISOString().slice(0, 10));
   insMeta.run('translations', JSON.stringify(TRANSLATIONS.map(({ id, name }) => ({ id, name }))));
   insMeta.run('sources', JSON.stringify({
@@ -386,7 +397,7 @@ function main() {
   db.exec('COMMIT');
   const interlinear = buildInterlinear(db);
   // Sanity check: interlinear verses should line up with the KJV's verse numbering.
-  const kjv = new Set(db.prepare("SELECT book || ':' || chapter || ':' || verse k FROM verses WHERE translation = 'KJV'").all().map((r) => r.k));
+  const kjv = new Set(db.prepare("SELECT book || ':' || chapter || ':' || verse k FROM verses WHERE translation = 'KJV' AND omitted = 0").all().map((r) => r.k));
   const have = new Set();
   for (const row of db.prepare('SELECT book, chapter, data FROM interlinear').all()) {
     const text = inflateRawSync(Buffer.from(row.data)).toString('utf8');

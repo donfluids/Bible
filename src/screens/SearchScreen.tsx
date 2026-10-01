@@ -90,7 +90,9 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
         data={results ?? []}
         keyExtractor={(v) => `${v.book}:${v.chapter}:${v.verse}`}
         keyboardShouldPersistTaps="handled"
-        renderItem={({ item }) => <VerseListItem verse={item} books={books} fontSize={listFont} onOpen={onOpenRef} onWord={onWord} />}
+        renderItem={({ item }) => (
+          <VerseListItem verse={item} books={books} fontSize={listFont} onOpen={onOpenRef} onWord={onWord} highlightText={query} />
+        )}
         ListFooterComponent={<View style={{ height: 40 }} />}
       />
     </View>

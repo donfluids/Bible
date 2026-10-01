@@ -6,12 +6,13 @@ import { useTheme } from '../theme';
 interface Props {
   title?: string;
   onBack?: () => void;
+  backLabel?: string;
   /** Replaces the plain title when given. */
   center?: React.ReactNode;
   right?: React.ReactNode;
 }
 
-export function Header({ title, onBack, center, right }: Props) {
+export function Header({ title, onBack, backLabel = 'Back', center, right }: Props) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   return (
@@ -20,7 +21,7 @@ export function Header({ title, onBack, center, right }: Props) {
         {onBack ? (
           <Pressable onPress={onBack} hitSlop={12} style={styles.back} accessibilityRole="button" accessibilityLabel="Back">
             <Text style={[styles.backGlyph, { color: theme.accent }]}>‹</Text>
-            <Text style={[styles.backText, { color: theme.accent }]}>Back</Text>
+            <Text style={[styles.backText, { color: theme.accent }]}>{backLabel}</Text>
           </Pressable>
         ) : null}
       </View>

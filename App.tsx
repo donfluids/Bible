@@ -17,7 +17,7 @@ import { SearchScreen } from './src/screens/SearchScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 
 type Route =
-  | { name: 'reader' }
+  | { name: 'reader'; fromResults?: boolean }
   | { name: 'books' }
   | { name: 'chapters'; book: Book }
   | { name: 'search' }
@@ -50,6 +50,14 @@ function Shell() {
     getBooks(db).then(setBooks);
   }, [db]);
 
+  // Remember the last chapter visited in each book, for the chapter picker.
+  useEffect(() => {
+    const { book, chapter } = settings.position;
+    if (settings.lastChapters[book] !== chapter) {
+      update({ lastChapters: { ...settings.lastChapters, [book]: chapter } });
+    }
+  }, [settings.position, settings.lastChapters, update]);
+
   const push = useCallback((route: Route) => setStack((s) => [...s, route]), []);
   const pop = useCallback(() => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s)), []);
   const home = useCallback(() => setStack([{ name: 'reader' }]), []);
@@ -69,13 +77,15 @@ function Shell() {
     return () => sub.remove();
   }, [pick, stack.length, pop]);
 
+  // Opening a verse from search or the concordance keeps that list underneath,
+  // so the reader shows a "Results" back button.
   const openRef = useCallback(
     (ref: Ref) => {
       update({ position: { book: ref.book, chapter: ref.chapter, verse: ref.verse } });
       setPick(null);
-      home();
+      push({ name: 'reader', fromResults: true });
     },
-    [update, home],
+    [update, push],
   );
 
   const showOccurrences = useCallback(
@@ -97,6 +107,7 @@ function Shell() {
       screen = (
         <ReaderScreen
           books={books}
+          onBack={route.fromResults ? pop : undefined}
           onOpenBooks={() => push({ name: 'books' })}
           onOpenSearch={() => push({ name: 'search' })}
           onOpenSettings={() => push({ name: 'settings' })}
@@ -111,7 +122,7 @@ function Shell() {
       screen = (
         <ChaptersScreen
           book={route.book}
-          current={route.book.id === settings.position.book ? settings.position.chapter : undefined}
+          current={settings.lastChapters[route.book.id] ?? (route.book.id === settings.position.book ? settings.position.chapter : undefined)}
           onPick={(chapter) => {
             update({ position: { book: route.book.id, chapter } });
             home();

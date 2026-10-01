@@ -13,6 +13,8 @@ import type { Book, OriginalWord, VerseRow, WordPick } from '../types';
 
 interface Props {
   books: Book[];
+  /** Present when the reader was opened from a results list; goes back to it. */
+  onBack?: () => void;
   onOpenBooks: () => void;
   onOpenSearch: () => void;
   onOpenSettings: () => void;
@@ -21,12 +23,12 @@ interface Props {
 
 type Item = { kind: 'heading'; key: string; text: string } | { kind: 'verse'; key: string; verse: VerseRow };
 
-export function ReaderScreen({ books, onOpenBooks, onOpenSearch, onOpenSettings, onWord }: Props) {
+export function ReaderScreen({ books, onBack, onOpenBooks, onOpenSearch, onOpenSettings, onWord }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { settings, update } = useSettings();
-  const { translation, fontSize, underlineWords, interlinear, position } = settings;
+  const { translation, fontSize, underlineWords, interlinear, position, tipSeen } = settings;
   const [items, setItems] = useState<Item[] | null>(null);
   const [original, setOriginal] = useState<Map<number, OriginalWord[]> | null>(null);
   const [flash, setFlash] = useState<number | null>(null);
@@ -108,6 +110,14 @@ export function ReaderScreen({ books, onOpenBooks, onOpenSearch, onOpenSettings,
 
   const toggleTranslation = () => update({ translation: translation === 'KJV' ? 'WEB' : 'KJV' });
 
+  const handleWord = useCallback(
+    (pick: WordPick) => {
+      if (!tipSeen) update({ tipSeen: true });
+      onWord(pick);
+    },
+    [tipSeen, update, onWord],
+  );
+
   const renderItem = useCallback(
     ({ item }: { item: Item }) => {
       if (item.kind === 'heading') {
@@ -117,12 +127,12 @@ export function ReaderScreen({ books, onOpenBooks, onOpenSearch, onOpenSettings,
       const words = interlinear ? original?.get(item.verse.verse) : undefined;
       return (
         <View style={[styles.verse, interlinear && [styles.verseInterlinear, { borderBottomColor: theme.border }], flashing && { backgroundColor: theme.highlight }]}>
-          <VerseText verse={item.verse} fontSize={fontSize} onWord={onWord} underline={underlineWords} />
-          {words && words.length > 0 ? <InterlinearVerse words={words} hebrew={item.verse.book <= 39} fontSize={fontSize} onWord={onWord} /> : null}
+          <VerseText verse={item.verse} fontSize={fontSize} onWord={handleWord} underline={underlineWords} />
+          {words && words.length > 0 ? <InterlinearVerse words={words} hebrew={item.verse.book <= 39} fontSize={fontSize} onWord={handleWord} /> : null}
         </View>
       );
     },
-    [theme, fontSize, onWord, underlineWords, flash, interlinear, original],
+    [theme, fontSize, handleWord, underlineWords, flash, interlinear, original],
   );
 
   const title = useMemo(() => `${bookName(books, position.book)} ${position.chapter}`, [books, position]);
@@ -132,6 +142,8 @@ export function ReaderScreen({ books, onOpenBooks, onOpenSearch, onOpenSettings,
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Header
+        onBack={onBack}
+        backLabel="Results"
         center={
           <Pressable onPress={onOpenBooks} hitSlop={8} accessibilityRole="button" accessibilityLabel={`${title}, choose passage`}>
             <Text numberOfLines={1} style={[styles.title, { color: theme.text }]}>
@@ -157,6 +169,19 @@ export function ReaderScreen({ books, onOpenBooks, onOpenSearch, onOpenSettings,
           renderItem={renderItem}
           contentContainerStyle={styles.list}
           initialNumToRender={20}
+          ListHeaderComponent={
+            tipSeen ? null : (
+              <View style={[styles.tip, { backgroundColor: theme.accentSoft, borderColor: theme.border }]}>
+                <Text style={[styles.tipText, { color: theme.text }]}>
+                  Tap any underlined word to see the Hebrew or Greek behind it. The button below shows the whole verse in the
+                  original language.
+                </Text>
+                <Pressable onPress={() => update({ tipSeen: true })} hitSlop={8} accessibilityRole="button">
+                  <Text style={[styles.tipDismiss, { color: theme.accent }]}>Got it</Text>
+                </Pressable>
+              </View>
+            )
+          }
           onScrollToIndexFailed={(info) => {
             listRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: false });
             setTimeout(() => listRef.current?.scrollToIndex({ index: info.index, viewPosition: 0.15, animated: false }), 120);
@@ -201,6 +226,9 @@ const styles = StyleSheet.create({
   loading: { flex: 1 },
   list: { paddingHorizontal: 18, paddingTop: 12 },
   verse: { paddingVertical: 5, borderRadius: 6 },
+  tip: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, padding: 14, marginBottom: 10 },
+  tipText: { fontSize: 15, lineHeight: 21 },
+  tipDismiss: { fontSize: 15, fontWeight: '700', marginTop: 8, alignSelf: 'flex-end' },
   verseInterlinear: { paddingBottom: 10, marginBottom: 6, borderBottomWidth: StyleSheet.hairlineWidth },
   pill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1 },
   pillText: { fontSize: 13, fontWeight: '600' },

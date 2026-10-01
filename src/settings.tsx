@@ -16,6 +16,10 @@ export interface Settings {
   /** Show the Hebrew or Greek words under each verse. */
   interlinear: boolean;
   position: Position;
+  /** The first-launch tip about tapping words has been dismissed. */
+  tipSeen: boolean;
+  /** Last chapter visited in each book, keyed by book id. */
+  lastChapters: Record<string, number>;
 }
 
 const KEY = 'settings.v1';
@@ -26,6 +30,8 @@ const DEFAULTS: Settings = {
   underlineWords: true,
   interlinear: false,
   position: { book: 43, chapter: 1 },
+  tipSeen: false,
+  lastChapters: {},
 };
 
 export const FONT_SIZES = [15, 17, 19, 21, 24, 28];

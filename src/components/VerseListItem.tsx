@@ -12,10 +12,11 @@ interface Props {
   onOpen: (verse: VerseRow) => void;
   onWord: (pick: WordPick) => void;
   emphasize?: string;
+  highlightText?: string;
 }
 
 /** A verse in a results list: the reference opens the chapter, words open the word sheet. */
-export function VerseListItem({ verse, books, fontSize, onOpen, onWord, emphasize }: Props) {
+export function VerseListItem({ verse, books, fontSize, onOpen, onWord, emphasize, highlightText }: Props) {
   const theme = useTheme();
   return (
     <Pressable
@@ -26,7 +27,7 @@ export function VerseListItem({ verse, books, fontSize, onOpen, onWord, emphasiz
         <Text style={[styles.ref, { color: theme.accent }]}>{formatRef(books, verse)}</Text>
         <Text style={[styles.chevron, { color: theme.muted }]}>›</Text>
       </View>
-      <VerseText verse={verse} fontSize={fontSize} onWord={onWord} underline={false} emphasize={emphasize} showNumber={false} />
+      <VerseText verse={verse} fontSize={fontSize} onWord={onWord} underline={false} emphasize={emphasize} highlightText={highlightText} showNumber={false} />
     </Pressable>
   );
 }

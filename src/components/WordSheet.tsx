@@ -29,6 +29,7 @@ export function WordSheet({ pick, translation, onClose, onPick, onShowOccurrence
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const [data, setData] = useState<Loaded | null>(null);
+  const [showLegend, setShowLegend] = useState(false);
 
   useEffect(() => {
     if (!pick) return;
@@ -129,6 +130,30 @@ export function WordSheet({ pick, translation, onClose, onPick, onShowOccurrence
               </Section>
             ) : null}
 
+            <Pressable onPress={() => setShowLegend((v) => !v)} hitSlop={6} accessibilityRole="button" style={styles.legendToggle}>
+              <Text style={[styles.legendToggleText, { color: theme.accent }]}>{showLegend ? 'Hide the key to the marks' : 'What do the marks mean?'}</Text>
+            </Pressable>
+            {showLegend ? (
+              <View style={[styles.legend, { borderColor: theme.border }]}>
+                <Text style={[styles.legendText, { color: theme.muted }]}>
+                  In the KJV renderings, × or [idiom] marks an idiomatic rendering, + marks a phrase made with other words, and (-ly) or
+                  (-ness) shows another ending of the same rendering. Numbers such as H433 in the derivation are other entries; tap one to open it.
+                </Text>
+                {original ? (
+                  <Text style={[styles.legendText, { color: theme.muted, marginTop: 6 }]}>
+                    In the gloss, {'<a word>'} in angle brackets is in the original but best left untranslated, and [a word] in square brackets is
+                    implied but not in the original.
+                    {hebrew ? ' In the transliteration, dots separate syllables and the capital letter marks the stressed syllable.' : ''}
+                  </Text>
+                ) : null}
+                {original && original.flags ? (
+                  <Text style={[styles.legendText, { color: theme.muted, marginTop: 6 }]}>
+                    A line under a word in the interlinear marks text that differs between editions; the note above explains this one.
+                  </Text>
+                ) : null}
+              </View>
+            ) : null}
+
             <Pressable
               onPress={() => onShowOccurrences(pick.strongs)}
               disabled={data.count === 0}
@@ -205,6 +230,10 @@ const styles = StyleSheet.create({
   section: { marginTop: 14 },
   label: { fontSize: 11, fontWeight: '700', letterSpacing: 0.8, marginBottom: 4 },
   body: { fontSize: 16, lineHeight: 23 },
-  cta: { marginTop: 22, paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
+  legendToggle: { marginTop: 14, alignSelf: 'flex-start' },
+  legendToggleText: { fontSize: 14, fontWeight: '600' },
+  legend: { marginTop: 8, padding: 12, borderRadius: 10, borderWidth: StyleSheet.hairlineWidth },
+  legendText: { fontSize: 13, lineHeight: 19 },
+  cta: { marginTop: 18, paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
   ctaText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
 });

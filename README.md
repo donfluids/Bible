@@ -71,7 +71,7 @@ so phones that already hold a copy of the old file pick up the new one.
 | Table         | Contents                                                                  |
 | ------------- | ------------------------------------------------------------------------- |
 | `books`       | 66 books: id, USFM code, name, testament, chapter count                   |
-| `verses`      | one row per verse and translation: plain `text` plus offset-encoded `tags` |
+| `verses`      | one row per verse and translation: plain `text` plus offset-encoded `tags`; `omitted` = 1 for the five verses the WEB leaves out, with the translators' note as `text` |
 | `headings`    | section headings that fall between verses (the acrostic labels of Psalm 119 in the WEB) |
 | `strongs`     | 14,197 dictionary entries: lemma, transliteration, pronunciation, derivation, definition, KJV usage |
 | `concordance` | per Strong's number and translation: verse count and a packed list of verse references |
@@ -113,7 +113,8 @@ out. Verse numbers follow the KJV where editions differ.
 - The Strong's tagging in the World English Bible is less precise than in the
   KJV. Occasionally a word opens the entry of a neighbouring word.
 - The WEB omits five New Testament verses that are absent from the earliest
-  manuscripts (for example Matthew 17:21). They are also absent here, as in print.
+  manuscripts (for example Matthew 17:21). They appear as greyed rows carrying the
+  translators' note.
 - Text search is a plain substring match, case-insensitive for English letters.
 - The interlinear line and the English line are not linked word to word. Tapping
   an English word opens its Strong's entry; tapping an original word opens the same
