@@ -46,9 +46,27 @@ export interface Segment {
   strongs?: string;
 }
 
+/** One Hebrew or Greek word of a verse, as shown in the interlinear view. */
+export interface OriginalWord {
+  text: string;
+  translit: string;
+  gloss: string;
+  /** Empty for words with no dictionary entry (rare). */
+  strongs: string;
+  /** Grammar code, see src/morph.ts. */
+  morph: string;
+  flags: number;
+}
+
+export const FLAG_NOT_IN_NA = 1;
+export const FLAG_LXX = 2;
+export const FLAG_RESTORED = 4;
+
 /** The word the reader tapped, carried to the word sheet. */
 export interface WordPick {
   strongs: string;
   /** English word or phrase that was tapped, if any. */
   word?: string;
+  /** The original-language word, when tapped in the interlinear view. */
+  original?: OriginalWord;
 }

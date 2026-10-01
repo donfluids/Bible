@@ -60,6 +60,14 @@ export function SettingsScreen({ onBack }: Props) {
 
         <View style={[styles.card, styles.row, { backgroundColor: theme.card, borderColor: theme.border, marginTop: 12 }]}>
           <View style={{ flex: 1 }}>
+            <Text style={[styles.rowTitle, { color: theme.text }]}>Interlinear</Text>
+            <Text style={[styles.rowSub, { color: theme.muted }]}>Show the Hebrew or Greek words with transliteration and gloss under each verse</Text>
+          </View>
+          <Switch value={settings.interlinear} onValueChange={(v) => update({ interlinear: v })} trackColor={{ true: theme.accent }} />
+        </View>
+
+        <View style={[styles.card, styles.row, { backgroundColor: theme.card, borderColor: theme.border, marginTop: 12 }]}>
+          <View style={{ flex: 1 }}>
             <Text style={[styles.rowTitle, { color: theme.text }]}>Underline linked words</Text>
             <Text style={[styles.rowSub, { color: theme.muted }]}>Marks words that open a Greek or Hebrew entry</Text>
           </View>
@@ -73,6 +81,11 @@ export function SettingsScreen({ onBack }: Props) {
           </Text>
           <Text style={[styles.about, { color: theme.text, marginTop: 10 }]}>
             Hebrew and Greek entries are from Strong's Exhaustive Concordance (1890), in the digital edition by Open Scriptures, licensed CC BY-SA.
+          </Text>
+          <Text style={[styles.about, { color: theme.text, marginTop: 10 }]}>
+            The interlinear Hebrew (Leningrad Codex) and Greek text, with transliteration, glosses and grammar, is from the Translators
+            Amalgamated Hebrew OT and Greek NT by STEPBible.org, Tyndale House Cambridge, licensed CC BY 4.0. The Greek shows the words of
+            the Textus Receptus and Byzantine text; words absent from the Nestle-Aland editions are marked with a line beneath.
           </Text>
           <Text style={[styles.about, { color: theme.muted, marginTop: 10 }]}>
             The Strong's tagging in the World English Bible is less precise than in the King James Version. A word may occasionally

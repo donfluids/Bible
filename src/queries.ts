@@ -1,5 +1,6 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
-import type { Book, Heading, Ref, StrongsEntry, TranslationId, VerseRow } from './types';
+import { inflateSync, strFromU8 } from 'fflate';
+import type { Book, Heading, OriginalWord, Ref, StrongsEntry, TranslationId, VerseRow } from './types';
 
 export async function getBooks(db: SQLiteDatabase): Promise<Book[]> {
   return db.getAllAsync<Book>('SELECT id, osis, name, testament, chapters FROM books ORDER BY id');
@@ -115,6 +116,36 @@ export async function searchText(
     pattern,
     limit,
   );
+}
+
+/**
+ * Hebrew or Greek words for every verse of a chapter, keyed by verse number.
+ * Each chapter is stored as one deflate-compressed blob; see scripts/build-db.mjs.
+ */
+export async function getInterlinear(db: SQLiteDatabase, book: number, chapter: number): Promise<Map<number, OriginalWord[]>> {
+  const row = await db.getFirstAsync<{ data: Uint8Array | ArrayBuffer }>(
+    'SELECT data FROM interlinear WHERE book = ? AND chapter = ?',
+    book,
+    chapter,
+  );
+  const out = new Map<number, OriginalWord[]>();
+  if (!row) return out;
+  const bytes = row.data instanceof Uint8Array ? row.data : new Uint8Array(row.data);
+  const text = strFromU8(inflateSync(bytes));
+  for (const part of text.split('\x1c')) {
+    const sep = part.indexOf('\x1d');
+    if (sep < 0) continue;
+    out.set(Number(part.slice(0, sep)), unpackWords(part.slice(sep + 1)));
+  }
+  return out;
+}
+
+export function unpackWords(packed: string): OriginalWord[] {
+  if (!packed) return [];
+  return packed.split('\x1e').map((rec) => {
+    const [text = '', translit = '', gloss = '', strongs = '', morph = '', flags = '0'] = rec.split('\x1f');
+    return { text, translit, gloss, strongs, morph, flags: Number(flags) || 0 };
+  });
 }
 
 export async function getMeta(db: SQLiteDatabase): Promise<Record<string, string>> {

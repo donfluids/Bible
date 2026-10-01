@@ -3,6 +3,6 @@
  * on first launch and kept. Bump the suffix whenever assets/db/bible.db is
  * rebuilt so devices that already have a copy pick up the new one.
  */
-export const DATABASE_NAME = 'bible-v1.db';
+export const DATABASE_NAME = 'bible-v2.db';
 
 export const DATABASE_ASSET = require('../assets/db/bible.db');

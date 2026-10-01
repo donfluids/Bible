@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
+import { describeMorph } from '../morph';
 import { getConcordanceCount, getStrongs } from '../queries';
 import { formatCount, isHebrew } from '../text';
 import { useTheme } from '../theme';
+import { FLAG_LXX, FLAG_NOT_IN_NA, FLAG_RESTORED } from '../types';
 import type { StrongsEntry, TranslationId, WordPick } from '../types';
 
 interface Props {
@@ -32,6 +34,10 @@ export function WordSheet({ pick, translation, onClose, onPick, onShowOccurrence
     if (!pick) return;
     let cancelled = false;
     setData(null);
+    if (!pick.strongs) {
+      setData({ entry: null, count: 0 });
+      return;
+    }
     Promise.all([getStrongs(db, pick.strongs), getConcordanceCount(db, pick.strongs, translation)]).then(([entry, count]) => {
       if (!cancelled) setData({ entry, count });
     });
@@ -41,8 +47,19 @@ export function WordSheet({ pick, translation, onClose, onPick, onShowOccurrence
   }, [db, pick, translation]);
 
   if (!pick) return null;
-  const hebrew = isHebrew(pick.strongs);
+  const original = pick.original;
+  const hebrew = pick.strongs ? isHebrew(pick.strongs) : !!original && /[\u0590-\u05FF]/.test(original.text);
   const entry = data?.entry;
+  const grammar = original?.morph ? describeMorph(original.morph, hebrew) : '';
+  const note = original
+    ? original.flags & FLAG_NOT_IN_NA
+      ? 'In the Textus Receptus and Byzantine text, which the KJV and WEB translate, but not in the Nestle-Aland editions used by most modern translations.'
+      : original.flags & FLAG_LXX
+        ? 'Not in the Hebrew Leningrad Codex. Supplied from the Septuagint, as some translations do.'
+        : original.flags & FLAG_RESTORED
+          ? 'Missing from the Leningrad Codex and restored from a parallel passage.'
+          : ''
+    : '';
 
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent>
@@ -51,7 +68,7 @@ export function WordSheet({ pick, translation, onClose, onPick, onShowOccurrence
         <View style={[styles.grip, { backgroundColor: theme.border }]} />
         <View style={styles.headRow}>
           <View style={[styles.badge, { backgroundColor: theme.accentSoft }]}>
-            <Text style={[styles.badgeText, { color: theme.accent }]}>{pick.strongs}</Text>
+            <Text style={[styles.badgeText, { color: theme.accent }]}>{pick.strongs || '—'}</Text>
           </View>
           <Text style={[styles.lang, { color: theme.muted }]}>{hebrew ? 'Hebrew' : 'Greek'}</Text>
           {pick.word ? (
@@ -66,10 +83,30 @@ export function WordSheet({ pick, translation, onClose, onPick, onShowOccurrence
 
         {!data ? (
           <ActivityIndicator style={styles.spinner} color={theme.accent} />
-        ) : !entry ? (
-          <Text style={[styles.body, { color: theme.text }]}>No dictionary entry for {pick.strongs}.</Text>
         ) : (
           <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+            {original ? (
+              <View style={[styles.inText, { backgroundColor: theme.accentSoft }]}>
+                <Text style={[styles.inTextWord, { color: theme.text, writingDirection: hebrew ? 'rtl' : 'ltr' }]}>{original.text}</Text>
+                <Text style={[styles.inTextLine, { color: theme.text }]}>
+                  {original.translit}
+                  {original.gloss ? <Text style={{ color: theme.muted }}>  ·  {original.gloss}</Text> : null}
+                </Text>
+                {grammar ? (
+                  <Text style={[styles.inTextLine, { color: theme.muted }]}>
+                    {grammar}
+                    {grammar !== original.morph ? <Text style={{ fontVariant: ['tabular-nums'] }}>  ({original.morph})</Text> : null}
+                  </Text>
+                ) : null}
+                {note ? <Text style={[styles.note, { color: theme.accent }]}>{note}</Text> : null}
+              </View>
+            ) : null}
+            {!entry ? (
+              <Text style={[styles.body, { color: theme.text }]}>
+                {pick.strongs ? `No dictionary entry for ${pick.strongs}.` : 'This word has no Strong\'s number.'}
+              </Text>
+            ) : (
+              <>
             <Text style={[styles.lemma, { color: theme.text, writingDirection: hebrew ? 'rtl' : 'ltr' }]}>{entry.lemma}</Text>
             <Text style={[styles.translit, { color: theme.text }]}>
               {entry.translit}
@@ -104,6 +141,8 @@ export function WordSheet({ pick, translation, onClose, onPick, onShowOccurrence
                   : `Show ${formatCount(data.count)} ${data.count === 1 ? 'verse' : 'verses'} in the ${translation}`}
               </Text>
             </Pressable>
+              </>
+            )}
           </ScrollView>
         )}
       </View>
@@ -157,6 +196,10 @@ const styles = StyleSheet.create({
   spinner: { marginVertical: 40 },
   scroll: { flexGrow: 0 },
   scrollContent: { paddingBottom: 8 },
+  inText: { borderRadius: 12, padding: 12, marginTop: 4, marginBottom: 6 },
+  inTextWord: { fontSize: 30, lineHeight: 42 },
+  inTextLine: { fontSize: 15, lineHeight: 21, marginTop: 2 },
+  note: { fontSize: 13, lineHeight: 18, marginTop: 8 },
   lemma: { fontSize: 38, lineHeight: 50, marginTop: 4 },
   translit: { fontSize: 18, marginBottom: 6 },
   section: { marginTop: 14 },

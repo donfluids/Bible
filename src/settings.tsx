@@ -13,6 +13,8 @@ export interface Settings {
   translation: TranslationId;
   fontSize: number;
   underlineWords: boolean;
+  /** Show the Hebrew or Greek words under each verse. */
+  interlinear: boolean;
   position: Position;
 }
 
@@ -22,6 +24,7 @@ const DEFAULTS: Settings = {
   translation: 'KJV',
   fontSize: 19,
   underlineWords: true,
+  interlinear: false,
   position: { book: 43, chapter: 1 },
 };
 

@@ -25,6 +25,21 @@ fetch web.zip https://ebible.org/Scriptures/engwebp_usfm.zip
 fetch strongs-hebrew.js https://raw.githubusercontent.com/openscriptures/strongs/master/hebrew/strongs-hebrew-dictionary.js
 fetch strongs-greek.js  https://raw.githubusercontent.com/openscriptures/strongs/master/greek/strongs-greek-dictionary.js
 
+# STEPBible Translators Amalgamated Hebrew OT and Greek NT (CC BY 4.0), Tyndale House Cambridge.
+# Their licence permits bundling in software but asks that the files themselves are not redistributed.
+mkdir -p step
+STEP="https://raw.githubusercontent.com/STEPBible/STEPBible-Data/master/Translators%20Amalgamated%20OT%2BNT"
+for name in \
+  "TAHOT Gen-Deu - Translators Amalgamated Hebrew OT - STEPBible.org CC BY.txt" \
+  "TAHOT Jos-Est - Translators Amalgamated Hebrew OT - STEPBible.org CC BY.txt" \
+  "TAHOT Job-Sng - Translators Amalgamated Hebrew OT - STEPBible.org CC BY.txt" \
+  "TAHOT Isa-Mal - Translators Amalgamated Hebrew OT - STEPBible.org CC BY.txt" \
+  "TAGNT Mat-Jhn - Translators Amalgamated Greek NT - STEPBible.org CC-BY.txt" \
+  "TAGNT Act-Rev - Translators Amalgamated Greek NT - STEPBible.org CC-BY.txt"; do
+  encoded=$(printf '%s' "$name" | sed 's/ /%20/g; s/+/%2B/g')
+  fetch "step/$name" "$STEP/$encoded"
+done
+
 rm -rf kjv web
 mkdir -p kjv web
 unzip -oq kjv.zip -d kjv

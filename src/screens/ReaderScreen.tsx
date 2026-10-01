@@ -3,12 +3,13 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from '
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header, HeaderButton } from '../components/Header';
+import { InterlinearVerse } from '../components/InterlinearVerse';
 import { VerseText } from '../components/VerseText';
-import { getChapter } from '../queries';
+import { getChapter, getInterlinear } from '../queries';
 import { useSettings } from '../settings';
 import { bookName } from '../text';
 import { useTheme } from '../theme';
-import type { Book, VerseRow, WordPick } from '../types';
+import type { Book, OriginalWord, VerseRow, WordPick } from '../types';
 
 interface Props {
   books: Book[];
@@ -25,8 +26,9 @@ export function ReaderScreen({ books, onOpenBooks, onOpenSearch, onOpenSettings,
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { settings, update } = useSettings();
-  const { translation, fontSize, underlineWords, position } = settings;
+  const { translation, fontSize, underlineWords, interlinear, position } = settings;
   const [items, setItems] = useState<Item[] | null>(null);
+  const [original, setOriginal] = useState<Map<number, OriginalWord[]> | null>(null);
   const [flash, setFlash] = useState<number | null>(null);
   const listRef = useRef<FlatList<Item>>(null);
 
@@ -50,6 +52,21 @@ export function ReaderScreen({ books, onOpenBooks, onOpenSearch, onOpenSettings,
       cancelled = true;
     };
   }, [db, translation, position.book, position.chapter]);
+
+  // The Hebrew or Greek words are loaded only while the interlinear view is on.
+  useEffect(() => {
+    if (!interlinear) {
+      setOriginal(null);
+      return;
+    }
+    let cancelled = false;
+    getInterlinear(db, position.book, position.chapter).then((map) => {
+      if (!cancelled) setOriginal(map);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [db, interlinear, position.book, position.chapter]);
 
   // Scroll to a requested verse once the chapter has rendered.
   useEffect(() => {
@@ -97,13 +114,15 @@ export function ReaderScreen({ books, onOpenBooks, onOpenSearch, onOpenSettings,
         return <Text style={[styles.heading, { color: theme.muted, fontSize: fontSize - 3 }]}>{item.text}</Text>;
       }
       const flashing = flash === item.verse.verse;
+      const words = interlinear ? original?.get(item.verse.verse) : undefined;
       return (
-        <View style={[styles.verse, flashing && { backgroundColor: theme.highlight }]}>
+        <View style={[styles.verse, interlinear && [styles.verseInterlinear, { borderBottomColor: theme.border }], flashing && { backgroundColor: theme.highlight }]}>
           <VerseText verse={item.verse} fontSize={fontSize} onWord={onWord} underline={underlineWords} />
+          {words && words.length > 0 ? <InterlinearVerse words={words} hebrew={item.verse.book <= 39} fontSize={fontSize} onWord={onWord} /> : null}
         </View>
       );
     },
-    [theme, fontSize, onWord, underlineWords, flash],
+    [theme, fontSize, onWord, underlineWords, flash, interlinear, original],
   );
 
   const title = useMemo(() => `${bookName(books, position.book)} ${position.chapter}`, [books, position]);
@@ -147,7 +166,20 @@ export function ReaderScreen({ books, onOpenBooks, onOpenSearch, onOpenSettings,
       )}
       <View style={[styles.footer, { paddingBottom: insets.bottom + 8, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
         <NavButton label="‹ Previous" onPress={() => go(-1)} disabled={atStart} />
-        <Text style={[styles.footerHint, { color: theme.muted }]}>Tap a word for its {book?.testament === 'OT' ? 'Hebrew' : 'Greek'}</Text>
+        <Pressable
+          onPress={() => update({ interlinear: !interlinear })}
+          hitSlop={6}
+          accessibilityRole="switch"
+          accessibilityState={{ checked: interlinear }}
+          style={({ pressed }) => [
+            styles.pill,
+            { borderColor: interlinear ? theme.accent : theme.border, backgroundColor: interlinear ? theme.accent : 'transparent', opacity: pressed ? 0.7 : 1 },
+          ]}
+        >
+          <Text style={[styles.pillText, { color: interlinear ? '#fff' : theme.muted }]}>
+            {book?.testament === 'OT' ? 'Hebrew' : 'Greek'} interlinear
+          </Text>
+        </Pressable>
         <NavButton label="Next ›" onPress={() => go(1)} disabled={atEnd} />
       </View>
     </View>
@@ -169,6 +201,9 @@ const styles = StyleSheet.create({
   loading: { flex: 1 },
   list: { paddingHorizontal: 18, paddingTop: 12 },
   verse: { paddingVertical: 5, borderRadius: 6 },
+  verseInterlinear: { paddingBottom: 10, marginBottom: 6, borderBottomWidth: StyleSheet.hairlineWidth },
+  pill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1 },
+  pillText: { fontSize: 13, fontWeight: '600' },
   heading: { fontWeight: '700', letterSpacing: 1, marginTop: 14, marginBottom: 2 },
   footer: {
     flexDirection: 'row',
@@ -178,6 +213,5 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
-  footerHint: { fontSize: 12 },
   nav: { fontSize: 16, fontWeight: '600' },
 });

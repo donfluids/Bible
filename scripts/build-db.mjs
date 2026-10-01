@@ -18,8 +18,18 @@
 //   strongs(id, lemma, translit, pron, derivation, definition, kjv_usage)
 //   concordance(strongs, translation, count, refs)
 //     refs = BLOB of 3 bytes per verse: book, chapter, verse (each fits a byte)
+//   interlinear(book, chapter, data)
+//     data = raw deflate (zlib, no header) of the chapter's words as text. Verses are
+//            separated by U+001C and each verse is "<verse number>U+001D<words>"; words
+//            are records separated by U+001E with fields separated by U+001F:
+//            text, transliteration, gloss, Strong's id (may be empty), grammar code, flags
+//             flags: 1 = not in Nestle-Aland editions, 2 = supplied from the Septuagint,
+//                    4 = restored where the Leningrad Codex is damaged
+//     Source: STEPBible TAHOT and TAGNT (CC BY 4.0). Greek words are those found in the
+//     Textus Receptus or the Byzantine text; verse numbers follow the KJV.
 //   meta(key, value)
 import { DatabaseSync } from 'node:sqlite';
+import { deflateRawSync, inflateRawSync } from 'node:zlib';
 import { readFileSync, readdirSync, mkdirSync, rmSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -46,6 +56,31 @@ const BOOKS = [
   ['1PE', '1 Peter'], ['2PE', '2 Peter'], ['1JN', '1 John'], ['2JN', '2 John'], ['3JN', '3 John'],
   ['JUD', 'Jude'], ['REV', 'Revelation'],
 ].map(([osis, name], i) => ({ id: i + 1, osis, name, testament: i < 39 ? 'OT' : 'NT' }));
+
+const STEP_DIR = join(RAW, 'step');
+const STEP_FILES = {
+  hebrew: [
+    'TAHOT Gen-Deu - Translators Amalgamated Hebrew OT - STEPBible.org CC BY.txt',
+    'TAHOT Jos-Est - Translators Amalgamated Hebrew OT - STEPBible.org CC BY.txt',
+    'TAHOT Job-Sng - Translators Amalgamated Hebrew OT - STEPBible.org CC BY.txt',
+    'TAHOT Isa-Mal - Translators Amalgamated Hebrew OT - STEPBible.org CC BY.txt',
+  ],
+  greek: [
+    'TAGNT Mat-Jhn - Translators Amalgamated Greek NT - STEPBible.org CC-BY.txt',
+    'TAGNT Act-Rev - Translators Amalgamated Greek NT - STEPBible.org CC-BY.txt',
+  ],
+};
+// STEPBible book abbreviations in canonical order.
+const STEP_BOOKS = ('Gen Exo Lev Num Deu Jos Jdg Rut 1Sa 2Sa 1Ki 2Ki 1Ch 2Ch Ezr Neh Est Job Psa Pro Ecc Sng Isa Jer Lam Ezk Dan ' +
+  'Hos Jol Amo Oba Jon Mic Nam Hab Zep Hag Zec Mal Mat Mrk Luk Jhn Act Rom 1Co 2Co Gal Eph Php Col 1Th 2Th 1Ti 2Ti Tit Phm Heb ' +
+  'Jas 1Pe 2Pe 1Jn 2Jn 3Jn Jud Rev').split(' ');
+const FLAG_NOT_IN_NA = 1;
+const FLAG_LXX = 2;
+const FLAG_RESTORED = 4;
+const FS = '\x1c';
+const GS = '\x1d';
+const RS = '\x1e';
+const US = '\x1f';
 
 const TRANSLATIONS = [
   { id: 'KJV', name: 'King James Version', dir: 'kjv', suffix: 'eng-kjv2006.usfm' },
@@ -139,6 +174,114 @@ function parseBook(path) {
   return { chapters, headings };
 }
 
+// Parse "Mat.17.14[17.15]#03=NKO" style references. Returns null for non-data lines.
+// The KJV reference in square brackets wins because the bundled Bibles follow it.
+function parseStepRef(field) {
+  const m = /^([1-3A-Za-z]{3})\.(\d+)\.(\d+)([^#]*)#(\d+)=(.*)$/.exec(field);
+  if (!m) return null;
+  const book = STEP_BOOKS.indexOf(m[1]) + 1;
+  if (book === 0) return null;
+  let chapter = Number(m[2]);
+  let verse = Number(m[3]);
+  const kjv = /\[(\d+)\.(\d+)\]/.exec(m[4]);
+  if (kjv) { chapter = Number(kjv[1]); verse = Number(kjv[2]); }
+  // Word numbers such as "0501" are words inserted after word 5.
+  const num = m[5].length > 2 ? Number(m[5].slice(0, 2)) + Number('0.' + m[5].slice(2)) : Number(m[5]);
+  return { book, chapter, verse, order: num, type: m[6] };
+}
+
+function stepLines(files) {
+  const out = [];
+  for (const f of files) {
+    const path = join(STEP_DIR, f);
+    try { statSync(path); } catch { throw new Error(`missing data/raw/step/${f}; run npm run fetch-data first`); }
+    for (const line of readFileSync(path, 'utf8').split(/\r?\n/)) {
+      const fields = line.split('\t');
+      const ref = parseStepRef(fields[0]);
+      if (ref) out.push({ ref, fields });
+    }
+  }
+  return out;
+}
+
+function stepHebrewWords() {
+  const words = [];
+  for (const { ref, fields } of stepLines(STEP_FILES.hebrew)) {
+    const text = fields[1].replace(/[\/\\]/g, '').trim();
+    if (!text) continue; // Qere with no written form
+    const translit = fields[2].replace(/\//g, '').trim();
+    const gloss = fields[3].replace(/\//g, '').replace(/\s+/g, ' ').trim();
+    const root = /\{H(\d+)/.exec(fields[4]) || /\bH(\d+)/.exec(fields[4]);
+    const strongs = root && Number(root[1]) < 9000 ? 'H' + Number(root[1]) : '';
+    const morph = fields[5].trim();
+    let flags = 0;
+    if (ref.type.startsWith('X')) flags |= FLAG_LXX;
+    if (ref.type.startsWith('R')) flags |= FLAG_RESTORED;
+    words.push({ ...ref, text, translit, gloss, strongs, morph, flags });
+  }
+  return words;
+}
+
+function stepGreekWords() {
+  const words = [];
+  let skipped = 0;
+  for (const { ref, fields } of stepLines(STEP_FILES.greek)) {
+    const editions = fields[5];
+    if (!/\bTR\b|Byz/.test(editions)) { skipped++; continue; } // not in the traditional text
+    const raw = fields[1].replace(/[¶]|\[\[|\]\]/g, '').trim();
+    const split = raw.lastIndexOf(' (');
+    const text = (split > 0 ? raw.slice(0, split) : raw).trim();
+    const translit = split > 0 ? raw.slice(split + 2).replace(/\)$/, '').trim() : '';
+    if (!text) continue;
+    const gloss = fields[2].replace(/\s+/g, ' ').trim();
+    const sm = /G(\d+)/.exec(fields[3]);
+    const strongs = sm ? 'G' + Number(sm[1]) : '';
+    const morph = (fields[3].split('=')[1] || '').trim();
+    const flags = /NA2/.test(editions) ? 0 : FLAG_NOT_IN_NA;
+    words.push({ ...ref, text, translit, gloss, strongs, morph, flags });
+  }
+  return { words, skipped };
+}
+
+function buildInterlinear(db) {
+  const ins = db.prepare('INSERT INTO interlinear VALUES (?,?,?)');
+  const known = new Set(db.prepare('SELECT id FROM strongs').all().map((r) => r.id));
+  const hebrew = stepHebrewWords();
+  const { words: greek, skipped } = stepGreekWords();
+  // STEPBible extends Strong's numbering for a few words; without a dictionary entry the number is dropped.
+  let unknown = 0;
+  for (const w of [...hebrew, ...greek]) {
+    if (w.strongs && !known.has(w.strongs)) { w.strongs = ''; unknown++; }
+  }
+  const byVerse = new Map();
+  for (const w of [...hebrew, ...greek]) {
+    const key = `${w.book}:${w.chapter}:${w.verse}`;
+    if (!byVerse.has(key)) byVerse.set(key, []);
+    byVerse.get(key).push(w);
+  }
+  const byChapter = new Map();
+  for (const [key, list] of byVerse) {
+    list.sort((a, b) => a.order - b.order);
+    const [book, chapter, verse] = key.split(':').map(Number);
+    const packed = list.map((w) => [w.text, w.translit, w.gloss, w.strongs, w.morph, String(w.flags)].join(US)).join(RS);
+    const ck = `${book}:${chapter}`;
+    if (!byChapter.has(ck)) byChapter.set(ck, []);
+    byChapter.get(ck).push({ verse, packed });
+  }
+  let bytes = 0;
+  db.exec('BEGIN');
+  for (const [ck, verses] of byChapter) {
+    verses.sort((a, b) => a.verse - b.verse);
+    const [book, chapter] = ck.split(':').map(Number);
+    const text = verses.map((v) => v.verse + GS + v.packed).join(FS);
+    const blob = new Uint8Array(deflateRawSync(Buffer.from(text, 'utf8'), { level: 9 }));
+    bytes += blob.length;
+    ins.run(book, chapter, blob);
+  }
+  db.exec('COMMIT');
+  return { hebrewWords: hebrew.length, greekWords: greek.length, greekSkippedNaOnly: skipped, wordsWithoutDictionaryEntry: unknown, verses: byVerse.size, chapters: byChapter.size, compressedBytes: bytes };
+}
+
 function loadStrongs(file, varName) {
   const src = readFileSync(join(RAW, file), 'utf8');
   const start = src.indexOf('{', src.indexOf(`var ${varName}`));
@@ -165,6 +308,8 @@ function main() {
     CREATE TABLE strongs(id TEXT PRIMARY KEY, lemma TEXT, translit TEXT, pron TEXT, derivation TEXT, definition TEXT, kjv_usage TEXT) WITHOUT ROWID;
     CREATE TABLE concordance(strongs TEXT NOT NULL, translation TEXT NOT NULL, count INTEGER NOT NULL, refs BLOB NOT NULL,
                         PRIMARY KEY(strongs, translation)) WITHOUT ROWID;
+    CREATE TABLE interlinear(book INTEGER NOT NULL, chapter INTEGER NOT NULL, data BLOB NOT NULL,
+                        PRIMARY KEY(book, chapter)) WITHOUT ROWID;
     CREATE TABLE meta(key TEXT PRIMARY KEY, value TEXT NOT NULL) WITHOUT ROWID;
   `);
 
@@ -229,15 +374,28 @@ function main() {
       nStrongs++;
     }
   }
-  insMeta.run('schema', '1');
+  insMeta.run('schema', '2');
   insMeta.run('built', new Date().toISOString().slice(0, 10));
   insMeta.run('translations', JSON.stringify(TRANSLATIONS.map(({ id, name }) => ({ id, name }))));
   insMeta.run('sources', JSON.stringify({
     KJV: 'eBible.org eng-kjv2006, public domain',
     WEB: 'eBible.org engwebp, public domain',
     strongs: 'Open Scriptures strongs (CC BY-SA)',
+    interlinear: 'STEPBible TAHOT and TAGNT, Tyndale House Cambridge (CC BY 4.0)',
   }));
   db.exec('COMMIT');
+  const interlinear = buildInterlinear(db);
+  // Sanity check: interlinear verses should line up with the KJV's verse numbering.
+  const kjv = new Set(db.prepare("SELECT book || ':' || chapter || ':' || verse k FROM verses WHERE translation = 'KJV'").all().map((r) => r.k));
+  const have = new Set();
+  for (const row of db.prepare('SELECT book, chapter, data FROM interlinear').all()) {
+    const text = inflateRawSync(Buffer.from(row.data)).toString('utf8');
+    for (const v of text.split(FS)) have.add(`${row.book}:${row.chapter}:${v.split(GS)[0]}`);
+  }
+  let unmatched = 0, missing = 0;
+  for (const k of have) if (!kjv.has(k)) unmatched++;
+  for (const k of kjv) if (!have.has(k)) missing++;
+  stats.interlinear = { ...interlinear, versesNotInKjv: unmatched, kjvVersesWithoutOriginal: missing };
   db.exec('VACUUM');
   db.close();
 
