@@ -58,15 +58,50 @@ export function SettingsScreen({ onBack }: Props) {
           <SizeButton label="A" onPress={() => setSize(1)} disabled={sizeIndex >= FONT_SIZES.length - 1} />
         </View>
 
-        <View style={[styles.card, styles.row, { backgroundColor: theme.card, borderColor: theme.border, marginTop: 12 }]}>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.rowTitle, { color: theme.text }]}>Interlinear</Text>
-            <Text style={[styles.rowSub, { color: theme.muted }]}>Show the Hebrew or Greek words with transliteration and gloss under each verse</Text>
+        <Label text="Interlinear" />
+        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <View style={styles.row}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.rowTitle, { color: theme.text }]}>Show interlinear</Text>
+              <Text style={[styles.rowSub, { color: theme.muted }]}>Hebrew or Greek words with transliteration and gloss under each verse</Text>
+            </View>
+            <Switch value={settings.interlinear} onValueChange={(v) => update({ interlinear: v })} trackColor={{ true: theme.accent }} />
           </View>
-          <Switch value={settings.interlinear} onValueChange={(v) => update({ interlinear: v })} trackColor={{ true: theme.accent }} />
+          {(
+            [
+              ['all', 'Every verse', 'The whole chapter is shown word by word'],
+              ['tap', 'Only verses I tap', 'Tap a verse number to show or hide its words. Keeps long chapters short.'],
+            ] as const
+          ).map(([mode, title, sub]) => (
+            <Pressable
+              key={mode}
+              onPress={() => update({ interlinearMode: mode })}
+              style={[styles.row, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.border }]}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.rowTitle, { color: theme.text }]}>{title}</Text>
+                <Text style={[styles.rowSub, { color: theme.muted }]}>{sub}</Text>
+              </View>
+              <Text style={[styles.check, { color: theme.accent }]}>{settings.interlinearMode === mode ? '✓' : ''}</Text>
+            </Pressable>
+          ))}
+          <View style={[styles.row, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.border }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.rowTitle, { color: theme.text }]}>Transliteration</Text>
+              <Text style={[styles.rowSub, { color: theme.muted }]}>Show how each word is pronounced</Text>
+            </View>
+            <Switch value={settings.showTranslit} onValueChange={(v) => update({ showTranslit: v })} trackColor={{ true: theme.accent }} />
+          </View>
+          <View style={[styles.row, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.border }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.rowTitle, { color: theme.text }]}>Hide cantillation marks</Text>
+              <Text style={[styles.rowSub, { color: theme.muted }]}>Hebrew with vowel points only, easier to read at small sizes</Text>
+            </View>
+            <Switch value={settings.hideCantillation} onValueChange={(v) => update({ hideCantillation: v })} trackColor={{ true: theme.accent }} />
+          </View>
         </View>
 
-        <View style={[styles.card, styles.row, { backgroundColor: theme.card, borderColor: theme.border, marginTop: 12 }]}>
+        <View style={[styles.card, styles.row, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <View style={{ flex: 1 }}>
             <Text style={[styles.rowTitle, { color: theme.text }]}>Underline linked words</Text>
             <Text style={[styles.rowSub, { color: theme.muted }]}>Marks words that open a Greek or Hebrew entry</Text>
@@ -74,10 +109,12 @@ export function SettingsScreen({ onBack }: Props) {
           <Switch value={settings.underlineWords} onValueChange={(v) => update({ underlineWords: v })} trackColor={{ true: theme.accent }} />
         </View>
 
+        <Label text="Reading" />
         <Label text="About the texts" />
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border, padding: 14 }]}>
           <Text style={[styles.about, { color: theme.text }]}>
             King James Version, 1769 text with Strong's numbers, and the World English Bible, both from eBible.org. Both are in the public domain.
+            Their translators' footnotes appear as small letters in the text; tap one to read it.
           </Text>
           <Text style={[styles.about, { color: theme.text, marginTop: 10 }]}>
             Hebrew and Greek entries are from Strong's Exhaustive Concordance (1890), in the digital edition by Open Scriptures, licensed CC BY-SA.

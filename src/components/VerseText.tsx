@@ -2,12 +2,19 @@ import React, { useMemo } from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { parseSegments } from '../text';
 import { useTheme } from '../theme';
-import type { VerseRow, WordPick } from '../types';
+import type { Note, VerseRow, WordPick } from '../types';
 
 interface Props {
   verse: VerseRow;
   fontSize: number;
   onWord?: (pick: WordPick) => void;
+  /** Long press anywhere on the verse, for the actions sheet. */
+  onLongPress?: () => void;
+  /** Tap on the verse number. */
+  onNumberPress?: () => void;
+  /** Footnotes and cross references of this verse, shown as lettered markers. */
+  notes?: Note[];
+  onNote?: (note: Note) => void;
   /** Draw a faint underline under every word that links to Greek or Hebrew. */
   underline?: boolean;
   /** Emphasise words tagged with this Strong's number. */
@@ -34,10 +41,18 @@ export function matchRanges(text: string, query: string): [number, number][] {
   return out;
 }
 
+export function noteLetter(n: number): string {
+  return String.fromCharCode(97 + (n % 26));
+}
+
 export function VerseText({
   verse,
   fontSize,
   onWord,
+  onLongPress,
+  onNumberPress,
+  notes,
+  onNote,
   underline = true,
   emphasize,
   highlightText,
@@ -49,18 +64,23 @@ export function VerseText({
   const ranges = useMemo(() => (highlightText ? matchRanges(verse.text, highlightText) : []), [verse.text, highlightText]);
   const isTitle = verse.verse === 0;
   const lineHeight = Math.round(fontSize * 1.55);
+  const small = Math.max(11, fontSize - 6);
 
   if (verse.omitted) {
     return (
-      <Text style={[styles.text, styles.omitted, { fontSize: fontSize - 2, lineHeight, color: theme.muted }]} numberOfLines={numberOfLines}>
-        {showNumber ? <Text style={[styles.number, { fontSize: Math.max(11, fontSize - 6) }]}>{verse.verse} </Text> : null}
+      <Text
+        style={[styles.text, styles.omitted, { fontSize: fontSize - 2, lineHeight, color: theme.muted }]}
+        numberOfLines={numberOfLines}
+        onLongPress={onLongPress}
+      >
+        {showNumber ? <Text style={[styles.number, { fontSize: small }]}>{verse.verse} </Text> : null}
         Omitted in this translation. {verse.text}
       </Text>
     );
   }
 
   // Split a run of text into plain and highlighted pieces by the match ranges.
-  const pieces = (text: string, start: number): React.ReactNode => {
+  const highlighted = (text: string, start: number): React.ReactNode => {
     if (ranges.length === 0) return text;
     const end = start + text.length;
     const out: React.ReactNode[] = [];
@@ -81,32 +101,69 @@ export function VerseText({
     return out;
   };
 
+  const marker = (note: Note) => (
+    <Text
+      key={`n${note.n}`}
+      onPress={onNote ? () => onNote(note) : undefined}
+      style={{ fontSize: small, color: theme.accent, fontWeight: '700' }}
+      accessibilityLabel={`Note ${noteLetter(note.n)}`}
+    >
+      {' '}
+      {noteLetter(note.n)}
+    </Text>
+  );
+
+  // A run of text with note markers inserted at their positions, then highlighted.
+  const pieces = (text: string, start: number, first: boolean): React.ReactNode => {
+    const end = start + text.length;
+    const here = (notes ?? []).filter((n) => (n.pos > start && n.pos <= end) || (first && n.pos === 0));
+    if (here.length === 0) return highlighted(text, start);
+    const out: React.ReactNode[] = [];
+    let pos = start;
+    for (const note of here) {
+      const cut = Math.max(pos, Math.min(note.pos, end));
+      if (cut > pos) out.push(<Text key={`t${pos}`}>{highlighted(text.slice(pos - start, cut - start), pos)}</Text>);
+      out.push(marker(note));
+      pos = cut;
+    }
+    if (pos < end) out.push(<Text key={`t${pos}`}>{highlighted(text.slice(pos - start), pos)}</Text>);
+    return out;
+  };
+
   let offset = 0;
   return (
     <Text
       style={[styles.text, { fontSize, lineHeight, color: theme.text }, isTitle && styles.title]}
       numberOfLines={numberOfLines}
       selectable={false}
+      onLongPress={onLongPress}
     >
       {showNumber && !isTitle ? (
-        <Text style={[styles.number, { color: theme.accent, fontSize: Math.max(11, fontSize - 6) }]}>{verse.verse} </Text>
+        <Text
+          onPress={onNumberPress}
+          onLongPress={onLongPress}
+          style={[styles.number, { color: theme.accent, fontSize: small }, onNumberPress && { textDecorationLine: 'underline' }]}
+        >
+          {verse.verse}{' '}
+        </Text>
       ) : null}
       {segments.map((seg, i) => {
         const start = offset;
         offset += seg.text.length;
-        if (!seg.strongs) return <Text key={i}>{pieces(seg.text, start)}</Text>;
+        if (!seg.strongs) return <Text key={i}>{pieces(seg.text, start, i === 0)}</Text>;
         const strong = emphasize === seg.strongs;
         return (
           <Text
             key={i}
             onPress={onWord ? () => onWord({ strongs: seg.strongs!, word: seg.text }) : undefined}
+            onLongPress={onLongPress}
             suppressHighlighting={false}
             style={[
               underline && { textDecorationLine: 'underline', textDecorationColor: theme.linked },
               strong && { fontWeight: '700', color: theme.accent, backgroundColor: theme.highlight },
             ]}
           >
-            {pieces(seg.text, start)}
+            {pieces(seg.text, start, i === 0)}
           </Text>
         );
       })}

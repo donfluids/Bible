@@ -6,8 +6,10 @@
 // Output schema (all text is UTF-8):
 //   books(id, osis, name, testament, chapters)
 //   verses(translation, book, chapter, verse, text, tags, omitted)
-//     text = the verse as plain text; for an omitted verse (WEB only, a verse the
-//            translation leaves out) text holds the translators' footnote and omitted = 1
+//     text = the verse as plain text. Poetry and paragraph breaks inside a verse are
+//            newlines; an indented poetry line starts with one em space per level.
+//            For an omitted verse (WEB only, a verse the translation leaves out) text
+//            holds the translators' footnote and omitted = 1
 //     tags = Strong's tags as "gap,length,number" triples separated by spaces, e.g.
 //            "7,9,7225 1,3,430 1,7,1254": gap is the number of characters since the
 //            end of the previous tag (or the start of the verse), length is the tagged
@@ -16,6 +18,12 @@
 //     verse 0 holds a Psalm's title line (USFM \d) when the chapter has one
 //   headings(translation, book, chapter, before_verse, text)
 //     section headings that sit between verses (the acrostic labels in WEB Psalm 119)
+//   notes(translation, book, chapter, verse, n, pos, kind, text)
+//     translators' footnotes (kind f) and cross references (kind x); pos is the character
+//     offset in the verse text where the note marker belongs
+//   renderings(strongs, translation, word, count, refs)
+//     how a Strong's number is rendered in a translation: the English word or phrase,
+//     how many verses use it, and those verses packed like concordance.refs
 //   strongs(id, lemma, translit, pron, derivation, definition, kjv_usage)
 //   concordance(strongs, translation, count, refs)
 //     refs = BLOB of 3 bytes per verse: book, chapter, verse (each fits a byte)
@@ -78,6 +86,9 @@ const STEP_BOOKS = ('Gen Exo Lev Num Deu Jos Jdg Rut 1Sa 2Sa 1Ki 2Ki 1Ch 2Ch Ezr
 const FLAG_NOT_IN_NA = 1;
 const FLAG_LXX = 2;
 const FLAG_RESTORED = 4;
+// Internal markers used while a verse is being assembled; none appear in the output.
+const BREAK = '\x07'; // followed by an indent level digit
+const NOTE = '\x06'; // wraps a note index
 const FS = '\x1c';
 const GS = '\x1d';
 const RS = '\x1e';
@@ -116,25 +127,41 @@ function cleanVerse(raw) {
   s = s.replace(/\s+/g, ' ').trim();
   // Tidy spaces the markup left before punctuation.
   s = s.replace(/ ([,.;:!?’”)])/g, '$1');
+  // Poetry and paragraph breaks become newlines, indented with em spaces.
+  s = s.replace(/\s*\x07(\d)\s*/g, (_, level) => '\n' + '\u2003'.repeat(Number(level)));
+  s = s.replace(/\n+/g, '\n').replace(/^\n/, '').replace(/[\n\u2003]+$/, '');
   return s;
+}
+
+// Footnote or cross reference body to plain text.
+function cleanNote(body) {
+  let s = body.replace(/\\(fr|xo)\s+[^\\]*/g, '');
+  s = s.replace(/\\\+?w\s+([^|\\]*?)\|[^\\]*?\\\+?w\*/g, '$1');
+  s = s.replace(/\\\+?[a-z]+\d?\*?/g, '');
+  return s.replace(/\s+/g, ' ').trim();
 }
 
 // Split tagged text into plain text plus the offset-encoded tag string.
 function splitTags(tagged) {
   let text = '';
   const tags = [];
+  const notes = [];
   let last = 0;
   let prevEnd = 0;
-  for (const m of tagged.matchAll(/⟨([^|⟩]*)\|[HG](\d+)⟩/g)) {
+  for (const m of tagged.matchAll(/⟨([^|⟩]*)\|[HG](\d+)⟩|\x06(\d+)\x06/g)) {
     text += tagged.slice(last, m.index);
-    const start = text.length;
-    text += m[1];
-    tags.push(`${start - prevEnd},${m[1].length},${m[2]}`);
-    prevEnd = text.length;
+    if (m[3] !== undefined) {
+      notes.push({ idx: Number(m[3]), pos: text.length });
+    } else {
+      const start = text.length;
+      text += m[1];
+      tags.push(`${start - prevEnd},${m[1].length},${m[2]}`);
+      prevEnd = text.length;
+    }
     last = m.index + m[0].length;
   }
   text += tagged.slice(last);
-  return { text, tags: tags.join(' ') };
+  return { text, tags: tags.join(' '), notes };
 }
 
 function parseBook(path) {
@@ -143,16 +170,26 @@ function parseBook(path) {
   // note, marked with U+2205, so the app can show the gap honestly.
   src = src.replace(/^(\\v\s+\d+\s*)\\f\s+\+\s+(?:\\fr\s+[^\\\n]*)?\\ft\s+([^\n]*?)\\f\*[ \t]*$/gm,
     (_, v, note) => `${v}\u2205${note.replace(/\\\+?[a-z]+\*?/g, '').trim()}`);
-  // Footnotes and cross references can span lines; remove them whole.
-  src = src.replace(/\\f\s[\s\S]*?\\f\*/g, '').replace(/\\x\s[\s\S]*?\\x\*/g, '');
+  // Footnotes and cross references can span lines; lift them out into a list and
+  // leave a marker where each one sat.
+  const notes = []; // { kind: 'f' | 'x', text }
+  src = src.replace(/\\(f|x)\s+\+?\s*([\s\S]*?)\\\1\*/g, (_, kind, body) => {
+    const text = cleanNote(body);
+    if (!text) return '';
+    notes.push({ kind, text });
+    return `${NOTE}${notes.length - 1}${NOTE}`;
+  });
   const chapters = new Map(); // chapter -> Map(verse -> raw)
   const headings = []; // { chapter, beforeVerse, raw }
   let chapter = 0;
   let verse = null;
+  let pendingBreak = null; // poetry or paragraph break waiting for the next text
   const append = (text) => {
-    if (verse === null || !text) return;
+    if (verse === null || !text || !text.trim()) return;
     const ch = chapters.get(chapter);
-    ch.set(verse, (ch.get(verse) || '') + ' ' + text);
+    const prefix = pendingBreak === null ? '' : `${BREAK}${pendingBreak} `;
+    pendingBreak = null;
+    ch.set(verse, (ch.get(verse) || '') + ' ' + prefix + text);
   };
   for (const line of src.split(/\r?\n/)) {
     if (!line.trim()) continue;
@@ -167,7 +204,10 @@ function parseBook(path) {
     }
     let rest = line;
     const p = PARAGRAPH.exec(rest);
-    if (p) rest = rest.slice(p[0].length);
+    if (p) {
+      rest = rest.slice(p[0].length);
+      pendingBreak = /^(q2|pi1|li1|mi|pm|pmo)$/.test(p[1]) ? 1 : /^(q3|pi2|li2)$/.test(p[1]) ? 2 : 0;
+    }
     // A line may hold several verses: split on \v markers.
     const parts = rest.split(/\\v\s+(\d+)[a-z]?\s*/);
     append(parts[0]);
@@ -176,7 +216,7 @@ function parseBook(path) {
       append(parts[i + 1]);
     }
   }
-  return { chapters, headings };
+  return { chapters, headings, notes };
 }
 
 // Parse "Mat.17.14[17.15]#03=NKO" style references. Returns null for non-data lines.
@@ -311,6 +351,11 @@ function main() {
                         PRIMARY KEY(translation, book, chapter, verse)) WITHOUT ROWID;
     CREATE TABLE headings(translation TEXT NOT NULL, book INTEGER NOT NULL, chapter INTEGER NOT NULL, before_verse INTEGER NOT NULL,
                         text TEXT NOT NULL, PRIMARY KEY(translation, book, chapter, before_verse)) WITHOUT ROWID;
+    CREATE TABLE notes(translation TEXT NOT NULL, book INTEGER NOT NULL, chapter INTEGER NOT NULL, verse INTEGER NOT NULL,
+                        n INTEGER NOT NULL, pos INTEGER NOT NULL, kind TEXT NOT NULL, text TEXT NOT NULL,
+                        PRIMARY KEY(translation, book, chapter, verse, n)) WITHOUT ROWID;
+    CREATE TABLE renderings(strongs TEXT NOT NULL, translation TEXT NOT NULL, word TEXT NOT NULL, count INTEGER NOT NULL,
+                        refs BLOB NOT NULL, PRIMARY KEY(strongs, translation, word)) WITHOUT ROWID;
     CREATE TABLE strongs(id TEXT PRIMARY KEY, lemma TEXT, translit TEXT, pron TEXT, derivation TEXT, definition TEXT, kjv_usage TEXT) WITHOUT ROWID;
     CREATE TABLE concordance(strongs TEXT NOT NULL, translation TEXT NOT NULL, count INTEGER NOT NULL, refs BLOB NOT NULL,
                         PRIMARY KEY(strongs, translation)) WITHOUT ROWID;
@@ -321,6 +366,8 @@ function main() {
 
   const insVerse = db.prepare('INSERT INTO verses VALUES (?,?,?,?,?,?,?)');
   const insHeading = db.prepare('INSERT OR REPLACE INTO headings VALUES (?,?,?,?,?)');
+  const insNote = db.prepare('INSERT INTO notes VALUES (?,?,?,?,?,?,?,?)');
+  const insRendering = db.prepare('INSERT INTO renderings VALUES (?,?,?,?,?)');
   const insBook = db.prepare('INSERT INTO books VALUES (?,?,?,?,?)');
   const insStrongs = db.prepare('INSERT INTO strongs VALUES (?,?,?,?,?,?,?)');
   const insConc = db.prepare('INSERT INTO concordance VALUES (?,?,?,?)');
@@ -331,12 +378,13 @@ function main() {
   for (const t of TRANSLATIONS) {
     const files = readdirSync(join(RAW, t.dir));
     const conc = new Map(); // strongs -> array of [b,c,v]
-    let verses = 0, tagCount = 0, omitted = 0;
+    const rend = new Map(); // strongs -> Map(lowercased word -> { forms: Map(display -> n), refs: [], lastKey })
+    let verses = 0, tagCount = 0, omitted = 0, noteCount = 0;
     db.exec('BEGIN');
     for (const book of BOOKS) {
       const file = files.find((f) => f.endsWith(book.osis + t.suffix));
       if (!file) throw new Error(`${t.id}: no file for ${book.osis}`);
-      const { chapters, headings } = parseBook(join(RAW, t.dir, file));
+      const { chapters, headings, notes } = parseBook(join(RAW, t.dir, file));
       for (const h of headings) {
         const text = splitTags(cleanVerse(h.raw)).text;
         if (text) insHeading.run(t.id, book.id, h.chapter, h.beforeVerse, text);
@@ -352,16 +400,30 @@ function main() {
             omitted++;
             continue;
           }
-          const { text, tags } = splitTags(tagged);
+          const { text, tags, notes: markers } = splitTags(tagged);
           insVerse.run(t.id, book.id, chapter, verse, text, tags, 0);
           verses++;
+          markers.forEach((mk, n) => {
+            const note = notes[mk.idx];
+            insNote.run(t.id, book.id, chapter, verse, n, mk.pos, note.kind, note.text);
+            noteCount++;
+          });
           const seen = new Set();
-          for (const m of tagged.matchAll(/⟨[^|⟩]*\|([HG]\d+)⟩/g)) {
+          const verseKey = `${book.id}:${chapter}:${verse}`;
+          for (const m of tagged.matchAll(/⟨([^|⟩]*)\|([HG]\d+)⟩/g)) {
             tagCount++;
-            if (seen.has(m[1])) continue;
-            seen.add(m[1]);
-            if (!conc.has(m[1])) conc.set(m[1], []);
-            conc.get(m[1]).push(book.id, chapter, verse);
+            const word = m[1].trim();
+            const lower = word.toLowerCase();
+            if (!rend.has(m[2])) rend.set(m[2], new Map());
+            const byWord = rend.get(m[2]);
+            if (!byWord.has(lower)) byWord.set(lower, { forms: new Map(), refs: [], lastKey: '' });
+            const entry = byWord.get(lower);
+            entry.forms.set(word, (entry.forms.get(word) || 0) + 1);
+            if (entry.lastKey !== verseKey) { entry.refs.push(book.id, chapter, verse); entry.lastKey = verseKey; }
+            if (seen.has(m[2])) continue;
+            seen.add(m[2]);
+            if (!conc.has(m[2])) conc.set(m[2], []);
+            conc.get(m[2]).push(book.id, chapter, verse);
           }
         }
       }
@@ -369,8 +431,17 @@ function main() {
     for (const [strongs, refs] of conc) {
       insConc.run(strongs, t.id, refs.length / 3, new Uint8Array(refs));
     }
+    let renderingRows = 0;
+    for (const [strongs, byWord] of rend) {
+      for (const entry of byWord.values()) {
+        // Display the most frequent spelling (keeps LORD rather than lord).
+        const display = [...entry.forms.entries()].sort((a, b) => b[1] - a[1])[0][0];
+        insRendering.run(strongs, t.id, display, entry.refs.length / 3, new Uint8Array(entry.refs));
+        renderingRows++;
+      }
+    }
     db.exec('COMMIT');
-    stats[t.id] = { verses, omittedVerses: omitted, tags: tagCount, strongsNumbers: conc.size };
+    stats[t.id] = { verses, omittedVerses: omitted, tags: tagCount, strongsNumbers: conc.size, notes: noteCount, renderings: renderingRows };
   }
 
   db.exec('BEGIN');
@@ -385,7 +456,7 @@ function main() {
       nStrongs++;
     }
   }
-  insMeta.run('schema', '3');
+  insMeta.run('schema', '4');
   insMeta.run('built', new Date().toISOString().slice(0, 10));
   insMeta.run('translations', JSON.stringify(TRANSLATIONS.map(({ id, name }) => ({ id, name }))));
   insMeta.run('sources', JSON.stringify({

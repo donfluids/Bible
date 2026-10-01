@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
 import { VerseListItem } from '../components/VerseListItem';
-import { getConcordance, getStrongs, getVerses } from '../queries';
+import { getConcordance, getRenderingRefs, getRenderings, getStrongs, getVerses } from '../queries';
 import { useSettings } from '../settings';
 import { formatCount } from '../text';
 import { useTheme } from '../theme';
-import type { Book, Ref, StrongsEntry, VerseRow, WordPick } from '../types';
+import type { Book, Ref, Rendering, StrongsEntry, VerseRow, WordPick } from '../types';
 
 interface Props {
   strongs: string;
@@ -26,17 +26,35 @@ export function ConcordanceScreen({ strongs, books, onOpenRef, onWord, onBack }:
   const { settings } = useSettings();
   const { translation } = settings;
   const [entry, setEntry] = useState<StrongsEntry | null>(null);
+  const [renderings, setRenderings] = useState<Rendering[]>([]);
+  const [total, setTotal] = useState(0);
+  /** The English rendering the list is filtered to, or null for all verses. */
+  const [filter, setFilter] = useState<string | null>(null);
   const [refs, setRefs] = useState<Ref[] | null>(null);
   const [verses, setVerses] = useState<VerseRow[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    setRefs(null);
-    setVerses([]);
-    Promise.all([getStrongs(db, strongs), getConcordance(db, strongs, translation)]).then(async ([e, r]) => {
+    setFilter(null);
+    Promise.all([getStrongs(db, strongs), getRenderings(db, strongs, translation)]).then(([e, r]) => {
       if (cancelled) return;
       setEntry(e);
+      setRenderings(r);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [db, strongs, translation]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setRefs(null);
+    setVerses([]);
+    const load = filter === null ? getConcordance(db, strongs, translation) : getRenderingRefs(db, strongs, translation, filter);
+    load.then(async (r) => {
+      if (cancelled) return;
+      if (filter === null) setTotal(r.length);
       setRefs(r);
       const first = await getVerses(db, translation, r.slice(0, PAGE));
       if (!cancelled) setVerses(first);
@@ -44,7 +62,7 @@ export function ConcordanceScreen({ strongs, books, onOpenRef, onWord, onBack }:
     return () => {
       cancelled = true;
     };
-  }, [db, strongs, translation]);
+  }, [db, strongs, translation, filter]);
 
   const loadMore = useCallback(async () => {
     if (!refs || loadingMore || verses.length >= refs.length) return;
@@ -65,9 +83,17 @@ export function ConcordanceScreen({ strongs, books, onOpenRef, onWord, onBack }:
           {entry?.translit ? <Text style={[styles.translit, { color: theme.muted }]}>  {entry.translit}</Text> : null}
         </Text>
         <Text style={[styles.count, { color: theme.muted }]}>
-          {refs ? `${formatCount(refs.length)} ${refs.length === 1 ? 'verse' : 'verses'} in the ${translation}` : 'Loading…'}
+          {refs ? `${formatCount(refs.length)} ${refs.length === 1 ? 'verse' : 'verses'} in the ${translation}${filter ? ` as “${filter}”` : ''}` : 'Loading…'}
         </Text>
       </View>
+      {renderings.length > 0 ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={[styles.chips, { borderBottomColor: theme.border }]} contentContainerStyle={styles.chipsContent}>
+          <Chip label="All" count={total} active={filter === null} onPress={() => setFilter(null)} />
+          {renderings.map((r) => (
+            <Chip key={r.word} label={r.word} count={r.count} active={filter === r.word} onPress={() => setFilter(filter === r.word ? null : r.word)} />
+          ))}
+        </ScrollView>
+      ) : null}
       {!refs ? (
         <ActivityIndicator style={styles.loading} color={theme.accent} />
       ) : (
@@ -88,12 +114,35 @@ export function ConcordanceScreen({ strongs, books, onOpenRef, onWord, onBack }:
   );
 }
 
+function Chip({ label, count, active, onPress }: { label: string; count: number; active: boolean; onPress: () => void }) {
+  const theme = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      style={({ pressed }) => [
+        styles.chip,
+        { borderColor: active ? theme.accent : theme.border, backgroundColor: active ? theme.accent : pressed ? theme.accentSoft : theme.card },
+      ]}
+    >
+      <Text style={[styles.chipText, { color: active ? '#fff' : theme.text }]}>
+        {label} <Text style={{ color: active ? '#fff' : theme.muted, fontWeight: '400' }}>{formatCount(count)}</Text>
+      </Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   summary: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
   lemma: { fontSize: 26, lineHeight: 34 },
   translit: { fontSize: 17 },
   count: { fontSize: 13, marginTop: 2 },
+  chips: { flexGrow: 0, borderBottomWidth: StyleSheet.hairlineWidth },
+  chipsContent: { paddingHorizontal: 12, paddingVertical: 10, gap: 8 },
+  chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1 },
+  chipText: { fontSize: 14, fontWeight: '600' },
   loading: { marginTop: 40 },
   more: { marginVertical: 20 },
 });

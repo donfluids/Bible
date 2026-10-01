@@ -1,20 +1,23 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
+import * as Clipboard from 'expo-clipboard';
 import { Header, HeaderButton } from '../components/Header';
 import { InterlinearVerse } from '../components/InterlinearVerse';
-import { VerseText } from '../components/VerseText';
-import { getChapter, getInterlinear } from '../queries';
+import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
+import { noteLetter, VerseText } from '../components/VerseText';
+import { getChapter, getInterlinear, getNotes } from '../queries';
 import { useSettings } from '../settings';
-import { bookName } from '../text';
+import { bookName, flattenVerse, formatRef } from '../text';
 import { useTheme } from '../theme';
-import type { Book, OriginalWord, VerseRow, WordPick } from '../types';
+import type { Book, Note, OriginalWord, VerseRow, WordPick } from '../types';
 
 interface Props {
   books: Book[];
-  /** Present when the reader was opened from a results list; goes back to it. */
+  /** Present when the reader was opened from a list; goes back to it. */
   onBack?: () => void;
+  backLabel?: string;
   onOpenBooks: () => void;
   onOpenSearch: () => void;
   onOpenSettings: () => void;
@@ -23,15 +26,21 @@ interface Props {
 
 type Item = { kind: 'heading'; key: string; text: string } | { kind: 'verse'; key: string; verse: VerseRow };
 
-export function ReaderScreen({ books, onBack, onOpenBooks, onOpenSearch, onOpenSettings, onWord }: Props) {
+export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onWord }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { settings, update } = useSettings();
-  const { translation, fontSize, underlineWords, interlinear, position, tipSeen } = settings;
+  const { translation, fontSize, underlineWords, interlinear, interlinearMode, showTranslit, hideCantillation, position, tipSeen, bookmarks } =
+    settings;
   const [items, setItems] = useState<Item[] | null>(null);
   const [original, setOriginal] = useState<Map<number, OriginalWord[]> | null>(null);
+  const [notes, setNotes] = useState<Map<number, Note[]>>(new Map());
+  const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const [flash, setFlash] = useState<number | null>(null);
+  const [note, setNote] = useState<{ verse: VerseRow; note: Note } | null>(null);
+  const [actions, setActions] = useState<VerseRow | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
   const listRef = useRef<FlatList<Item>>(null);
 
   const book = books.find((b) => b.id === position.book) ?? books[0];
@@ -39,7 +48,11 @@ export function ReaderScreen({ books, onBack, onOpenBooks, onOpenSearch, onOpenS
   useEffect(() => {
     let cancelled = false;
     setItems(null);
-    getChapter(db, translation, position.book, position.chapter).then(({ verses, headings }) => {
+    setExpanded(new Set());
+    Promise.all([
+      getChapter(db, translation, position.book, position.chapter),
+      getNotes(db, translation, position.book, position.chapter),
+    ]).then(([{ verses, headings }, noteMap]) => {
       if (cancelled) return;
       const out: Item[] = [];
       for (const v of verses) {
@@ -48,6 +61,7 @@ export function ReaderScreen({ books, onBack, onOpenBooks, onOpenSearch, onOpenS
         }
         out.push({ kind: 'verse', key: `v${v.verse}`, verse: v });
       }
+      setNotes(noteMap);
       setItems(out);
     });
     return () => {
@@ -88,6 +102,12 @@ export function ReaderScreen({ books, onBack, onOpenBooks, onOpenSearch, onOpenS
     return () => clearTimeout(timer);
   }, [flash]);
 
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 1600);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
   const go = useCallback(
     (delta: 1 | -1) => {
       const idx = books.findIndex((b) => b.id === position.book);
@@ -118,21 +138,84 @@ export function ReaderScreen({ books, onBack, onOpenBooks, onOpenSearch, onOpenS
     [tipSeen, update, onWord],
   );
 
+  const bookmarkKey = (v: VerseRow) => `${v.book}:${v.chapter}:${v.verse}`;
+  const bookmarked = useMemo(() => new Set(bookmarks.map((b) => `${b.book}:${b.chapter}:${b.verse}`)), [bookmarks]);
+
+  const verseForClipboard = (v: VerseRow) => `${flattenVerse(v.text)} (${formatRef(books, v)}, ${translation})`;
+
+  const copyVerse = async (v: VerseRow) => {
+    setActions(null);
+    await Clipboard.setStringAsync(verseForClipboard(v));
+    setToast('Copied');
+  };
+  const shareVerse = async (v: VerseRow) => {
+    setActions(null);
+    await Share.share({ message: verseForClipboard(v) });
+  };
+  const toggleBookmark = (v: VerseRow) => {
+    setActions(null);
+    const key = bookmarkKey(v);
+    if (bookmarked.has(key)) {
+      update({ bookmarks: bookmarks.filter((b) => `${b.book}:${b.chapter}:${b.verse}` !== key) });
+      setToast('Bookmark removed');
+    } else {
+      update({ bookmarks: [...bookmarks, { book: v.book, chapter: v.chapter, verse: v.verse, translation, added: Date.now() }] });
+      setToast('Bookmarked');
+    }
+  };
+
+  const toggleExpanded = useCallback((verse: number) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(verse)) next.delete(verse);
+      else next.add(verse);
+      return next;
+    });
+  }, []);
+
   const renderItem = useCallback(
     ({ item }: { item: Item }) => {
       if (item.kind === 'heading') {
         return <Text style={[styles.heading, { color: theme.muted, fontSize: fontSize - 3 }]}>{item.text}</Text>;
       }
-      const flashing = flash === item.verse.verse;
-      const words = interlinear ? original?.get(item.verse.verse) : undefined;
+      const v = item.verse;
+      const flashing = flash === v.verse;
+      const showOriginal = interlinear && (interlinearMode === 'all' || expanded.has(v.verse));
+      const words = showOriginal ? original?.get(v.verse) : undefined;
+      const marked = bookmarked.has(bookmarkKey(v));
       return (
-        <View style={[styles.verse, interlinear && [styles.verseInterlinear, { borderBottomColor: theme.border }], flashing && { backgroundColor: theme.highlight }]}>
-          <VerseText verse={item.verse} fontSize={fontSize} onWord={handleWord} underline={underlineWords} />
-          {words && words.length > 0 ? <InterlinearVerse words={words} hebrew={item.verse.book <= 39} fontSize={fontSize} onWord={handleWord} /> : null}
+        <View
+          style={[
+            styles.verse,
+            interlinear && [styles.verseInterlinear, { borderBottomColor: theme.border }],
+            marked && [styles.verseBookmarked, { borderLeftColor: theme.accent }],
+            flashing && { backgroundColor: theme.highlight },
+          ]}
+        >
+          <VerseText
+            verse={v}
+            fontSize={fontSize}
+            onWord={handleWord}
+            onLongPress={() => setActions(v)}
+            onNumberPress={interlinear && interlinearMode === 'tap' ? () => toggleExpanded(v.verse) : undefined}
+            notes={notes.get(v.verse)}
+            onNote={(n) => setNote({ verse: v, note: n })}
+            underline={underlineWords}
+          />
+          {words && words.length > 0 ? (
+            <InterlinearVerse
+              words={words}
+              hebrew={v.book <= 39}
+              fontSize={fontSize}
+              onWord={handleWord}
+              showTranslit={showTranslit}
+              hideCantillation={hideCantillation}
+            />
+          ) : null}
         </View>
       );
     },
-    [theme, fontSize, handleWord, underlineWords, flash, interlinear, original],
+    [theme, fontSize, handleWord, underlineWords, flash, interlinear, interlinearMode, expanded, original, notes, bookmarked, showTranslit, hideCantillation, toggleExpanded],
   );
 
   const title = useMemo(() => `${bookName(books, position.book)} ${position.chapter}`, [books, position]);
@@ -143,7 +226,7 @@ export function ReaderScreen({ books, onBack, onOpenBooks, onOpenSearch, onOpenS
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Header
         onBack={onBack}
-        backLabel="Results"
+        backLabel={backLabel}
         center={
           <Pressable onPress={onOpenBooks} hitSlop={8} accessibilityRole="button" accessibilityLabel={`${title}, choose passage`}>
             <Text numberOfLines={1} style={[styles.title, { color: theme.text }]}>
@@ -170,17 +253,22 @@ export function ReaderScreen({ books, onBack, onOpenBooks, onOpenSearch, onOpenS
           contentContainerStyle={styles.list}
           initialNumToRender={20}
           ListHeaderComponent={
-            tipSeen ? null : (
-              <View style={[styles.tip, { backgroundColor: theme.accentSoft, borderColor: theme.border }]}>
-                <Text style={[styles.tipText, { color: theme.text }]}>
-                  Tap any underlined word to see the Hebrew or Greek behind it. The button below shows the whole verse in the
-                  original language.
-                </Text>
-                <Pressable onPress={() => update({ tipSeen: true })} hitSlop={8} accessibilityRole="button">
-                  <Text style={[styles.tipDismiss, { color: theme.accent }]}>Got it</Text>
-                </Pressable>
-              </View>
-            )
+            <>
+              {tipSeen ? null : (
+                <View style={[styles.tip, { backgroundColor: theme.accentSoft, borderColor: theme.border }]}>
+                  <Text style={[styles.tipText, { color: theme.text }]}>
+                    Tap any underlined word to see the Hebrew or Greek behind it. Hold a verse to copy, share or bookmark it. The
+                    button below shows the whole verse in the original language.
+                  </Text>
+                  <Pressable onPress={() => update({ tipSeen: true })} hitSlop={8} accessibilityRole="button">
+                    <Text style={[styles.tipDismiss, { color: theme.accent }]}>Got it</Text>
+                  </Pressable>
+                </View>
+              )}
+              {interlinear && interlinearMode === 'tap' ? (
+                <Text style={[styles.modeHint, { color: theme.muted }]}>Tap a verse number to show its {book?.testament === 'OT' ? 'Hebrew' : 'Greek'}</Text>
+              ) : null}
+            </>
           }
           onScrollToIndexFailed={(info) => {
             listRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: false });
@@ -207,6 +295,37 @@ export function ReaderScreen({ books, onBack, onOpenBooks, onOpenSearch, onOpenS
         </Pressable>
         <NavButton label="Next ›" onPress={() => go(1)} disabled={atEnd} />
       </View>
+
+      {toast ? (
+        <View style={[styles.toast, { backgroundColor: theme.text, bottom: insets.bottom + 70 }]} pointerEvents="none">
+          <Text style={[styles.toastText, { color: theme.bg }]}>{toast}</Text>
+        </View>
+      ) : null}
+
+      <SimpleSheet
+        visible={!!note}
+        title={note ? `${formatRef(books, note.verse)} · ${note.note.kind === 'x' ? 'Cross reference' : 'Footnote'} ${noteLetter(note.note.n)}` : ''}
+        onClose={() => setNote(null)}
+      >
+        {note ? <Text style={[styles.noteText, { color: theme.text }]}>{note.note.text}</Text> : null}
+      </SimpleSheet>
+
+      <SimpleSheet visible={!!actions} title={actions ? formatRef(books, actions) : ''} onClose={() => setActions(null)}>
+        {actions ? (
+          <>
+            <Text style={[styles.actionsPreview, { color: theme.muted }]} numberOfLines={3}>
+              {flattenVerse(actions.text)}
+            </Text>
+            <SheetAction label="Copy" detail="Verse text with its reference" onPress={() => copyVerse(actions)} />
+            <SheetAction label="Share…" onPress={() => shareVerse(actions)} />
+            <SheetAction
+              label={bookmarked.has(bookmarkKey(actions)) ? 'Remove bookmark' : 'Bookmark'}
+              detail="Bookmarks are listed at the top of the Books screen"
+              onPress={() => toggleBookmark(actions)}
+            />
+          </>
+        ) : null}
+      </SimpleSheet>
     </View>
   );
 }
@@ -226,10 +345,12 @@ const styles = StyleSheet.create({
   loading: { flex: 1 },
   list: { paddingHorizontal: 18, paddingTop: 12 },
   verse: { paddingVertical: 5, borderRadius: 6 },
+  verseInterlinear: { paddingBottom: 10, marginBottom: 6, borderBottomWidth: StyleSheet.hairlineWidth },
+  verseBookmarked: { borderLeftWidth: 3, paddingLeft: 8, marginLeft: -11 },
   tip: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, padding: 14, marginBottom: 10 },
   tipText: { fontSize: 15, lineHeight: 21 },
   tipDismiss: { fontSize: 15, fontWeight: '700', marginTop: 8, alignSelf: 'flex-end' },
-  verseInterlinear: { paddingBottom: 10, marginBottom: 6, borderBottomWidth: StyleSheet.hairlineWidth },
+  modeHint: { fontSize: 12, marginBottom: 6 },
   pill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1 },
   pillText: { fontSize: 13, fontWeight: '600' },
   heading: { fontWeight: '700', letterSpacing: 1, marginTop: 14, marginBottom: 2 },
@@ -242,4 +363,8 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   nav: { fontSize: 16, fontWeight: '600' },
+  toast: { position: 'absolute', alignSelf: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 },
+  toastText: { fontSize: 14, fontWeight: '600' },
+  noteText: { fontSize: 16, lineHeight: 23, paddingBottom: 8 },
+  actionsPreview: { fontSize: 14, lineHeight: 20, marginBottom: 8 },
 });

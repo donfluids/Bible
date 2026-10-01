@@ -13,6 +13,8 @@ interface Props {
   pick: WordPick | null;
   translation: TranslationId;
   onClose: () => void;
+  /** Return to the previous entry after following a link. */
+  onBack?: () => void;
   /** Follow a Strong's number mentioned in the derivation. */
   onPick: (pick: WordPick) => void;
   onShowOccurrences: (strongs: string) => void;
@@ -24,7 +26,7 @@ interface Loaded {
 }
 
 /** Bottom sheet with the Strong's entry for a tapped word. */
-export function WordSheet({ pick, translation, onClose, onPick, onShowOccurrences }: Props) {
+export function WordSheet({ pick, translation, onClose, onBack, onPick, onShowOccurrences }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -68,6 +70,11 @@ export function WordSheet({ pick, translation, onClose, onPick, onShowOccurrence
       <View style={[styles.sheet, { backgroundColor: theme.card, paddingBottom: insets.bottom + 12 }]}>
         <View style={[styles.grip, { backgroundColor: theme.border }]} />
         <View style={styles.headRow}>
+          {onBack ? (
+            <Pressable onPress={onBack} hitSlop={12} accessibilityRole="button" accessibilityLabel="Previous entry">
+              <Text style={[styles.back, { color: theme.accent }]}>‹</Text>
+            </Pressable>
+          ) : null}
           <View style={[styles.badge, { backgroundColor: theme.accentSoft }]}>
             <Text style={[styles.badgeText, { color: theme.accent }]}>{pick.strongs || '—'}</Text>
           </View>
@@ -218,6 +225,7 @@ const styles = StyleSheet.create({
   lang: { fontSize: 13 },
   tapped: { flex: 1, fontSize: 13, fontStyle: 'italic' },
   close: { fontSize: 18, paddingHorizontal: 4 },
+  back: { fontSize: 30, lineHeight: 32, marginTop: -4, paddingHorizontal: 2 },
   spinner: { marginVertical: 40 },
   scroll: { flexGrow: 0 },
   scrollContent: { paddingBottom: 8 },

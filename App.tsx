@@ -9,6 +9,7 @@ import { SettingsProvider, useSettings } from './src/settings';
 import { useTheme } from './src/theme';
 import type { Book, Ref, WordPick } from './src/types';
 import { WordSheet } from './src/components/WordSheet';
+import { BookmarksScreen } from './src/screens/BookmarksScreen';
 import { BooksScreen } from './src/screens/BooksScreen';
 import { ChaptersScreen } from './src/screens/ChaptersScreen';
 import { ConcordanceScreen } from './src/screens/ConcordanceScreen';
@@ -17,8 +18,9 @@ import { SearchScreen } from './src/screens/SearchScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 
 type Route =
-  | { name: 'reader'; fromResults?: boolean }
+  | { name: 'reader'; fromResults?: boolean; backLabel?: string }
   | { name: 'books' }
+  | { name: 'bookmarks' }
   | { name: 'chapters'; book: Book }
   | { name: 'search' }
   | { name: 'concordance'; strongs: string }
@@ -44,7 +46,10 @@ function Shell() {
   const { settings, update } = useSettings();
   const [books, setBooks] = useState<Book[] | null>(null);
   const [stack, setStack] = useState<Route[]>([{ name: 'reader' }]);
-  const [pick, setPick] = useState<WordPick | null>(null);
+  // Word sheet entries; following a link in the derivation pushes, the back arrow pops.
+  const [picks, setPicks] = useState<WordPick[]>([]);
+  const pick = picks.length > 0 ? picks[picks.length - 1] : null;
+  const setPick = useCallback((p: WordPick | null) => setPicks(p ? [p] : []), []);
 
   useEffect(() => {
     getBooks(db).then(setBooks);
@@ -58,12 +63,20 @@ function Shell() {
     }
   }, [settings.position, settings.lastChapters, update]);
 
+  const onWord = useCallback((p: WordPick) => setPick(p), [setPick]);
+  const followLink = useCallback((p: WordPick) => setPicks((prev) => [...prev, p]), []);
+  const backEntry = useCallback(() => setPicks((prev) => prev.slice(0, -1)), []);
+
   const push = useCallback((route: Route) => setStack((s) => [...s, route]), []);
   const pop = useCallback(() => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s)), []);
   const home = useCallback(() => setStack([{ name: 'reader' }]), []);
 
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (picks.length > 1) {
+        backEntry();
+        return true;
+      }
       if (pick) {
         setPick(null);
         return true;
@@ -75,17 +88,17 @@ function Shell() {
       return false;
     });
     return () => sub.remove();
-  }, [pick, stack.length, pop]);
+  }, [pick, picks.length, backEntry, setPick, stack.length, pop]);
 
   // Opening a verse from search or the concordance keeps that list underneath,
   // so the reader shows a "Results" back button.
   const openRef = useCallback(
-    (ref: Ref) => {
+    (ref: Ref, backLabel = 'Results') => {
       update({ position: { book: ref.book, chapter: ref.chapter, verse: ref.verse } });
       setPick(null);
-      push({ name: 'reader', fromResults: true });
+      push({ name: 'reader', fromResults: true, backLabel });
     },
-    [update, push],
+    [update, push, setPick],
   );
 
   const showOccurrences = useCallback(
@@ -96,7 +109,6 @@ function Shell() {
     [push],
   );
 
-  const onWord = useCallback((p: WordPick) => setPick(p), []);
 
   if (!books) return <Loading message="Loading…" />;
 
@@ -108,6 +120,7 @@ function Shell() {
         <ReaderScreen
           books={books}
           onBack={route.fromResults ? pop : undefined}
+          backLabel={route.backLabel}
           onOpenBooks={() => push({ name: 'books' })}
           onOpenSearch={() => push({ name: 'search' })}
           onOpenSettings={() => push({ name: 'settings' })}
@@ -116,7 +129,19 @@ function Shell() {
       );
       break;
     case 'books':
-      screen = <BooksScreen books={books} current={settings.position.book} onPick={(book) => push({ name: 'chapters', book })} onBack={pop} />;
+      screen = (
+        <BooksScreen
+          books={books}
+          current={settings.position.book}
+          onPick={(book) => push({ name: 'chapters', book })}
+          onOpenBookmarks={() => push({ name: 'bookmarks' })}
+          bookmarkCount={settings.bookmarks.length}
+          onBack={pop}
+        />
+      );
+      break;
+    case 'bookmarks':
+      screen = <BookmarksScreen books={books} onOpenRef={(ref) => openRef(ref, 'Bookmarks')} onWord={onWord} onBack={pop} />;
       break;
     case 'chapters':
       screen = (
@@ -146,7 +171,14 @@ function Shell() {
     <View style={[styles.root, { backgroundColor: theme.bg }]}>
       <StatusBar style={theme.dark ? 'light' : 'dark'} />
       {screen}
-      <WordSheet pick={pick} translation={settings.translation} onClose={() => setPick(null)} onPick={onWord} onShowOccurrences={showOccurrences} />
+      <WordSheet
+        pick={pick}
+        translation={settings.translation}
+        onClose={() => setPick(null)}
+        onBack={picks.length > 1 ? backEntry : undefined}
+        onPick={followLink}
+        onShowOccurrences={showOccurrences}
+      />
     </View>
   );
 }

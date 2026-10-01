@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import Storage from 'expo-sqlite/kv-store';
-import type { TranslationId } from './types';
+import type { Bookmark, TranslationId } from './types';
 
 export interface Position {
   book: number;
@@ -15,6 +15,11 @@ export interface Settings {
   underlineWords: boolean;
   /** Show the Hebrew or Greek words under each verse. */
   interlinear: boolean;
+  /** Interlinear for every verse, or only for verses whose number is tapped. */
+  interlinearMode: 'all' | 'tap';
+  showTranslit: boolean;
+  hideCantillation: boolean;
+  bookmarks: Bookmark[];
   position: Position;
   /** The first-launch tip about tapping words has been dismissed. */
   tipSeen: boolean;
@@ -29,6 +34,10 @@ const DEFAULTS: Settings = {
   fontSize: 19,
   underlineWords: true,
   interlinear: false,
+  interlinearMode: 'all',
+  showTranslit: true,
+  hideCantillation: false,
+  bookmarks: [],
   position: { book: 43, chapter: 1 },
   tipSeen: false,
   lastChapters: {},

@@ -1,6 +1,6 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { inflateSync, strFromU8 } from 'fflate';
-import type { Book, Heading, OriginalWord, Ref, StrongsEntry, TranslationId, VerseRow } from './types';
+import type { Book, Heading, Note, OriginalWord, Ref, Rendering, StrongsEntry, TranslationId, VerseRow } from './types';
 
 export async function getBooks(db: SQLiteDatabase): Promise<Book[]> {
   return db.getAllAsync<Book>('SELECT id, osis, name, testament, chapters FROM books ORDER BY id');
@@ -34,6 +34,50 @@ export async function getChapter(
   return { verses, headings };
 }
 
+/** Footnotes and cross references of a chapter, keyed by verse. */
+export async function getNotes(db: SQLiteDatabase, translation: TranslationId, book: number, chapter: number): Promise<Map<number, Note[]>> {
+  const rows = await db.getAllAsync<Note>(
+    'SELECT verse, n, pos, kind, text FROM notes WHERE translation = ? AND book = ? AND chapter = ? ORDER BY verse, n',
+    translation,
+    book,
+    chapter,
+  );
+  const out = new Map<number, Note[]>();
+  for (const row of rows) {
+    const list = out.get(row.verse) ?? [];
+    list.push(row);
+    out.set(row.verse, list);
+  }
+  return out;
+}
+
+function decodeRefs(blob: Uint8Array | ArrayBuffer): Ref[] {
+  const bytes = blob instanceof Uint8Array ? blob : new Uint8Array(blob);
+  const refs: Ref[] = [];
+  for (let i = 0; i + 2 < bytes.length; i += 3) refs.push({ book: bytes[i], chapter: bytes[i + 1], verse: bytes[i + 2] });
+  return refs;
+}
+
+/** The English words a translation uses for a Strong's number, most frequent first. */
+export async function getRenderings(db: SQLiteDatabase, strongs: string, translation: TranslationId): Promise<Rendering[]> {
+  return db.getAllAsync<Rendering>(
+    'SELECT word, count FROM renderings WHERE strongs = ? AND translation = ? ORDER BY count DESC, word',
+    strongs,
+    translation,
+  );
+}
+
+/** The verses in which a Strong's number is rendered by one particular word. */
+export async function getRenderingRefs(db: SQLiteDatabase, strongs: string, translation: TranslationId, word: string): Promise<Ref[]> {
+  const row = await db.getFirstAsync<{ refs: Uint8Array | ArrayBuffer }>(
+    'SELECT refs FROM renderings WHERE strongs = ? AND translation = ? AND word = ?',
+    strongs,
+    translation,
+    word,
+  );
+  return row ? decodeRefs(row.refs) : [];
+}
+
 export async function getStrongs(db: SQLiteDatabase, id: string): Promise<StrongsEntry | null> {
   return db.getFirstAsync<StrongsEntry>(
     'SELECT id, lemma, translit, pron, derivation, definition, kjv_usage FROM strongs WHERE id = ?',
@@ -52,13 +96,7 @@ export async function getConcordance(
     strongs,
     translation,
   );
-  if (!row) return [];
-  const bytes = row.refs instanceof Uint8Array ? row.refs : new Uint8Array(row.refs);
-  const refs: Ref[] = [];
-  for (let i = 0; i + 2 < bytes.length; i += 3) {
-    refs.push({ book: bytes[i], chapter: bytes[i + 1], verse: bytes[i + 2] });
-  }
-  return refs;
+  return row ? decodeRefs(row.refs) : [];
 }
 
 export async function getConcordanceCount(

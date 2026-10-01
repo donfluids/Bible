@@ -44,6 +44,16 @@ export function refKey(ref: Ref): string {
   return `${ref.book}:${ref.chapter}:${ref.verse}`;
 }
 
+/** Remove Hebrew cantillation marks, keeping vowel points. */
+export function stripCantillation(text: string): string {
+  return text.replace(/[\u0591-\u05AF]/g, '');
+}
+
+/** Verse text as a single line for copying or sharing. */
+export function flattenVerse(text: string): string {
+  return text.replace(/[\n\u2003]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 export function formatCount(n: number): string {
   return n.toLocaleString('en-US');
 }

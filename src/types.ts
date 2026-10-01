@@ -27,6 +27,27 @@ export interface VerseRow extends Ref {
   omitted: number;
 }
 
+/** A translators' footnote (kind f) or cross reference (kind x) anchored in a verse. */
+export interface Note {
+  verse: number;
+  n: number;
+  /** Character offset in the verse text where the marker belongs. */
+  pos: number;
+  kind: 'f' | 'x';
+  text: string;
+}
+
+/** How a Strong's number is rendered in a translation. */
+export interface Rendering {
+  word: string;
+  count: number;
+}
+
+export interface Bookmark extends Ref {
+  translation: TranslationId;
+  added: number;
+}
+
 export interface Heading {
   before_verse: number;
   text: string;

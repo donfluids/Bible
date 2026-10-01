@@ -8,6 +8,8 @@ interface Props {
   books: Book[];
   current: number;
   onPick: (book: Book) => void;
+  onOpenBookmarks: () => void;
+  bookmarkCount: number;
   onBack: () => void;
 }
 
@@ -17,7 +19,7 @@ const HEADER_H = 44;
 const ROW_H = 50;
 
 /** Book list that opens scrolled to the book being read. */
-export function BooksScreen({ books, current, onPick, onBack }: Props) {
+export function BooksScreen({ books, current, onPick, onOpenBookmarks, bookmarkCount, onBack }: Props) {
   const theme = useTheme();
   const listRef = useRef<FlatList<Row>>(null);
 
@@ -46,6 +48,14 @@ export function BooksScreen({ books, current, onPick, onBack }: Props) {
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Header title="Books" onBack={onBack} />
+      <Pressable
+        onPress={onOpenBookmarks}
+        style={({ pressed }) => [styles.bookmarks, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
+        accessibilityRole="button"
+      >
+        <Text style={[styles.name, { color: theme.accent, fontWeight: '600' }]}>Bookmarks</Text>
+        <Text style={[styles.count, { color: theme.muted }]}>{bookmarkCount}</Text>
+      </Pressable>
       <FlatList
         ref={listRef}
         data={rows}
@@ -83,6 +93,14 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   section: { height: HEADER_H, fontSize: 12, fontWeight: '700', letterSpacing: 0.8, paddingHorizontal: 18, paddingTop: 20, paddingBottom: 6 },
   row: {
+    height: ROW_H,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 18,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  bookmarks: {
     height: ROW_H,
     flexDirection: 'row',
     justifyContent: 'space-between',

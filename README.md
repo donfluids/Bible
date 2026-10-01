@@ -16,6 +16,14 @@ app, so it works without a connection.
   of every verse, word by word, each with its transliteration and a short gloss.
   Tap any word for its grammar (parsed in plain words) and its dictionary entry.
   Greek words absent from the modern critical editions are marked.
+- Poetry keeps its line breaks, and the translators' footnotes and cross references
+  appear as small letters in the text; tap one to read it.
+- Hold a verse to copy it, share it, or bookmark it. Bookmarks are listed from the
+  Books screen.
+- The occurrences list for a word starts with how the translation renders it
+  ("God 2,075 · gods 190 · judges 3"); tap a rendering to see only those verses.
+- Interlinear options: show every verse or only verses whose number you tap, hide
+  the transliteration, hide Hebrew cantillation marks.
 - Search the text, or type a Strong's number such as `G26` to open it directly.
 - Adjustable text size, light and dark appearance, remembers where you left off.
 
@@ -33,7 +41,7 @@ app, so it works without a connection.
 4. Scan the QR code shown in the terminal with your phone's camera (iPhone) or
    with the Expo Go app (Android). Phone and computer must be on the same Wi-Fi.
 
-The first launch copies the 33 MB database onto the phone and takes a moment.
+The first launch copies the 41 MB database onto the phone and takes a moment.
 No native build is needed: every module the app uses is included in Expo Go.
 To produce a store-ready build later, use `npx eas-cli build`.
 
@@ -46,11 +54,11 @@ src/queries.ts           All SQL, typed
 src/text.ts              Expands offset-encoded Strong's tags into text runs
 src/morph.ts             Turns Hebrew and Greek grammar codes into plain words
 src/settings.tsx         Persisted settings (translation, text size, position)
-src/components/          Header, VerseText (tappable words), InterlinearVerse, WordSheet, VerseListItem
-src/screens/             Reader, Books, Chapters, Search, Concordance, Settings
+src/components/          Header, VerseText (tappable words, note markers), InterlinearVerse, WordSheet, SimpleSheet, VerseListItem
+src/screens/             Reader, Books, Chapters, Bookmarks, Search, Concordance, Settings
 scripts/fetch-data.sh    Downloads the source texts into data/raw/ (not committed)
 scripts/build-db.mjs     Builds assets/db/bible.db from data/raw/
-assets/db/bible.db       The bundled database (committed, about 33 MB)
+assets/db/bible.db       The bundled database (committed, about 41 MB)
 ```
 
 ## Rebuilding the database
@@ -76,12 +84,16 @@ so phones that already hold a copy of the old file pick up the new one.
 | `strongs`     | 14,197 dictionary entries: lemma, transliteration, pronunciation, derivation, definition, KJV usage |
 | `concordance` | per Strong's number and translation: verse count and a packed list of verse references |
 | `interlinear` | per chapter: the Hebrew or Greek words of every verse, deflate-compressed  |
+| `notes`       | translators' footnotes (kind `f`) and cross references (kind `x`) with the character offset of their marker |
+| `renderings`  | per Strong's number and translation: each English rendering, its verse count and packed verse references |
 | `meta`        | build date and source information                                         |
 
 `tags` holds `gap,length,number` triples separated by spaces. `gap` is the number
 of characters since the end of the previous tag, `length` the tagged span, and
 `number` the Strong's number without its letter (H for Old Testament books, G for
-New Testament books). Psalm titles are stored as verse 0.
+New Testament books). Psalm titles are stored as verse 0. Poetry and paragraph breaks
+inside a verse are newlines, and an indented poetry line starts with one em space per
+level of indentation.
 
 `interlinear.data` is raw deflate of the chapter as text. Verses are separated by
 U+001C, each verse is its number, U+001D, then its words. Words are separated by
