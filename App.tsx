@@ -11,8 +11,9 @@ import { DATABASE_ASSET, DATABASE_NAME, removeStaleDatabases } from './src/db';
 import { navigationRef } from './src/navigation';
 import type { RootStackParamList } from './src/navigation';
 import { translate, useT } from './src/i18n';
-import { EDITION } from './src/edition';
-import { getBooks } from './src/queries';
+import { CONFIGURED_EDITION, EDITIONS, EditionContext, isEditionId } from './src/edition';
+import type { Edition } from './src/edition';
+import { getBooks, getMeta } from './src/queries';
 import { SettingsProvider, useSettings } from './src/settings';
 import { useTheme } from './src/theme';
 import type { Book, Ref, WordPick } from './src/types';
@@ -29,15 +30,35 @@ export default function App() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <Suspense fallback={<Loading message={translate(EDITION.languages[0], 'preparing')} />}>
+        <Suspense fallback={<Loading message={translate(CONFIGURED_EDITION.languages[0], 'preparing')} />}>
           <SQLiteProvider databaseName={DATABASE_NAME} assetSource={{ assetId: DATABASE_ASSET }} useSuspense>
-            <SettingsProvider>
-              <Shell />
-            </SettingsProvider>
+            <EditionGate />
           </SQLiteProvider>
         </Suspense>
       </SafeAreaProvider>
     </GestureHandlerRootView>
+  );
+}
+
+/**
+ * The bundled database records the edition it was built for. Trust it over the
+ * build configuration, so the right texts and interface language always appear.
+ */
+function EditionGate() {
+  const db = useSQLiteContext();
+  const [edition, setEdition] = useState<Edition | null>(null);
+  useEffect(() => {
+    getMeta(db)
+      .then((meta) => setEdition(isEditionId(meta.edition) ? EDITIONS[meta.edition] : CONFIGURED_EDITION))
+      .catch(() => setEdition(CONFIGURED_EDITION));
+  }, [db]);
+  if (!edition) return <Loading message={translate(CONFIGURED_EDITION.languages[0], 'loading')} />;
+  return (
+    <EditionContext.Provider value={edition}>
+      <SettingsProvider edition={edition}>
+        <Shell />
+      </SettingsProvider>
+    </EditionContext.Provider>
   );
 }
 

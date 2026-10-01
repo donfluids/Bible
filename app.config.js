@@ -26,8 +26,20 @@ const EDITIONS = {
   },
 };
 
+// Gradle evaluates this file again during a native build, without the shell
+// environment, so fall back to the edition recorded by plugins/withAndroidRelease.js.
+function editionFromGradleProperties() {
+  try {
+    const text = require('fs').readFileSync(require('path').join(__dirname, 'android', 'gradle.properties'), 'utf8');
+    const m = /^bible\.edition=(\w+)/m.exec(text);
+    return m ? m[1] : null;
+  } catch {
+    return null;
+  }
+}
+
 module.exports = ({ config }) => {
-  const edition = process.env.BIBLE_EDITION || 'en';
+  const edition = process.env.BIBLE_EDITION || editionFromGradleProperties() || 'en';
   const e = EDITIONS[edition];
   if (!e) throw new Error(`Unknown BIBLE_EDITION "${edition}"; expected ${Object.keys(EDITIONS).join(' or ')}`);
   const plugins = (config.plugins || []).map((plugin) => {

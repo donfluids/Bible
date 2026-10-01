@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
-import { EDITION } from '../edition';
+import { useEdition } from '../edition';
 import { translationName, useT } from '../i18n';
 import { getInterlinear, getVerses } from '../queries';
 import { useSettings } from '../settings';
@@ -24,6 +24,7 @@ export function CompareSheet({ target, books, onClose, onWord }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const t = useT();
+  const edition = useEdition();
   const { settings } = useSettings();
   const [rows, setRows] = useState<{ translation: string; name: string; verse: VerseRow | null }[] | null>(null);
   const [original, setOriginal] = useState<OriginalWord[] | null>(null);
@@ -34,7 +35,7 @@ export function CompareSheet({ target, books, onClose, onWord }: Props) {
     setRows(null);
     setOriginal(null);
     Promise.all([
-      ...EDITION.translations.map((id) => getVerses(db, id, [target]).then((v) => ({ translation: id, name: id, verse: v[0] ?? null }))),
+      ...edition.translations.map((id) => getVerses(db, id, [target]).then((v) => ({ translation: id, name: id, verse: v[0] ?? null }))),
       getInterlinear(db, target.book, target.chapter),
     ]).then((results) => {
       if (cancelled) return;
@@ -45,7 +46,8 @@ export function CompareSheet({ target, books, onClose, onWord }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [db, target]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [db, target, edition.id]);
 
   const pickWord = (p: WordPick) => {
     onClose();

@@ -8,7 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
 import { CompareSheet } from '../components/CompareSheet';
 import { Header, HeaderButton } from '../components/Header';
-import { EDITION } from '../edition';
+import { useEdition } from '../edition';
 import { useT } from '../i18n';
 import { InterlinearVerse } from '../components/InterlinearVerse';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
@@ -73,6 +73,7 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
   const db = useSQLiteContext();
   const theme = useTheme();
   const t = useT();
+  const edition = useEdition();
   const insets = useSafeAreaInsets();
   const { settings, update } = useSettings();
   const {
@@ -216,7 +217,7 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
 
   // Cycle through the translations bundled in this edition.
   const toggleTranslation = () => {
-    const list = EDITION.translations;
+    const list = edition.translations;
     update({ translation: list[(list.indexOf(translation) + 1) % list.length] });
   };
   const originalLanguage = (v: { book: number }) => (v.book <= 39 ? t('hebrew') : t('greek'));

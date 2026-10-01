@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
-import { EDITION } from '../edition';
+import { useEdition } from '../edition';
 import type { Language } from '../edition';
 import { translationName, useT } from '../i18n';
 import { getMeta } from '../queries';
@@ -18,6 +18,7 @@ export function SettingsScreen({ onBack }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const t = useT();
+  const EDITION = useEdition();
   const { settings, update } = useSettings();
   const [meta, setMeta] = useState<Record<string, string>>({});
 
