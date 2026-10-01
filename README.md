@@ -12,10 +12,10 @@ The edition is chosen at build time with `BIBLE_EDITION=en` (default) or
 `BIBLE_EDITION=ml`; see `src/edition.ts`, `app.config.js` and `metro.config.js`.
 Each edition has its own database (`assets/db/bible-en.db`, `assets/db/bible-ml.db`),
 icon set (`assets/icons/<edition>/`), app name and package id, so both can be
-installed side by side. Every feature below is in both apps; in the Malayalam
-app, tapping words for their Hebrew or Greek works in the KJV, since the
-Malayalam text carries no Strong's tags, and the interlinear and Compare work
-with every translation.
+installed side by side. Every feature below is in both apps. In the Malayalam
+app, Malayalam words are linked to their Hebrew or Greek by a machine alignment
+(see Malayalam word links below), so tapping a word, the occurrence lists and the
+rendering counts all work in Malayalam.
 
 ## What it does
 

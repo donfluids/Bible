@@ -12,7 +12,8 @@ export interface Translation {
 export const TRANSLATIONS: Translation[] = [
   { id: 'KJV', name: 'King James Version', tagged: true, lineHeight: 1.55 },
   { id: 'WEB', name: 'World English Bible', tagged: true, lineHeight: 1.55 },
-  { id: 'MAL', name: 'സത്യവേദപുസ്തകം 1910 (Malayalam)', tagged: false, lineHeight: 1.75 },
+  // Tagged by scripts/align-malayalam.mjs (machine alignment, confident links only).
+  { id: 'MAL', name: 'സത്യവേദപുസ്തകം 1910 (Malayalam)', tagged: true, lineHeight: 1.75 },
 ];
 
 export function translationInfo(id: TranslationId): Translation {
