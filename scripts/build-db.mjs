@@ -48,6 +48,7 @@
 //   meta(key, value)
 import { DatabaseSync } from 'node:sqlite';
 import { deflateRawSync, inflateRawSync } from 'node:zlib';
+import { textHash } from './lib/tokens.mjs';
 import { readFileSync, readdirSync, mkdirSync, rmSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -361,6 +362,19 @@ function loadStrongs(file, varName) {
   return JSON.parse(src.slice(start, end + 1));
 }
 
+// Word-level links from Malayalam words to Strong's numbers, made by
+// scripts/align-malayalam.mjs. Only confident links (c = 2) are used.
+function loadAlignments() {
+  const dir = join(ROOT, 'data', 'align', 'mal');
+  const map = new Map();
+  let files = [];
+  try { files = readdirSync(dir).filter((f) => f.endsWith('.json')).sort(); } catch { return map; }
+  for (const f of files) {
+    for (const v of JSON.parse(readFileSync(join(dir, f), 'utf8')).verses) map.set(`${v.book}:${v.chapter}:${v.v}`, v);
+  }
+  return map;
+}
+
 function buildEdition(edition) {
   const TRANSLATIONS = EDITIONS[edition].map((id) => ALL_TRANSLATIONS.find((t) => t.id === id));
   const OUT = join(OUT_DIR, `bible-${edition}.db`);
@@ -408,11 +422,12 @@ function buildEdition(edition) {
 
   const chapterCounts = new Map();
   const stats = {};
+  const alignments = loadAlignments();
   for (const t of TRANSLATIONS) {
     const files = readdirSync(join(RAW, t.dir));
     const conc = new Map(); // strongs -> array of [b,c,v]
     const rend = new Map(); // strongs -> Map(lowercased word -> { forms: Map(display -> n), refs: [], lastKey })
-    let verses = 0, tagCount = 0, omitted = 0, noteCount = 0;
+    let verses = 0, tagCount = 0, omitted = 0, noteCount = 0, alignedVerses = 0;
     db.exec('BEGIN');
     for (const book of BOOKS) {
       const file = files.find((f) => f.endsWith(book.osis + t.suffix));
@@ -434,7 +449,29 @@ function buildEdition(edition) {
             omitted++;
             continue;
           }
-          const { text, tags, notes: markers } = splitTags(tagged);
+          const split = splitTags(tagged);
+          const { text, notes: markers } = split;
+          let tags = split.tags;
+          // Tagged words: the source's own tags, or for Malayalam the aligned links.
+          let entries = [...tagged.matchAll(/⟨([^|⟩]*)\|([HG]\d+)⟩/g)].map((m) => ({ word: m[1].trim(), id: m[2] }));
+          if (t.id === 'MAL') {
+            const al = alignments.get(`${book.id}:${chapter}:${verse}`);
+            if (al && al.hash === textHash(text)) {
+              const prefix = book.id <= 39 ? 'H' : 'G';
+              const spans = al.spans.filter((x) => x.c >= 2 && x.n.startsWith(prefix)).sort((a, b) => a.s - b.s);
+              const parts = [];
+              let prevEnd = 0;
+              entries = [];
+              for (const sp of spans) {
+                if (sp.s < prevEnd || sp.e > text.length) continue; // overlapping or out of range
+                parts.push(`${sp.s - prevEnd},${sp.e - sp.s},${sp.n.slice(1)}`);
+                entries.push({ word: text.slice(sp.s, sp.e), id: sp.n });
+                prevEnd = sp.e;
+              }
+              tags = parts.join(' ');
+              alignedVerses++;
+            }
+          }
           insVerse.run(t.id, book.id, chapter, verse, text, tags, 0, paras.get(`${chapter}:${verse}`) || '');
           verses++;
           markers.forEach((mk, n) => {
@@ -444,20 +481,20 @@ function buildEdition(edition) {
           });
           const seen = new Set();
           const verseKey = `${book.id}:${chapter}:${verse}`;
-          for (const m of tagged.matchAll(/⟨([^|⟩]*)\|([HG]\d+)⟩/g)) {
+          for (const m of entries) {
             tagCount++;
-            const word = m[1].trim();
+            const word = m.word;
             const lower = word.toLowerCase();
-            if (!rend.has(m[2])) rend.set(m[2], new Map());
-            const byWord = rend.get(m[2]);
+            if (!rend.has(m.id)) rend.set(m.id, new Map());
+            const byWord = rend.get(m.id);
             if (!byWord.has(lower)) byWord.set(lower, { forms: new Map(), refs: [], lastKey: '' });
             const entry = byWord.get(lower);
             entry.forms.set(word, (entry.forms.get(word) || 0) + 1);
             if (entry.lastKey !== verseKey) { entry.refs.push(book.id, chapter, verse); entry.lastKey = verseKey; }
-            if (seen.has(m[2])) continue;
-            seen.add(m[2]);
-            if (!conc.has(m[2])) conc.set(m[2], []);
-            conc.get(m[2]).push(book.id, chapter, verse);
+            if (seen.has(m.id)) continue;
+            seen.add(m.id);
+            if (!conc.has(m.id)) conc.set(m.id, []);
+            conc.get(m.id).push(book.id, chapter, verse);
           }
         }
       }
@@ -475,7 +512,7 @@ function buildEdition(edition) {
       }
     }
     db.exec('COMMIT');
-    stats[t.id] = { verses, omittedVerses: omitted, tags: tagCount, strongsNumbers: conc.size, notes: noteCount, renderings: renderingRows };
+    stats[t.id] = { verses, omittedVerses: omitted, ...(t.id === 'MAL' ? { alignedVerses } : {}), tags: tagCount, strongsNumbers: conc.size, notes: noteCount, renderings: renderingRows };
   }
 
   db.exec('BEGIN');
