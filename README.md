@@ -1,11 +1,17 @@
 # Bible app builds
 
-Installable Android packages built from the `ccr-39027e0d-8m0rpn` branch. This
-branch holds only builds so the code history stays small.
+Installable Android packages. This branch holds only builds so the code history
+stays small. Builds also come from the Android APK workflow on every push.
 
-| File | Version | Built from | Size | SHA-256 |
-| --- | --- | --- | --- | --- |
-| [Bible-0.2.0.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.2.0.apk) | 0.2.0 | 15fa023 | 60.6 MiB | `9ce81bc1242e62eb4cdb7dd4720f9ae7dd5307fdb7adeeba8eebc33ad24d2789` |
+| File | Version | Code | Signing | Built from | Size | SHA-256 |
+| --- | --- | --- | --- | --- | --- | --- |
+| [Bible-0.2.1.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.2.1.apk) | 0.2.1 | 2 | release key | 92830b2 | 43.0 MiB | `ae22d86f0966b2a7b67603f099bb7db9861f2f8f95340a58af45ba154448b4c8` |
+| [Bible-0.2.0.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.2.0.apk) | 0.2.0 | 1 | debug key | 15fa023 | 60.6 MiB | `9ce81bc1242e62eb4cdb7dd4720f9ae7dd5307fdb7adeeba8eebc33ad24d2789` |
+
+Use 0.2.1 or newer. It is signed with the app's release key, so later builds
+install over it as updates and keep bookmarks and settings. 0.2.0 was signed with
+the debug key: if it is installed, uninstall it before installing 0.2.1 (Android
+refuses to update across different keys).
 
 ## Installing
 
@@ -14,10 +20,5 @@ branch holds only builds so the code history stays small.
    (your browser or Files app); allow it once.
 3. Tap Install. The app appears as "Bible".
 
-Requirements: Android 7.0 or newer on an ARM phone (any phone sold in the last
-decade). The package is signed with the standard Android debug key, which is fine
-for installing by hand but not for the Play Store.
-
-Updating later: install the newer file over the old one; bookmarks and settings
-are kept. If a build is signed with a different key, Android refuses the update
-and the old app must be uninstalled first.
+Requirements: Android 7.0 or newer on a 64-bit ARM phone (any phone sold since
+about 2016).
