@@ -1,5 +1,7 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import Storage from 'expo-sqlite/kv-store';
+import { EDITION } from './edition';
+import type { Language } from './edition';
 import type { Bookmark, HighlightColor, TranslationId } from './types';
 
 export interface Position {
@@ -14,6 +16,8 @@ export type Layout = 'verses' | 'paragraphs';
 
 export interface Settings {
   translation: TranslationId;
+  /** Interface language. */
+  language: Language;
   fontSize: number;
   theme: ThemeChoice;
   /** Scripture text in a serif face. */
@@ -40,10 +44,11 @@ export interface Settings {
   lastChapters: Record<string, number>;
 }
 
-const KEY = 'settings.v1';
+const KEY = `settings.v1.${EDITION.id}`;
 
 const DEFAULTS: Settings = {
-  translation: 'KJV',
+  translation: EDITION.defaultTranslation,
+  language: EDITION.languages[0],
   fontSize: 19,
   theme: 'system',
   serif: false,
@@ -69,7 +74,10 @@ function load(): Settings {
     const raw = Storage.getItemSync(KEY);
     if (!raw) return DEFAULTS;
     const parsed = JSON.parse(raw) as Partial<Settings>;
-    return { ...DEFAULTS, ...parsed, position: { ...DEFAULTS.position, ...parsed.position } };
+    const merged = { ...DEFAULTS, ...parsed, position: { ...DEFAULTS.position, ...parsed.position } };
+    if (!EDITION.translations.includes(merged.translation)) merged.translation = EDITION.defaultTranslation;
+    if (!EDITION.languages.includes(merged.language)) merged.language = EDITION.languages[0];
+    return merged;
   } catch {
     return DEFAULTS;
   }

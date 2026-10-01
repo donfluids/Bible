@@ -4,7 +4,15 @@ import { plainText } from './text';
 import type { Book, Heading, LexiconHit, Note, OriginalWord, Ref, Rendering, StrongsEntry, TranslationId, VerseRow } from './types';
 
 export async function getBooks(db: SQLiteDatabase): Promise<Book[]> {
-  return db.getAllAsync<Book>('SELECT id, osis, name, testament, chapters FROM books ORDER BY id');
+  const [books, names] = await Promise.all([
+    db.getAllAsync<Omit<Book, 'names'>>('SELECT id, osis, name, testament, chapters FROM books ORDER BY id'),
+    db.getAllAsync<{ translation: TranslationId; book: number; name: string }>('SELECT translation, book, name FROM book_names'),
+  ]);
+  return books.map((b) => {
+    const out: Book = { ...b, names: {} };
+    for (const n of names) if (n.book === b.id) out.names[n.translation] = n.name;
+    return out;
+  });
 }
 
 export interface ChapterData {

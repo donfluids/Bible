@@ -25,6 +25,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        # en = Bible (KJV, WEB); ml = വേദപുസ്തകം (Malayalam, KJV). See src/edition.ts.
+        edition: [en, ml]
+    env:
+      BIBLE_EDITION: ${{ matrix.edition }}
     steps:
       - uses: actions/checkout@v4
 
@@ -72,8 +79,9 @@ jobs:
           cd android
           ./gradlew assembleRelease --no-daemon
           VERSION=$(node -p "require('../app.json').expo.version")
-          cp app/build/outputs/apk/release/app-release.apk "../Bible-$VERSION-build${{ github.run_number }}.apk"
-          echo "APK=Bible-$VERSION-build${{ github.run_number }}.apk" >> "$GITHUB_ENV"
+          NAME=$([ "$BIBLE_EDITION" = ml ] && echo Vedapusthakam || echo Bible)
+          cp app/build/outputs/apk/release/app-release.apk "../$NAME-$VERSION-build${{ github.run_number }}.apk"
+          echo "APK=$NAME-$VERSION-build${{ github.run_number }}.apk" >> "$GITHUB_ENV"
 
       - name: Report signing
         run: |

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Header } from '../components/Header';
+import { useT } from '../i18n';
+import { useSettings } from '../settings';
 import { useTheme } from '../theme';
 import type { Book } from '../types';
 
@@ -13,10 +15,13 @@ interface Props {
 
 export function ChaptersScreen({ book, current, onPick, onBack }: Props) {
   const theme = useTheme();
+  const t = useT();
+  const { settings } = useSettings();
+  const title = book.names[settings.translation] && settings.translation !== 'KJV' && settings.translation !== 'WEB' ? book.names[settings.translation]! : book.name;
   const chapters = Array.from({ length: book.chapters }, (_, i) => i + 1);
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
-      <Header title={book.name} onBack={onBack} />
+      <Header title={title} onBack={onBack} backLabel={t('back')} />
       <ScrollView contentContainerStyle={styles.grid}>
         {chapters.map((c) => {
           const active = c === current;
@@ -29,7 +34,7 @@ export function ChaptersScreen({ book, current, onPick, onBack }: Props) {
                 { borderColor: theme.border, backgroundColor: active ? theme.accent : pressed ? theme.accentSoft : theme.card },
               ]}
               accessibilityRole="button"
-              accessibilityLabel={`${book.name} chapter ${c}`}
+              accessibilityLabel={`${title} ${c}`}
             >
               <Text style={[styles.cellText, { color: active ? '#fff' : theme.text }]}>{c}</Text>
             </Pressable>

@@ -48,3 +48,6 @@ data/raw
 
 # Release signing key and passwords, never committed
 credentials/
+
+# Edition databases are bible-en.db and bible-ml.db; bible.db is only a name Metro redirects
+assets/db/bible.db

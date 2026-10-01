@@ -1,16 +1,38 @@
-export type TranslationId = 'KJV' | 'WEB';
+export type TranslationId = 'KJV' | 'WEB' | 'MAL';
 
-export const TRANSLATIONS: { id: TranslationId; name: string }[] = [
-  { id: 'KJV', name: 'King James Version' },
-  { id: 'WEB', name: 'World English Bible' },
+export interface Translation {
+  id: TranslationId;
+  name: string;
+  /** Has Strong's tags, so words can be tapped and the concordance built. */
+  tagged: boolean;
+  /** Line height multiplier; scripts with stacked marks need more room. */
+  lineHeight: number;
+}
+
+export const TRANSLATIONS: Translation[] = [
+  { id: 'KJV', name: 'King James Version', tagged: true, lineHeight: 1.55 },
+  { id: 'WEB', name: 'World English Bible', tagged: true, lineHeight: 1.55 },
+  { id: 'MAL', name: 'സത്യവേദപുസ്തകം 1910 (Malayalam)', tagged: false, lineHeight: 1.75 },
 ];
+
+export function translationInfo(id: TranslationId): Translation {
+  return TRANSLATIONS.find((t) => t.id === id) ?? TRANSLATIONS[0];
+}
+
+/** The translation whose Strong's tags back the concordance: itself if tagged, else the KJV. */
+export function taggedTranslation(id: TranslationId): TranslationId {
+  return translationInfo(id).tagged ? id : 'KJV';
+}
 
 export interface Book {
   id: number;
   osis: string;
+  /** English name. */
   name: string;
   testament: 'OT' | 'NT';
   chapters: number;
+  /** Name in each translation's own language, where the source gives one. */
+  names: Partial<Record<TranslationId, string>>;
 }
 
 export interface Ref {

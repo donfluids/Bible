@@ -1,6 +1,9 @@
 import React, { useMemo, useRef } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Header } from '../components/Header';
+import { useT } from '../i18n';
+import { useSettings } from '../settings';
+import { bookName } from '../text';
 import { useTheme } from '../theme';
 import type { Book } from '../types';
 
@@ -21,16 +24,19 @@ const ROW_H = 50;
 /** Book list that opens scrolled to the book being read. */
 export function BooksScreen({ books, current, onPick, onOpenBookmarks, bookmarkCount, onBack }: Props) {
   const theme = useTheme();
+  const t = useT();
+  const { settings } = useSettings();
   const listRef = useRef<FlatList<Row>>(null);
 
   const rows = useMemo<Row[]>(() => {
     const out: Row[] = [];
-    for (const [testament, title] of [['OT', 'Old Testament · Hebrew'], ['NT', 'New Testament · Greek']] as const) {
+    for (const [testament, title] of [['OT', t('oldTestament')], ['NT', t('newTestament')]] as const) {
       out.push({ kind: 'header', key: testament, title });
       for (const book of books.filter((b) => b.testament === testament)) out.push({ kind: 'book', key: String(book.id), book });
     }
     return out;
-  }, [books]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [books, settings.language]);
 
   const offsets = useMemo(() => {
     const out: number[] = [];
@@ -47,13 +53,13 @@ export function BooksScreen({ books, current, onPick, onOpenBookmarks, bookmarkC
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
-      <Header title="Books" onBack={onBack} />
+      <Header title={t('books')} onBack={onBack} />
       <Pressable
         onPress={onOpenBookmarks}
         style={({ pressed }) => [styles.bookmarks, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
         accessibilityRole="button"
       >
-        <Text style={[styles.name, { color: theme.accent, fontWeight: '600' }]}>Saved: bookmarks, highlights, notes</Text>
+        <Text style={[styles.name, { color: theme.accent, fontWeight: '600' }]} numberOfLines={1}>{t('savedRow')}</Text>
         <Text style={[styles.count, { color: theme.muted }]}>{bookmarkCount}</Text>
       </Pressable>
       <FlatList
@@ -78,7 +84,7 @@ export function BooksScreen({ books, current, onPick, onOpenBookmarks, bookmarkC
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
             >
-              <Text style={[styles.name, { color: theme.text, fontWeight: active ? '700' : '400' }]}>{item.book.name}</Text>
+              <Text style={[styles.name, { color: theme.text, fontWeight: active ? '700' : '400' }]}>{bookName(books, item.book.id, settings.translation)}</Text>
               <Text style={[styles.count, { color: theme.muted }]}>{item.book.chapters}</Text>
             </Pressable>
           );

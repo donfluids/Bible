@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
+import { useT } from '../i18n';
 import { describeMorph } from '../morph';
 import { getConcordanceCount, getStrongs } from '../queries';
 import { formatCount, isHebrew } from '../text';
 import { useTheme } from '../theme';
-import { FLAG_LXX, FLAG_NOT_IN_NA, FLAG_RESTORED } from '../types';
+import { FLAG_LXX, FLAG_NOT_IN_NA, FLAG_RESTORED, taggedTranslation } from '../types';
 import type { StrongsEntry, TranslationId, WordPick } from '../types';
 
 interface Props {
@@ -29,7 +30,10 @@ interface Loaded {
 export function WordSheet({ pick, translation, onClose, onBack, onPick, onShowOccurrences }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
+  const t = useT();
   const insets = useSafeAreaInsets();
+  // Occurrence counts come from a tagged translation; an untagged one uses the KJV.
+  const tagged = taggedTranslation(translation);
   const [data, setData] = useState<Loaded | null>(null);
   const [showLegend, setShowLegend] = useState(false);
 
@@ -41,13 +45,13 @@ export function WordSheet({ pick, translation, onClose, onBack, onPick, onShowOc
       setData({ entry: null, count: 0 });
       return;
     }
-    Promise.all([getStrongs(db, pick.strongs), getConcordanceCount(db, pick.strongs, translation)]).then(([entry, count]) => {
+    Promise.all([getStrongs(db, pick.strongs), getConcordanceCount(db, pick.strongs, tagged)]).then(([entry, count]) => {
       if (!cancelled) setData({ entry, count });
     });
     return () => {
       cancelled = true;
     };
-  }, [db, pick, translation]);
+  }, [db, pick, tagged]);
 
   if (!pick) return null;
   const original = pick.original;
@@ -56,35 +60,35 @@ export function WordSheet({ pick, translation, onClose, onBack, onPick, onShowOc
   const grammar = original?.morph ? describeMorph(original.morph, hebrew) : '';
   const note = original
     ? original.flags & FLAG_NOT_IN_NA
-      ? 'In the Textus Receptus and Byzantine text, which the KJV and WEB translate, but not in the Nestle-Aland editions used by most modern translations.'
+      ? t('noteNotInNA')
       : original.flags & FLAG_LXX
-        ? 'Not in the Hebrew Leningrad Codex. Supplied from the Septuagint, as some translations do.'
+        ? t('noteLxx')
         : original.flags & FLAG_RESTORED
-          ? 'Missing from the Leningrad Codex and restored from a parallel passage.'
+          ? t('noteRestored')
           : ''
     : '';
 
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onBack ?? onClose} statusBarTranslucent>
-      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Close" />
+      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={t('close')} />
       <View style={[styles.sheet, { backgroundColor: theme.card, paddingBottom: insets.bottom + 12 }]}>
         <View style={[styles.grip, { backgroundColor: theme.border }]} />
         <View style={styles.headRow}>
           {onBack ? (
-            <Pressable onPress={onBack} hitSlop={12} accessibilityRole="button" accessibilityLabel="Previous entry">
+            <Pressable onPress={onBack} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('previousEntry')}>
               <Text style={[styles.back, { color: theme.accent }]}>‹</Text>
             </Pressable>
           ) : null}
           <View style={[styles.badge, { backgroundColor: theme.accentSoft }]}>
             <Text style={[styles.badgeText, { color: theme.accent }]}>{pick.strongs || '—'}</Text>
           </View>
-          <Text style={[styles.lang, { color: theme.muted }]}>{hebrew ? 'Hebrew' : 'Greek'}</Text>
+          <Text style={[styles.lang, { color: theme.muted }]}>{hebrew ? t('hebrew') : t('greek')}</Text>
           {pick.word ? (
             <Text numberOfLines={1} style={[styles.tapped, { color: theme.muted }]}>
               “{pick.word}”
             </Text>
           ) : null}
-          <Pressable onPress={onClose} hitSlop={12} accessibilityRole="button" accessibilityLabel="Close">
+          <Pressable onPress={onClose} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('close')}>
             <Text style={[styles.close, { color: theme.muted }]}>✕</Text>
           </Pressable>
         </View>
@@ -111,7 +115,7 @@ export function WordSheet({ pick, translation, onClose, onBack, onPick, onShowOc
             ) : null}
             {!entry ? (
               <Text style={[styles.body, { color: theme.text }]}>
-                {pick.strongs ? `No dictionary entry for ${pick.strongs}.` : 'This word has no Strong\'s number.'}
+                {pick.strongs ? t('noEntry', { id: pick.strongs }) : t('noStrongs')}
               </Text>
             ) : (
               <>
@@ -122,41 +126,35 @@ export function WordSheet({ pick, translation, onClose, onBack, onPick, onShowOc
             </Text>
 
             {entry.derivation ? (
-              <Section label="Derivation" theme={theme}>
+              <Section label={t('derivation')} theme={theme}>
                 <LinkedText text={entry.derivation} color={theme.text} accent={theme.accent} onPick={onPick} />
               </Section>
             ) : null}
             {entry.definition ? (
-              <Section label="Definition" theme={theme}>
+              <Section label={t('definition')} theme={theme}>
                 <Text style={[styles.body, { color: theme.text }]}>{entry.definition}</Text>
               </Section>
             ) : null}
             {entry.kjv_usage ? (
-              <Section label="Translated in the KJV as" theme={theme}>
+              <Section label={t('kjvRenderings')} theme={theme}>
                 <Text style={[styles.body, { color: theme.text }]}>{entry.kjv_usage}</Text>
               </Section>
             ) : null}
 
             <Pressable onPress={() => setShowLegend((v) => !v)} hitSlop={6} accessibilityRole="button" style={styles.legendToggle}>
-              <Text style={[styles.legendToggleText, { color: theme.accent }]}>{showLegend ? 'Hide the key to the marks' : 'What do the marks mean?'}</Text>
+              <Text style={[styles.legendToggleText, { color: theme.accent }]}>{showLegend ? t('marksHide') : t('marksQuestion')}</Text>
             </Pressable>
             {showLegend ? (
               <View style={[styles.legend, { borderColor: theme.border }]}>
-                <Text style={[styles.legendText, { color: theme.muted }]}>
-                  In the KJV renderings, × or [idiom] marks an idiomatic rendering, + marks a phrase made with other words, and (-ly) or
-                  (-ness) shows another ending of the same rendering. Numbers such as H433 in the derivation are other entries; tap one to open it.
-                </Text>
+                <Text style={[styles.legendText, { color: theme.muted }]}>{t('legendStrongs')}</Text>
                 {original ? (
                   <Text style={[styles.legendText, { color: theme.muted, marginTop: 6 }]}>
-                    In the gloss, {'<a word>'} in angle brackets is in the original but best left untranslated, and [a word] in square brackets is
-                    implied but not in the original.
-                    {hebrew ? ' In the transliteration, dots separate syllables and the capital letter marks the stressed syllable.' : ''}
+                    {t('legendGloss')}
+                    {hebrew ? t('legendTranslit') : ''}
                   </Text>
                 ) : null}
                 {original && original.flags ? (
-                  <Text style={[styles.legendText, { color: theme.muted, marginTop: 6 }]}>
-                    A line under a word in the interlinear marks text that differs between editions; the note above explains this one.
-                  </Text>
+                  <Text style={[styles.legendText, { color: theme.muted, marginTop: 6 }]}>{t('legendVariant')}</Text>
                 ) : null}
               </View>
             ) : null}
@@ -169,8 +167,10 @@ export function WordSheet({ pick, translation, onClose, onBack, onPick, onShowOc
             >
               <Text style={styles.ctaText}>
                 {data.count === 0
-                  ? `Not tagged in the ${translation}`
-                  : `Show ${formatCount(data.count)} ${data.count === 1 ? 'verse' : 'verses'} in the ${translation}`}
+                  ? t('notTagged', { translation: tagged })
+                  : data.count === 1
+                    ? t('showOneVerse', { translation: tagged })
+                    : t('showVerses', { n: formatCount(data.count), translation: tagged })}
               </Text>
             </Pressable>
               </>

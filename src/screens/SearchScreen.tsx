@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
+import { useT } from '../i18n';
 import { VerseListItem } from '../components/VerseListItem';
 import { searchLexicon, searchText } from '../queries';
 import { parseReference } from '../refs';
@@ -22,6 +23,7 @@ const LIMIT = 300;
 export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
+  const t = useT();
   const { settings } = useSettings();
   const { translation } = settings;
   const [query, setQuery] = useState('');
@@ -31,7 +33,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
   const latest = useRef(0);
 
   // "John 3:16", "Ps 23" and the like are offered as a direct jump.
-  const goTo = parseReference(query, books);
+  const goTo = parseReference(query, books, translation);
   // A Strong's number such as G3056 or h430 is offered as a direct link.
   const strongsMatch = /^([hg])\s*0*(\d{1,4})$/i.exec(query.trim());
   const strongsId = strongsMatch ? strongsMatch[1].toUpperCase() + strongsMatch[2] : null;
@@ -61,11 +63,11 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
-      <Header title={`Search the ${translation}`} onBack={onBack} />
+      <Header title={t('searchTitle', { translation })} onBack={onBack} />
       <TextInput
         value={query}
         onChangeText={setQuery}
-        placeholder="Words, a reference like John 3:16, or G26"
+        placeholder={t('searchPlaceholder')}
         placeholderTextColor={theme.muted}
         autoFocus
         autoCorrect={false}
@@ -80,10 +82,9 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
           accessibilityRole="button"
         >
           <Text style={[styles.strongsText, { color: theme.accent }]}>
-            Go to {bookName(books, goTo.book)} {goTo.chapter}
-            {goTo.chapterOnly ? '' : `:${goTo.verse}`}
+            {t('goTo', { ref: `${bookName(books, goTo.book, translation)} ${goTo.chapter}${goTo.chapterOnly ? '' : `:${goTo.verse}`}` })}
           </Text>
-          <Text style={[styles.strongsSub, { color: theme.muted }]}>Open in the {translation}</Text>
+          <Text style={[styles.strongsSub, { color: theme.muted }]}>{t('openIn', { translation })}</Text>
         </Pressable>
       ) : null}
       {strongsId ? (
@@ -92,14 +93,14 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
           style={({ pressed }) => [styles.strongsRow, { backgroundColor: pressed ? theme.accentSoft : theme.card, borderColor: theme.border }]}
           accessibilityRole="button"
         >
-          <Text style={[styles.strongsText, { color: theme.accent }]}>Open {strongsId}</Text>
-          <Text style={[styles.strongsSub, { color: theme.muted }]}>{strongsId.startsWith('H') ? 'Hebrew' : 'Greek'} dictionary entry</Text>
+          <Text style={[styles.strongsText, { color: theme.accent }]}>{t('open', { id: strongsId })}</Text>
+          <Text style={[styles.strongsSub, { color: theme.muted }]}>{t('dictionaryEntry', { lang: strongsId.startsWith('H') ? t('hebrew') : t('greek') })}</Text>
         </Pressable>
       ) : null}
       {busy ? <ActivityIndicator style={styles.spinner} color={theme.accent} /> : null}
       {entries.length > 0 && !busy ? (
         <View style={[styles.lexicon, { borderColor: theme.border, backgroundColor: theme.card }]}>
-          <Text style={[styles.lexiconTitle, { color: theme.muted }]}>DICTIONARY</Text>
+          <Text style={[styles.lexiconTitle, { color: theme.muted }]}>{t('dictionary')}</Text>
           {entries.map((e) => (
             <Pressable
               key={e.id}
@@ -123,10 +124,12 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
       {results && !busy ? (
         <Text style={[styles.count, { color: theme.muted }]}>
           {results.length === 0
-            ? 'No verses found'
+            ? t('noVerses')
             : results.length >= LIMIT
-              ? `First ${formatCount(LIMIT)} verses, narrow the search for more`
-              : `${formatCount(results.length)} ${results.length === 1 ? 'verse' : 'verses'}`}
+              ? t('firstN', { n: formatCount(LIMIT) })
+              : results.length === 1
+                ? t('oneVerse')
+                : t('nVerses', { n: formatCount(results.length) })}
         </Text>
       ) : null}
       <FlatList

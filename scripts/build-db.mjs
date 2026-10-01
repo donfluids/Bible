@@ -1,10 +1,15 @@
-// Builds assets/db/bible.db from the sources fetched by scripts/fetch-data.sh.
+// Builds the per-edition databases from the sources fetched by scripts/fetch-data.sh.
 //
 //   npm run fetch-data
-//   npm run build-db
+//   npm run build-db              # both editions
+//   node scripts/build-db.mjs ml  # one edition
+//
+// Editions (see src/edition.ts): "en" bundles the KJV and WEB into assets/db/bible-en.db;
+// "ml" bundles the Malayalam Sathyavedapusthakam and the KJV into assets/db/bible-ml.db.
 //
 // Output schema (all text is UTF-8):
 //   books(id, osis, name, testament, chapters)
+//   book_names(translation, book, name)   book names in each translation's own language
 //   verses(translation, book, chapter, verse, text, tags, omitted, para)
 //     para = the break that precedes the verse: '' none, 'p' new paragraph, 'b' blank
 //            line, 'q0' 'q1' 'q2' a poetry line at that indent level
@@ -50,7 +55,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = join(ROOT, 'data', 'raw');
 const OUT_DIR = join(ROOT, 'assets', 'db');
-const OUT = join(OUT_DIR, 'bible.db');
+const EDITIONS = { en: ['KJV', 'WEB'], ml: ['MAL', 'KJV'] };
 
 // USFM book code, display name, testament. Order is the Protestant canon.
 const BOOKS = [
@@ -98,9 +103,10 @@ const GS = '\x1d';
 const RS = '\x1e';
 const US = '\x1f';
 
-const TRANSLATIONS = [
+const ALL_TRANSLATIONS = [
   { id: 'KJV', name: 'King James Version', dir: 'kjv', suffix: 'eng-kjv2006.usfm' },
   { id: 'WEB', name: 'World English Bible', dir: 'web', suffix: 'engwebp.usfm' },
+  { id: 'MAL', name: 'സത്യവേദപുസ്തകം 1910', dir: 'mal2015', suffix: 'mal2015.usfm' },
 ];
 
 // Paragraph level markers whose content belongs to the current verse.
@@ -183,6 +189,10 @@ function parseBook(path) {
     notes.push({ kind, text });
     return `${NOTE}${notes.length - 1}${NOTE}`;
   });
+  // The book's name in this translation's language: \toc2 (short name), else \h.
+  const toc2 = /^\\toc2\s+(.+?)\s*$/m.exec(src);
+  const h = /^\\h\s+(.+?)\s*$/m.exec(src);
+  const bookName = (toc2 ?? h)?.[1] ?? null;
   const chapters = new Map(); // chapter -> Map(verse -> raw)
   const headings = []; // { chapter, beforeVerse, raw }
   let chapter = 0;
@@ -226,7 +236,7 @@ function parseBook(path) {
       append(parts[i + 1]);
     }
   }
-  return { chapters, headings, notes, paras };
+  return { chapters, headings, notes, paras, bookName };
 }
 
 // Parse "Mat.17.14[17.15]#03=NKO" style references. Returns null for non-data lines.
@@ -351,7 +361,9 @@ function loadStrongs(file, varName) {
   return JSON.parse(src.slice(start, end + 1));
 }
 
-function main() {
+function buildEdition(edition) {
+  const TRANSLATIONS = EDITIONS[edition].map((id) => ALL_TRANSLATIONS.find((t) => t.id === id));
+  const OUT = join(OUT_DIR, `bible-${edition}.db`);
   for (const t of TRANSLATIONS) {
     try { statSync(join(RAW, t.dir)); } catch { throw new Error(`missing data/raw/${t.dir}; run npm run fetch-data first`); }
   }
@@ -363,6 +375,7 @@ function main() {
     PRAGMA synchronous = OFF;
     PRAGMA page_size = 4096;
     CREATE TABLE books(id INTEGER PRIMARY KEY, osis TEXT NOT NULL, name TEXT NOT NULL, testament TEXT NOT NULL, chapters INTEGER NOT NULL);
+    CREATE TABLE book_names(translation TEXT NOT NULL, book INTEGER NOT NULL, name TEXT NOT NULL, PRIMARY KEY(translation, book)) WITHOUT ROWID;
     CREATE TABLE verses(translation TEXT NOT NULL, book INTEGER NOT NULL, chapter INTEGER NOT NULL, verse INTEGER NOT NULL,
                         text TEXT NOT NULL, tags TEXT NOT NULL, omitted INTEGER NOT NULL DEFAULT 0, para TEXT NOT NULL DEFAULT '',
                         PRIMARY KEY(translation, book, chapter, verse)) WITHOUT ROWID;
@@ -388,6 +401,7 @@ function main() {
   const insNote = db.prepare('INSERT INTO notes VALUES (?,?,?,?,?,?,?,?)');
   const insRendering = db.prepare('INSERT INTO renderings VALUES (?,?,?,?,?)');
   const insBook = db.prepare('INSERT INTO books VALUES (?,?,?,?,?)');
+  const insBookName = db.prepare('INSERT INTO book_names VALUES (?,?,?)');
   const insStrongs = db.prepare('INSERT INTO strongs VALUES (?,?,?,?,?,?,?,?,?)');
   const insConc = db.prepare('INSERT INTO concordance VALUES (?,?,?,?)');
   const insMeta = db.prepare('INSERT INTO meta VALUES (?,?)');
@@ -403,7 +417,8 @@ function main() {
     for (const book of BOOKS) {
       const file = files.find((f) => f.endsWith(book.osis + t.suffix));
       if (!file) throw new Error(`${t.id}: no file for ${book.osis}`);
-      const { chapters, headings, notes, paras } = parseBook(join(RAW, t.dir, file));
+      const { chapters, headings, notes, paras, bookName } = parseBook(join(RAW, t.dir, file));
+      if (bookName) insBookName.run(t.id, book.id, bookName);
       for (const h of headings) {
         const text = splitTags(cleanVerse(h.raw)).text;
         if (text) insHeading.run(t.id, book.id, h.chapter, h.beforeVerse, text);
@@ -477,12 +492,17 @@ function main() {
       nStrongs++;
     }
   }
-  insMeta.run('schema', '6');
+  insMeta.run('schema', '7');
+  insMeta.run('edition', edition);
   insMeta.run('built', new Date().toISOString().slice(0, 10));
   insMeta.run('translations', JSON.stringify(TRANSLATIONS.map(({ id, name }) => ({ id, name }))));
-  insMeta.run('sources', JSON.stringify({
+  const SOURCES = {
     KJV: 'eBible.org eng-kjv2006, public domain',
     WEB: 'eBible.org engwebp, public domain',
+    MAL: 'eBible.org mal2015, Malayalam Sathyavedapusthakam 1910 in contemporary orthography, Free Bible Foundation 2015, CC BY-SA 4.0',
+  };
+  insMeta.run('sources', JSON.stringify({
+    ...Object.fromEntries(TRANSLATIONS.map((t) => [t.id, SOURCES[t.id]])),
     strongs: 'Open Scriptures strongs (CC BY-SA)',
     interlinear: 'STEPBible TAHOT and TAGNT, Tyndale House Cambridge (CC BY 4.0)',
   }));
@@ -502,7 +522,12 @@ function main() {
   db.exec('VACUUM');
   db.close();
 
-  console.log(JSON.stringify({ ...stats, strongsEntries: nStrongs, bytes: statSync(OUT).size }, null, 2));
+  console.log(JSON.stringify({ edition, ...stats, strongsEntries: nStrongs, bytes: statSync(OUT).size }, null, 2));
+}
+
+function main() {
+  const wanted = process.argv.slice(2).filter((a) => EDITIONS[a]);
+  for (const edition of wanted.length ? wanted : Object.keys(EDITIONS)) buildEdition(edition);
 }
 
 main();

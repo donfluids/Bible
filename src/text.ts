@@ -1,4 +1,4 @@
-import type { Book, Ref, Segment, VerseRow } from './types';
+import type { Book, Ref, Segment, TranslationId, VerseRow } from './types';
 
 /** Strong's numbers are Hebrew in the Old Testament and Greek in the New. */
 export function strongsPrefix(book: number): 'H' | 'G' {
@@ -31,12 +31,16 @@ export function parseSegments(verse: Pick<VerseRow, 'book' | 'text' | 'tags'>): 
   return out;
 }
 
-export function bookName(books: Book[], id: number): string {
-  return books.find((b) => b.id === id)?.name ?? `Book ${id}`;
+/** The book's name as the given translation prints it; English for the English Bibles. */
+export function bookName(books: Book[], id: number, translation?: TranslationId): string {
+  const book = books.find((b) => b.id === id);
+  if (!book) return `Book ${id}`;
+  if (translation && translation !== 'KJV' && translation !== 'WEB') return book.names[translation] ?? book.name;
+  return book.name;
 }
 
-export function formatRef(books: Book[], ref: Ref): string {
-  const name = bookName(books, ref.book);
+export function formatRef(books: Book[], ref: Ref, translation?: TranslationId): string {
+  const name = bookName(books, ref.book, translation);
   return ref.verse === 0 ? `${name} ${ref.chapter} (title)` : `${name} ${ref.chapter}:${ref.verse}`;
 }
 

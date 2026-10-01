@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useT } from '../i18n';
 import { useTheme } from '../theme';
 
 interface Props {
@@ -13,15 +14,16 @@ interface Props {
 /** A small bottom sheet for notes and verse actions. */
 export function SimpleSheet({ visible, title, onClose, children }: Props) {
   const theme = useTheme();
+  const t = useT();
   const insets = useSafeAreaInsets();
   if (!visible) return null;
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
-      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Close" />
+      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={t('close')} />
       <View style={[styles.sheet, { backgroundColor: theme.card, paddingBottom: insets.bottom + 12 }]}>
         <View style={styles.head}>
           <Text style={[styles.title, { color: theme.muted }]}>{title}</Text>
-          <Pressable onPress={onClose} hitSlop={12} accessibilityRole="button" accessibilityLabel="Close">
+          <Pressable onPress={onClose} hitSlop={12} accessibilityRole="button" accessibilityLabel={t('close')}>
             <Text style={[styles.close, { color: theme.muted }]}>✕</Text>
           </Pressable>
         </View>

@@ -1,4 +1,4 @@
-import type { Book, Ref } from './types';
+import type { Book, Ref, TranslationId } from './types';
 
 /**
  * Common ways people type book names, mapped to book ids. Full names and any
@@ -39,12 +39,18 @@ export interface ParsedRef extends Ref {
  * "Song of Songs 2:1" or "Rev 22 21". Returns null when nothing matches or the
  * chapter is out of range for the book.
  */
-export function parseReference(input: string, books: Book[]): ParsedRef | null {
-  const m = /^\s*([1-3]?\s*[a-z][a-z .]*?)\s*(\d{1,3})(?:\s*[:.,\s]\s*(\d{1,3}))?\s*$/i.exec(input.replace(/\s+/g, ' '));
+export function parseReference(input: string, books: Book[], translation?: TranslationId): ParsedRef | null {
+  const m = /^\s*([1-3]?\s*[^\d:.,]+?)\s*(\d{1,3})(?:\s*[:.,\s]\s*(\d{1,3}))?\s*$/i.exec(input.replace(/\s+/g, ' '));
   if (!m) return null;
-  const rawName = m[1].toLowerCase().replace(/[^a-z0-9]/g, '');
-  if (!rawName) return null;
-  let id = ABBREVIATIONS[rawName];
+  const typed = m[1].trim();
+  const rawName = typed.toLowerCase().replace(/[^a-z0-9]/g, '');
+  let id = rawName ? ABBREVIATIONS[rawName] : undefined;
+  if (!id && translation) {
+    // Book names in the translation's own language, e.g. Malayalam "യോഹന്നാൻ 3:16".
+    const local = books.filter((b) => (b.names[translation] ?? '').replace(/\s+/g, '').startsWith(typed.replace(/\s+/g, '')));
+    if (local.length === 1) id = local[0].id;
+  }
+  if (!id && !rawName) return null;
   if (!id) {
     const matches = books.filter((b) => b.name.toLowerCase().replace(/[^a-z0-9]/g, '').startsWith(rawName));
     if (matches.length === 1) id = matches[0].id;

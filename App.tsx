@@ -10,6 +10,8 @@ import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import { DATABASE_ASSET, DATABASE_NAME, removeStaleDatabases } from './src/db';
 import { navigationRef } from './src/navigation';
 import type { RootStackParamList } from './src/navigation';
+import { translate, useT } from './src/i18n';
+import { EDITION } from './src/edition';
 import { getBooks } from './src/queries';
 import { SettingsProvider, useSettings } from './src/settings';
 import { useTheme } from './src/theme';
@@ -27,7 +29,7 @@ export default function App() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <Suspense fallback={<Loading message="Preparing the Bible text…" />}>
+        <Suspense fallback={<Loading message={translate(EDITION.languages[0], 'preparing')} />}>
           <SQLiteProvider databaseName={DATABASE_NAME} assetSource={{ assetId: DATABASE_ASSET }} useSuspense>
             <SettingsProvider>
               <Shell />
@@ -98,7 +100,7 @@ function Shell() {
     [theme],
   );
 
-  if (!appValue) return <Loading message="Loading…" />;
+  if (!appValue) return <Loading message={translate(settings.language, 'loading')} />;
 
   return (
     <AppContext.Provider value={appValue}>
@@ -190,19 +192,22 @@ function ChaptersRoute({ navigation, route }: Props<'Chapters'>) {
 
 function BookmarksRoute({ navigation }: Props<'Bookmarks'>) {
   const { books, onWord } = useApp();
-  const openRef = useOpenRef(navigation, 'Saved');
+  const t = useT();
+  const openRef = useOpenRef(navigation, t('saved'));
   return <SavedScreen books={books} onOpenRef={openRef} onWord={onWord} onBack={() => navigation.goBack()} />;
 }
 
 function SearchRoute({ navigation }: Props<'Search'>) {
   const { books, onWord } = useApp();
-  const openRef = useOpenRef(navigation, 'Results');
+  const t = useT();
+  const openRef = useOpenRef(navigation, t('results'));
   return <SearchScreen books={books} onOpenRef={openRef} onWord={onWord} onBack={() => navigation.goBack()} />;
 }
 
 function ConcordanceRoute({ navigation, route }: Props<'Concordance'>) {
   const { books, onWord } = useApp();
-  const openRef = useOpenRef(navigation, 'Results');
+  const t = useT();
+  const openRef = useOpenRef(navigation, t('results'));
   return <ConcordanceScreen strongs={route.params.strongs} books={books} onOpenRef={openRef} onWord={onWord} onBack={() => navigation.goBack()} />;
 }
 

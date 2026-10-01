@@ -1,7 +1,10 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text } from 'react-native';
+import { useT } from '../i18n';
+import { useSettings } from '../settings';
 import { parseSegments } from '../text';
 import { useTheme } from '../theme';
+import { translationInfo } from '../types';
 import type { Note, VerseRow, WordPick } from '../types';
 
 interface Props {
@@ -74,10 +77,12 @@ export function VerseText({
   onNotePress,
 }: Props) {
   const theme = useTheme();
+  const t = useT();
+  const { settings } = useSettings();
   const segments = useMemo(() => parseSegments(verse), [verse]);
   const ranges = useMemo(() => (highlightText ? matchRanges(verse.text, highlightText) : []), [verse.text, highlightText]);
   const isTitle = verse.verse === 0;
-  const lineHeight = Math.round(fontSize * 1.55);
+  const lineHeight = Math.round(fontSize * translationInfo(settings.translation).lineHeight);
   const small = Math.max(11, fontSize - 6);
 
   if (verse.omitted) {
@@ -88,7 +93,7 @@ export function VerseText({
         onLongPress={onLongPress}
       >
         {showNumber ? <Text style={[styles.number, { fontSize: small }]}>{verse.verse} </Text> : null}
-        Omitted in this translation. {verse.text}
+        {t('omitted')} {verse.text}
       </Text>
     );
   }

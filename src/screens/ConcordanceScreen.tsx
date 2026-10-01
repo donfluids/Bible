@@ -2,11 +2,13 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
+import { useT } from '../i18n';
 import { VerseListItem } from '../components/VerseListItem';
 import { getConcordance, getRenderingRefs, getRenderings, getStrongs, getVerses } from '../queries';
 import { useSettings } from '../settings';
 import { MAX_CONTENT_WIDTH, formatCount } from '../text';
 import { useTheme } from '../theme';
+import { taggedTranslation } from '../types';
 import type { Book, Ref, Rendering, StrongsEntry, VerseRow, WordPick } from '../types';
 
 interface Props {
@@ -23,8 +25,10 @@ const PAGE = 40;
 export function ConcordanceScreen({ strongs, books, onOpenRef, onWord, onBack }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
+  const t = useT();
   const { settings } = useSettings();
-  const { translation } = settings;
+  // The list is built from Strong's tags, so an untagged translation shows the KJV.
+  const translation = taggedTranslation(settings.translation);
   const [entry, setEntry] = useState<StrongsEntry | null>(null);
   const [renderings, setRenderings] = useState<Rendering[]>([]);
   const [total, setTotal] = useState(0);
@@ -76,19 +80,22 @@ export function ConcordanceScreen({ strongs, books, onOpenRef, onWord, onBack }:
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
-      <Header title={strongs} onBack={onBack} />
+      <Header title={strongs} onBack={onBack} backLabel={t('back')} />
       <View style={[styles.summary, { borderBottomColor: theme.border }]}>
         <Text style={[styles.lemma, { color: theme.text }]}>
           {entry?.lemma ?? ''}
           {entry?.translit ? <Text style={[styles.translit, { color: theme.muted }]}>  {entry.translit}</Text> : null}
         </Text>
         <Text style={[styles.count, { color: theme.muted }]}>
-          {refs ? `${formatCount(refs.length)} ${refs.length === 1 ? 'verse' : 'verses'} in the ${translation}${filter ? ` as “${filter}”` : ''}` : 'Loading…'}
+          {refs
+            ? (refs.length === 1 ? t('oneVerseIn', { translation }) : t('versesIn', { n: formatCount(refs.length), translation })) +
+              (filter ? t('asWord', { word: filter }) : '')
+            : t('loading')}
         </Text>
       </View>
       {renderings.length > 0 ? (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={[styles.chips, { borderBottomColor: theme.border }]} contentContainerStyle={styles.chipsContent}>
-          <Chip label="All" count={total} active={filter === null} onPress={() => setFilter(null)} />
+          <Chip label={t('all')} count={total} active={filter === null} onPress={() => setFilter(null)} />
           {renderings.map((r) => (
             <Chip key={r.word} label={r.word} count={r.count} active={filter === r.word} onPress={() => setFilter(filter === r.word ? null : r.word)} />
           ))}

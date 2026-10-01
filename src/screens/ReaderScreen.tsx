@@ -8,6 +8,8 @@ import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
 import { CompareSheet } from '../components/CompareSheet';
 import { Header, HeaderButton } from '../components/Header';
+import { EDITION } from '../edition';
+import { useT } from '../i18n';
 import { InterlinearVerse } from '../components/InterlinearVerse';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
 import { noteLetter, VerseText } from '../components/VerseText';
@@ -15,7 +17,7 @@ import { getChapter, getInterlinear, getNotes } from '../queries';
 import { useSettings } from '../settings';
 import { MAX_CONTENT_WIDTH, bookName, flattenVerse, formatRef } from '../text';
 import { useTheme } from '../theme';
-import { HIGHLIGHT_COLORS } from '../types';
+import { HIGHLIGHT_COLORS, translationInfo } from '../types';
 import type { Book, HighlightColor, Note, OriginalWord, Ref, VerseRow, WordPick } from '../types';
 
 interface Props {
@@ -70,6 +72,7 @@ function KeepAwake() {
 export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onWord }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
+  const t = useT();
   const insets = useSafeAreaInsets();
   const { settings, update } = useSettings();
   const {
@@ -211,7 +214,12 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
     [],
   );
 
-  const toggleTranslation = () => update({ translation: translation === 'KJV' ? 'WEB' : 'KJV' });
+  // Cycle through the translations bundled in this edition.
+  const toggleTranslation = () => {
+    const list = EDITION.translations;
+    update({ translation: list[(list.indexOf(translation) + 1) % list.length] });
+  };
+  const originalLanguage = (v: { book: number }) => (v.book <= 39 ? t('hebrew') : t('greek'));
 
   const handleWord = useCallback(
     (pick: WordPick) => {
@@ -224,12 +232,12 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
   const bookmarkKey = (v: VerseRow) => `${v.book}:${v.chapter}:${v.verse}`;
   const bookmarked = useMemo(() => new Set(bookmarks.map((b) => `${b.book}:${b.chapter}:${b.verse}`)), [bookmarks]);
 
-  const verseForClipboard = (v: VerseRow) => `${flattenVerse(v.text)} (${formatRef(books, v)}, ${translation})`;
+  const verseForClipboard = (v: VerseRow) => `${flattenVerse(v.text)} (${formatRef(books, v, translation)}, ${translation})`;
 
   const copyVerse = async (v: VerseRow) => {
     setActions(null);
     await Clipboard.setStringAsync(verseForClipboard(v));
-    setToast('Copied');
+    setToast(t('copied'));
   };
   const shareVerse = async (v: VerseRow) => {
     setActions(null);
@@ -240,11 +248,11 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
     const key = bookmarkKey(v);
     if (bookmarked.has(key)) {
       update({ bookmarks: bookmarks.filter((b) => `${b.book}:${b.chapter}:${b.verse}` !== key) });
-      setToast('Bookmark removed');
+      setToast(t('bookmarkRemoved'));
     } else {
       update({ bookmarks: [...bookmarks, { book: v.book, chapter: v.chapter, verse: v.verse, translation, added: Date.now() }] });
       confirmHaptic();
-      setToast('Bookmarked');
+      setToast(t('bookmarked'));
     }
   };
 
@@ -261,7 +269,7 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
     else delete next[bookmarkKey(v)];
     update({ highlights: next });
     confirmHaptic();
-    setToast(color ? 'Highlighted' : 'Highlight removed');
+    setToast(color ? t('highlighted') : t('highlightRemoved'));
   };
 
   const openNote = (v: VerseRow) => {
@@ -277,7 +285,7 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
     update({ notes: next });
     setNoteEditor(null);
     confirmHaptic();
-    setToast(text ? 'Note saved' : 'Note removed');
+    setToast(text ? t('noteSaved') : t('noteRemoved'));
   };
 
   const toggleExpanded = useCallback((verse: number) => {
@@ -296,7 +304,7 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
       }
       if (item.kind === 'para') {
         return (
-          <Text style={[styles.para, { fontSize, lineHeight: Math.round(fontSize * 1.55), color: theme.text, fontFamily: theme.font }]}>
+          <Text style={[styles.para, { fontSize, lineHeight: Math.round(fontSize * translationInfo(translation).lineHeight), color: theme.text, fontFamily: theme.font }]}>
             {item.verses.map((v, i) => (
               <React.Fragment key={v.verse}>
                 {i > 0 ? ' ' : null}
@@ -361,10 +369,10 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
       );
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [theme, fontSize, handleWord, underlineWords, flash, interlinear, interlinearMode, expanded, original, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, toggleExpanded],
+    [theme, fontSize, handleWord, underlineWords, flash, interlinear, interlinearMode, expanded, original, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, toggleExpanded, translation],
   );
 
-  const title = useMemo(() => `${bookName(books, position.book)} ${position.chapter}`, [books, position]);
+  const title = useMemo(() => `${bookName(books, position.book, translation)} ${position.chapter}`, [books, position, translation]);
   const atStart = position.book === books[0]?.id && position.chapter === 1;
   const atEnd = position.book === books[books.length - 1]?.id && position.chapter === book?.chapters;
 
@@ -374,7 +382,7 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
         onBack={onBack}
         backLabel={backLabel}
         center={
-          <Pressable onPress={onOpenBooks} hitSlop={8} accessibilityRole="button" accessibilityLabel={`${title}, choose passage`}>
+          <Pressable onPress={onOpenBooks} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('choosePassage', { title })}>
             <Text numberOfLines={1} style={[styles.title, { color: theme.text }]}>
               {title} <Text style={{ color: theme.accent }}>▾</Text>
             </Text>
@@ -382,9 +390,9 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
         }
         right={
           <>
-            <HeaderButton label={translation} onPress={toggleTranslation} active accessibilityLabel="Switch translation" />
-            <HeaderButton label="Aa" onPress={onOpenSettings} accessibilityLabel="Settings" />
-            <HeaderButton label="Search" onPress={onOpenSearch} />
+            <HeaderButton label={translation} onPress={toggleTranslation} active accessibilityLabel={t('switchTranslation')} />
+            <HeaderButton label="Aa" onPress={onOpenSettings} accessibilityLabel={t('settings')} />
+            <HeaderButton label={t('search')} onPress={onOpenSearch} />
           </>
         }
       />
@@ -405,17 +413,14 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
             <>
               {tipSeen ? null : (
                 <View style={[styles.tip, { backgroundColor: theme.accentSoft, borderColor: theme.border }]}>
-                  <Text style={[styles.tipText, { color: theme.text }]}>
-                    Tap any underlined word to see the Hebrew or Greek behind it. Hold a verse to copy, share or bookmark it. The
-                    button below shows the whole verse in the original language.
-                  </Text>
+                  <Text style={[styles.tipText, { color: theme.text }]}>{translationInfo(translation).tagged ? t('tip') : t('tipNoTags')}</Text>
                   <Pressable onPress={() => update({ tipSeen: true })} hitSlop={8} accessibilityRole="button">
-                    <Text style={[styles.tipDismiss, { color: theme.accent }]}>Got it</Text>
+                    <Text style={[styles.tipDismiss, { color: theme.accent }]}>{t('gotIt')}</Text>
                   </Pressable>
                 </View>
               )}
               {interlinear && interlinearMode === 'tap' ? (
-                <Text style={[styles.modeHint, { color: theme.muted }]}>Tap a verse number to show its {book?.testament === 'OT' ? 'Hebrew' : 'Greek'}</Text>
+                <Text style={[styles.modeHint, { color: theme.muted }]}>{t('tapVerseNumber', { lang: book?.testament === 'OT' ? t('hebrew') : t('greek') })}</Text>
               ) : null}
             </>
           }
@@ -429,7 +434,7 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
         </View>
       </GestureDetector>
       <View style={[styles.footer, { paddingBottom: insets.bottom + 8, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
-        <NavButton label="‹ Previous" onPress={() => go(-1)} disabled={atStart} />
+        <NavButton label={t('previous')} onPress={() => go(-1)} disabled={atStart} />
         <Pressable
           onPress={() => update({ interlinear: !interlinear })}
           hitSlop={6}
@@ -441,10 +446,10 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
           ]}
         >
           <Text style={[styles.pillText, { color: interlinear ? '#fff' : theme.muted }]}>
-            {book?.testament === 'OT' ? 'Hebrew' : 'Greek'} interlinear
+            {book?.testament === 'OT' ? t('hebrewInterlinear') : t('greekInterlinear')}
           </Text>
         </Pressable>
-        <NavButton label="Next ›" onPress={() => go(1)} disabled={atEnd} />
+        <NavButton label={t('next')} onPress={() => go(1)} disabled={atEnd} />
       </View>
 
       {toast ? (
@@ -455,26 +460,26 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
 
       <SimpleSheet
         visible={!!note}
-        title={note ? `${formatRef(books, note.verse)} · ${note.note.kind === 'x' ? 'Cross reference' : 'Footnote'} ${noteLetter(note.note.n)}` : ''}
+        title={note ? `${formatRef(books, note.verse, translation)} · ${note.note.kind === 'x' ? t('crossReference') : t('footnote')} ${noteLetter(note.note.n)}` : ''}
         onClose={() => setNote(null)}
       >
         {note ? <Text style={[styles.noteText, { color: theme.text }]}>{note.note.text}</Text> : null}
       </SimpleSheet>
 
-      <SimpleSheet visible={!!actions} title={actions ? formatRef(books, actions) : ''} onClose={() => setActions(null)}>
+      <SimpleSheet visible={!!actions} title={actions ? formatRef(books, actions, translation) : ''} onClose={() => setActions(null)}>
         {actions ? (
           <>
             <Text style={[styles.actionsPreview, { color: theme.muted }]} numberOfLines={3}>
               {flattenVerse(actions.text)}
             </Text>
             <View style={[styles.swatchRow, { borderTopColor: theme.border }]}>
-              <Text style={[styles.swatchLabel, { color: theme.text }]}>Highlight</Text>
+              <Text style={[styles.swatchLabel, { color: theme.text }]}>{t('highlight')}</Text>
               {HIGHLIGHT_COLORS.map((c) => (
                 <Pressable
                   key={c}
                   onPress={() => setHighlight(actions, c)}
                   accessibilityRole="button"
-                  accessibilityLabel={`Highlight ${c}`}
+                  accessibilityLabel={`${t('highlight')} ${c}`}
                   style={[
                     styles.swatch,
                     { backgroundColor: theme.marks[c], borderColor: highlights[bookmarkKey(actions)] === c ? theme.accent : theme.border },
@@ -483,41 +488,41 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
               ))}
               {highlights[bookmarkKey(actions)] ? (
                 <Pressable onPress={() => setHighlight(actions, null)} hitSlop={8} accessibilityRole="button">
-                  <Text style={[styles.swatchClear, { color: theme.muted }]}>Clear</Text>
+                  <Text style={[styles.swatchClear, { color: theme.muted }]}>{t('clear')}</Text>
                 </Pressable>
               ) : null}
             </View>
             <SheetAction
-              label={bookmarkKey(actions) in userNotes ? 'Edit note' : 'Add a note'}
+              label={bookmarkKey(actions) in userNotes ? t('editNote') : t('addNote')}
               detail={userNotes[bookmarkKey(actions)]}
               onPress={() => openNote(actions)}
             />
             <SheetAction
-              label="Compare translations"
-              detail={`KJV and WEB side by side with the ${actions.book <= 39 ? 'Hebrew' : 'Greek'}`}
+              label={t('compare')}
+              detail={t('compareDetail', { lang: originalLanguage(actions) })}
               onPress={() => {
                 setActions(null);
                 setCompare({ book: actions.book, chapter: actions.chapter, verse: actions.verse });
               }}
             />
-            <SheetAction label="Copy" detail="Verse text with its reference" onPress={() => copyVerse(actions)} />
-            <SheetAction label="Share…" onPress={() => shareVerse(actions)} />
+            <SheetAction label={t('copy')} detail={t('copyDetail')} onPress={() => copyVerse(actions)} />
+            <SheetAction label={t('share')} onPress={() => shareVerse(actions)} />
             <SheetAction
-              label={bookmarked.has(bookmarkKey(actions)) ? 'Remove bookmark' : 'Bookmark'}
-              detail="Saved items are listed at the top of the Books screen"
+              label={bookmarked.has(bookmarkKey(actions)) ? t('removeBookmark') : t('bookmark')}
+              detail={t('bookmarkDetail')}
               onPress={() => toggleBookmark(actions)}
             />
           </>
         ) : null}
       </SimpleSheet>
 
-      <SimpleSheet visible={!!noteEditor} title={noteEditor ? `Note · ${formatRef(books, noteEditor.verse)}` : ''} onClose={() => setNoteEditor(null)}>
+      <SimpleSheet visible={!!noteEditor} title={noteEditor ? `${t('note')} · ${formatRef(books, noteEditor.verse, translation)}` : ''} onClose={() => setNoteEditor(null)}>
         {noteEditor ? (
           <View>
             <TextInput
               value={noteEditor.text}
               onChangeText={(text) => setNoteEditor({ ...noteEditor, text })}
-              placeholder="Your note on this verse"
+              placeholder={t('notePlaceholder')}
               placeholderTextColor={theme.muted}
               multiline
               autoFocus
@@ -526,13 +531,13 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
             <View style={styles.noteButtons}>
               {userNotes[bookmarkKey(noteEditor.verse)] ? (
                 <Pressable onPress={() => setNoteEditor({ ...noteEditor, text: '' })} hitSlop={8} accessibilityRole="button">
-                  <Text style={[styles.noteDelete, { color: theme.muted }]}>Delete</Text>
+                  <Text style={[styles.noteDelete, { color: theme.muted }]}>{t('delete')}</Text>
                 </Pressable>
               ) : (
                 <View />
               )}
               <Pressable onPress={saveNote} style={[styles.noteSave, { backgroundColor: theme.accent }]} accessibilityRole="button">
-                <Text style={styles.noteSaveText}>Save</Text>
+                <Text style={styles.noteSaveText}>{t('save')}</Text>
               </Pressable>
             </View>
           </View>

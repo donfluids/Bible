@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useT } from '../i18n';
 import { useTheme } from '../theme';
 
 interface Props {
@@ -12,8 +13,10 @@ interface Props {
   right?: React.ReactNode;
 }
 
-export function Header({ title, onBack, backLabel = 'Back', center, right }: Props) {
+export function Header({ title, onBack, backLabel, center, right }: Props) {
   const theme = useTheme();
+  const t = useT();
+  const back = backLabel ?? t('back');
   const insets = useSafeAreaInsets();
   return (
     <View style={[styles.bar, { paddingTop: insets.top + 6, backgroundColor: theme.bg, borderBottomColor: theme.border }]}>
@@ -21,7 +24,7 @@ export function Header({ title, onBack, backLabel = 'Back', center, right }: Pro
         {onBack ? (
           <Pressable onPress={onBack} hitSlop={12} style={styles.back} accessibilityRole="button" accessibilityLabel="Back">
             <Text style={[styles.backGlyph, { color: theme.accent }]}>‹</Text>
-            <Text style={[styles.backText, { color: theme.accent }]}>{backLabel}</Text>
+            <Text style={[styles.backText, { color: theme.accent }]}>{back}</Text>
           </Pressable>
         ) : null}
       </View>

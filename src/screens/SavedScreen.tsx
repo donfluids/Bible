@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, SectionList, StyleSheet, Text, View } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
+import { useT } from '../i18n';
 import { VerseText } from '../components/VerseText';
 import { getVerses } from '../queries';
 import { useSettings } from '../settings';
@@ -28,6 +29,7 @@ const parseKey = (key: string): Ref => {
 export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
+  const t = useT();
   const { settings, update } = useSettings();
   const [verses, setVerses] = useState<Map<string, VerseRow>>(new Map());
 
@@ -43,11 +45,12 @@ export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
       .map(([key, note]) => ({ kind: 'note' as const, ref: parseKey(key), key, note, order: 0 }))
       .sort((a, b) => canon(a.ref) - canon(b.ref));
     return [
-      { title: 'Bookmarks', data: bookmarks },
-      { title: 'Highlights', data: highlights },
-      { title: 'Notes', data: notes },
+      { title: t('bookmarks'), data: bookmarks },
+      { title: t('highlights'), data: highlights },
+      { title: t('notes'), data: notes },
     ].filter((s) => s.data.length > 0);
-  }, [settings.bookmarks, settings.highlights, settings.notes]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.bookmarks, settings.highlights, settings.notes, settings.language]);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,11 +82,9 @@ export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
-      <Header title="Saved" onBack={onBack} />
+      <Header title={t('saved')} onBack={onBack} />
       {empty ? (
-        <Text style={[styles.empty, { color: theme.muted }]}>
-          Nothing saved yet. Hold a verse in the reader to bookmark it, highlight it or add a note.
-        </Text>
+        <Text style={[styles.empty, { color: theme.muted }]}>{t('nothingSaved')}</Text>
       ) : (
         <SectionList
           sections={sections}
@@ -105,10 +106,10 @@ export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
                   <Text style={[styles.ref, { color: theme.accent }]}>
                     {color ? <Text style={{ backgroundColor: color }}>  </Text> : null}
                     {color ? ' ' : ''}
-                    {formatRef(books, item.ref)}
+                    {formatRef(books, item.ref, settings.translation)}
                   </Text>
-                  <Pressable onPress={() => remove(item)} hitSlop={10} accessibilityRole="button" accessibilityLabel="Remove">
-                    <Text style={[styles.remove, { color: theme.muted }]}>Remove</Text>
+                  <Pressable onPress={() => remove(item)} hitSlop={10} accessibilityRole="button" accessibilityLabel={t('remove')}>
+                    <Text style={[styles.remove, { color: theme.muted }]}>{t('remove')}</Text>
                   </Pressable>
                 </View>
                 {item.note ? <Text style={[styles.note, { color: theme.text }]}>{item.note}</Text> : null}

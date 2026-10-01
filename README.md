@@ -1,8 +1,21 @@
 # Bible
 
-A phone app for reading the Bible with every word linked to its Greek or Hebrew.
-Built with Expo and React Native for iOS and Android. All text ships inside the
-app, so it works without a connection.
+Two phone apps from one codebase, built with Expo and React Native for iOS and
+Android. All text ships inside each app, so they work without a connection.
+
+| Edition | App name | Texts | Interface |
+| --- | --- | --- | --- |
+| `en` | Bible | King James Version, World English Bible, Hebrew and Greek interlinear | English |
+| `ml` | വേദപുസ്തകം | Malayalam Sathyavedapusthakam 1910, King James Version, Hebrew and Greek interlinear | Malayalam (English available) |
+
+The edition is chosen at build time with `BIBLE_EDITION=en` (default) or
+`BIBLE_EDITION=ml`; see `src/edition.ts`, `app.config.js` and `metro.config.js`.
+Each edition has its own database (`assets/db/bible-en.db`, `assets/db/bible-ml.db`),
+icon set (`assets/icons/<edition>/`), app name and package id, so both can be
+installed side by side. Every feature below is in both apps; in the Malayalam
+app, tapping words for their Hebrew or Greek works in the KJV, since the
+Malayalam text carries no Strong's tags, and the interlinear and Compare work
+with every translation.
 
 ## What it does
 
@@ -44,7 +57,8 @@ app, so it works without a connection.
 
    ```bash
    npm install
-   npm start
+   npm start          # English edition
+   npm run start:ml   # Malayalam edition
    ```
 
 4. Scan the QR code shown in the terminal with your phone's camera (iPhone) or
@@ -57,8 +71,8 @@ development or store build, made with `npx eas-cli build`.
 
 ## Android builds and releases
 
-`.github/workflows/android-release.yml` builds a release APK on every push to the
-development branch and on manual runs, and attaches it to a GitHub release when a
+`.github/workflows/android-release.yml` builds a release APK of each edition on
+every push to the development branch and on manual runs, and attaches it to a GitHub release when a
 tag such as `v0.2.1` is pushed. Each build's Android version code is the workflow
 run number, so every build can be installed over the previous one.
 
@@ -83,7 +97,7 @@ with the same key, so losing it means users must uninstall to update.
 To build locally:
 
 ```bash
-npx expo prebuild --platform android --no-install
+BIBLE_EDITION=ml npx expo prebuild --platform android --no-install --clean
 cd android && ./gradlew assembleRelease
 ```
 
@@ -108,7 +122,10 @@ src/screens/             Reader, Books, Chapters, Saved, Search, Concordance, Se
 scripts/fetch-data.sh    Downloads the source texts into data/raw/ (not committed)
 scripts/build-db.mjs     Builds assets/db/bible.db from data/raw/
 scripts/make-icons.sh    Draws the icon, adaptive icon layers and splash images with ImageMagick
-assets/db/bible.db       The bundled database (committed, about 41 MB)
+assets/db/               bible-en.db (41 MB) and bible-ml.db (38 MB), one per edition
+assets/icons/            Icon, adaptive icon layers and splash images per edition
+src/edition.ts           Which texts and interface languages this build carries
+src/i18n.ts              Interface strings in English and Malayalam
 ```
 
 ## Rebuilding the database
@@ -118,7 +135,8 @@ rebuild it from the sources:
 
 ```bash
 npm run fetch-data   # downloads KJV, WEB, the Strong's dictionaries and the STEPBible texts
-npm run build-db     # writes assets/db/bible.db (needs Node 22+)
+npm run build-db     # writes assets/db/bible-en.db and bible-ml.db (needs Node 22+)
+npm run icons        # redraws both editions' icons with ImageMagick
 ```
 
 Then bump the suffix in `DATABASE_NAME` in `src/db.ts` (for example `bible-v2.db`)
@@ -128,7 +146,8 @@ so phones that already hold a copy of the old file pick up the new one.
 
 | Table         | Contents                                                                  |
 | ------------- | ------------------------------------------------------------------------- |
-| `books`       | 66 books: id, USFM code, name, testament, chapter count                   |
+| `books`       | 66 books: id, USFM code, English name, testament, chapter count           |
+| `book_names`  | book names in each translation's own language (Malayalam, from the USFM headers) |
 | `verses`      | one row per verse and translation: plain `text` plus offset-encoded `tags`; `omitted` = 1 for the five verses the WEB leaves out, with the translators' note as `text` |
 | `headings`    | section headings that fall between verses (the acrostic labels of Psalm 119 in the WEB) |
 | `strongs`     | 14,197 dictionary entries: lemma, transliteration, pronunciation, derivation, definition, KJV usage, plus accent-free `lemma_plain` and `translit_plain` for search |
@@ -167,6 +186,10 @@ out. Verse numbers follow the KJV where editions differ.
 - **World English Bible** with Strong's numbers, from
   [eBible.org](https://ebible.org/find/details.php?id=engwebp). Public domain;
   "World English Bible" is a trademark of eBible.org.
+- **Malayalam Sathyavedapusthakam 1910**, revised edition in contemporary orthography,
+  copyright © 2015 The Free Bible Foundation, from
+  [eBible.org](https://ebible.org/find/details.php?id=mal2015), CC BY-SA 4.0.
+  Bundled in the Malayalam edition only.
 - **Strong's Hebrew and Greek dictionaries**, digital edition by
   [Open Scriptures](https://github.com/openscriptures/strongs), CC BY-SA.
 - **Interlinear Hebrew and Greek**: Translators Amalgamated Hebrew OT (TAHOT) and
@@ -174,6 +197,12 @@ out. Verse numbers follow the KJV where editions differ.
   Tyndale House Cambridge, CC BY 4.0. Their licence permits bundling the data in
   software and asks that the source files are not redistributed, so only the built
   database is committed here, never the files in `data/raw/`.
+
+## Malayalam interface
+
+The Malayalam strings in `src/i18n.ts` were written for this project and have not
+yet been reviewed by a native speaker. Corrections are welcome: each key is listed
+once with its English reference.
 
 ## Known limitations
 
