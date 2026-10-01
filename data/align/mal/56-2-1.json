@@ -1,0 +1,135 @@
+{
+ "model": "claude-sonnet-5-5",
+ "effort": "medium",
+ "created": "2026-10-01T22:06:13.951Z",
+ "cost": 0.0456076,
+ "usage": {
+  "in": 2,
+  "cacheRead": 1008,
+  "cacheCreate": 8424,
+  "out": 382
+ },
+ "problems": [],
+ "verses": [
+  {
+   "book": 56,
+   "chapter": 2,
+   "v": 1,
+   "hash": "dcacc0f3fa20",
+   "tokens": 11,
+   "spans": []
+  },
+  {
+   "book": 56,
+   "chapter": 2,
+   "v": 2,
+   "hash": "890779fb8e11",
+   "tokens": 8,
+   "spans": []
+  },
+  {
+   "book": 56,
+   "chapter": 2,
+   "v": 3,
+   "hash": "b8aadba42138",
+   "tokens": 11,
+   "spans": []
+  },
+  {
+   "book": 56,
+   "chapter": 2,
+   "v": 4,
+   "hash": "b85e73c71f2e",
+   "tokens": 13,
+   "spans": []
+  },
+  {
+   "book": 56,
+   "chapter": 2,
+   "v": 5,
+   "hash": "1256d6ad5b5c",
+   "tokens": 14,
+   "spans": []
+  },
+  {
+   "book": 56,
+   "chapter": 2,
+   "v": 6,
+   "hash": "e4481673f5e7",
+   "tokens": 10,
+   "spans": []
+  },
+  {
+   "book": 56,
+   "chapter": 2,
+   "v": 7,
+   "hash": "22208f59567c",
+   "tokens": 10,
+   "spans": []
+  },
+  {
+   "book": 56,
+   "chapter": 2,
+   "v": 8,
+   "hash": "7aa844cf55bd",
+   "tokens": 6,
+   "spans": []
+  },
+  {
+   "book": 56,
+   "chapter": 2,
+   "v": 9,
+   "hash": "047f513ac424",
+   "tokens": 10,
+   "spans": []
+  },
+  {
+   "book": 56,
+   "chapter": 2,
+   "v": 10,
+   "hash": "56d38758b0ec",
+   "tokens": 8,
+   "spans": []
+  },
+  {
+   "book": 56,
+   "chapter": 2,
+   "v": 11,
+   "hash": "7eb9746ead81",
+   "tokens": 11,
+   "spans": []
+  },
+  {
+   "book": 56,
+   "chapter": 2,
+   "v": 12,
+   "hash": "4ce2c4c8fe4d",
+   "tokens": 15,
+   "spans": []
+  },
+  {
+   "book": 56,
+   "chapter": 2,
+   "v": 13,
+   "hash": "6a98a02cf80c",
+   "tokens": 8,
+   "spans": []
+  },
+  {
+   "book": 56,
+   "chapter": 2,
+   "v": 14,
+   "hash": "ec4d36408d25",
+   "tokens": 9,
+   "spans": []
+  },
+  {
+   "book": 56,
+   "chapter": 2,
+   "v": 15,
+   "hash": "43e5eec69d6c",
+   "tokens": 14,
+   "spans": []
+  }
+ ]
+}
