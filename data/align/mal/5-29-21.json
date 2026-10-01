@@ -1,0 +1,79 @@
+{
+ "model": "claude-sonnet-5-5",
+ "effort": "medium",
+ "created": "2026-10-01T22:26:27.205Z",
+ "cost": 0.0406296,
+ "usage": {
+  "in": 2,
+  "cacheRead": 1008,
+  "cacheCreate": 6933,
+  "out": 630
+ },
+ "problems": [],
+ "verses": [
+  {
+   "book": 5,
+   "chapter": 29,
+   "v": 21,
+   "hash": "3ea23fb8cb4a",
+   "tokens": 15,
+   "spans": []
+  },
+  {
+   "book": 5,
+   "chapter": 29,
+   "v": 22,
+   "hash": "bb64ceea80ff",
+   "tokens": 21,
+   "spans": []
+  },
+  {
+   "book": 5,
+   "chapter": 29,
+   "v": 23,
+   "hash": "e49c2c8df3a0",
+   "tokens": 13,
+   "spans": []
+  },
+  {
+   "book": 5,
+   "chapter": 29,
+   "v": 24,
+   "hash": "bc9855f0f590",
+   "tokens": 15,
+   "spans": []
+  },
+  {
+   "book": 5,
+   "chapter": 29,
+   "v": 25,
+   "hash": "9604cacf499f",
+   "tokens": 11,
+   "spans": []
+  },
+  {
+   "book": 5,
+   "chapter": 29,
+   "v": 26,
+   "hash": "89f2c0e92e63",
+   "tokens": 14,
+   "spans": []
+  },
+  {
+   "book": 5,
+   "chapter": 29,
+   "v": 27,
+   "hash": "971af2262b50",
+   "tokens": 15,
+   "spans": []
+  },
+  {
+   "book": 5,
+   "chapter": 29,
+   "v": 28,
+   "hash": "754c365410c7",
+   "tokens": 16,
+   "spans": []
+  }
+ ]
+}
