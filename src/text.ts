@@ -54,6 +54,20 @@ export function flattenVerse(text: string): string {
   return text.replace(/[\n\u2003]+/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
+/** Same normalisation as the build script's plainText(), for dictionary search. */
+export function plainText(text: string): string {
+  const base = typeof text.normalize === 'function' ? text.normalize('NFD') : text;
+  return base
+    .replace(/[\u0300-\u036f\u0591-\u05c7\u05f0-\u05f4]/g, '')
+    .replace(/ς/g, 'σ')
+    .replace(/[ʼʻ'’ʾʿ]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+/** Width of the reading column on wide screens such as tablets and landscape phones. */
+export const MAX_CONTENT_WIDTH = 720;
+
 export function formatCount(n: number): string {
   return n.toLocaleString('en-US');
 }

@@ -28,6 +28,11 @@ interface Props {
   flash?: boolean;
   /** Show a small mark before the number (paragraph layout, where there is no margin bar). */
   bookmarked?: boolean;
+  /** Background colour of a highlighted verse. */
+  highlightColor?: string;
+  /** The verse has a personal note; tapping the pencil opens it. */
+  hasNote?: boolean;
+  onNotePress?: () => void;
 }
 
 /** Character ranges of `query` inside `text`, ignoring case and apostrophe style. */
@@ -64,6 +69,9 @@ export function VerseText({
   numberOfLines,
   flash,
   bookmarked,
+  highlightColor,
+  hasNote,
+  onNotePress,
 }: Props) {
   const theme = useTheme();
   const segments = useMemo(() => parseSegments(verse), [verse]);
@@ -143,6 +151,7 @@ export function VerseText({
         styles.text,
         { fontSize, lineHeight, color: theme.text, fontFamily: theme.font },
         isTitle && styles.title,
+        highlightColor ? { backgroundColor: highlightColor } : null,
         flash && { backgroundColor: theme.highlight },
       ]}
       numberOfLines={numberOfLines}
@@ -150,6 +159,11 @@ export function VerseText({
       onLongPress={onLongPress}
     >
       {bookmarked ? <Text style={{ color: theme.accent }}>▎</Text> : null}
+      {hasNote ? (
+        <Text onPress={onNotePress} style={{ color: theme.accent, fontSize: small }} accessibilityLabel="Open note">
+          ✎{' '}
+        </Text>
+      ) : null}
       {showNumber && !isTitle ? (
         <Text
           onPress={onNumberPress}

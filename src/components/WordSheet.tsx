@@ -213,6 +213,9 @@ const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)' },
   sheet: {
     maxHeight: '80%',
+    width: '100%',
+    maxWidth: 720,
+    alignSelf: 'center',
     borderTopLeftRadius: 18,
     borderTopRightRadius: 18,
     paddingHorizontal: 20,

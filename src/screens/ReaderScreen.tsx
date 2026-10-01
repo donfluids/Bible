@@ -1,19 +1,22 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, Share, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSQLiteContext } from 'expo-sqlite';
 import * as Clipboard from 'expo-clipboard';
+import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
+import { CompareSheet } from '../components/CompareSheet';
 import { Header, HeaderButton } from '../components/Header';
 import { InterlinearVerse } from '../components/InterlinearVerse';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
 import { noteLetter, VerseText } from '../components/VerseText';
 import { getChapter, getInterlinear, getNotes } from '../queries';
 import { useSettings } from '../settings';
-import { bookName, flattenVerse, formatRef } from '../text';
+import { MAX_CONTENT_WIDTH, bookName, flattenVerse, formatRef } from '../text';
 import { useTheme } from '../theme';
-import type { Book, Note, OriginalWord, VerseRow, WordPick } from '../types';
+import { HIGHLIGHT_COLORS } from '../types';
+import type { Book, HighlightColor, Note, OriginalWord, Ref, VerseRow, WordPick } from '../types';
 
 interface Props {
   books: Book[];
@@ -80,6 +83,8 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
     position,
     tipSeen,
     bookmarks,
+    highlights,
+    notes: userNotes,
     layout,
     keepAwake,
   } = settings;
@@ -92,6 +97,8 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
   const [flash, setFlash] = useState<number | null>(null);
   const [note, setNote] = useState<{ verse: VerseRow; note: Note } | null>(null);
   const [actions, setActions] = useState<VerseRow | null>(null);
+  const [compare, setCompare] = useState<Ref | null>(null);
+  const [noteEditor, setNoteEditor] = useState<{ verse: VerseRow; text: string } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const listRef = useRef<FlatList<Item>>(null);
 
@@ -236,8 +243,41 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
       setToast('Bookmark removed');
     } else {
       update({ bookmarks: [...bookmarks, { book: v.book, chapter: v.chapter, verse: v.verse, translation, added: Date.now() }] });
+      confirmHaptic();
       setToast('Bookmarked');
     }
+  };
+
+  const openActions = (v: VerseRow) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
+    setActions(v);
+  };
+  const confirmHaptic = () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
+
+  const setHighlight = (v: VerseRow, color: HighlightColor | null) => {
+    setActions(null);
+    const next = { ...highlights };
+    if (color) next[bookmarkKey(v)] = color;
+    else delete next[bookmarkKey(v)];
+    update({ highlights: next });
+    confirmHaptic();
+    setToast(color ? 'Highlighted' : 'Highlight removed');
+  };
+
+  const openNote = (v: VerseRow) => {
+    setActions(null);
+    setNoteEditor({ verse: v, text: userNotes[bookmarkKey(v)] ?? '' });
+  };
+  const saveNote = () => {
+    if (!noteEditor) return;
+    const next = { ...userNotes };
+    const text = noteEditor.text.trim();
+    if (text) next[bookmarkKey(noteEditor.verse)] = text;
+    else delete next[bookmarkKey(noteEditor.verse)];
+    update({ notes: next });
+    setNoteEditor(null);
+    confirmHaptic();
+    setToast(text ? 'Note saved' : 'Note removed');
   };
 
   const toggleExpanded = useCallback((verse: number) => {
@@ -264,12 +304,15 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
                   verse={v}
                   fontSize={fontSize}
                   onWord={handleWord}
-                  onLongPress={() => setActions(v)}
+                  onLongPress={() => openActions(v)}
                   notes={notes.get(v.verse)}
                   onNote={(n) => setNote({ verse: v, note: n })}
                   underline={underlineWords}
                   flash={flash === v.verse}
                   bookmarked={bookmarked.has(bookmarkKey(v))}
+                  highlightColor={highlights[bookmarkKey(v)] ? theme.marks[highlights[bookmarkKey(v)]] : undefined}
+                  hasNote={bookmarkKey(v) in userNotes}
+                  onNotePress={() => openNote(v)}
                 />
               </React.Fragment>
             ))}
@@ -281,12 +324,14 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
       const showOriginal = interlinear && (interlinearMode === 'all' || expanded.has(v.verse));
       const words = showOriginal ? original?.get(v.verse) : undefined;
       const marked = bookmarked.has(bookmarkKey(v));
+      const mark = highlights[bookmarkKey(v)];
       return (
         <View
           style={[
             styles.verse,
             interlinear && [styles.verseInterlinear, { borderBottomColor: theme.border }],
             marked && [styles.verseBookmarked, { borderLeftColor: theme.accent }],
+            mark ? { backgroundColor: theme.marks[mark] } : null,
             flashing && { backgroundColor: theme.highlight },
           ]}
         >
@@ -294,7 +339,9 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
             verse={v}
             fontSize={fontSize}
             onWord={handleWord}
-            onLongPress={() => setActions(v)}
+            onLongPress={() => openActions(v)}
+            hasNote={bookmarkKey(v) in userNotes}
+            onNotePress={() => openNote(v)}
             onNumberPress={interlinear && interlinearMode === 'tap' ? () => toggleExpanded(v.verse) : undefined}
             notes={notes.get(v.verse)}
             onNote={(n) => setNote({ verse: v, note: n })}
@@ -313,7 +360,8 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
         </View>
       );
     },
-    [theme, fontSize, handleWord, underlineWords, flash, interlinear, interlinearMode, expanded, original, notes, bookmarked, showTranslit, hideCantillation, toggleExpanded],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [theme, fontSize, handleWord, underlineWords, flash, interlinear, interlinearMode, expanded, original, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, toggleExpanded],
   );
 
   const title = useMemo(() => `${bookName(books, position.book)} ${position.chapter}`, [books, position]);
@@ -419,16 +467,79 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
             <Text style={[styles.actionsPreview, { color: theme.muted }]} numberOfLines={3}>
               {flattenVerse(actions.text)}
             </Text>
+            <View style={[styles.swatchRow, { borderTopColor: theme.border }]}>
+              <Text style={[styles.swatchLabel, { color: theme.text }]}>Highlight</Text>
+              {HIGHLIGHT_COLORS.map((c) => (
+                <Pressable
+                  key={c}
+                  onPress={() => setHighlight(actions, c)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Highlight ${c}`}
+                  style={[
+                    styles.swatch,
+                    { backgroundColor: theme.marks[c], borderColor: highlights[bookmarkKey(actions)] === c ? theme.accent : theme.border },
+                  ]}
+                />
+              ))}
+              {highlights[bookmarkKey(actions)] ? (
+                <Pressable onPress={() => setHighlight(actions, null)} hitSlop={8} accessibilityRole="button">
+                  <Text style={[styles.swatchClear, { color: theme.muted }]}>Clear</Text>
+                </Pressable>
+              ) : null}
+            </View>
+            <SheetAction
+              label={bookmarkKey(actions) in userNotes ? 'Edit note' : 'Add a note'}
+              detail={userNotes[bookmarkKey(actions)]}
+              onPress={() => openNote(actions)}
+            />
+            <SheetAction
+              label="Compare translations"
+              detail={`KJV and WEB side by side with the ${actions.book <= 39 ? 'Hebrew' : 'Greek'}`}
+              onPress={() => {
+                setActions(null);
+                setCompare({ book: actions.book, chapter: actions.chapter, verse: actions.verse });
+              }}
+            />
             <SheetAction label="Copy" detail="Verse text with its reference" onPress={() => copyVerse(actions)} />
             <SheetAction label="Share…" onPress={() => shareVerse(actions)} />
             <SheetAction
               label={bookmarked.has(bookmarkKey(actions)) ? 'Remove bookmark' : 'Bookmark'}
-              detail="Bookmarks are listed at the top of the Books screen"
+              detail="Saved items are listed at the top of the Books screen"
               onPress={() => toggleBookmark(actions)}
             />
           </>
         ) : null}
       </SimpleSheet>
+
+      <SimpleSheet visible={!!noteEditor} title={noteEditor ? `Note · ${formatRef(books, noteEditor.verse)}` : ''} onClose={() => setNoteEditor(null)}>
+        {noteEditor ? (
+          <View>
+            <TextInput
+              value={noteEditor.text}
+              onChangeText={(text) => setNoteEditor({ ...noteEditor, text })}
+              placeholder="Your note on this verse"
+              placeholderTextColor={theme.muted}
+              multiline
+              autoFocus
+              style={[styles.noteInput, { color: theme.text, borderColor: theme.border, backgroundColor: theme.bg }]}
+            />
+            <View style={styles.noteButtons}>
+              {userNotes[bookmarkKey(noteEditor.verse)] ? (
+                <Pressable onPress={() => setNoteEditor({ ...noteEditor, text: '' })} hitSlop={8} accessibilityRole="button">
+                  <Text style={[styles.noteDelete, { color: theme.muted }]}>Delete</Text>
+                </Pressable>
+              ) : (
+                <View />
+              )}
+              <Pressable onPress={saveNote} style={[styles.noteSave, { backgroundColor: theme.accent }]} accessibilityRole="button">
+                <Text style={styles.noteSaveText}>Save</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
+      </SimpleSheet>
+
+      <CompareSheet target={compare} books={books} onClose={() => setCompare(null)} onWord={handleWord} />
     </View>
   );
 }
@@ -448,7 +559,7 @@ const styles = StyleSheet.create({
   body: { flex: 1 },
   loading: { flex: 1 },
   para: { marginBottom: 12 },
-  list: { paddingHorizontal: 18, paddingTop: 12 },
+  list: { paddingHorizontal: 18, paddingTop: 12, alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
   verse: { paddingVertical: 5, borderRadius: 6 },
   verseInterlinear: { paddingBottom: 10, marginBottom: 6, borderBottomWidth: StyleSheet.hairlineWidth },
   verseBookmarked: { borderLeftWidth: 3, paddingLeft: 8, marginLeft: -11 },
@@ -471,5 +582,14 @@ const styles = StyleSheet.create({
   toast: { position: 'absolute', alignSelf: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 },
   toastText: { fontSize: 14, fontWeight: '600' },
   noteText: { fontSize: 16, lineHeight: 23, paddingBottom: 8 },
+  swatchRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, borderTopWidth: StyleSheet.hairlineWidth },
+  swatchLabel: { fontSize: 17, marginRight: 4 },
+  swatch: { width: 30, height: 30, borderRadius: 15, borderWidth: 2 },
+  swatchClear: { fontSize: 14, marginLeft: 4 },
+  noteInput: { minHeight: 110, maxHeight: 220, borderWidth: StyleSheet.hairlineWidth, borderRadius: 10, padding: 12, fontSize: 16, lineHeight: 22, textAlignVertical: 'top' },
+  noteButtons: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 },
+  noteDelete: { fontSize: 15 },
+  noteSave: { paddingHorizontal: 22, paddingVertical: 10, borderRadius: 10 },
+  noteSaveText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   actionsPreview: { fontSize: 14, lineHeight: 20, marginBottom: 8 },
 });

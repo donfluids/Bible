@@ -3,12 +3,12 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, Vi
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
 import { VerseListItem } from '../components/VerseListItem';
-import { searchText } from '../queries';
+import { searchLexicon, searchText } from '../queries';
 import { parseReference } from '../refs';
 import { useSettings } from '../settings';
-import { bookName, formatCount } from '../text';
+import { MAX_CONTENT_WIDTH, bookName, formatCount } from '../text';
 import { useTheme } from '../theme';
-import type { Book, Ref, VerseRow, WordPick } from '../types';
+import type { Book, LexiconHit, Ref, VerseRow, WordPick } from '../types';
 
 interface Props {
   books: Book[];
@@ -26,6 +26,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
   const { translation } = settings;
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<VerseRow[] | null>(null);
+  const [entries, setEntries] = useState<LexiconHit[]>([]);
   const [busy, setBusy] = useState(false);
   const latest = useRef(0);
 
@@ -40,14 +41,16 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
     const id = ++latest.current;
     if (q.length < 2 || strongsId || goTo) {
       setResults(null);
+      setEntries([]);
       setBusy(false);
       return;
     }
     setBusy(true);
     const timer = setTimeout(async () => {
-      const rows = await searchText(db, translation, q, LIMIT);
+      const [rows, hits] = await Promise.all([searchText(db, translation, q, LIMIT), searchLexicon(db, q, 8)]);
       if (latest.current !== id) return;
       setResults(rows);
+      setEntries(hits);
       setBusy(false);
     }, 250);
     return () => clearTimeout(timer);
@@ -94,6 +97,29 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
         </Pressable>
       ) : null}
       {busy ? <ActivityIndicator style={styles.spinner} color={theme.accent} /> : null}
+      {entries.length > 0 && !busy ? (
+        <View style={[styles.lexicon, { borderColor: theme.border, backgroundColor: theme.card }]}>
+          <Text style={[styles.lexiconTitle, { color: theme.muted }]}>DICTIONARY</Text>
+          {entries.map((e) => (
+            <Pressable
+              key={e.id}
+              onPress={() => onWord({ strongs: e.id })}
+              style={({ pressed }) => [styles.entry, { borderTopColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
+              accessibilityRole="button"
+            >
+              <Text style={[styles.entryId, { color: theme.accent }]}>{e.id}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.entryLemma, { color: theme.text }]} numberOfLines={1}>
+                  {e.lemma} <Text style={{ color: theme.muted, fontSize: 14 }}>{e.translit}</Text>
+                </Text>
+                <Text style={[styles.entryGloss, { color: theme.muted }]} numberOfLines={1}>
+                  {e.kjv_usage || e.definition || ''}
+                </Text>
+              </View>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
       {results && !busy ? (
         <Text style={[styles.count, { color: theme.muted }]}>
           {results.length === 0
@@ -107,6 +133,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
         data={results ?? []}
         keyExtractor={(v) => `${v.book}:${v.chapter}:${v.verse}`}
         keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.list}
         renderItem={({ item }) => (
           <VerseListItem verse={item} books={books} fontSize={listFont} onOpen={onOpenRef} onWord={onWord} highlightText={query} />
         )}
@@ -118,7 +145,11 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
+  list: { alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
   input: {
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH - 28,
     margin: 14,
     paddingHorizontal: 14,
     paddingVertical: 11,
@@ -127,6 +158,12 @@ const styles = StyleSheet.create({
     fontSize: 17,
   },
   spinner: { marginVertical: 12 },
+  lexicon: { marginHorizontal: 14, marginBottom: 10, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
+  lexiconTitle: { fontSize: 11, fontWeight: '700', letterSpacing: 0.8, paddingHorizontal: 12, paddingTop: 10, paddingBottom: 6 },
+  entry: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth },
+  entryId: { fontSize: 13, fontWeight: '700', width: 56, fontVariant: ['tabular-nums'] },
+  entryLemma: { fontSize: 17 },
+  entryGloss: { fontSize: 13, marginTop: 1 },
   strongsRow: { marginHorizontal: 14, marginBottom: 8, padding: 14, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth },
   strongsText: { fontSize: 17, fontWeight: '600' },
   strongsSub: { fontSize: 13, marginTop: 2 },

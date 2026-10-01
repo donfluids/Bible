@@ -1,6 +1,7 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { inflateSync, strFromU8 } from 'fflate';
-import type { Book, Heading, Note, OriginalWord, Ref, Rendering, StrongsEntry, TranslationId, VerseRow } from './types';
+import { plainText } from './text';
+import type { Book, Heading, LexiconHit, Note, OriginalWord, Ref, Rendering, StrongsEntry, TranslationId, VerseRow } from './types';
 
 export async function getBooks(db: SQLiteDatabase): Promise<Book[]> {
   return db.getAllAsync<Book>('SELECT id, osis, name, testament, chapters FROM books ORDER BY id');
@@ -184,6 +185,36 @@ export function unpackWords(packed: string): OriginalWord[] {
     const [text = '', translit = '', gloss = '', strongs = '', morph = '', flags = '0'] = rec.split('\x1f');
     return { text, translit, gloss, strongs, morph, flags: Number(flags) || 0 };
   });
+}
+
+/**
+ * Dictionary entries matching a typed word: a transliteration or lemma prefix
+ * (accent-insensitive), an English rendering in the KJV, or a word in the definition.
+ */
+export async function searchLexicon(db: SQLiteDatabase, query: string, limit: number): Promise<LexiconHit[]> {
+  const q = plainText(query.replace(/\s+/g, ' '));
+  if (q.length < 2) return [];
+  const escaped = q.replace(/[\\%_]/g, (c) => '\\' + c);
+  const prefix = escaped + '%';
+  const word = '%' + escaped + '%';
+  return db.getAllAsync<LexiconHit>(
+    `SELECT id, lemma, translit, pron, derivation, definition, kjv_usage,
+            CASE WHEN translit_plain LIKE ? ESCAPE '\\' OR lemma_plain LIKE ? ESCAPE '\\' THEN 0
+                 WHEN lower(kjv_usage) LIKE ? ESCAPE '\\' THEN 1 ELSE 2 END AS rank
+     FROM strongs
+     WHERE translit_plain LIKE ? ESCAPE '\\' OR lemma_plain LIKE ? ESCAPE '\\'
+        OR lower(kjv_usage) LIKE ? ESCAPE '\\' OR lower(definition) LIKE ? ESCAPE '\\'
+     ORDER BY rank, length(translit_plain), id
+     LIMIT ?`,
+    prefix,
+    prefix,
+    word,
+    prefix,
+    prefix,
+    word,
+    word,
+    limit,
+  );
 }
 
 export async function getMeta(db: SQLiteDatabase): Promise<Record<string, string>> {

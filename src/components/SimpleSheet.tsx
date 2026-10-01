@@ -54,7 +54,7 @@ export function SheetAction({ label, detail, onPress, destructive }: ActionProps
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)' },
-  sheet: { maxHeight: '70%', borderTopLeftRadius: 18, borderTopRightRadius: 18, paddingHorizontal: 20, paddingTop: 14 },
+  sheet: { maxHeight: '70%', width: '100%', maxWidth: 720, alignSelf: 'center', borderTopLeftRadius: 18, borderTopRightRadius: 18, paddingHorizontal: 20, paddingTop: 14 },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   title: { fontSize: 12, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' },
   close: { fontSize: 18, paddingHorizontal: 4 },

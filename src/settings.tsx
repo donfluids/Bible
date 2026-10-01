@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import Storage from 'expo-sqlite/kv-store';
-import type { Bookmark, TranslationId } from './types';
+import type { Bookmark, HighlightColor, TranslationId } from './types';
 
 export interface Position {
   book: number;
@@ -29,6 +29,10 @@ export interface Settings {
   showTranslit: boolean;
   hideCantillation: boolean;
   bookmarks: Bookmark[];
+  /** Verse key "book:chapter:verse" to highlight colour. */
+  highlights: Record<string, HighlightColor>;
+  /** Verse key "book:chapter:verse" to note text. */
+  notes: Record<string, string>;
   position: Position;
   /** The first-launch tip about tapping words has been dismissed. */
   tipSeen: boolean;
@@ -51,6 +55,8 @@ const DEFAULTS: Settings = {
   showTranslit: true,
   hideCantillation: false,
   bookmarks: [],
+  highlights: {},
+  notes: {},
   position: { book: 43, chapter: 1 },
   tipSeen: false,
   lastChapters: {},

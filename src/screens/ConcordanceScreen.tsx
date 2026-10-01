@@ -5,7 +5,7 @@ import { Header } from '../components/Header';
 import { VerseListItem } from '../components/VerseListItem';
 import { getConcordance, getRenderingRefs, getRenderings, getStrongs, getVerses } from '../queries';
 import { useSettings } from '../settings';
-import { formatCount } from '../text';
+import { MAX_CONTENT_WIDTH, formatCount } from '../text';
 import { useTheme } from '../theme';
 import type { Book, Ref, Rendering, StrongsEntry, VerseRow, WordPick } from '../types';
 
@@ -103,6 +103,7 @@ export function ConcordanceScreen({ strongs, books, onOpenRef, onWord, onBack }:
           renderItem={({ item }) => (
             <VerseListItem verse={item} books={books} fontSize={listFont} onOpen={onOpenRef} onWord={onWord} emphasize={strongs} />
           )}
+          contentContainerStyle={styles.list}
           onEndReached={loadMore}
           onEndReachedThreshold={0.6}
           ListFooterComponent={
@@ -135,6 +136,7 @@ function Chip({ label, count, active, onPress }: { label: string; count: number;
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
+  list: { alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
   summary: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
   lemma: { fontSize: 26, lineHeight: 34 },
   translit: { fontSize: 17 },

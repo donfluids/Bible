@@ -53,7 +53,7 @@ export function BooksScreen({ books, current, onPick, onOpenBookmarks, bookmarkC
         style={({ pressed }) => [styles.bookmarks, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
         accessibilityRole="button"
       >
-        <Text style={[styles.name, { color: theme.accent, fontWeight: '600' }]}>Bookmarks</Text>
+        <Text style={[styles.name, { color: theme.accent, fontWeight: '600' }]}>Saved: bookmarks, highlights, notes</Text>
         <Text style={[styles.count, { color: theme.muted }]}>{bookmarkCount}</Text>
       </Pressable>
       <FlatList

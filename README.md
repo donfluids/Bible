@@ -18,8 +18,11 @@ app, so it works without a connection.
   Greek words absent from the modern critical editions are marked.
 - Poetry keeps its line breaks, and the translators' footnotes and cross references
   appear as small letters in the text; tap one to read it.
-- Hold a verse to copy it, share it, or bookmark it. Bookmarks are listed from the
-  Books screen.
+- Hold a verse to highlight it in one of four colours, add a note, compare the KJV
+  and WEB side by side with the Hebrew or Greek, copy it, share it, or bookmark it.
+  Bookmarks, highlights and notes are listed under Saved on the Books screen.
+- The search box also searches the dictionary: an English meaning ("love"), a
+  transliteration ("logos") or a Hebrew or Greek word, accents optional.
 - The occurrences list for a word starts with how the translation renders it
   ("God 2,075 · gods 190 · judges 3"); tap a rendering to see only those verses.
 - Interlinear options: show every verse or only verses whose number you tap, hide
@@ -27,7 +30,8 @@ app, so it works without a connection.
 - Search the text, type a reference such as `John 3:16` or `Ps 23` to jump to it, or
   type a Strong's number such as `G26` to open its entry.
 - Swipe left or right to change chapter. Screens slide natively, and on iPhone you can
-  swipe back from the left edge.
+  swipe back from the left edge. Rotates to landscape; on tablets the text keeps a
+  comfortable column width.
 - Appearance: light, sepia or dark (or follow the phone), a serif typeface, verse-per-line
   or paragraph layout, and keep-the-screen-awake.
 - Adjustable text size, remembers where you left off.
@@ -99,8 +103,8 @@ src/queries.ts           All SQL, typed
 src/text.ts              Expands offset-encoded Strong's tags into text runs
 src/morph.ts             Turns Hebrew and Greek grammar codes into plain words
 src/settings.tsx         Persisted settings (translation, text size, position)
-src/components/          Header, VerseText (tappable words, note markers), InterlinearVerse, WordSheet, SimpleSheet, VerseListItem
-src/screens/             Reader, Books, Chapters, Bookmarks, Search, Concordance, Settings
+src/components/          Header, VerseText, InterlinearVerse, WordSheet, CompareSheet, SimpleSheet, VerseListItem
+src/screens/             Reader, Books, Chapters, Saved, Search, Concordance, Settings
 scripts/fetch-data.sh    Downloads the source texts into data/raw/ (not committed)
 scripts/build-db.mjs     Builds assets/db/bible.db from data/raw/
 scripts/make-icons.sh    Draws the icon, adaptive icon layers and splash images with ImageMagick
@@ -127,7 +131,7 @@ so phones that already hold a copy of the old file pick up the new one.
 | `books`       | 66 books: id, USFM code, name, testament, chapter count                   |
 | `verses`      | one row per verse and translation: plain `text` plus offset-encoded `tags`; `omitted` = 1 for the five verses the WEB leaves out, with the translators' note as `text` |
 | `headings`    | section headings that fall between verses (the acrostic labels of Psalm 119 in the WEB) |
-| `strongs`     | 14,197 dictionary entries: lemma, transliteration, pronunciation, derivation, definition, KJV usage |
+| `strongs`     | 14,197 dictionary entries: lemma, transliteration, pronunciation, derivation, definition, KJV usage, plus accent-free `lemma_plain` and `translit_plain` for search |
 | `concordance` | per Strong's number and translation: verse count and a packed list of verse references |
 | `interlinear` | per chapter: the Hebrew or Greek words of every verse, deflate-compressed  |
 | `notes`       | translators' footnotes (kind `f`) and cross references (kind `x`) with the character offset of their marker |

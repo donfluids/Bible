@@ -1,5 +1,6 @@
 import { Platform, useColorScheme } from 'react-native';
 import { useOptionalSettings } from './settings';
+import type { HighlightColor } from './types';
 
 export type ThemeName = 'light' | 'sepia' | 'dark';
 
@@ -17,9 +18,16 @@ export interface Theme {
   highlight: string;
   /** Font family for scripture text; undefined means the system sans-serif. */
   font: string | undefined;
+  /** Verse highlight colours, tuned to the palette. */
+  marks: Record<HighlightColor, string>;
 }
 
+const LIGHT_MARKS: Record<HighlightColor, string> = { yellow: '#FFF0A6', green: '#D7F0C3', blue: '#D2E6FF', pink: '#FFD9E6' };
+const SEPIA_MARKS: Record<HighlightColor, string> = { yellow: '#F3DE8E', green: '#CFE1AE', blue: '#C6DAEF', pink: '#F0C9D5' };
+const DARK_MARKS: Record<HighlightColor, string> = { yellow: '#4A4210', green: '#21391C', blue: '#1B2F4A', pink: '#47212F' };
+
 const light: Omit<Theme, 'font'> = {
+  marks: LIGHT_MARKS,
   name: 'light',
   dark: false,
   bg: '#FBF8F1',
@@ -34,6 +42,7 @@ const light: Omit<Theme, 'font'> = {
 };
 
 const sepia: Omit<Theme, 'font'> = {
+  marks: SEPIA_MARKS,
   name: 'sepia',
   dark: false,
   bg: '#F0E4CC',
@@ -48,6 +57,7 @@ const sepia: Omit<Theme, 'font'> = {
 };
 
 const dark: Omit<Theme, 'font'> = {
+  marks: DARK_MARKS,
   name: 'dark',
   dark: true,
   bg: '#15130F',

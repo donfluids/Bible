@@ -26,7 +26,9 @@
 //   renderings(strongs, translation, word, count, refs)
 //     how a Strong's number is rendered in a translation: the English word or phrase,
 //     how many verses use it, and those verses packed like concordance.refs
-//   strongs(id, lemma, translit, pron, derivation, definition, kjv_usage)
+//   strongs(id, lemma, translit, pron, derivation, definition, kjv_usage, lemma_plain, translit_plain)
+//     lemma_plain and translit_plain are lowercase with accents, vowel points and
+//     diacritics removed, for accent-insensitive dictionary search
 //   concordance(strongs, translation, count, refs)
 //     refs = BLOB of 3 bytes per verse: book, chapter, verse (each fits a byte)
 //   interlinear(book, chapter, data)
@@ -335,6 +337,13 @@ function buildInterlinear(db) {
   return { hebrewWords: hebrew.length, greekWords: greek.length, greekSkippedNaOnly: skipped, wordsWithoutDictionaryEntry: unknown, verses: byVerse.size, chapters: byChapter.size, compressedBytes: bytes };
 }
 
+// Lowercase and strip accents, Hebrew points and other combining marks, so that
+// "logos", "lógos", "λογος" and "λόγος" all compare equal.
+function plainText(text) {
+  if (!text) return null;
+  return text.normalize('NFD').replace(/[\u0300-\u036f\u0591-\u05c7\u05f0-\u05f4]/g, '').replace(/ς/g, 'σ').replace(/[ʼʻ'’ʾʿ]/g, '').toLowerCase().trim();
+}
+
 function loadStrongs(file, varName) {
   const src = readFileSync(join(RAW, file), 'utf8');
   const start = src.indexOf('{', src.indexOf(`var ${varName}`));
@@ -364,7 +373,9 @@ function main() {
                         PRIMARY KEY(translation, book, chapter, verse, n)) WITHOUT ROWID;
     CREATE TABLE renderings(strongs TEXT NOT NULL, translation TEXT NOT NULL, word TEXT NOT NULL, count INTEGER NOT NULL,
                         refs BLOB NOT NULL, PRIMARY KEY(strongs, translation, word)) WITHOUT ROWID;
-    CREATE TABLE strongs(id TEXT PRIMARY KEY, lemma TEXT, translit TEXT, pron TEXT, derivation TEXT, definition TEXT, kjv_usage TEXT) WITHOUT ROWID;
+    CREATE TABLE strongs(id TEXT PRIMARY KEY, lemma TEXT, translit TEXT, pron TEXT, derivation TEXT, definition TEXT, kjv_usage TEXT,
+                        lemma_plain TEXT, translit_plain TEXT) WITHOUT ROWID;
+    CREATE INDEX strongs_translit ON strongs(translit_plain);
     CREATE TABLE concordance(strongs TEXT NOT NULL, translation TEXT NOT NULL, count INTEGER NOT NULL, refs BLOB NOT NULL,
                         PRIMARY KEY(strongs, translation)) WITHOUT ROWID;
     CREATE TABLE interlinear(book INTEGER NOT NULL, chapter INTEGER NOT NULL, data BLOB NOT NULL,
@@ -377,7 +388,7 @@ function main() {
   const insNote = db.prepare('INSERT INTO notes VALUES (?,?,?,?,?,?,?,?)');
   const insRendering = db.prepare('INSERT INTO renderings VALUES (?,?,?,?,?)');
   const insBook = db.prepare('INSERT INTO books VALUES (?,?,?,?,?)');
-  const insStrongs = db.prepare('INSERT INTO strongs VALUES (?,?,?,?,?,?,?)');
+  const insStrongs = db.prepare('INSERT INTO strongs VALUES (?,?,?,?,?,?,?,?,?)');
   const insConc = db.prepare('INSERT INTO concordance VALUES (?,?,?,?)');
   const insMeta = db.prepare('INSERT INTO meta VALUES (?,?)');
 
@@ -459,12 +470,14 @@ function main() {
   let nStrongs = 0;
   for (const dict of [heb, grk]) {
     for (const [id, e] of Object.entries(dict)) {
-      insStrongs.run(id, e.lemma ?? null, e.xlit ?? e.translit ?? null, e.pron ?? null,
-        (e.derivation ?? '').trim() || null, (e.strongs_def ?? '').trim() || null, (e.kjv_def ?? '').trim() || null);
+      const translit = e.xlit ?? e.translit ?? null;
+      insStrongs.run(id, e.lemma ?? null, translit, e.pron ?? null,
+        (e.derivation ?? '').trim() || null, (e.strongs_def ?? '').trim() || null, (e.kjv_def ?? '').trim() || null,
+        plainText(e.lemma), plainText(translit));
       nStrongs++;
     }
   }
-  insMeta.run('schema', '5');
+  insMeta.run('schema', '6');
   insMeta.run('built', new Date().toISOString().slice(0, 10));
   insMeta.run('translations', JSON.stringify(TRANSLATIONS.map(({ id, name }) => ({ id, name }))));
   insMeta.run('sources', JSON.stringify({

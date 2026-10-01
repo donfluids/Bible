@@ -50,6 +50,15 @@ export interface Bookmark extends Ref {
   added: number;
 }
 
+export type HighlightColor = 'yellow' | 'green' | 'blue' | 'pink';
+export const HIGHLIGHT_COLORS: HighlightColor[] = ['yellow', 'green', 'blue', 'pink'];
+
+/** A dictionary entry as listed in search results. */
+export interface LexiconHit extends StrongsEntry {
+  /** 0 = transliteration or lemma match, 1 = KJV rendering, 2 = definition. */
+  rank: number;
+}
+
 export interface Heading {
   before_verse: number;
   text: string;

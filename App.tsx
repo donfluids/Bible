@@ -15,7 +15,7 @@ import { SettingsProvider, useSettings } from './src/settings';
 import { useTheme } from './src/theme';
 import type { Book, Ref, WordPick } from './src/types';
 import { WordSheet } from './src/components/WordSheet';
-import { BookmarksScreen } from './src/screens/BookmarksScreen';
+import { SavedScreen } from './src/screens/SavedScreen';
 import { BooksScreen } from './src/screens/BooksScreen';
 import { ChaptersScreen } from './src/screens/ChaptersScreen';
 import { ConcordanceScreen } from './src/screens/ConcordanceScreen';
@@ -165,7 +165,7 @@ function BooksRoute({ navigation }: Props<'Books'>) {
       current={settings.position.book}
       onPick={(book) => navigation.navigate('Chapters', { bookId: book.id })}
       onOpenBookmarks={() => navigation.navigate('Bookmarks')}
-      bookmarkCount={settings.bookmarks.length}
+      bookmarkCount={settings.bookmarks.length + Object.keys(settings.highlights).length + Object.keys(settings.notes).length}
       onBack={() => navigation.goBack()}
     />
   );
@@ -190,8 +190,8 @@ function ChaptersRoute({ navigation, route }: Props<'Chapters'>) {
 
 function BookmarksRoute({ navigation }: Props<'Bookmarks'>) {
   const { books, onWord } = useApp();
-  const openRef = useOpenRef(navigation, 'Bookmarks');
-  return <BookmarksScreen books={books} onOpenRef={openRef} onWord={onWord} onBack={() => navigation.goBack()} />;
+  const openRef = useOpenRef(navigation, 'Saved');
+  return <SavedScreen books={books} onOpenRef={openRef} onWord={onWord} onBack={() => navigation.goBack()} />;
 }
 
 function SearchRoute({ navigation }: Props<'Search'>) {
