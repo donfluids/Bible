@@ -24,6 +24,10 @@ interface Props {
   showNumber?: boolean;
   /** Keep the text to a few lines, for result lists. */
   numberOfLines?: number;
+  /** Briefly tinted after a jump to this verse. */
+  flash?: boolean;
+  /** Show a small mark before the number (paragraph layout, where there is no margin bar). */
+  bookmarked?: boolean;
 }
 
 /** Character ranges of `query` inside `text`, ignoring case and apostrophe style. */
@@ -58,6 +62,8 @@ export function VerseText({
   highlightText,
   showNumber = true,
   numberOfLines,
+  flash,
+  bookmarked,
 }: Props) {
   const theme = useTheme();
   const segments = useMemo(() => parseSegments(verse), [verse]);
@@ -69,7 +75,7 @@ export function VerseText({
   if (verse.omitted) {
     return (
       <Text
-        style={[styles.text, styles.omitted, { fontSize: fontSize - 2, lineHeight, color: theme.muted }]}
+        style={[styles.text, styles.omitted, { fontSize: fontSize - 2, lineHeight, color: theme.muted, fontFamily: theme.font }]}
         numberOfLines={numberOfLines}
         onLongPress={onLongPress}
       >
@@ -133,11 +139,17 @@ export function VerseText({
   let offset = 0;
   return (
     <Text
-      style={[styles.text, { fontSize, lineHeight, color: theme.text }, isTitle && styles.title]}
+      style={[
+        styles.text,
+        { fontSize, lineHeight, color: theme.text, fontFamily: theme.font },
+        isTitle && styles.title,
+        flash && { backgroundColor: theme.highlight },
+      ]}
       numberOfLines={numberOfLines}
       selectable={false}
       onLongPress={onLongPress}
     >
+      {bookmarked ? <Text style={{ color: theme.accent }}>▎</Text> : null}
       {showNumber && !isTitle ? (
         <Text
           onPress={onNumberPress}

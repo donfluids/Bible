@@ -24,8 +24,13 @@ app, so it works without a connection.
   ("God 2,075 · gods 190 · judges 3"); tap a rendering to see only those verses.
 - Interlinear options: show every verse or only verses whose number you tap, hide
   the transliteration, hide Hebrew cantillation marks.
-- Search the text, or type a Strong's number such as `G26` to open it directly.
-- Adjustable text size, light and dark appearance, remembers where you left off.
+- Search the text, type a reference such as `John 3:16` or `Ps 23` to jump to it, or
+  type a Strong's number such as `G26` to open its entry.
+- Swipe left or right to change chapter. Screens slide natively, and on iPhone you can
+  swipe back from the left edge.
+- Appearance: light, sepia or dark (or follow the phone), a serif typeface, verse-per-line
+  or paragraph layout, and keep-the-screen-awake.
+- Adjustable text size, remembers where you left off.
 
 ## Running it on your phone
 
@@ -43,13 +48,17 @@ app, so it works without a connection.
 
 The first launch copies the 41 MB database onto the phone and takes a moment.
 No native build is needed: every module the app uses is included in Expo Go.
-To produce a store-ready build later, use `npx eas-cli build`.
+Expo Go shows its own splash screen; the app's own icon and splash appear in a
+development or store build, made with `npx eas-cli build`.
 
 ## Project layout
 
 ```
 App.tsx                  App shell: database provider, screen stack, word sheet
 src/db.ts                Database asset and on-device database name
+src/navigation.ts        Screen names and parameters for the native stack
+src/refs.ts              Parses typed references like "1 Cor 13:4"
+src/theme.ts             Light, sepia and dark palettes and the serif face
 src/queries.ts           All SQL, typed
 src/text.ts              Expands offset-encoded Strong's tags into text runs
 src/morph.ts             Turns Hebrew and Greek grammar codes into plain words
@@ -58,6 +67,7 @@ src/components/          Header, VerseText (tappable words, note markers), Inter
 src/screens/             Reader, Books, Chapters, Bookmarks, Search, Concordance, Settings
 scripts/fetch-data.sh    Downloads the source texts into data/raw/ (not committed)
 scripts/build-db.mjs     Builds assets/db/bible.db from data/raw/
+scripts/make-icons.sh    Draws the icon, adaptive icon layers and splash images with ImageMagick
 assets/db/bible.db       The bundled database (committed, about 41 MB)
 ```
 
@@ -94,6 +104,11 @@ of characters since the end of the previous tag, `length` the tagged span, and
 New Testament books). Psalm titles are stored as verse 0. Poetry and paragraph breaks
 inside a verse are newlines, and an indented poetry line starts with one em space per
 level of indentation.
+
+`verses.para` records the break the source marks before a verse: `p` paragraph,
+`b` blank line, `q0` to `q2` a poetry line at that indent, or empty. The paragraph
+layout groups verses with it. The KJV source marks few poetry lines, so its Psalms
+mostly read as prose in either layout.
 
 `interlinear.data` is raw deflate of the chapter as text. Verses are separated by
 U+001C, each verse is its number, U+001D, then its words. Words are separated by

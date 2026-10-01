@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSQLiteContext } from 'expo-sqlite';
 import * as Clipboard from 'expo-clipboard';
+import { useKeepAwake } from 'expo-keep-awake';
 import { Header, HeaderButton } from '../components/Header';
 import { InterlinearVerse } from '../components/InterlinearVerse';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
@@ -24,15 +26,65 @@ interface Props {
   onWord: (pick: WordPick) => void;
 }
 
-type Item = { kind: 'heading'; key: string; text: string } | { kind: 'verse'; key: string; verse: VerseRow };
+type Item =
+  | { kind: 'heading'; key: string; text: string }
+  | { kind: 'verse'; key: string; verse: VerseRow }
+  | { kind: 'para'; key: string; verses: VerseRow[] };
+
+/** Group a chapter's verses into paragraphs and poetry lines using the breaks the source marks. */
+function groupParagraphs(verses: VerseRow[], headings: { before_verse: number; text: string }[]): Item[] {
+  const out: Item[] = [];
+  let current: VerseRow[] | null = null;
+  for (const v of verses) {
+    let broke = false;
+    for (const h of headings) {
+      if (h.before_verse === v.verse) {
+        out.push({ kind: 'heading', key: `h${h.before_verse}`, text: h.text });
+        broke = true;
+      }
+    }
+    const standalone = v.verse === 0 || v.omitted === 1 || v.para.startsWith('q') || v.para === 'b';
+    if (standalone) {
+      out.push({ kind: 'para', key: `p${v.verse}`, verses: [v] });
+      current = null;
+      continue;
+    }
+    if (current === null || broke || v.para === 'p') {
+      current = [v];
+      out.push({ kind: 'para', key: `p${v.verse}`, verses: current });
+    } else {
+      current.push(v);
+    }
+  }
+  return out;
+}
+
+function KeepAwake() {
+  useKeepAwake();
+  return null;
+}
 
 export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onWord }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { settings, update } = useSettings();
-  const { translation, fontSize, underlineWords, interlinear, interlinearMode, showTranslit, hideCantillation, position, tipSeen, bookmarks } =
-    settings;
+  const {
+    translation,
+    fontSize,
+    underlineWords,
+    interlinear,
+    interlinearMode,
+    showTranslit,
+    hideCantillation,
+    position,
+    tipSeen,
+    bookmarks,
+    layout,
+    keepAwake,
+  } = settings;
+  // Paragraph layout cannot hold the interlinear cells, so the interlinear view uses one verse per line.
+  const paragraphs = layout === 'paragraphs' && !interlinear;
   const [items, setItems] = useState<Item[] | null>(null);
   const [original, setOriginal] = useState<Map<number, OriginalWord[]> | null>(null);
   const [notes, setNotes] = useState<Map<number, Note[]>>(new Map());
@@ -54,12 +106,17 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
       getNotes(db, translation, position.book, position.chapter),
     ]).then(([{ verses, headings }, noteMap]) => {
       if (cancelled) return;
-      const out: Item[] = [];
-      for (const v of verses) {
-        for (const h of headings) {
-          if (h.before_verse === v.verse) out.push({ kind: 'heading', key: `h${h.before_verse}`, text: h.text });
+      let out: Item[];
+      if (paragraphs) {
+        out = groupParagraphs(verses, headings);
+      } else {
+        out = [];
+        for (const v of verses) {
+          for (const h of headings) {
+            if (h.before_verse === v.verse) out.push({ kind: 'heading', key: `h${h.before_verse}`, text: h.text });
+          }
+          out.push({ kind: 'verse', key: `v${v.verse}`, verse: v });
         }
-        out.push({ kind: 'verse', key: `v${v.verse}`, verse: v });
       }
       setNotes(noteMap);
       setItems(out);
@@ -67,7 +124,7 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
     return () => {
       cancelled = true;
     };
-  }, [db, translation, position.book, position.chapter]);
+  }, [db, translation, position.book, position.chapter, paragraphs]);
 
   // The Hebrew or Greek words are loaded only while the interlinear view is on.
   useEffect(() => {
@@ -87,7 +144,9 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
   // Scroll to a requested verse once the chapter has rendered.
   useEffect(() => {
     if (!items || position.verse === undefined) return;
-    const index = items.findIndex((it) => it.kind === 'verse' && it.verse.verse === position.verse);
+    const index = items.findIndex(
+      (it) => (it.kind === 'verse' && it.verse.verse === position.verse) || (it.kind === 'para' && it.verses.some((v) => v.verse === position.verse)),
+    );
     if (index < 0) return;
     const timer = setTimeout(() => {
       listRef.current?.scrollToIndex({ index, viewPosition: 0.15, animated: false });
@@ -126,6 +185,23 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
       listRef.current?.scrollToOffset({ offset: 0, animated: false });
     },
     [books, position, update],
+  );
+
+  const goRef = useRef(go);
+  goRef.current = go;
+  // Swipe left for the next chapter, right for the previous. Vertical movement fails the
+  // gesture quickly so scrolling is unaffected.
+  const swipe = useMemo(
+    () =>
+      Gesture.Pan()
+        .activeOffsetX([-30, 30])
+        .failOffsetY([-15, 15])
+        .runOnJS(true)
+        .onEnd((e) => {
+          if (e.translationX < -80) goRef.current(1);
+          else if (e.translationX > 80) goRef.current(-1);
+        }),
+    [],
   );
 
   const toggleTranslation = () => update({ translation: translation === 'KJV' ? 'WEB' : 'KJV' });
@@ -176,7 +252,29 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
   const renderItem = useCallback(
     ({ item }: { item: Item }) => {
       if (item.kind === 'heading') {
-        return <Text style={[styles.heading, { color: theme.muted, fontSize: fontSize - 3 }]}>{item.text}</Text>;
+        return <Text style={[styles.heading, { color: theme.muted, fontSize: fontSize - 3, fontFamily: theme.font }]}>{item.text}</Text>;
+      }
+      if (item.kind === 'para') {
+        return (
+          <Text style={[styles.para, { fontSize, lineHeight: Math.round(fontSize * 1.55), color: theme.text, fontFamily: theme.font }]}>
+            {item.verses.map((v, i) => (
+              <React.Fragment key={v.verse}>
+                {i > 0 ? ' ' : null}
+                <VerseText
+                  verse={v}
+                  fontSize={fontSize}
+                  onWord={handleWord}
+                  onLongPress={() => setActions(v)}
+                  notes={notes.get(v.verse)}
+                  onNote={(n) => setNote({ verse: v, note: n })}
+                  underline={underlineWords}
+                  flash={flash === v.verse}
+                  bookmarked={bookmarked.has(bookmarkKey(v))}
+                />
+              </React.Fragment>
+            ))}
+          </Text>
+        );
       }
       const v = item.verse;
       const flashing = flash === v.verse;
@@ -242,6 +340,9 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
           </>
         }
       />
+      {keepAwake ? <KeepAwake /> : null}
+      <GestureDetector gesture={swipe}>
+        <View style={styles.body}>
       {!items ? (
         <ActivityIndicator style={styles.loading} color={theme.accent} />
       ) : (
@@ -277,6 +378,8 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
           ListFooterComponent={<View style={{ height: 24 }} />}
         />
       )}
+        </View>
+      </GestureDetector>
       <View style={[styles.footer, { paddingBottom: insets.bottom + 8, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
         <NavButton label="‹ Previous" onPress={() => go(-1)} disabled={atStart} />
         <Pressable
@@ -342,7 +445,9 @@ function NavButton({ label, onPress, disabled }: { label: string; onPress: () =>
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   title: { fontSize: 18, fontWeight: '700' },
+  body: { flex: 1 },
   loading: { flex: 1 },
+  para: { marginBottom: 12 },
   list: { paddingHorizontal: 18, paddingTop: 12 },
   verse: { paddingVertical: 5, borderRadius: 6 },
   verseInterlinear: { paddingBottom: 10, marginBottom: 6, borderBottomWidth: StyleSheet.hairlineWidth },

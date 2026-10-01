@@ -4,6 +4,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
 import { getMeta } from '../queries';
 import { FONT_SIZES, useSettings } from '../settings';
+import type { Layout, ThemeChoice } from '../settings';
 import { useTheme } from '../theme';
 import { TRANSLATIONS } from '../types';
 
@@ -31,6 +32,52 @@ export function SettingsScreen({ onBack }: Props) {
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Header title="Settings" onBack={onBack} />
       <ScrollView contentContainerStyle={styles.content}>
+        <Label text="Appearance" />
+        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <View style={styles.row}>
+            <Text style={[styles.rowTitle, { color: theme.text, width: 70 }]}>Theme</Text>
+            <View style={styles.pills}>
+              {(
+                [
+                  ['system', 'Auto'],
+                  ['light', 'Light'],
+                  ['sepia', 'Sepia'],
+                  ['dark', 'Dark'],
+                ] as [ThemeChoice, string][]
+              ).map(([value, label]) => (
+                <Pill key={value} label={label} active={settings.theme === value} onPress={() => update({ theme: value })} />
+              ))}
+            </View>
+          </View>
+          <View style={[styles.row, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.border }]}>
+            <Text style={[styles.rowTitle, { color: theme.text, width: 70 }]}>Layout</Text>
+            <View style={styles.pills}>
+              {(
+                [
+                  ['verses', 'Verse per line'],
+                  ['paragraphs', 'Paragraphs'],
+                ] as [Layout, string][]
+              ).map(([value, label]) => (
+                <Pill key={value} label={label} active={settings.layout === value} onPress={() => update({ layout: value })} />
+              ))}
+            </View>
+          </View>
+          <View style={[styles.row, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.border }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.rowTitle, { color: theme.text }]}>Serif typeface</Text>
+              <Text style={[styles.rowSub, { color: theme.muted }]}>Scripture in a book-style face</Text>
+            </View>
+            <Switch value={settings.serif} onValueChange={(v) => update({ serif: v })} trackColor={{ true: theme.accent }} />
+          </View>
+          <View style={[styles.row, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.border }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.rowTitle, { color: theme.text }]}>Keep screen awake</Text>
+              <Text style={[styles.rowSub, { color: theme.muted }]}>While the app is open</Text>
+            </View>
+            <Switch value={settings.keepAwake} onValueChange={(v) => update({ keepAwake: v })} trackColor={{ true: theme.accent }} />
+          </View>
+        </View>
+
         <Label text="Translation" />
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           {TRANSLATIONS.map((t, i) => {
@@ -54,7 +101,7 @@ export function SettingsScreen({ onBack }: Props) {
         <Label text="Text size" />
         <View style={[styles.card, styles.row, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <SizeButton label="A" small onPress={() => setSize(-1)} disabled={sizeIndex <= 0} />
-          <Text style={[styles.preview, { color: theme.text, fontSize: settings.fontSize }]}>In the beginning</Text>
+          <Text style={[styles.preview, { color: theme.text, fontSize: settings.fontSize, fontFamily: theme.font }]}>In the beginning</Text>
           <SizeButton label="A" onPress={() => setSize(1)} disabled={sizeIndex >= FONT_SIZES.length - 1} />
         </View>
 
@@ -135,6 +182,20 @@ export function SettingsScreen({ onBack }: Props) {
   );
 }
 
+function Pill({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+  const theme = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      style={[styles.pill, { borderColor: active ? theme.accent : theme.border, backgroundColor: active ? theme.accent : 'transparent' }]}
+    >
+      <Text style={[styles.pillText, { color: active ? '#fff' : theme.text }]}>{label}</Text>
+    </Pressable>
+  );
+}
+
 function Label({ text }: { text: string }) {
   const theme = useTheme();
   return <Text style={[styles.label, { color: theme.muted }]}>{text.toUpperCase()}</Text>;
@@ -159,5 +220,8 @@ const styles = StyleSheet.create({
   rowSub: { fontSize: 13, marginTop: 2 },
   check: { fontSize: 18, fontWeight: '700', width: 24, textAlign: 'right' },
   preview: { flex: 1, textAlign: 'center' },
+  pills: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 6, justifyContent: 'flex-end' },
+  pill: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, borderWidth: 1 },
+  pillText: { fontSize: 13, fontWeight: '600' },
   about: { fontSize: 14, lineHeight: 20 },
 });

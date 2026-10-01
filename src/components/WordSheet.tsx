@@ -65,7 +65,7 @@ export function WordSheet({ pick, translation, onClose, onBack, onPick, onShowOc
     : '';
 
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent>
+    <Modal visible transparent animationType="slide" onRequestClose={onBack ?? onClose} statusBarTranslucent>
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Close" />
       <View style={[styles.sheet, { backgroundColor: theme.card, paddingBottom: insets.bottom + 12 }]}>
         <View style={[styles.grip, { backgroundColor: theme.border }]} />

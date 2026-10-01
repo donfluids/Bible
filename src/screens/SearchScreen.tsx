@@ -4,8 +4,9 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
 import { VerseListItem } from '../components/VerseListItem';
 import { searchText } from '../queries';
+import { parseReference } from '../refs';
 import { useSettings } from '../settings';
-import { formatCount } from '../text';
+import { bookName, formatCount } from '../text';
 import { useTheme } from '../theme';
 import type { Book, Ref, VerseRow, WordPick } from '../types';
 
@@ -28,6 +29,8 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
   const [busy, setBusy] = useState(false);
   const latest = useRef(0);
 
+  // "John 3:16", "Ps 23" and the like are offered as a direct jump.
+  const goTo = parseReference(query, books);
   // A Strong's number such as G3056 or h430 is offered as a direct link.
   const strongsMatch = /^([hg])\s*0*(\d{1,4})$/i.exec(query.trim());
   const strongsId = strongsMatch ? strongsMatch[1].toUpperCase() + strongsMatch[2] : null;
@@ -35,7 +38,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
   useEffect(() => {
     const q = query.trim();
     const id = ++latest.current;
-    if (q.length < 2 || strongsId) {
+    if (q.length < 2 || strongsId || goTo) {
       setResults(null);
       setBusy(false);
       return;
@@ -48,7 +51,8 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
       setBusy(false);
     }, 250);
     return () => clearTimeout(timer);
-  }, [db, translation, query, strongsId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [db, translation, query, strongsId, goTo?.book, goTo?.chapter, goTo?.verse]);
 
   const listFont = Math.min(settings.fontSize, 18);
 
@@ -58,7 +62,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
       <TextInput
         value={query}
         onChangeText={setQuery}
-        placeholder="Words, a phrase, or a Strong's number like G26"
+        placeholder="Words, a reference like John 3:16, or G26"
         placeholderTextColor={theme.muted}
         autoFocus
         autoCorrect={false}
@@ -66,6 +70,19 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
         clearButtonMode="while-editing"
         style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
       />
+      {goTo ? (
+        <Pressable
+          onPress={() => onOpenRef({ book: goTo.book, chapter: goTo.chapter, verse: goTo.verse })}
+          style={({ pressed }) => [styles.strongsRow, { backgroundColor: pressed ? theme.accentSoft : theme.card, borderColor: theme.border }]}
+          accessibilityRole="button"
+        >
+          <Text style={[styles.strongsText, { color: theme.accent }]}>
+            Go to {bookName(books, goTo.book)} {goTo.chapter}
+            {goTo.chapterOnly ? '' : `:${goTo.verse}`}
+          </Text>
+          <Text style={[styles.strongsSub, { color: theme.muted }]}>Open in the {translation}</Text>
+        </Pressable>
+      ) : null}
       {strongsId ? (
         <Pressable
           onPress={() => onWord({ strongs: strongsId })}

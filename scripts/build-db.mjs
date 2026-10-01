@@ -5,7 +5,9 @@
 //
 // Output schema (all text is UTF-8):
 //   books(id, osis, name, testament, chapters)
-//   verses(translation, book, chapter, verse, text, tags, omitted)
+//   verses(translation, book, chapter, verse, text, tags, omitted, para)
+//     para = the break that precedes the verse: '' none, 'p' new paragraph, 'b' blank
+//            line, 'q0' 'q1' 'q2' a poetry line at that indent level
 //     text = the verse as plain text. Poetry and paragraph breaks inside a verse are
 //            newlines; an indented poetry line starts with one em space per level.
 //            For an omitted verse (WEB only, a verse the translation leaves out) text
@@ -184,9 +186,14 @@ function parseBook(path) {
   let chapter = 0;
   let verse = null;
   let pendingBreak = null; // poetry or paragraph break waiting for the next text
+  let pendingKind = ''; // 'p', 'b' or 'q' for that break
+  const paras = new Map(); // "chapter:verse" -> break kind before the verse
   const append = (text) => {
     if (verse === null || !text || !text.trim()) return;
     const ch = chapters.get(chapter);
+    if (pendingBreak !== null && !ch.has(verse)) {
+      paras.set(`${chapter}:${verse}`, pendingKind === 'q' ? `q${pendingBreak}` : pendingKind);
+    }
     const prefix = pendingBreak === null ? '' : `${BREAK}${pendingBreak} `;
     pendingBreak = null;
     ch.set(verse, (ch.get(verse) || '') + ' ' + prefix + text);
@@ -207,6 +214,7 @@ function parseBook(path) {
     if (p) {
       rest = rest.slice(p[0].length);
       pendingBreak = /^(q2|pi1|li1|mi|pm|pmo)$/.test(p[1]) ? 1 : /^(q3|pi2|li2)$/.test(p[1]) ? 2 : 0;
+      pendingKind = /^q/.test(p[1]) ? 'q' : p[1] === 'b' ? 'b' : 'p';
     }
     // A line may hold several verses: split on \v markers.
     const parts = rest.split(/\\v\s+(\d+)[a-z]?\s*/);
@@ -216,7 +224,7 @@ function parseBook(path) {
       append(parts[i + 1]);
     }
   }
-  return { chapters, headings, notes };
+  return { chapters, headings, notes, paras };
 }
 
 // Parse "Mat.17.14[17.15]#03=NKO" style references. Returns null for non-data lines.
@@ -347,7 +355,7 @@ function main() {
     PRAGMA page_size = 4096;
     CREATE TABLE books(id INTEGER PRIMARY KEY, osis TEXT NOT NULL, name TEXT NOT NULL, testament TEXT NOT NULL, chapters INTEGER NOT NULL);
     CREATE TABLE verses(translation TEXT NOT NULL, book INTEGER NOT NULL, chapter INTEGER NOT NULL, verse INTEGER NOT NULL,
-                        text TEXT NOT NULL, tags TEXT NOT NULL, omitted INTEGER NOT NULL DEFAULT 0,
+                        text TEXT NOT NULL, tags TEXT NOT NULL, omitted INTEGER NOT NULL DEFAULT 0, para TEXT NOT NULL DEFAULT '',
                         PRIMARY KEY(translation, book, chapter, verse)) WITHOUT ROWID;
     CREATE TABLE headings(translation TEXT NOT NULL, book INTEGER NOT NULL, chapter INTEGER NOT NULL, before_verse INTEGER NOT NULL,
                         text TEXT NOT NULL, PRIMARY KEY(translation, book, chapter, before_verse)) WITHOUT ROWID;
@@ -364,7 +372,7 @@ function main() {
     CREATE TABLE meta(key TEXT PRIMARY KEY, value TEXT NOT NULL) WITHOUT ROWID;
   `);
 
-  const insVerse = db.prepare('INSERT INTO verses VALUES (?,?,?,?,?,?,?)');
+  const insVerse = db.prepare('INSERT INTO verses VALUES (?,?,?,?,?,?,?,?)');
   const insHeading = db.prepare('INSERT OR REPLACE INTO headings VALUES (?,?,?,?,?)');
   const insNote = db.prepare('INSERT INTO notes VALUES (?,?,?,?,?,?,?,?)');
   const insRendering = db.prepare('INSERT INTO renderings VALUES (?,?,?,?,?)');
@@ -384,7 +392,7 @@ function main() {
     for (const book of BOOKS) {
       const file = files.find((f) => f.endsWith(book.osis + t.suffix));
       if (!file) throw new Error(`${t.id}: no file for ${book.osis}`);
-      const { chapters, headings, notes } = parseBook(join(RAW, t.dir, file));
+      const { chapters, headings, notes, paras } = parseBook(join(RAW, t.dir, file));
       for (const h of headings) {
         const text = splitTags(cleanVerse(h.raw)).text;
         if (text) insHeading.run(t.id, book.id, h.chapter, h.beforeVerse, text);
@@ -396,12 +404,12 @@ function main() {
           const tagged = cleanVerse(raw);
           if (!tagged) continue;
           if (tagged.startsWith('\u2205')) {
-            insVerse.run(t.id, book.id, chapter, verse, tagged.slice(1).trim(), '', 1);
+            insVerse.run(t.id, book.id, chapter, verse, tagged.slice(1).trim(), '', 1, paras.get(`${chapter}:${verse}`) || '');
             omitted++;
             continue;
           }
           const { text, tags, notes: markers } = splitTags(tagged);
-          insVerse.run(t.id, book.id, chapter, verse, text, tags, 0);
+          insVerse.run(t.id, book.id, chapter, verse, text, tags, 0, paras.get(`${chapter}:${verse}`) || '');
           verses++;
           markers.forEach((mk, n) => {
             const note = notes[mk.idx];
@@ -456,7 +464,7 @@ function main() {
       nStrongs++;
     }
   }
-  insMeta.run('schema', '4');
+  insMeta.run('schema', '5');
   insMeta.run('built', new Date().toISOString().slice(0, 10));
   insMeta.run('translations', JSON.stringify(TRANSLATIONS.map(({ id, name }) => ({ id, name }))));
   insMeta.run('sources', JSON.stringify({

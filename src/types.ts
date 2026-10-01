@@ -25,6 +25,8 @@ export interface VerseRow extends Ref {
   tags: string;
   /** 1 when the translation omits this verse; `text` then holds the translators' note. */
   omitted: number;
+  /** Break before the verse: '' none, 'p' paragraph, 'b' blank line, 'q0'..'q2' poetry line. */
+  para: string;
 }
 
 /** A translators' footnote (kind f) or cross reference (kind x) anchored in a verse. */

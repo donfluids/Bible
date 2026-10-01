@@ -9,9 +9,18 @@ export interface Position {
   verse?: number;
 }
 
+export type ThemeChoice = 'system' | 'light' | 'sepia' | 'dark';
+export type Layout = 'verses' | 'paragraphs';
+
 export interface Settings {
   translation: TranslationId;
   fontSize: number;
+  theme: ThemeChoice;
+  /** Scripture text in a serif face. */
+  serif: boolean;
+  /** One verse per line, or verses run together in paragraphs. */
+  layout: Layout;
+  keepAwake: boolean;
   underlineWords: boolean;
   /** Show the Hebrew or Greek words under each verse. */
   interlinear: boolean;
@@ -32,6 +41,10 @@ const KEY = 'settings.v1';
 const DEFAULTS: Settings = {
   translation: 'KJV',
   fontSize: 19,
+  theme: 'system',
+  serif: false,
+  layout: 'verses',
+  keepAwake: false,
   underlineWords: true,
   interlinear: false,
   interlinearMode: 'all',
@@ -78,6 +91,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   }, []);
   const value = useMemo(() => ({ settings, update }), [settings, update]);
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
+}
+
+/** Settings when inside the provider, null otherwise (used by the loading screen). */
+export function useOptionalSettings(): Settings | null {
+  return useContext(SettingsContext)?.settings ?? null;
 }
 
 export function useSettings(): SettingsContextValue {
