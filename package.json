@@ -37,7 +37,8 @@
     "build-db": "node --no-warnings scripts/build-db.mjs",
     "doctor": "npx expo-doctor",
     "start:ml": "BIBLE_EDITION=ml expo start",
-    "icons": "bash scripts/make-icons.sh en && bash scripts/make-icons.sh ml"
+    "icons": "bash scripts/make-icons.sh en && bash scripts/make-icons.sh ml",
+    "align-ml": "node --no-warnings scripts/align-malayalam.mjs"
   },
   "private": true
 }

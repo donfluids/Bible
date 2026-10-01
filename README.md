@@ -198,6 +198,28 @@ out. Verse numbers follow the KJV where editions differ.
   software and asks that the source files are not redistributed, so only the built
   database is committed here, never the files in `data/raw/`.
 
+## Malayalam word links
+
+The Malayalam text carries no Strong's tags, so each Malayalam word is linked to the
+Hebrew or Greek word it renders by `scripts/align-malayalam.mjs`. It calls the Claude
+CLI headlessly (`claude -p`, no API key: it uses the CLI's own login) with the
+Malayalam words and the original words of each verse, asks for one link per Malayalam
+word with a confidence, validates the answer against a JSON schema, and caches each
+chunk as a file under `data/align/mal/`. `npm run build-db` then writes the confident
+links (confidence 2) into the Malayalam verse tags, concordance and renderings tables;
+uncertain links stay in the cache for review. A link is skipped if the verse text has
+changed since it was made.
+
+```bash
+npm run align-ml -- --chapters 43:3,45:8   # book:chapter pairs
+npm run align-ml -- --all                  # the whole Bible
+npm run align-ml -- --report 43:3          # readable result for one chapter
+npm run build-db                           # apply the links
+```
+
+Words with no link (words added for sense, auxiliary words, uncertain cases) are not
+tappable. Links are made by a language model and are not hand-checked.
+
 ## Malayalam interface
 
 The Malayalam strings in `src/i18n.ts` were written for this project and have not

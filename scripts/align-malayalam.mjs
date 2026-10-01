@@ -45,7 +45,7 @@ Rules:
 - Several tokens may point to the same original word (a phrase rendering one word). A token never points to two words.
 - Omit tokens that have no counterpart in the original: words added for sense, auxiliary or linking words, punctuation. Omit original words nothing renders.
 - Names link to the name's word.
-- Confidence 2 means you are sure. Confidence 1 means plausible but uncertain. If you would be guessing, omit the token. A wrong link is worse than a missing one.
+- Confidence 2 means you are sure. Confidence 1 means plausible but uncertain. If you would be guessing, leave the token out entirely (never write confidence 0). A wrong link is worse than a missing one.
 - Never link by position alone. If a verse's original words clearly do not correspond to its Malayalam (verse numbering sometimes differs), return no links for that verse.
 
 Return only the JSON requested.`;
@@ -145,6 +145,7 @@ function resolve(book, chapter, verses, structured) {
     const used = new Set();
     const spans = [];
     for (const [t, w, c] of links) {
+      if (c === 0) continue; // the model's way of saying "no link"
       if (!(t >= 1 && t <= v.tokens.length && w >= 1 && w <= v.words.length && (c === 1 || c === 2))) { problems.push(`verse ${v.v}: bad link [${t},${w},${c}]`); continue; }
       if (used.has(t)) continue;
       used.add(t);
