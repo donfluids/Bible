@@ -17,9 +17,9 @@ the Android APK workflow on every push.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
-| [Vedapusthakam-0.2.2-b4.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.2.2-b4.apk) | 0.2.2 | 4 | release key | 8fa0e0a | 40.5 MiB | `da71aecf8e4ea25b7731b6c3f93d24ab3b216254a370602e7adfc13e1052dc4b` |
+| [Vedapusthakam-0.2.3-b5.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.2.3-b5.apk) | 0.2.3 | 5 | release key | dc8993b | 40.6 MiB | `92f5dfdb0be6aa5605368f284ebd5cfe1bf866c2c0b8107b6b29cf54b6edbbed` |
 
-The two apps install side by side (different package ids). Use the newest build
+The two apps install side by side (different package ids). Vedapusthakam build 4 was withdrawn: it carried the Malayalam text but started as the English edition. Build 5 installs over it. Use the newest build
 of each. Release-key builds install over each other as updates and keep
 bookmarks, highlights, notes and settings. Bible 0.2.0 was signed with the debug
 key: if it is installed, uninstall it before installing a newer build.
