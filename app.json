@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Bible",
+    "slug": "bible",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": ["assets/db/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "org.donfluids.bible"
+    },
+    "android": {
+      "package": "org.donfluids.bible",
+      "adaptiveIcon": {
+        "backgroundColor": "#F4EFE4",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
