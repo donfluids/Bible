@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useSettings } from './settings';
 import type { Language } from './edition';
 
@@ -91,11 +92,26 @@ const en = {
   legendGloss: 'In the gloss, <a word> in angle brackets is in the original but best left untranslated, and [a word] in square brackets is implied but not in the original.',
   legendTranslit: ' In the transliteration, dots separate syllables and the capital letter marks the stressed syllable.',
   legendVariant: 'A line under a word in the interlinear marks text that differs between editions; the note above explains this one.',
-  noteNotInNA: 'In the Textus Receptus and Byzantine text, which the KJV translates, but not in the Nestle-Aland editions used by most modern translations.',
+  noteTrByz: 'In the Textus Receptus, which the KJV translates, and in the Byzantine text, but not in the Nestle-Aland editions used by most modern translations.',
+  noteTrOnly: 'Only in the Textus Receptus, which the KJV translates. The Byzantine text and the Nestle-Aland editions do not have it.',
+  noteByzOnly: 'Only in the Byzantine text. The Textus Receptus and the Nestle-Aland editions do not have it.',
+  noteNotInTr: 'In the Nestle-Aland editions and the Byzantine text, but not in the Textus Receptus that the KJV translates.',
+  noteNotInByz: 'In the Textus Receptus and the Nestle-Aland editions, but not in the Byzantine text.',
+  noteNaReads: 'Here the Nestle-Aland editions read {word}.',
   noteLxx: 'Not in the Hebrew Leningrad Codex. Supplied from the Septuagint, as some translations do.',
   noteRestored: 'Missing from the Leningrad Codex and restored from a parallel passage.',
   previousEntry: 'Previous entry',
   close: 'Close',
+  wordsInVerse: 'Words in this verse',
+  wordsInVerseDetail: 'Open the Hebrew or Greek entry for each linked word',
+  verseHint: 'Double-tap and hold for highlight, note, copy and more',
+  verseActions: 'Verse {n}, actions',
+  recent: 'Recent',
+  openFailed: 'The Bible text could not be opened.',
+  openFailedDetail: 'This can happen when the phone is short of storage. Free about 100 MB and try again.',
+  loadFailed: 'This could not be loaded.',
+  somethingWrong: 'Something went wrong.',
+  tryAgain: 'Try again',
   appearance: 'Appearance',
   theme: 'Theme',
   themeAuto: 'Auto',
@@ -130,7 +146,7 @@ const en = {
   aboutEnglish: "King James Version, 1769 text with Strong's numbers, and the World English Bible, both from eBible.org. Both are in the public domain. Their translators' footnotes appear as small letters in the text; tap one to read it.",
   aboutMalayalam: 'മലയാളം സത്യവേദപുസ്തകം 1910, revised edition in contemporary orthography, copyright © 2015 The Free Bible Foundation, from eBible.org, licensed CC BY-SA 4.0. The King James Version (1769, with Strong\'s numbers) is in the public domain.',
   aboutStrongs: "Hebrew and Greek entries are from Strong's Exhaustive Concordance (1890), in the digital edition by Open Scriptures, licensed CC BY-SA.",
-  aboutInterlinear: 'The interlinear Hebrew (Leningrad Codex) and Greek text, with transliteration, glosses and grammar, is from the Translators Amalgamated Hebrew OT and Greek NT by STEPBible.org, Tyndale House Cambridge, licensed CC BY 4.0. The Greek shows the words of the Textus Receptus and Byzantine text; words absent from the Nestle-Aland editions are marked with a line beneath.',
+  aboutInterlinear: 'The interlinear Hebrew (Leningrad Codex) and Greek text, with transliteration, glosses and grammar, is from the Translators Amalgamated Hebrew OT and Greek NT by STEPBible.org, Tyndale House Cambridge, licensed CC BY 4.0. The Greek is spelled as in the Nestle-Aland 28th edition and has every word of the Textus Receptus and the Byzantine text; where those texts have a different word from Nestle-Aland, their word is shown. Words not in the Nestle-Aland editions have a line beneath; tap one to see which texts have it.',
   aboutWeb: "The Strong's tagging in the World English Bible is less precise than in the King James Version. A word may occasionally open a neighbouring word's entry.",
   databaseBuilt: 'Database built {date}',
   previewText: 'In the beginning',
@@ -224,11 +240,26 @@ const ml: Record<StringKey, string> = {
   legendGloss: 'അർത്ഥത്തിൽ <കോണുള്ള ബ്രാക്കറ്റിലെ> വാക്ക് മൂലത്തിലുണ്ടെങ്കിലും പരിഭാഷയിൽ ഒഴിവാക്കാവുന്നതാണ്; [ചതുര ബ്രാക്കറ്റിലെ] വാക്ക് മൂലത്തിലില്ലെങ്കിലും അർത്ഥത്തിന് ആവശ്യമായതാണ്.',
   legendTranslit: ' ലിപ്യന്തരണത്തിൽ കുത്തുകൾ അക്ഷരങ്ങളെ വേർതിരിക്കുന്നു; വലിയ അക്ഷരം ഊന്നൽ നൽകേണ്ട ഭാഗം കാണിക്കുന്നു.',
   legendVariant: 'ഇന്റർലീനിയറിൽ വാക്കിനു താഴെയുള്ള വര പതിപ്പുകൾ തമ്മിൽ വ്യത്യാസമുള്ള ഭാഗം സൂചിപ്പിക്കുന്നു; മുകളിലെ കുറിപ്പ് അത് വിശദീകരിക്കുന്നു.',
-  noteNotInNA: 'KJV പരിഭാഷപ്പെടുത്തിയ ടെക്സ്റ്റസ് റിസെപ്റ്റസിലും ബൈസന്റൈൻ പാഠത്തിലും ഉണ്ട്; എന്നാൽ ആധുനിക പരിഭാഷകൾ ഉപയോഗിക്കുന്ന നെസ്‌ലെ-ആലൻഡ് പതിപ്പുകളിൽ ഇല്ല.',
+  noteTrByz: 'KJV പരിഭാഷപ്പെടുത്തിയ ടെക്സ്റ്റസ് റിസെപ്റ്റസിലും ബൈസന്റൈൻ പാഠത്തിലും ഉണ്ട്; എന്നാൽ ആധുനിക പരിഭാഷകൾ ഉപയോഗിക്കുന്ന നെസ്‌ലെ-ആലൻഡ് പതിപ്പുകളിൽ ഇല്ല.',
+  noteTrOnly: 'KJV പരിഭാഷപ്പെടുത്തിയ ടെക്സ്റ്റസ് റിസെപ്റ്റസിൽ മാത്രം ഉള്ളത്; ബൈസന്റൈൻ പാഠത്തിലും നെസ്‌ലെ-ആലൻഡ് പതിപ്പുകളിലും ഇല്ല.',
+  noteByzOnly: 'ബൈസന്റൈൻ പാഠത്തിൽ മാത്രം ഉള്ളത്; ടെക്സ്റ്റസ് റിസെപ്റ്റസിലും നെസ്‌ലെ-ആലൻഡ് പതിപ്പുകളിലും ഇല്ല.',
+  noteNotInTr: 'നെസ്‌ലെ-ആലൻഡ് പതിപ്പുകളിലും ബൈസന്റൈൻ പാഠത്തിലും ഉണ്ട്; എന്നാൽ KJV പരിഭാഷപ്പെടുത്തിയ ടെക്സ്റ്റസ് റിസെപ്റ്റസിൽ ഇല്ല.',
+  noteNotInByz: 'ടെക്സ്റ്റസ് റിസെപ്റ്റസിലും നെസ്‌ലെ-ആലൻഡ് പതിപ്പുകളിലും ഉണ്ട്; എന്നാൽ ബൈസന്റൈൻ പാഠത്തിൽ ഇല്ല.',
+  noteNaReads: 'ഇവിടെ നെസ്‌ലെ-ആലൻഡ് പതിപ്പുകളിൽ {word} എന്നാണ്.',
   noteLxx: 'എബ്രായ ലെനിൻഗ്രാഡ് കോഡക്സിൽ ഇല്ല. ചില പരിഭാഷകൾ ചെയ്യുന്നതുപോലെ സെപ്റ്റ്വജിന്റിൽ നിന്ന് എടുത്തത്.',
   noteRestored: 'ലെനിൻഗ്രാഡ് കോഡക്സിൽ നഷ്ടപ്പെട്ടത്; സമാന്തര ഭാഗത്തുനിന്ന് പുനഃസ്ഥാപിച്ചത്.',
   previousEntry: 'മുമ്പത്തെ പദം',
   close: 'അടയ്ക്കുക',
+  wordsInVerse: 'ഈ വാക്യത്തിലെ പദങ്ങൾ',
+  wordsInVerseDetail: 'ബന്ധിപ്പിച്ച ഓരോ പദത്തിന്റെയും എബ്രായ അല്ലെങ്കിൽ ഗ്രീക്ക് വിവരണം തുറക്കുക',
+  verseHint: 'ഹൈലൈറ്റ്, കുറിപ്പ്, പകർത്തൽ മുതലായവയ്ക്ക് രണ്ടുതവണ തൊട്ട് അമർത്തിപ്പിടിക്കുക',
+  verseActions: 'വാക്യം {n}, പ്രവർത്തനങ്ങൾ',
+  recent: 'അടുത്തിടെ വായിച്ചവ',
+  openFailed: 'ബൈബിൾ പാഠം തുറക്കാൻ കഴിഞ്ഞില്ല.',
+  openFailedDetail: 'ഫോണിൽ സംഭരണ ഇടം കുറവാണെങ്കിൽ ഇങ്ങനെ സംഭവിക്കാം. ഏകദേശം 100 MB ഒഴിവാക്കിയ ശേഷം വീണ്ടും ശ്രമിക്കുക.',
+  loadFailed: 'ഇതു ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല.',
+  somethingWrong: 'എന്തോ പിശക് സംഭവിച്ചു.',
+  tryAgain: 'വീണ്ടും ശ്രമിക്കുക',
   appearance: 'രൂപം',
   theme: 'പ്രമേയം',
   themeAuto: 'ഓട്ടോ',
@@ -263,7 +294,7 @@ const ml: Record<StringKey, string> = {
   aboutEnglish: 'കിംഗ് ജെയിംസ് വേർഷൻ (1769, സ്ട്രോങ്സ് നമ്പറുകളോടെ), വേൾഡ് ഇംഗ്ലീഷ് ബൈബിൾ: രണ്ടും eBible.org-ൽ നിന്ന്, പൊതുസ്വത്ത്. പരിഭാഷകരുടെ അടിക്കുറിപ്പുകൾ ചെറിയ അക്ഷരങ്ങളായി കാണാം; തൊട്ടാൽ വായിക്കാം.',
   aboutMalayalam: 'മലയാളം സത്യവേദപുസ്തകം 1910, സമകാലിക ലിപിയിലുള്ള പരിഷ്കരിച്ച പതിപ്പ്, പകർപ്പവകാശം © 2015 The Free Bible Foundation, eBible.org-ൽ നിന്ന്, CC BY-SA 4.0 അനുമതിപത്രം. കിംഗ് ജെയിംസ് വേർഷൻ (1769, സ്ട്രോങ്സ് നമ്പറുകളോടെ) പൊതുസ്വത്താണ്.',
   aboutStrongs: 'എബ്രായ, ഗ്രീക്ക് പദവിവരങ്ങൾ സ്ട്രോങ്സ് കൺകോർഡൻസിൽ (1890) നിന്ന്, Open Scriptures-ന്റെ ഡിജിറ്റൽ പതിപ്പ്, CC BY-SA അനുമതിപത്രം.',
-  aboutInterlinear: 'ഇന്റർലീനിയർ എബ്രായ (ലെനിൻഗ്രാഡ് കോഡക്സ്), ഗ്രീക്ക് പാഠങ്ങൾ, ലിപ്യന്തരണവും അർത്ഥവും വ്യാകരണവും സഹിതം, STEPBible.org (Tyndale House Cambridge) തയ്യാറാക്കിയ Translators Amalgamated Hebrew OT and Greek NT-യിൽ നിന്ന്, CC BY 4.0 അനുമതിപത്രം. ഗ്രീക്ക് പാഠം ടെക്സ്റ്റസ് റിസെപ്റ്റസിന്റെയും ബൈസന്റൈൻ പാഠത്തിന്റെയും വാക്കുകൾ കാണിക്കുന്നു; നെസ്‌ലെ-ആലൻഡ് പതിപ്പുകളിൽ ഇല്ലാത്ത വാക്കുകൾക്ക് താഴെ വരയുണ്ട്.',
+  aboutInterlinear: 'ഇന്റർലീനിയർ എബ്രായ (ലെനിൻഗ്രാഡ് കോഡക്സ്), ഗ്രീക്ക് പാഠങ്ങൾ, ലിപ്യന്തരണവും അർത്ഥവും വ്യാകരണവും സഹിതം, STEPBible.org (Tyndale House Cambridge) തയ്യാറാക്കിയ Translators Amalgamated Hebrew OT and Greek NT-യിൽ നിന്ന്, CC BY 4.0 അനുമതിപത്രം. ഗ്രീക്ക് പാഠം നെസ്‌ലെ-ആലൻഡ് 28-ാം പതിപ്പിന്റെ അക്ഷരവിന്യാസത്തിലാണ്; ടെക്സ്റ്റസ് റിസെപ്റ്റസിലെയും ബൈസന്റൈൻ പാഠത്തിലെയും എല്ലാ വാക്കുകളും ഉണ്ട്. ആ പാഠങ്ങൾ നെസ്‌ലെ-ആലൻഡിൽനിന്നു വ്യത്യസ്തമായ വാക്കു വായിക്കുന്നിടത്ത് അവയുടെ വാക്കു കാണിക്കുന്നു. നെസ്‌ലെ-ആലൻഡ് പതിപ്പുകളിൽ ഇല്ലാത്ത വാക്കുകൾക്കു താഴെ വരയുണ്ട്; ഏതൊക്കെ പാഠങ്ങളിൽ അതുണ്ടെന്ന് അറിയാൻ അതിൽ തൊടുക.',
   aboutWeb: 'വേൾഡ് ഇംഗ്ലീഷ് ബൈബിളിലെ സ്ട്രോങ്സ് അടയാളപ്പെടുത്തൽ KJV-യിലേതിനെക്കാൾ കൃത്യത കുറഞ്ഞതാണ്. ചിലപ്പോൾ ഒരു വാക്ക് അടുത്ത വാക്കിന്റെ വിവരം തുറന്നേക്കാം.',
   databaseBuilt: 'ഡാറ്റാബേസ് തയ്യാറാക്കിയത് {date}',
   previewText: 'ആദിയിൽ ദൈവം',
@@ -282,7 +313,7 @@ export function translate(language: Language, key: StringKey, params?: Record<st
 export function useT(): (key: StringKey, params?: Record<string, string | number>) => string {
   const { settings } = useSettings();
   const lang = settings.language;
-  return (key, params) => translate(lang, key, params);
+  return useCallback((key: StringKey, params?: Record<string, string | number>) => translate(lang, key, params), [lang]);
 }
 
 /** Display name of a translation in the interface language. */

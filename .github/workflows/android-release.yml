@@ -32,6 +32,9 @@ jobs:
         edition: [en, ml]
     env:
       BIBLE_EDITION: ${{ matrix.edition }}
+      # A step's own env is not available to its `if`, so the secret's presence is
+      # checked here, where every step can see it.
+      HAS_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -56,15 +59,22 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Restore release keystore
-        if: ${{ env.KEYSTORE_BASE64 != '' }}
+        if: env.HAS_KEYSTORE == 'true'
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        # Values go through the environment, not ${{ }} in the script, so quotes or $ in a
+        # password cannot break the shell.
         run: |
           echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
-          echo "BIBLE_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
-          echo "BIBLE_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> "$GITHUB_ENV"
-          echo "BIBLE_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> "$GITHUB_ENV"
-          echo "BIBLE_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> "$GITHUB_ENV"
+          {
+            echo "BIBLE_KEYSTORE_PATH=$RUNNER_TEMP/release.jks"
+            echo "BIBLE_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
+            echo "BIBLE_KEY_ALIAS=$KEY_ALIAS"
+            echo "BIBLE_KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
 
       - name: Generate the Android project
         env:
@@ -85,8 +95,14 @@ jobs:
 
       - name: Report signing
         run: |
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$APK" | grep -E 'DN|SHA-256'
+          CERTS=$("$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$APK")
+          echo "$CERTS" | grep -E 'DN|SHA-256'
           ls -la "$APK"
+          # A release must never go out with the debug key: it could not update an installed copy.
+          if [[ "$GITHUB_REF" == refs/tags/v* ]] && echo "$CERTS" | grep -q 'CN=Android Debug'; then
+            echo "::error::Tag build is signed with the debug key. Add the ANDROID_KEYSTORE_* secrets."
+            exit 1
+          fi
 
       - uses: actions/upload-artifact@v4
         with:

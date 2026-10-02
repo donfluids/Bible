@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import type { ViewToken } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSQLiteContext } from 'expo-sqlite';
+import type { SQLiteDatabase } from 'expo-sqlite';
 import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
@@ -13,15 +15,22 @@ import { useT } from '../i18n';
 import { InterlinearVerse } from '../components/InterlinearVerse';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
 import { noteLetter, VerseText } from '../components/VerseText';
-import { getChapter, getInterlinear, getNotes } from '../queries';
+import { getChapter, getInterlinear, getNotes, mapRef } from '../queries';
+import type { ChapterData } from '../queries';
 import { useSettings } from '../settings';
-import { MAX_CONTENT_WIDTH, bookName, flattenVerse, formatRef } from '../text';
+import type { Position, Settings } from '../settings';
+import { MAX_CONTENT_WIDTH, bookName, flattenVerse, formatRef, parseSegments } from '../text';
 import { useTheme } from '../theme';
 import { HIGHLIGHT_COLORS, translationInfo } from '../types';
-import type { Book, HighlightColor, Note, OriginalWord, Ref, VerseRow, WordPick } from '../types';
+import type { Book, HighlightColor, Note, OriginalWord, Ref, TranslationId, VerseRow, WordPick } from '../types';
+
+// Width at each screen edge where a horizontal swipe belongs to the system back gesture.
+const EDGE = 32;
 
 interface Props {
   books: Book[];
+  /** Open at this verse with a place of its own (a reader pushed from a list). */
+  jumpTo?: Ref;
   /** Present when the reader was opened from a list; goes back to it. */
   onBack?: () => void;
   backLabel?: string;
@@ -64,12 +73,53 @@ function groupParagraphs(verses: VerseRow[], headings: { before_verse: number; t
   return out;
 }
 
+function firstVerseOf(item: Item): number | null {
+  return item.kind === 'verse' ? item.verse.verse : item.kind === 'para' ? item.verses[0].verse : null;
+}
+
+interface ChapterContent extends ChapterData {
+  notes: Map<number, Note[]>;
+}
+
+// The last few chapters read, and the ones either side, so turning a page does not
+// wait on the database.
+const chapterCache = new Map<string, Promise<ChapterContent>>();
+
+function loadChapter(db: SQLiteDatabase, translation: TranslationId, book: number, chapter: number): Promise<ChapterContent> {
+  const key = `${translation}:${book}:${chapter}`;
+  const hit = chapterCache.get(key);
+  if (hit) {
+    chapterCache.delete(key);
+    chapterCache.set(key, hit);
+    return hit;
+  }
+  const load = Promise.all([getChapter(db, translation, book, chapter), getNotes(db, translation, book, chapter)]).then(([data, notes]) => ({
+    ...data,
+    notes,
+  }));
+  chapterCache.set(key, load);
+  load.catch(() => chapterCache.delete(key));
+  while (chapterCache.size > 8) chapterCache.delete(chapterCache.keys().next().value as string);
+  return load;
+}
+
+/** The chapter before or after, crossing into the neighbouring book. */
+function neighbour(books: Book[], book: number, chapter: number, delta: 1 | -1): { book: number; chapter: number } | null {
+  const idx = books.findIndex((b) => b.id === book);
+  if (idx < 0) return null;
+  const next = chapter + delta;
+  if (next >= 1 && next <= books[idx].chapters) return { book, chapter: next };
+  const other = books[idx + delta];
+  if (!other) return null;
+  return { book: other.id, chapter: delta === 1 ? 1 : other.chapters };
+}
+
 function KeepAwake() {
   useKeepAwake();
   return null;
 }
 
-export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onWord }: Props) {
+export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onWord }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const t = useT();
@@ -84,7 +134,6 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
     interlinearMode,
     showTranslit,
     hideCantillation,
-    position,
     tipSeen,
     bookmarks,
     highlights,
@@ -92,50 +141,91 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
     layout,
     keepAwake,
   } = settings;
+  // A reader pushed from a list keeps its own place; the main reader uses the saved one.
+  const [ownPosition, setOwnPosition] = useState<{ book: number; chapter: number } | null>(
+    jumpTo ? { book: jumpTo.book, chapter: jumpTo.chapter } : null,
+  );
+  const position: Position = ownPosition ?? settings.position;
+  const pushed = ownPosition !== null;
   // Paragraph layout cannot hold the interlinear cells, so the interlinear view uses one verse per line.
   const paragraphs = layout === 'paragraphs' && !interlinear;
   const [items, setItems] = useState<Item[] | null>(null);
-  const [original, setOriginal] = useState<Map<number, OriginalWord[]> | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  // Original words with the chapter they belong to, so a page turn never shows the last chapter's.
+  const [original, setOriginal] = useState<{ key: string; words: Map<number, OriginalWord[]> } | null>(null);
   const [notes, setNotes] = useState<Map<number, Note[]>>(new Map());
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const [flash, setFlash] = useState<number | null>(null);
   const [note, setNote] = useState<{ verse: VerseRow; note: Note } | null>(null);
   const [actions, setActions] = useState<VerseRow | null>(null);
+  const [wordsFor, setWordsFor] = useState<VerseRow | null>(null);
   const [compare, setCompare] = useState<Ref | null>(null);
   const [noteEditor, setNoteEditor] = useState<{ verse: VerseRow; text: string } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const listRef = useRef<FlatList<Item>>(null);
 
   const book = books.find((b) => b.id === position.book) ?? books[0];
+  const chapterKey = `${position.book}:${position.chapter}`;
+  const originalKey = `${translation}:${chapterKey}`;
+  const originalWords = original?.key === originalKey ? original.words : null;
+
+  // Where to scroll once the next verses are on screen: a verse (flashed after a jump
+  // from a list), or the top. The main reader opens where it was left.
+  const scrollTarget = useRef<{ verse?: number; flash: boolean } | null>(
+    jumpTo ? { verse: jumpTo.verse, flash: true } : settings.position.verse !== undefined ? { verse: settings.position.verse, flash: false } : null,
+  );
+  const shownKey = useRef<string | null>(null);
+  // The first verse on screen, for keeping the place across a translation switch and a relaunch.
+  const firstVisible = useRef<{ key: string; verse: number } | null>(null);
+  const recentRef = useRef(settings.recent);
+  recentRef.current = settings.recent;
 
   useEffect(() => {
     let cancelled = false;
-    setItems(null);
-    setExpanded(new Set());
-    Promise.all([
-      getChapter(db, translation, position.book, position.chapter),
-      getNotes(db, translation, position.book, position.chapter),
-    ]).then(([{ verses, headings }, noteMap]) => {
-      if (cancelled) return;
-      let out: Item[];
-      if (paragraphs) {
-        out = groupParagraphs(verses, headings);
-      } else {
-        out = [];
-        for (const v of verses) {
-          for (const h of headings) {
-            if (h.before_verse === v.verse) out.push({ kind: 'heading', key: `h${h.before_verse}`, text: h.text });
+    setLoadFailed(false);
+    loadChapter(db, translation, position.book, position.chapter)
+      .then(({ verses, headings, notes: noteMap }) => {
+        if (cancelled) return;
+        let out: Item[];
+        if (paragraphs) {
+          out = groupParagraphs(verses, headings);
+        } else {
+          out = [];
+          for (const v of verses) {
+            for (const h of headings) {
+              if (h.before_verse === v.verse) out.push({ kind: 'heading', key: `h${h.before_verse}`, text: h.text });
+            }
+            out.push({ kind: 'verse', key: `v${v.verse}`, verse: v });
           }
-          out.push({ kind: 'verse', key: `v${v.verse}`, verse: v });
         }
-      }
-      setNotes(noteMap);
-      setItems(out);
-    });
+        if (shownKey.current !== chapterKey) {
+          // A new chapter starts at the top unless a verse was asked for.
+          if (!scrollTarget.current) scrollTarget.current = { flash: false };
+          shownKey.current = chapterKey;
+          setExpanded(new Set());
+          const recent = recentRef.current;
+          if (recent[0]?.book !== position.book || recent[0]?.chapter !== position.chapter) {
+            update({
+              recent: [{ book: position.book, chapter: position.chapter }, ...recent.filter((r) => r.book !== position.book || r.chapter !== position.chapter)].slice(0, 8),
+            });
+          }
+        }
+        setNotes(noteMap);
+        setItems(out);
+        for (const delta of [1, -1] as const) {
+          const n = neighbour(books, position.book, position.chapter, delta);
+          if (n) loadChapter(db, translation, n.book, n.chapter).catch(() => undefined);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLoadFailed(true);
+      });
     return () => {
       cancelled = true;
     };
-  }, [db, translation, position.book, position.chapter, paragraphs]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [db, translation, position.book, position.chapter, paragraphs, attempt]);
 
   // The Hebrew or Greek words are loaded only while the interlinear view is on.
   useEffect(() => {
@@ -144,27 +234,64 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
       return;
     }
     let cancelled = false;
-    getInterlinear(db, position.book, position.chapter).then((map) => {
-      if (!cancelled) setOriginal(map);
-    });
+    getInterlinear(db, position.book, position.chapter, translation)
+      .then((words) => {
+        if (!cancelled) setOriginal({ key: originalKey, words });
+      })
+      .catch(() => {
+        if (!cancelled) setOriginal({ key: originalKey, words: new Map() });
+      });
     return () => {
       cancelled = true;
     };
-  }, [db, interlinear, position.book, position.chapter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [db, interlinear, position.book, position.chapter, translation]);
 
-  // Scroll to a requested verse once the chapter has rendered.
+  // Scroll once the verses a scroll was waiting for are on screen.
   useEffect(() => {
-    if (!items || position.verse === undefined) return;
-    const index = items.findIndex(
-      (it) => (it.kind === 'verse' && it.verse.verse === position.verse) || (it.kind === 'para' && it.verses.some((v) => v.verse === position.verse)),
-    );
-    if (index < 0) return;
+    const target = scrollTarget.current;
+    if (!items || !target) return;
+    scrollTarget.current = null;
+    const index =
+      target.verse === undefined
+        ? -1
+        : items.findIndex(
+            (it) => (it.kind === 'verse' && it.verse.verse === target.verse) || (it.kind === 'para' && it.verses.some((v) => v.verse === target.verse)),
+          );
+    if (index < 0) {
+      listRef.current?.scrollToOffset({ offset: 0, animated: false });
+      return;
+    }
     const timer = setTimeout(() => {
-      listRef.current?.scrollToIndex({ index, viewPosition: 0.15, animated: false });
-      setFlash(position.verse ?? null);
+      listRef.current?.scrollToIndex({ index, viewPosition: target.flash ? 0.15 : 0, animated: false });
+      if (target.flash) setFlash(target.verse ?? null);
     }, 60);
     return () => clearTimeout(timer);
-  }, [items, position.verse]);
+  }, [items]);
+
+  // Remember the first verse on screen, so the main reader reopens there.
+  const placeRef = useRef({ pushed, chapterKey, position, update });
+  placeRef.current = { pushed, chapterKey, position, update };
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+  }, []);
+  const viewability = useRef({ itemVisiblePercentThreshold: 10 }).current;
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken<Item>[] }) => {
+    const verse = viewableItems.map((v) => (v.item ? firstVerseOf(v.item) : null)).find((v): v is number => v !== null);
+    if (verse === undefined) return;
+    const place = placeRef.current;
+    if (shownKey.current !== place.chapterKey) return; // still showing the previous chapter
+    firstVisible.current = { key: place.chapterKey, verse };
+    if (place.pushed) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      const now = placeRef.current;
+      const seen = firstVisible.current;
+      if (!seen || seen.key !== now.chapterKey || now.position.verse === seen.verse) return;
+      now.update({ position: { book: now.position.book, chapter: now.position.chapter, verse: seen.verse } });
+    }, 1000);
+  }).current;
 
   useEffect(() => {
     if (flash === null) return;
@@ -178,33 +305,37 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
     return () => clearTimeout(timer);
   }, [toast]);
 
+  const moveTo = useCallback(
+    (target: { book: number; chapter: number }, extra: Partial<Settings> = {}) => {
+      if (pushed) {
+        setOwnPosition({ book: target.book, chapter: target.chapter });
+        if (Object.keys(extra).length > 0) update(extra);
+      } else {
+        update({ ...extra, position: { book: target.book, chapter: target.chapter } });
+      }
+    },
+    [pushed, update],
+  );
+
   const go = useCallback(
     (delta: 1 | -1) => {
-      const idx = books.findIndex((b) => b.id === position.book);
-      let chapter = position.chapter + delta;
-      let target = books[idx];
-      if (chapter < 1) {
-        if (idx === 0) return;
-        target = books[idx - 1];
-        chapter = target.chapters;
-      } else if (chapter > target.chapters) {
-        if (idx === books.length - 1) return;
-        target = books[idx + 1];
-        chapter = 1;
-      }
-      update({ position: { book: target.id, chapter } });
-      listRef.current?.scrollToOffset({ offset: 0, animated: false });
+      const n = neighbour(books, position.book, position.chapter, delta);
+      if (!n) return;
+      scrollTarget.current = { flash: false };
+      moveTo(n);
     },
-    [books, position, update],
+    [books, position.book, position.chapter, moveTo],
   );
 
   const goRef = useRef(go);
   goRef.current = go;
   // Swipe left for the next chapter, right for the previous. Vertical movement fails the
-  // gesture quickly so scrolling is unaffected.
+  // gesture quickly so scrolling is unaffected, and a swipe starting at either edge is
+  // left to Android's back gesture.
   const swipe = useMemo(
     () =>
       Gesture.Pan()
+        .hitSlop({ left: -EDGE, right: -EDGE })
         .activeOffsetX([-30, 30])
         .failOffsetY([-15, 15])
         .runOnJS(true)
@@ -215,10 +346,23 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
     [],
   );
 
-  // Cycle through the translations bundled in this edition.
-  const toggleTranslation = () => {
+  // Cycle through the translations bundled in this edition, staying on the verse at the
+  // top of the screen (which can have another number, or chapter, in the other translation).
+  const toggleTranslation = async () => {
     const list = edition.translations;
-    update({ translation: list[(list.indexOf(translation) + 1) % list.length] });
+    const next = list[(list.indexOf(translation) + 1) % list.length];
+    const seen = firstVisible.current;
+    let target: Ref | null = null;
+    if (seen && seen.key === chapterKey) {
+      target = await mapRef(db, translation, next, { book: position.book, chapter: position.chapter, verse: seen.verse }).catch(() => null);
+    }
+    scrollTarget.current = target ? { verse: target.verse, flash: false } : null;
+    if (target && (target.book !== position.book || target.chapter !== position.chapter)) {
+      shownKey.current = `${target.book}:${target.chapter}`;
+      moveTo(target, { translation: next });
+    } else {
+      update({ translation: next });
+    }
   };
   const originalLanguage = (v: { book: number }) => (v.book <= 39 ? t('hebrew') : t('greek'));
 
@@ -301,7 +445,11 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
   const renderItem = useCallback(
     ({ item }: { item: Item }) => {
       if (item.kind === 'heading') {
-        return <Text style={[styles.heading, { color: theme.muted, fontSize: fontSize - 3, fontFamily: theme.font }]}>{item.text}</Text>;
+        return (
+          <Text accessibilityRole="header" style={[styles.heading, { color: theme.muted, fontSize: fontSize - 3, fontFamily: theme.font }]}>
+            {item.text}
+          </Text>
+        );
       }
       if (item.kind === 'para') {
         return (
@@ -314,6 +462,8 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
                   fontSize={fontSize}
                   onWord={handleWord}
                   onLongPress={() => openActions(v)}
+                  onNumberPress={() => openActions(v)}
+                  numberLabel={t('verseActions', { n: v.verse })}
                   notes={notes.get(v.verse)}
                   onNote={(n) => setNote({ verse: v, note: n })}
                   underline={underlineWords}
@@ -330,8 +480,9 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
       }
       const v = item.verse;
       const flashing = flash === v.verse;
+      const tapMode = interlinear && interlinearMode === 'tap';
       const showOriginal = interlinear && (interlinearMode === 'all' || expanded.has(v.verse));
-      const words = showOriginal ? original?.get(v.verse) : undefined;
+      const words = showOriginal ? originalWords?.get(v.verse) : undefined;
       const marked = bookmarked.has(bookmarkKey(v));
       const mark = highlights[bookmarkKey(v)];
       return (
@@ -351,7 +502,10 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
             onLongPress={() => openActions(v)}
             hasNote={bookmarkKey(v) in userNotes}
             onNotePress={() => openNote(v)}
-            onNumberPress={interlinear && interlinearMode === 'tap' ? () => toggleExpanded(v.verse) : undefined}
+            // The verse number opens the verse's actions, or in tap mode shows its words.
+            onNumberPress={tapMode ? () => toggleExpanded(v.verse) : () => openActions(v)}
+            numberLabel={tapMode ? t('tapVerseNumber', { lang: originalLanguage(v) }) : t('verseActions', { n: v.verse })}
+            underlineNumber={tapMode}
             notes={notes.get(v.verse)}
             onNote={(n) => setNote({ verse: v, note: n })}
             underline={underlineWords}
@@ -370,7 +524,7 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
       );
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [theme, fontSize, handleWord, underlineWords, flash, interlinear, interlinearMode, expanded, original, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, toggleExpanded, translation],
+    [theme, fontSize, handleWord, underlineWords, flash, interlinear, interlinearMode, expanded, originalWords, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, toggleExpanded, translation, t],
   );
 
   const title = useMemo(() => `${bookName(books, position.book, translation)} ${position.chapter}`, [books, position, translation]);
@@ -400,8 +554,15 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
       {keepAwake ? <KeepAwake /> : null}
       <GestureDetector gesture={swipe}>
         <View style={styles.body}>
-      {!items ? (
-        <ActivityIndicator style={styles.loading} color={theme.accent} />
+      {loadFailed ? (
+        <View style={styles.failed}>
+          <Text style={[styles.failedText, { color: theme.muted }]}>{t('loadFailed')}</Text>
+          <Pressable onPress={() => setAttempt((n) => n + 1)} accessibilityRole="button" hitSlop={8} style={styles.failedButton}>
+            <Text style={[styles.nav, { color: theme.accent }]}>{t('tryAgain')}</Text>
+          </Pressable>
+        </View>
+      ) : !items ? (
+        <ActivityIndicator style={styles.loading} color={theme.accent} accessibilityLabel={t('loading')} />
       ) : (
         <FlatList
           ref={listRef}
@@ -410,6 +571,8 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
           renderItem={renderItem}
           contentContainerStyle={styles.list}
           initialNumToRender={20}
+          viewabilityConfig={viewability}
+          onViewableItemsChanged={onViewableItemsChanged}
           ListHeaderComponent={
             <>
               {tipSeen ? null : (
@@ -446,7 +609,7 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
             { borderColor: interlinear ? theme.accent : theme.border, backgroundColor: interlinear ? theme.accent : 'transparent', opacity: pressed ? 0.7 : 1 },
           ]}
         >
-          <Text style={[styles.pillText, { color: interlinear ? '#fff' : theme.muted }]}>
+          <Text style={[styles.pillText, { color: interlinear ? theme.onAccent : theme.muted }]}>
             {book?.testament === 'OT' ? t('hebrewInterlinear') : t('greekInterlinear')}
           </Text>
         </Pressable>
@@ -498,6 +661,16 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
               detail={userNotes[bookmarkKey(actions)]}
               onPress={() => openNote(actions)}
             />
+            {actions.tags ? (
+              <SheetAction
+                label={t('wordsInVerse')}
+                detail={t('wordsInVerseDetail')}
+                onPress={() => {
+                  setActions(null);
+                  setWordsFor(actions);
+                }}
+              />
+            ) : null}
             <SheetAction
               label={t('compare')}
               detail={t('compareDetail', { lang: originalLanguage(actions) })}
@@ -538,14 +711,35 @@ export function ReaderScreen({ books, onBack, backLabel, onOpenBooks, onOpenSear
                 <View />
               )}
               <Pressable onPress={saveNote} style={[styles.noteSave, { backgroundColor: theme.accent }]} accessibilityRole="button">
-                <Text style={styles.noteSaveText}>{t('save')}</Text>
+                <Text style={[styles.noteSaveText, { color: theme.onAccent }]}>{t('save')}</Text>
               </Pressable>
             </View>
           </View>
         ) : null}
       </SimpleSheet>
 
-      <CompareSheet target={compare} books={books} onClose={() => setCompare(null)} onWord={handleWord} />
+      <SimpleSheet visible={!!wordsFor} title={wordsFor ? `${t('wordsInVerse')} · ${formatRef(books, wordsFor, translation)}` : ''} onClose={() => setWordsFor(null)}>
+        {wordsFor
+          ? parseSegments(wordsFor)
+              .filter((seg) => seg.strongs)
+              .map((seg, i) => (
+                <Pressable
+                  key={i}
+                  onPress={() => {
+                    setWordsFor(null);
+                    handleWord({ strongs: seg.strongs!, word: seg.text });
+                  }}
+                  accessibilityRole="button"
+                  style={({ pressed }) => [styles.wordRow, { borderBottomColor: theme.border, opacity: pressed ? 0.6 : 1 }]}
+                >
+                  <Text style={[styles.wordRowText, { color: theme.text }]}>{seg.text}</Text>
+                  <Text style={[styles.wordRowId, { color: theme.muted }]}>{seg.strongs}</Text>
+                </Pressable>
+              ))
+          : null}
+      </SimpleSheet>
+
+      <CompareSheet target={compare} translation={translation} books={books} onClose={() => setCompare(null)} onWord={handleWord} />
     </View>
   );
 }
@@ -596,6 +790,12 @@ const styles = StyleSheet.create({
   noteButtons: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 },
   noteDelete: { fontSize: 15 },
   noteSave: { paddingHorizontal: 22, paddingVertical: 10, borderRadius: 10 },
-  noteSaveText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  noteSaveText: { fontSize: 16, fontWeight: '600' },
   actionsPreview: { fontSize: 14, lineHeight: 20, marginBottom: 8 },
+  failed: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24 },
+  failedText: { fontSize: 16, textAlign: 'center' },
+  failedButton: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 12 },
+  wordRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 48, borderBottomWidth: StyleSheet.hairlineWidth, gap: 12 },
+  wordRowText: { fontSize: 17, flexShrink: 1 },
+  wordRowId: { fontSize: 14, fontVariant: ['tabular-nums'] },
 });

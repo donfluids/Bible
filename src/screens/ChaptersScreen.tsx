@@ -36,7 +36,7 @@ export function ChaptersScreen({ book, current, onPick, onBack }: Props) {
               accessibilityRole="button"
               accessibilityLabel={`${title} ${c}`}
             >
-              <Text style={[styles.cellText, { color: active ? '#fff' : theme.text }]}>{c}</Text>
+              <Text style={[styles.cellText, { color: active ? theme.onAccent : theme.text }]}>{c}</Text>
             </Pressable>
           );
         })}

@@ -37,15 +37,20 @@ export function ConcordanceScreen({ strongs, books, onOpenRef, onWord, onBack }:
   const [refs, setRefs] = useState<Ref[] | null>(null);
   const [verses, setVerses] = useState<VerseRow[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     setFilter(null);
-    Promise.all([getStrongs(db, strongs), getRenderings(db, strongs, translation)]).then(([e, r]) => {
-      if (cancelled) return;
-      setEntry(e);
-      setRenderings(r);
-    });
+    Promise.all([getStrongs(db, strongs), getRenderings(db, strongs, translation)])
+      .then(([e, r]) => {
+        if (cancelled) return;
+        setEntry(e);
+        setRenderings(r);
+      })
+      .catch(() => {
+        if (!cancelled) setFailed(true);
+      });
     return () => {
       cancelled = true;
     };
@@ -55,14 +60,19 @@ export function ConcordanceScreen({ strongs, books, onOpenRef, onWord, onBack }:
     let cancelled = false;
     setRefs(null);
     setVerses([]);
+    setFailed(false);
     const load = filter === null ? getConcordance(db, strongs, translation) : getRenderingRefs(db, strongs, translation, filter);
-    load.then(async (r) => {
-      if (cancelled) return;
-      if (filter === null) setTotal(r.length);
-      setRefs(r);
-      const first = await getVerses(db, translation, r.slice(0, PAGE));
-      if (!cancelled) setVerses(first);
-    });
+    load
+      .then(async (r) => {
+        if (cancelled) return;
+        if (filter === null) setTotal(r.length);
+        setRefs(r);
+        const first = await getVerses(db, translation, r.slice(0, PAGE));
+        if (!cancelled) setVerses(first);
+      })
+      .catch(() => {
+        if (!cancelled) setFailed(true);
+      });
     return () => {
       cancelled = true;
     };
@@ -71,9 +81,14 @@ export function ConcordanceScreen({ strongs, books, onOpenRef, onWord, onBack }:
   const loadMore = useCallback(async () => {
     if (!refs || loadingMore || verses.length >= refs.length) return;
     setLoadingMore(true);
-    const next = await getVerses(db, translation, refs.slice(verses.length, verses.length + PAGE));
-    setVerses((prev) => [...prev, ...next]);
-    setLoadingMore(false);
+    try {
+      const next = await getVerses(db, translation, refs.slice(verses.length, verses.length + PAGE));
+      setVerses((prev) => [...prev, ...next]);
+    } catch {
+      setFailed(true);
+    } finally {
+      setLoadingMore(false);
+    }
   }, [db, translation, refs, verses.length, loadingMore]);
 
   const listFont = Math.min(settings.fontSize, 18);
@@ -87,7 +102,9 @@ export function ConcordanceScreen({ strongs, books, onOpenRef, onWord, onBack }:
           {entry?.translit ? <Text style={[styles.translit, { color: theme.muted }]}>  {entry.translit}</Text> : null}
         </Text>
         <Text style={[styles.count, { color: theme.muted }]}>
-          {refs
+          {failed
+            ? t('loadFailed')
+            : refs
             ? (refs.length === 1 ? t('oneVerseIn', { translation }) : t('versesIn', { n: formatCount(refs.length), translation })) +
               (filter ? t('asWord', { word: filter }) : '')
             : t('loading')}
@@ -134,8 +151,8 @@ function Chip({ label, count, active, onPress }: { label: string; count: number;
         { borderColor: active ? theme.accent : theme.border, backgroundColor: active ? theme.accent : pressed ? theme.accentSoft : theme.card },
       ]}
     >
-      <Text style={[styles.chipText, { color: active ? '#fff' : theme.text }]}>
-        {label} <Text style={{ color: active ? '#fff' : theme.muted, fontWeight: '400' }}>{formatCount(count)}</Text>
+      <Text style={[styles.chipText, { color: active ? theme.onAccent : theme.text }]}>
+        {label} <Text style={{ color: active ? theme.onAccent : theme.muted, fontWeight: '400' }}>{formatCount(count)}</Text>
       </Text>
     </Pressable>
   );

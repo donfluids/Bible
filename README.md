@@ -28,12 +28,16 @@ rendering counts all work in Malayalam.
 - Switch on the interlinear view to see the Hebrew (Leningrad Codex) or Greek text
   of every verse, word by word, each with its transliteration and a short gloss.
   Tap any word for its grammar (parsed in plain words) and its dictionary entry.
-  Greek words absent from the modern critical editions are marked.
+  Greek words absent from the modern critical editions are marked, and tapping one
+  says which of the Textus Receptus, the Byzantine text and Nestle-Aland have it.
 - Poetry keeps its line breaks, and the translators' footnotes and cross references
   appear as small letters in the text; tap one to read it.
-- Hold a verse to highlight it in one of four colours, add a note, compare the KJV
-  and WEB side by side with the Hebrew or Greek, copy it, share it, or bookmark it.
-  Bookmarks, highlights and notes are listed under Saved on the Books screen.
+- Hold a verse, or tap its number, to highlight it in one of four colours, add a note,
+  compare the KJV and WEB side by side with the Hebrew or Greek, list its linked words,
+  copy it, share it, or bookmark it. Bookmarks, highlights and notes are listed under
+  Saved on the Books screen, with the chapters read most recently.
+- A verse opened from search, Saved or a word's verse list opens in a reader of its own;
+  Back returns to the list and then to the chapter you were reading.
 - The search box also searches the dictionary: an English meaning ("love"), a
   transliteration ("logos") or a Hebrew or Greek word, accents optional.
 - The occurrences list for a word starts with how the translation renders it
@@ -42,12 +46,14 @@ rendering counts all work in Malayalam.
   the transliteration, hide Hebrew cantillation marks.
 - Search the text, type a reference such as `John 3:16` or `Ps 23` to jump to it, or
   type a Strong's number such as `G26` to open its entry.
-- Swipe left or right to change chapter. Screens slide natively, and on iPhone you can
-  swipe back from the left edge. Rotates to landscape; on tablets the text keeps a
+- Swipe left or right to change chapter (a swipe from the very edge is left to the
+  phone's back gesture). Screens slide natively, and on iPhone you can swipe back from
+  the left edge. Rotates to landscape; on tablets the text keeps a
   comfortable column width.
 - Appearance: light, sepia or dark (or follow the phone), a serif typeface, verse-per-line
   or paragraph layout, and keep-the-screen-awake.
-- Adjustable text size, remembers where you left off.
+- Adjustable text size. Remembers the verse you left off at, and keeps your place when
+  you switch translation.
 
 ## Running it on your phone
 

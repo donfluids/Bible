@@ -1,5 +1,5 @@
-import React, { createContext, Suspense, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { DefaultTheme, DarkTheme, NavigationContainer, StackActions } from '@react-navigation/native';
@@ -7,12 +7,13 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
-import { DATABASE_ASSET, DATABASE_NAME, removeStaleDatabases } from './src/db';
+import { DATABASE_ASSET, DATABASE_NAME, databaseCopyExists, removeStaleDatabases } from './src/db';
 import { navigationRef } from './src/navigation';
 import type { RootStackParamList } from './src/navigation';
 import { translate, useT } from './src/i18n';
+import type { StringKey } from './src/i18n';
 import { CONFIGURED_EDITION, EDITIONS, EditionContext, isEditionId } from './src/edition';
-import type { Edition } from './src/edition';
+import type { Edition, Language } from './src/edition';
 import { getBooks, getMeta } from './src/queries';
 import { SettingsProvider, useSettings } from './src/settings';
 import { useTheme } from './src/theme';
@@ -30,13 +31,96 @@ export default function App() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <Suspense fallback={<Loading message={translate(CONFIGURED_EDITION.languages[0], 'preparing')} />}>
-          <SQLiteProvider databaseName={DATABASE_NAME} assetSource={{ assetId: DATABASE_ASSET }} useSuspense>
-            <EditionGate />
-          </SQLiteProvider>
-        </Suspense>
+        <ErrorBoundary>
+          <Database />
+        </ErrorBoundary>
       </SafeAreaProvider>
     </GestureHandlerRootView>
+  );
+}
+
+const STARTUP_LANGUAGE = CONFIGURED_EDITION.languages[0];
+
+/**
+ * Opens the database. The first launch copies it out of the app (about 45 MB); if that
+ * fails, for instance for lack of storage, the reader can try again instead of being
+ * left with a blank screen.
+ */
+function Database() {
+  const [attempt, setAttempt] = useState(0);
+  const [ready, setReady] = useState(false);
+  const [failed, setFailed] = useState(false);
+  // The bundled copy is needed only when there is no copy on the phone yet.
+  const firstCopy = useMemo(() => !databaseCopyExists(), [attempt]);
+  const assetSource = useMemo(() => (firstCopy ? { assetId: DATABASE_ASSET } : undefined), [firstCopy]);
+  const onInit = useCallback(async () => setReady(true), []);
+  // The provider reports errors while rendering, so record them afterwards.
+  const onError = useCallback(() => {
+    Promise.resolve().then(() => setFailed(true));
+  }, []);
+  if (failed) {
+    return (
+      <Failure
+        language={STARTUP_LANGUAGE}
+        title="openFailed"
+        detail="openFailedDetail"
+        onRetry={() => {
+          setFailed(false);
+          setReady(false);
+          setAttempt((n) => n + 1);
+        }}
+      />
+    );
+  }
+  return (
+    <View style={styles.root}>
+      {ready ? null : <Loading message={translate(STARTUP_LANGUAGE, firstCopy ? 'preparing' : 'loading')} />}
+      <SQLiteProvider key={attempt} databaseName={DATABASE_NAME} assetSource={assetSource} onInit={onInit} onError={onError}>
+        <EditionGate />
+      </SQLiteProvider>
+    </View>
+  );
+}
+
+/** Anything that throws while rendering ends here, with a way back in. */
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { error: Error | null }> {
+  state: { error: Error | null } = { error: null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  render() {
+    if (!this.state.error) return this.props.children;
+    return <Failure language={STARTUP_LANGUAGE} title="somethingWrong" message={this.state.error.message} onRetry={() => this.setState({ error: null })} />;
+  }
+}
+
+function Failure({
+  language,
+  title,
+  detail,
+  message,
+  onRetry,
+}: {
+  language: Language;
+  title: StringKey;
+  detail?: StringKey;
+  message?: string;
+  onRetry: () => void;
+}) {
+  const theme = useTheme();
+  return (
+    <View style={[styles.root, styles.center, styles.failure, { backgroundColor: theme.bg }]}>
+      <Text style={[styles.failureTitle, { color: theme.text }]} accessibilityRole="header">
+        {translate(language, title)}
+      </Text>
+      {detail ? <Text style={[styles.failureText, { color: theme.muted }]}>{translate(language, detail)}</Text> : null}
+      {message ? <Text style={[styles.failureText, { color: theme.muted }]}>{message}</Text> : null}
+      <Pressable onPress={onRetry} accessibilityRole="button" style={[styles.retry, { backgroundColor: theme.accent }]}>
+        <Text style={[styles.retryText, { color: theme.onAccent }]}>{translate(language, 'tryAgain')}</Text>
+      </Pressable>
+    </View>
   );
 }
 
@@ -84,15 +168,21 @@ function Shell() {
   const theme = useTheme();
   const { settings, update } = useSettings();
   const [books, setBooks] = useState<Book[] | null>(null);
+  const [booksFailed, setBooksFailed] = useState(false);
+  const [booksAttempt, setBooksAttempt] = useState(0);
   // Word sheet entries; following a link in the derivation pushes, the back arrow pops.
   const [picks, setPicks] = useState<WordPick[]>([]);
   const pick = picks.length > 0 ? picks[picks.length - 1] : null;
 
   useEffect(() => {
-    getBooks(db).then(setBooks);
-    // The current database is open by now, so older copies can go.
-    removeStaleDatabases();
-  }, [db]);
+    setBooksFailed(false);
+    getBooks(db)
+      .then(setBooks)
+      .catch(() => setBooksFailed(true));
+  }, [db, booksAttempt]);
+
+  // The current database is open by now, so older copies can go.
+  useEffect(() => removeStaleDatabases(), []);
 
   // Remember the last chapter visited in each book, for the chapter picker.
   useEffect(() => {
@@ -121,6 +211,7 @@ function Shell() {
     [theme],
   );
 
+  if (booksFailed) return <Failure language={settings.language} title="loadFailed" onRetry={() => setBooksAttempt((n) => n + 1)} />;
   if (!appValue) return <Loading message={translate(settings.language, 'loading')} />;
 
   return (
@@ -151,15 +242,16 @@ function Shell() {
 
 type Props<T extends keyof RootStackParamList> = NativeStackScreenProps<RootStackParamList, T>;
 
-/** Jump to a verse from a list, keeping the list underneath for the back button. */
+/**
+ * Jump to a verse from a list, keeping the list underneath for the back button. The
+ * pushed reader has its own place, so the main reader stays where the reader left it.
+ */
 function useOpenRef(navigation: Props<keyof RootStackParamList>['navigation'], from: string) {
-  const { update } = useSettings();
   return useCallback(
     (ref: Ref) => {
-      update({ position: { book: ref.book, chapter: ref.chapter, verse: ref.verse } });
-      navigation.push('Reader', { from });
+      navigation.push('Reader', { from, ref: { book: ref.book, chapter: ref.chapter, verse: ref.verse } });
     },
-    [navigation, update, from],
+    [navigation, from],
   );
 }
 
@@ -169,6 +261,7 @@ function ReaderRoute({ navigation, route }: Props<'Reader'>) {
   return (
     <ReaderScreen
       books={books}
+      jumpTo={route.params?.ref}
       onBack={from ? () => navigation.goBack() : undefined}
       backLabel={from}
       onOpenBooks={() => navigation.navigate('Books')}
@@ -181,13 +274,17 @@ function ReaderRoute({ navigation, route }: Props<'Reader'>) {
 
 function BooksRoute({ navigation }: Props<'Books'>) {
   const { books } = useApp();
-  const { settings } = useSettings();
+  const { settings, update } = useSettings();
   return (
     <BooksScreen
       books={books}
       current={settings.position.book}
       onPick={(book) => navigation.navigate('Chapters', { bookId: book.id })}
       onOpenBookmarks={() => navigation.navigate('Bookmarks')}
+      onOpenRecent={(place) => {
+        update({ position: { book: place.book, chapter: place.chapter } });
+        navigation.popToTop();
+      }}
       bookmarkCount={settings.bookmarks.length + Object.keys(settings.highlights).length + Object.keys(settings.notes).length}
       onBack={() => navigation.goBack()}
     />
@@ -250,4 +347,9 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   center: { alignItems: 'center', justifyContent: 'center', gap: 12 },
   loadingText: { fontSize: 14 },
+  failure: { paddingHorizontal: 28 },
+  failureTitle: { fontSize: 18, fontWeight: '700', textAlign: 'center' },
+  failureText: { fontSize: 15, lineHeight: 21, textAlign: 'center' },
+  retry: { marginTop: 8, paddingHorizontal: 22, paddingVertical: 12, borderRadius: 10, minHeight: 44, justifyContent: 'center' },
+  retryText: { fontSize: 16, fontWeight: '600' },
 });

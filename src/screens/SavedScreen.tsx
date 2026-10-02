@@ -56,9 +56,11 @@ export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
     let cancelled = false;
     const refs = new Map<string, Ref>();
     for (const s of sections) for (const item of s.data) refs.set(item.key, item.ref);
-    getVerses(db, settings.translation, [...refs.values()]).then((rows) => {
-      if (!cancelled) setVerses(new Map(rows.map((r) => [keyOf(r), r])));
-    });
+    getVerses(db, settings.translation, [...refs.values()])
+      .then((rows) => {
+        if (!cancelled) setVerses(new Map(rows.map((r) => [keyOf(r), r])));
+      })
+      .catch(() => undefined); // the list still shows each reference without its text
     return () => {
       cancelled = true;
     };

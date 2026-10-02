@@ -6,7 +6,7 @@ import type { Bookmark, HighlightColor, TranslationId } from './types';
 export interface Position {
   book: number;
   chapter: number;
-  /** Verse to scroll to when the chapter opens. */
+  /** Verse to scroll to when the chapter opens: the first verse on screen when the reader left. */
   verse?: number;
 }
 
@@ -41,6 +41,8 @@ export interface Settings {
   tipSeen: boolean;
   /** Last chapter visited in each book, keyed by book id. */
   lastChapters: Record<string, number>;
+  /** Chapters read most recently, newest first. */
+  recent: { book: number; chapter: number }[];
 }
 
 const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
@@ -60,6 +62,7 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
   position: { book: 43, chapter: 1 },
   tipSeen: false,
   lastChapters: {},
+  recent: [],
 };
 
 export const FONT_SIZES = [15, 17, 19, 21, 24, 28];

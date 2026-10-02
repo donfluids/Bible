@@ -15,6 +15,10 @@ interface Props {
   onLongPress?: () => void;
   /** Tap on the verse number. */
   onNumberPress?: () => void;
+  /** What tapping the number does, for screen readers. */
+  numberLabel?: string;
+  /** Underline the number, when tapping it shows the verse's original words. */
+  underlineNumber?: boolean;
   /** Footnotes and cross references of this verse, shown as lettered markers. */
   notes?: Note[];
   onNote?: (note: Note) => void;
@@ -63,6 +67,8 @@ export function VerseText({
   onWord,
   onLongPress,
   onNumberPress,
+  numberLabel,
+  underlineNumber,
   notes,
   onNote,
   underline = true,
@@ -125,7 +131,8 @@ export function VerseText({
       key={`n${note.n}`}
       onPress={onNote ? () => onNote(note) : undefined}
       style={{ fontSize: small, color: theme.accent, fontWeight: '700' }}
-      accessibilityLabel={`Note ${noteLetter(note.n)}`}
+      accessibilityRole="button"
+      accessibilityLabel={`${note.kind === 'x' ? t('crossReference') : t('footnote')} ${noteLetter(note.n)}`}
     >
       {' '}
       {noteLetter(note.n)}
@@ -162,10 +169,11 @@ export function VerseText({
       numberOfLines={numberOfLines}
       selectable={false}
       onLongPress={onLongPress}
+      accessibilityHint={onLongPress ? t('verseHint') : undefined}
     >
       {bookmarked ? <Text style={{ color: theme.accent }}>▎</Text> : null}
       {hasNote ? (
-        <Text onPress={onNotePress} style={{ color: theme.accent, fontSize: small }} accessibilityLabel="Open note">
+        <Text onPress={onNotePress} style={{ color: theme.accent, fontSize: small }} accessibilityRole="button" accessibilityLabel={t('editNote')}>
           ✎{' '}
         </Text>
       ) : null}
@@ -173,7 +181,9 @@ export function VerseText({
         <Text
           onPress={onNumberPress}
           onLongPress={onLongPress}
-          style={[styles.number, { color: theme.accent, fontSize: small }, onNumberPress && { textDecorationLine: 'underline' }]}
+          accessibilityRole={onNumberPress ? 'button' : undefined}
+          accessibilityLabel={onNumberPress ? numberLabel : undefined}
+          style={[styles.number, { color: theme.accent, fontSize: small }, underlineNumber && { textDecorationLine: 'underline' }]}
         >
           {verse.verse}{' '}
         </Text>
@@ -188,6 +198,8 @@ export function VerseText({
             key={i}
             onPress={onWord ? () => onWord({ strongs: seg.strongs!, word: seg.text }) : undefined}
             onLongPress={onLongPress}
+            // Android exposes a tappable span inside text to TalkBack and keyboards only as a link.
+            accessibilityRole={onWord ? 'link' : undefined}
             suppressHighlighting={false}
             style={[
               underline && { textDecorationLine: 'underline', textDecorationColor: theme.linked },

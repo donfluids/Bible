@@ -30,6 +30,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
   const [results, setResults] = useState<VerseRow[] | null>(null);
   const [entries, setEntries] = useState<LexiconHit[]>([]);
   const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
   const latest = useRef(0);
 
   // "John 3:16", "Ps 23" and the like are offered as a direct jump.
@@ -48,11 +49,19 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
       return;
     }
     setBusy(true);
+    setFailed(false);
     const timer = setTimeout(async () => {
-      const [rows, hits] = await Promise.all([searchText(db, translation, q, LIMIT), searchLexicon(db, q, 8)]);
-      if (latest.current !== id) return;
-      setResults(rows);
-      setEntries(hits);
+      try {
+        const [rows, hits] = await Promise.all([searchText(db, translation, q, LIMIT), searchLexicon(db, q, 8)]);
+        if (latest.current !== id) return;
+        setResults(rows);
+        setEntries(hits);
+      } catch {
+        if (latest.current !== id) return;
+        setResults(null);
+        setEntries([]);
+        setFailed(true);
+      }
       setBusy(false);
     }, 250);
     return () => clearTimeout(timer);
@@ -97,7 +106,8 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
           <Text style={[styles.strongsSub, { color: theme.muted }]}>{t('dictionaryEntry', { lang: strongsId.startsWith('H') ? t('hebrew') : t('greek') })}</Text>
         </Pressable>
       ) : null}
-      {busy ? <ActivityIndicator style={styles.spinner} color={theme.accent} /> : null}
+      {busy ? <ActivityIndicator style={styles.spinner} color={theme.accent} accessibilityLabel={t('loading')} /> : null}
+      {failed && !busy ? <Text style={[styles.failed, { color: theme.muted }]}>{t('loadFailed')}</Text> : null}
       {entries.length > 0 && !busy ? (
         <View style={[styles.lexicon, { borderColor: theme.border, backgroundColor: theme.card }]}>
           <Text style={[styles.lexiconTitle, { color: theme.muted }]}>{t('dictionary')}</Text>
@@ -161,6 +171,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
   },
   spinner: { marginVertical: 12 },
+  failed: { fontSize: 15, paddingHorizontal: 18, paddingVertical: 12 },
   lexicon: { marginHorizontal: 14, marginBottom: 10, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
   lexiconTitle: { fontSize: 11, fontWeight: '700', letterSpacing: 0.8, paddingHorizontal: 12, paddingTop: 10, paddingBottom: 6 },
   entry: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth },

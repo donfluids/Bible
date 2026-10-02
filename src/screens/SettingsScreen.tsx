@@ -23,7 +23,9 @@ export function SettingsScreen({ onBack }: Props) {
   const [meta, setMeta] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    getMeta(db).then(setMeta);
+    getMeta(db)
+      .then(setMeta)
+      .catch(() => undefined); // only the build date is lost
   }, [db]);
 
   const sizeIndex = FONT_SIZES.indexOf(settings.fontSize);
@@ -191,7 +193,7 @@ function Pill({ label, active, onPress }: { label: string; active: boolean; onPr
       accessibilityState={{ selected: active }}
       style={[styles.pill, { borderColor: active ? theme.accent : theme.border, backgroundColor: active ? theme.accent : 'transparent' }]}
     >
-      <Text style={[styles.pillText, { color: active ? '#fff' : theme.text }]}>{label}</Text>
+      <Text style={[styles.pillText, { color: active ? theme.onAccent : theme.text }]}>{label}</Text>
     </Pressable>
   );
 }

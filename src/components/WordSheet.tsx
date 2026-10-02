@@ -7,8 +7,9 @@ import { describeMorph } from '../morph';
 import { getConcordanceCount, getStrongs } from '../queries';
 import { formatCount, isHebrew } from '../text';
 import { useTheme } from '../theme';
-import { FLAG_LXX, FLAG_NOT_IN_NA, FLAG_RESTORED, taggedTranslation } from '../types';
-import type { StrongsEntry, TranslationId, WordPick } from '../types';
+import { FLAG_LXX, FLAG_NOT_IN_BYZ, FLAG_NOT_IN_NA, FLAG_NOT_IN_TR, FLAG_REPLACES_NA, FLAG_RESTORED, taggedTranslation } from '../types';
+import type { OriginalWord, StrongsEntry, TranslationId, WordPick } from '../types';
+import type { StringKey } from '../i18n';
 
 interface Props {
   pick: WordPick | null;
@@ -24,6 +25,27 @@ interface Props {
 interface Loaded {
   entry: StrongsEntry | null;
   count: number;
+  failed?: boolean;
+}
+
+/**
+ * Which printed texts have an original word, when that is worth saying: a Hebrew word
+ * supplied from the Septuagint or restored, or a Greek word missing from one of the
+ * Nestle-Aland editions, the Textus Receptus (which the KJV translates) and the
+ * Byzantine text.
+ */
+function textNote(w: OriginalWord, t: (key: StringKey, params?: Record<string, string | number>) => string): string {
+  if (w.flags & FLAG_LXX) return t('noteLxx');
+  if (w.flags & FLAG_RESTORED) return t('noteRestored');
+  const inNA = !(w.flags & FLAG_NOT_IN_NA);
+  const inTR = !(w.flags & FLAG_NOT_IN_TR);
+  const inByz = !(w.flags & FLAG_NOT_IN_BYZ);
+  let note = '';
+  if (!inNA) note = inTR && inByz ? t('noteTrByz') : inTR ? t('noteTrOnly') : t('noteByzOnly');
+  else if (!inTR) note = t('noteNotInTr');
+  else if (!inByz) note = t('noteNotInByz');
+  if (w.flags & FLAG_REPLACES_NA && w.alt) note += ' ' + t('noteNaReads', { word: w.alt });
+  return note;
 }
 
 /** Bottom sheet with the Strong's entry for a tapped word. */
@@ -45,9 +67,13 @@ export function WordSheet({ pick, translation, onClose, onBack, onPick, onShowOc
       setData({ entry: null, count: 0 });
       return;
     }
-    Promise.all([getStrongs(db, pick.strongs), getConcordanceCount(db, pick.strongs, tagged)]).then(([entry, count]) => {
-      if (!cancelled) setData({ entry, count });
-    });
+    Promise.all([getStrongs(db, pick.strongs), getConcordanceCount(db, pick.strongs, tagged)])
+      .then(([entry, count]) => {
+        if (!cancelled) setData({ entry, count });
+      })
+      .catch(() => {
+        if (!cancelled) setData({ entry: null, count: 0, failed: true });
+      });
     return () => {
       cancelled = true;
     };
@@ -58,15 +84,7 @@ export function WordSheet({ pick, translation, onClose, onBack, onPick, onShowOc
   const hebrew = pick.strongs ? isHebrew(pick.strongs) : !!original && /[\u0590-\u05FF]/.test(original.text);
   const entry = data?.entry;
   const grammar = original?.morph ? describeMorph(original.morph, hebrew) : '';
-  const note = original
-    ? original.flags & FLAG_NOT_IN_NA
-      ? t('noteNotInNA')
-      : original.flags & FLAG_LXX
-        ? t('noteLxx')
-        : original.flags & FLAG_RESTORED
-          ? t('noteRestored')
-          : ''
-    : '';
+  const note = original ? textNote(original, t) : '';
 
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onBack ?? onClose} statusBarTranslucent>
@@ -115,7 +133,7 @@ export function WordSheet({ pick, translation, onClose, onBack, onPick, onShowOc
             ) : null}
             {!entry ? (
               <Text style={[styles.body, { color: theme.text }]}>
-                {pick.strongs ? t('noEntry', { id: pick.strongs }) : t('noStrongs')}
+                {data.failed ? t('loadFailed') : pick.strongs ? t('noEntry', { id: pick.strongs }) : t('noStrongs')}
               </Text>
             ) : (
               <>
@@ -165,7 +183,7 @@ export function WordSheet({ pick, translation, onClose, onBack, onPick, onShowOc
               style={({ pressed }) => [styles.cta, { backgroundColor: theme.accent, opacity: pressed || data.count === 0 ? 0.6 : 1 }]}
               accessibilityRole="button"
             >
-              <Text style={styles.ctaText}>
+              <Text style={[styles.ctaText, { color: theme.onAccent }]}>
                 {data.count === 0
                   ? t('notTagged', { translation: tagged })
                   : data.count === 1
@@ -246,5 +264,5 @@ const styles = StyleSheet.create({
   legend: { marginTop: 8, padding: 12, borderRadius: 10, borderWidth: StyleSheet.hairlineWidth },
   legendText: { fontSize: 13, lineHeight: 19 },
   cta: { marginTop: 18, paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
-  ctaText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
+  ctaText: { fontSize: 16, fontWeight: '600' },
 });

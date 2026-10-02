@@ -113,11 +113,16 @@ export interface OriginalWord {
   /** Grammar code, see src/morph.ts. */
   morph: string;
   flags: number;
+  /** For a Textus Receptus or Byzantine word that replaces another, the Nestle-Aland word. */
+  alt?: string;
 }
 
 export const FLAG_NOT_IN_NA = 1;
 export const FLAG_LXX = 2;
 export const FLAG_RESTORED = 4;
+export const FLAG_NOT_IN_TR = 8;
+export const FLAG_NOT_IN_BYZ = 16;
+export const FLAG_REPLACES_NA = 32;
 
 /** The word the reader tapped, carried to the word sheet. */
 export interface WordPick {

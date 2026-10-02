@@ -166,10 +166,84 @@ export async function searchText(
 }
 
 /**
- * Hebrew or Greek words for every verse of a chapter, keyed by verse number.
- * Each chapter is stored as one deflate-compressed blob; see scripts/build-db.mjs.
+ * Hebrew or Greek words for every verse of a chapter, keyed by verse number in the
+ * numbering of `translation`. The words follow the KJV numbering; a translation that
+ * numbers some verses differently (the Malayalam in 15 chapters) has them remapped
+ * through the verse_map table, which may draw on a neighbouring chapter.
  */
-export async function getInterlinear(db: SQLiteDatabase, book: number, chapter: number): Promise<Map<number, OriginalWord[]>> {
+export async function getInterlinear(
+  db: SQLiteDatabase,
+  book: number,
+  chapter: number,
+  translation?: TranslationId,
+): Promise<Map<number, OriginalWord[]>> {
+  const out = await chapterWords(db, book, chapter);
+  if (!translation) return out;
+  const rows = await db.getAllAsync<{ verse: number; obook: number; ochapter: number; overse: number }>(
+    'SELECT verse, obook, ochapter, overse FROM verse_map WHERE translation = ? AND book = ? AND chapter = ? ORDER BY verse, n',
+    translation,
+    book,
+    chapter,
+  );
+  if (rows.length === 0) return out;
+  const chapters = new Map([[`${book}:${chapter}`, out]]);
+  const byVerse = new Map<number, OriginalWord[]>();
+  for (const r of rows) {
+    const key = `${r.obook}:${r.ochapter}`;
+    if (!chapters.has(key)) chapters.set(key, await chapterWords(db, r.obook, r.ochapter));
+    byVerse.set(r.verse, [...(byVerse.get(r.verse) ?? []), ...(chapters.get(key)?.get(r.overse) ?? [])]);
+  }
+  return new Map([...out, ...byVerse]);
+}
+
+/** The KJV-numbered verses that a verse of `translation` corresponds to (usually itself). */
+export async function toKjvRefs(db: SQLiteDatabase, translation: TranslationId, ref: Ref): Promise<Ref[]> {
+  const rows = await db.getAllAsync<{ obook: number; ochapter: number; overse: number }>(
+    'SELECT obook, ochapter, overse FROM verse_map WHERE translation = ? AND book = ? AND chapter = ? AND verse = ? ORDER BY n',
+    translation,
+    ref.book,
+    ref.chapter,
+    ref.verse,
+  );
+  return rows.length ? rows.map((r) => ({ book: r.obook, chapter: r.ochapter, verse: r.overse })) : [ref];
+}
+
+/**
+ * The same verse in another translation's numbering, or null when that translation
+ * has no such verse (Acts 15:34 in the Malayalam, for example).
+ */
+export async function mapRef(db: SQLiteDatabase, from: TranslationId, to: TranslationId, ref: Ref): Promise<Ref | null> {
+  if (from === to) return ref;
+  const kjv = (await toKjvRefs(db, from, ref))[0];
+  // A verse with the same number that is not itself renumbered, and exists, is the match.
+  const remapped = await db.getFirstAsync<{ x: number }>(
+    'SELECT 1 AS x FROM verse_map WHERE translation = ? AND book = ? AND chapter = ? AND verse = ?',
+    to,
+    kjv.book,
+    kjv.chapter,
+    kjv.verse,
+  );
+  if (!remapped) {
+    const exists = await db.getFirstAsync<{ x: number }>(
+      'SELECT 1 AS x FROM verses WHERE translation = ? AND book = ? AND chapter = ? AND verse = ?',
+      to,
+      kjv.book,
+      kjv.chapter,
+      kjv.verse,
+    );
+    if (exists) return kjv;
+  }
+  return db.getFirstAsync<Ref>(
+    'SELECT book, chapter, verse FROM verse_map WHERE translation = ? AND obook = ? AND ochapter = ? AND overse = ? ORDER BY book, chapter, verse LIMIT 1',
+    to,
+    kjv.book,
+    kjv.chapter,
+    kjv.verse,
+  );
+}
+
+/** Words of one chapter, keyed by KJV verse number. */
+async function chapterWords(db: SQLiteDatabase, book: number, chapter: number): Promise<Map<number, OriginalWord[]>> {
   const row = await db.getFirstAsync<{ data: Uint8Array | ArrayBuffer }>(
     'SELECT data FROM interlinear WHERE book = ? AND chapter = ?',
     book,
@@ -190,8 +264,8 @@ export async function getInterlinear(db: SQLiteDatabase, book: number, chapter: 
 export function unpackWords(packed: string): OriginalWord[] {
   if (!packed) return [];
   return packed.split('\x1e').map((rec) => {
-    const [text = '', translit = '', gloss = '', strongs = '', morph = '', flags = '0'] = rec.split('\x1f');
-    return { text, translit, gloss, strongs, morph, flags: Number(flags) || 0 };
+    const [text = '', translit = '', gloss = '', strongs = '', morph = '', flags = '0', alt] = rec.split('\x1f');
+    return { text, translit, gloss, strongs, morph, flags: Number(flags) || 0, ...(alt ? { alt } : {}) };
   });
 }
 

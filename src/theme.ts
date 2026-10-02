@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Platform, useColorScheme } from 'react-native';
 import { useOptionalSettings } from './settings';
 import type { HighlightColor } from './types';
@@ -13,6 +14,8 @@ export interface Theme {
   muted: string;
   border: string;
   accent: string;
+  /** Text on an accent-coloured fill (buttons, selected pills). */
+  onAccent: string;
   accentSoft: string;
   linked: string;
   highlight: string;
@@ -36,6 +39,7 @@ const light: Omit<Theme, 'font'> = {
   muted: '#6F675C',
   border: '#E6DFD2',
   accent: '#7A4E1D',
+  onAccent: '#FFFFFF',
   accentSoft: '#F1E6D4',
   linked: '#D8C8B0',
   highlight: '#FFF1C2',
@@ -51,6 +55,7 @@ const sepia: Omit<Theme, 'font'> = {
   muted: '#7D6A4C',
   border: '#D9C7A3',
   accent: '#7A4E1D',
+  onAccent: '#FFFFFF',
   accentSoft: '#E6D5B3',
   linked: '#C9B38A',
   highlight: '#F5DC9C',
@@ -66,6 +71,8 @@ const dark: Omit<Theme, 'font'> = {
   muted: '#A1988A',
   border: '#332E27',
   accent: '#D9A86C',
+  // White on this light tan is 2.2:1; the background colour is 8.6:1.
+  onAccent: '#15130F',
   accentSoft: '#2C251B',
   linked: '#4A4133',
   highlight: '#3A3220',
@@ -79,5 +86,7 @@ export function useTheme(): Theme {
   const settings = useOptionalSettings();
   const choice = settings?.theme ?? 'system';
   const base = choice === 'system' ? (system === 'dark' ? dark : light) : choice === 'sepia' ? sepia : choice === 'dark' ? dark : light;
-  return { ...base, font: settings?.serif ? SERIF_FONT : undefined };
+  const serif = settings?.serif ?? false;
+  // The same object while nothing changes, so memoised lists do not redraw on unrelated settings.
+  return useMemo(() => ({ ...base, font: serif ? SERIF_FONT : undefined }), [base, serif]);
 }
