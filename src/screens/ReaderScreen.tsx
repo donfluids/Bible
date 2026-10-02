@@ -18,7 +18,7 @@ import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
 import { noteLetter, VerseText } from '../components/VerseText';
 import { getChapter, getInterlinear, getNotes, mapRef } from '../queries';
 import type { ChapterData } from '../queries';
-import { useSettings } from '../settings';
+import { FONT_SIZES, useSettings } from '../settings';
 import type { Settings } from '../settings';
 import { getPlace, moveMainReader, selectBook, selectChapter, updatePlace, usePlace } from '../place';
 import type { Position } from '../place';
@@ -352,6 +352,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
     () =>
       Gesture.Pan()
         .hitSlop({ left: -EDGE, right: -EDGE })
+        .maxPointers(1)
         .activeOffsetX([-30, 30])
         .failOffsetY([-15, 15])
         .runOnJS(true)
@@ -361,6 +362,41 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         }),
     [],
   );
+
+  // Pinch the text to change its size: spreading two fingers steps up through the text
+  // sizes, pinching steps down. Each step applies at once, with a tick and a note of the
+  // size; on release the verse that was at the top of the screen is brought back there.
+  const pinchStart = useRef(fontSize);
+  const pinchRef = useRef({ fontSize, items, update });
+  pinchRef.current = { fontSize, items, update };
+  const pinch = useMemo(
+    () =>
+      Gesture.Pinch()
+        .runOnJS(true)
+        .onStart(() => {
+          pinchStart.current = pinchRef.current.fontSize;
+        })
+        .onUpdate((e) => {
+          const wanted = pinchStart.current * e.scale;
+          const size = FONT_SIZES.reduce((best, s) => (Math.abs(s - wanted) < Math.abs(best - wanted) ? s : best), FONT_SIZES[0]);
+          if (size === pinchRef.current.fontSize) return;
+          pinchRef.current.update({ fontSize: size });
+          Haptics.selectionAsync().catch(() => undefined);
+          setToast(`${t('textSize')} ${FONT_SIZES.indexOf(size) + 1}/${FONT_SIZES.length}`);
+        })
+        .onEnd(() => {
+          const seen = firstVisible.current;
+          const list = pinchRef.current.items;
+          if (pinchStart.current === pinchRef.current.fontSize || !seen || !list) return;
+          const index = list.findIndex((it) => (it.kind === 'verse' && it.verse.verse === seen.verse) || (it.kind === 'para' && it.verses.some((v) => v.verse === seen.verse)));
+          if (index < 0) return;
+          pendingScroll.current = { index, viewPosition: 0 };
+          setTimeout(() => listRef.current?.scrollToIndex({ index, viewPosition: 0, animated: false }), 80);
+        }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [t],
+  );
+  const gestures = useMemo(() => Gesture.Simultaneous(swipe, pinch), [swipe, pinch]);
 
   // Cycle through the translations bundled in this edition, staying on the verse at the
   // top of the screen (which can have another number, or chapter, in the other translation).
@@ -576,7 +612,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         }
       />
       {keepAwake ? <KeepAwake /> : null}
-      <GestureDetector gesture={swipe}>
+      <GestureDetector gesture={gestures}>
         <View style={styles.body}>
       {loadFailed ? (
         <View style={styles.failed}>

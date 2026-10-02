@@ -126,6 +126,7 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
           <Text style={[styles.preview, { color: theme.text, fontSize: settings.fontSize, fontFamily: theme.font }]}>{t('previewText')}</Text>
           <SizeButton label="A" onPress={() => setSize(1)} disabled={sizeIndex >= FONT_SIZES.length - 1} />
         </View>
+        <Text style={[styles.rowSub, styles.hint, { color: theme.muted }]}>{t('textSizeHint')}</Text>
 
         <Label text={t('interlinear')} />
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
@@ -220,6 +221,7 @@ function SizeButton({ label, small, onPress, disabled }: { label: string; small?
 }
 
 const styles = StyleSheet.create({
+  hint: { marginTop: 6, marginHorizontal: 4 },
   licencesRow: { marginTop: 12, minHeight: 44, justifyContent: 'center' },
   screen: { flex: 1 },
   content: { padding: 16, paddingBottom: 48, alignSelf: 'center', width: '100%', maxWidth: 720 },

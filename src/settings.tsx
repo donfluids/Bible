@@ -52,7 +52,8 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
   tipSeen: false,
 };
 
-export const FONT_SIZES = [15, 17, 19, 21, 24, 28];
+// The Aa buttons in Settings and pinching the reader step through these.
+export const FONT_SIZES = [15, 17, 19, 21, 24, 28, 32, 36];
 
 function defaultsFor(edition: Edition): Settings {
   return { ...BASE_DEFAULTS, translation: edition.defaultTranslation, language: edition.languages[0] };

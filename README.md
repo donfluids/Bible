@@ -57,7 +57,8 @@ rendering counts all work in Malayalam.
   comfortable column width.
 - Appearance: light, sepia or dark (or follow the phone), a serif typeface, verse-per-line
   or paragraph layout, and keep-the-screen-awake.
-- Adjustable text size. Remembers the verse you left off at, and keeps your place when
+- Text size in eight steps, from Settings or by pinching the text with two fingers.
+  Remembers the verse you left off at, and keeps your place when
   you switch translation.
 
 ## Running it on your phone
