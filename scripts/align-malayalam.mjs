@@ -8,6 +8,8 @@
 // Options: --model claude-sonnet-5-5  --effort medium  --concurrency 3
 //          --chunk 20 (verses per call)  --dry-run  --redo  --out data/align/mal
 //          --nt-first (with --all: New Testament before Old)
+//          --commit-every 10 (git commit and push the output folder after every N chunks;
+//          0 turns it off; only when the output folder is inside this repository)
 //
 // When the CLI reports a usage or rate limit, every worker pauses (until the reset
 // time the CLI gives, else 5 to 30 minutes) and carries on; those waits do not count
@@ -18,7 +20,7 @@
 // scripts/build-db.mjs reads those files and writes the tags into the database.
 import { DatabaseSync } from 'node:sqlite';
 import { inflateRawSync } from 'node:zlib';
-import { spawn } from 'node:child_process';
+import { spawn, execFileSync } from 'node:child_process';
 import { mkdirSync, existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join, dirname, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -116,21 +118,33 @@ function buildPrompt(book, chapter, verses) {
   return parts.join('\n');
 }
 
-const LIMIT_RE = /usage limit|rate.?limit|429|overloaded|quota|too many requests|limit reached/i;
+const LIMIT_RE = /usage limit|session limit|weekly limit|hit your .*limit|rate.?limit|429|overloaded|quota|too many requests|limit reached/i;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let pausedUntil = 0;
 let limitStreak = 0;
 let pausedTotal = 0;
-const MAX_PAUSE_TOTAL = 12 * 3600e3;
+const MAX_PAUSE_TOTAL = 24 * 3600e3;
+
+/** "resets 2:20am (UTC)" -> the next time of day it names, in milliseconds since the epoch. */
+function resetTimeFromMessage(message) {
+  const m = /resets\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)\s*\(UTC\)/i.exec(message);
+  if (!m) return null;
+  let hour = Number(m[1]) % 12;
+  if (m[3].toLowerCase() === 'pm') hour += 12;
+  const now = new Date();
+  const t = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hour, Number(m[2] ?? 0));
+  return t > Date.now() ? t : t + 24 * 3600e3;
+}
 
 async function waitIfPaused() {
   while (Date.now() < pausedUntil) await sleep(Math.min(60e3, pausedUntil - Date.now()));
 }
 
 function pauseForLimit(message) {
-  const reset = /\|(\d{10})\b/.exec(message);
-  const wait = reset
-    ? Math.max(60e3, Number(reset[1]) * 1000 - Date.now() + 60e3)
+  const epoch = /\|(\d{10})\b/.exec(message);
+  const resetAt = epoch ? Number(epoch[1]) * 1000 : resetTimeFromMessage(message);
+  const wait = resetAt
+    ? Math.max(60e3, resetAt - Date.now() + 2 * 60e3)
     : Math.min(30 * 60e3, 5 * 60e3 * 2 ** Math.min(limitStreak, 3));
   limitStreak++;
   if (Date.now() + wait > pausedUntil) {
@@ -189,6 +203,41 @@ function resolve(book, chapter, verses, structured) {
   return { verses: out, problems };
 }
 
+// Saving progress: commit and push the output folder every N finished chunks, one save
+// at a time, so a restarted machine loses at most the calls in flight.
+const COMMIT_EVERY = Number(opt('commit-every', 10));
+const IN_REPO = OUT.startsWith(ROOT + '/');
+let saveChain = Promise.resolve();
+let sinceSave = 0;
+
+function saveProgress(stats, final = false) {
+  if (!IN_REPO || COMMIT_EVERY <= 0) return saveChain;
+  saveChain = saveChain.then(() => {
+    try {
+      const rel = OUT.slice(ROOT.length + 1);
+      execFileSync('git', ['add', rel], { cwd: ROOT, stdio: 'ignore' });
+      const staged = execFileSync('git', ['diff', '--cached', '--name-only', '--', rel], { cwd: ROOT }).toString().trim();
+      if (!staged) return;
+      const n = readdirSync(OUT).filter((f) => f.endsWith('.json')).length;
+      const msg = `Malayalam alignment: ${n} of ${stats.total} chunks${final ? ' (run finished)' : ''}\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Kt8QQgS1XLBE3LTVGzDsDj`;
+      execFileSync('git', ['commit', '-q', '-m', msg, '--', rel], { cwd: ROOT, stdio: 'ignore' });
+      for (let i = 0; i < 4; i++) {
+        try {
+          execFileSync('git', ['push', '-q', 'origin', 'HEAD'], { cwd: ROOT, stdio: 'ignore', timeout: 120e3 });
+          console.log(`saved ${n} chunks (committed and pushed)`);
+          return;
+        } catch {
+          execFileSync('sleep', [String(2 ** (i + 1))]);
+        }
+      }
+      console.log(`saved ${n} chunks (committed; push failed, will retry with the next save)`);
+    } catch (e) {
+      console.log(`save failed: ${String(e.message).slice(0, 120)}`);
+    }
+  });
+  return saveChain;
+}
+
 async function alignChunk(job, stats) {
   const file = join(OUT, `${job.book}-${job.chapter}-${job.verses[0].v}.json`);
   if (!opt('redo', false) && existsSync(file)) { stats.cached++; return; }
@@ -205,6 +254,10 @@ async function alignChunk(job, stats) {
       writeFileSync(file, JSON.stringify({ model: MODEL, effort: EFFORT, created: new Date().toISOString(), cost: res.total_cost_usd, usage: res.usage && { in: res.usage.input_tokens, cacheRead: res.usage.cache_read_input_tokens, cacheCreate: res.usage.cache_creation_input_tokens, out: res.usage.output_tokens }, problems, verses }, null, 1));
       stats.done++; stats.cost += res.total_cost_usd ?? 0; stats.out += res.usage?.output_tokens ?? 0; stats.problems += problems.length;
       console.log(`ok   ${BOOK_NAMES[job.book - 1]} ${job.chapter}:${job.verses[0].v}-${job.verses.at(-1).v}  $${(res.total_cost_usd ?? 0).toFixed(3)}  ${problems.length} problems`);
+      if (++sinceSave >= COMMIT_EVERY) {
+        sinceSave = 0;
+        saveProgress(stats);
+      }
       if ((stats.done + stats.failed) % 50 === 0) {
         console.log(`progress ${stats.done + stats.cached + stats.failed}/${stats.total} chunks, ${stats.failed} failed, $${stats.cost.toFixed(2)} so far, at ${BOOK_NAMES[job.book - 1]} ${job.chapter}`);
       }
@@ -267,6 +320,7 @@ async function main() {
   const stats = { total: jobs.length, done: 0, cached: 0, failed: 0, limited: 0, cost: 0, out: 0, problems: 0 };
   let next = 0;
   await Promise.all(Array.from({ length: CONCURRENCY }, async () => { while (next < jobs.length) await alignChunk(jobs[next++], stats); }));
+  await saveProgress(stats, true);
   console.log(JSON.stringify(stats));
 }
 
