@@ -25,8 +25,10 @@ rendering counts all work in Malayalam.
   ways the KJV renders it.
 - From that entry, list every verse in the current translation that uses the same
   original word, and jump to any of them.
-- Switch on the interlinear view to see the Hebrew (Leningrad Codex) or Greek text
-  of every verse, word by word, each with its transliteration and a short gloss.
+- Tap the Hebrew words or Greek words button (മൂലപാഠം in the Malayalam app) to see
+  the Hebrew (Leningrad Codex) or Greek text of every verse, word by word, each with
+  its transliteration and a short gloss. (The code and this README call this view the
+  interlinear.)
   Tap any word for its grammar (parsed in plain words) and its dictionary entry.
   Greek words absent from the modern critical editions are marked, and tapping one
   says which of the Textus Receptus, the Byzantine text and Nestle-Aland have it.
