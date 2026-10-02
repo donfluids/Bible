@@ -1,0 +1,23 @@
+{
+ "model": "claude-sonnet-5-5",
+ "effort": "medium",
+ "created": "2026-10-02T09:06:31.167Z",
+ "cost": 0.0089756,
+ "usage": {
+  "in": 2,
+  "cacheRead": 1008,
+  "cacheCreate": 1484,
+  "out": 151
+ },
+ "problems": [],
+ "verses": [
+  {
+   "book": 44,
+   "chapter": 2,
+   "v": 35,
+   "hash": "dc785137a766",
+   "tokens": 11,
+   "spans": []
+  }
+ ]
+}
