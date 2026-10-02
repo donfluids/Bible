@@ -10,6 +10,8 @@
 //          --nt-first (with --all: New Testament before Old)
 //          --commit-every 10 (git commit and push the output folder after every N chunks;
 //          0 turns it off; only when the output folder is inside this repository)
+//          --save-to data/align/mal (with --out elsewhere: copy new chunks into this repo
+//          folder only when saving, so the working tree stays clean between saves)
 //
 // When the CLI reports a usage or rate limit, every worker pauses (until the reset
 // time the CLI gives, else 5 to 30 minutes) and carries on; those waits do not count
@@ -21,7 +23,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import { inflateRawSync } from 'node:zlib';
 import { spawn, execFileSync } from 'node:child_process';
-import { mkdirSync, existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { mkdirSync, existsSync, readFileSync, writeFileSync, readdirSync, copyFileSync } from 'node:fs';
 import { join, dirname, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tokenize, wordSpan, textHash } from './lib/tokens.mjs';
@@ -206,7 +208,8 @@ function resolve(book, chapter, verses, structured) {
 // Saving progress: commit and push the output folder every N finished chunks, one save
 // at a time, so a restarted machine loses at most the calls in flight.
 const COMMIT_EVERY = Number(opt('commit-every', 10));
-const IN_REPO = OUT.startsWith(ROOT + '/');
+const SAVE_DIR = opt('save-to', false) ? resolvePath(ROOT, opt('save-to')) : OUT;
+const IN_REPO = SAVE_DIR.startsWith(ROOT + '/');
 let saveChain = Promise.resolve();
 let sinceSave = 0;
 
@@ -214,11 +217,17 @@ function saveProgress(stats, final = false) {
   if (!IN_REPO || COMMIT_EVERY <= 0) return saveChain;
   saveChain = saveChain.then(() => {
     try {
-      const rel = OUT.slice(ROOT.length + 1);
+      const rel = SAVE_DIR.slice(ROOT.length + 1);
+      if (SAVE_DIR !== OUT) {
+        mkdirSync(SAVE_DIR, { recursive: true });
+        for (const f of readdirSync(OUT)) {
+          if (f.endsWith('.json') && !existsSync(join(SAVE_DIR, f))) copyFileSync(join(OUT, f), join(SAVE_DIR, f));
+        }
+      }
       execFileSync('git', ['add', rel], { cwd: ROOT, stdio: 'ignore' });
       const staged = execFileSync('git', ['diff', '--cached', '--name-only', '--', rel], { cwd: ROOT }).toString().trim();
       if (!staged) return;
-      const n = readdirSync(OUT).filter((f) => f.endsWith('.json')).length;
+      const n = readdirSync(SAVE_DIR).filter((f) => f.endsWith('.json')).length;
       const msg = `Malayalam alignment: ${n} of ${stats.total} chunks${final ? ' (run finished)' : ''}\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Kt8QQgS1XLBE3LTVGzDsDj`;
       execFileSync('git', ['commit', '-q', '-m', msg, '--', rel], { cwd: ROOT, stdio: 'ignore' });
       for (let i = 0; i < 4; i++) {
