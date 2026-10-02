@@ -1,5 +1,6 @@
 import React, { useMemo, useRef } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from '../components/Header';
 import { useT } from '../i18n';
 import { selectPosition, selectRecent, usePlace } from '../place';
@@ -27,6 +28,8 @@ const ROW_H = 50;
 /** Book list that opens scrolled to the book being read. */
 export function BooksScreen({ books, current, onPick, onOpenBookmarks, bookmarkCount, onOpenRecent, onBack }: Props) {
   const theme = useTheme();
+  // Lists run under the system navigation bar; the last row must clear it.
+  const insets = useSafeAreaInsets();
   const t = useT();
   const { settings } = useSettings();
   const listRef = useRef<FlatList<Row>>(null);
@@ -114,7 +117,7 @@ export function BooksScreen({ books, current, onPick, onOpenBookmarks, bookmarkC
             </Pressable>
           );
         }}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 40 }}
       />
     </View>
   );

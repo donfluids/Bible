@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
 import { useT } from '../i18n';
@@ -23,6 +24,8 @@ const LIMIT = 300;
 export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
+  // Lists run under the system navigation bar; the last row must clear it.
+  const insets = useSafeAreaInsets();
   const t = useT();
   const { settings } = useSettings();
   const { translation } = settings;
@@ -146,7 +149,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
         data={results ?? []}
         keyExtractor={(v) => `${v.book}:${v.chapter}:${v.verse}`}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
         renderItem={({ item }) => (
           <VerseListItem verse={item} books={books} fontSize={listFont} onOpen={onOpenRef} onWord={onWord} highlightText={query} />
         )}

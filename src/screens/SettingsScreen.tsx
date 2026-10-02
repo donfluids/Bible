@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
 import { useEdition } from '../edition';
@@ -18,6 +19,8 @@ interface Props {
 export function SettingsScreen({ onBack, onOpenLicences }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
+  // Lists run under the system navigation bar; the last row must clear it.
+  const insets = useSafeAreaInsets();
   const t = useT();
   const EDITION = useEdition();
   const { settings, update } = useSettings();
@@ -39,7 +42,7 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Header title={t('settings')} onBack={onBack} backLabel={t('back')} />
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}>
         <Label text={t('appearance')} />
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           {EDITION.languages.length > 1 ? (

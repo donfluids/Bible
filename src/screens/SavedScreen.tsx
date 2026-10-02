@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, SectionList, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
 import { useT } from '../i18n';
@@ -29,6 +30,8 @@ const parseKey = (key: string): Ref => {
 export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
+  // Lists run under the system navigation bar; the last row must clear it.
+  const insets = useSafeAreaInsets();
   const t = useT();
   const { settings, update } = useSettings();
   const [verses, setVerses] = useState<Map<string, VerseRow>>(new Map());
@@ -91,7 +94,7 @@ export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
         <SectionList
           sections={sections}
           keyExtractor={(item) => `${item.kind}:${item.key}`}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
           stickySectionHeadersEnabled
           renderSectionHeader={({ section }) => (
             <Text style={[styles.section, { color: theme.muted, backgroundColor: theme.bg }]}>{section.title.toUpperCase()}</Text>

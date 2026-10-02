@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
 import { translationName, useT } from '../i18n';
@@ -27,6 +28,8 @@ const PAGE = 40;
 export function ConcordanceScreen({ strongs, rendering, books, onOpenRef, onWord, onBack }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
+  // Lists run under the system navigation bar; the last row must clear it.
+  const insets = useSafeAreaInsets();
   const t = useT();
   const { settings } = useSettings();
   // The list is built from Strong's tags, so an untagged translation shows the KJV.
@@ -131,7 +134,7 @@ export function ConcordanceScreen({ strongs, rendering, books, onOpenRef, onWord
           renderItem={({ item }) => (
             <VerseListItem verse={item} books={books} fontSize={listFont} onOpen={onOpenRef} onWord={onWord} emphasize={strongs} />
           )}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
           onEndReached={loadMore}
           onEndReachedThreshold={0.6}
           ListFooterComponent={
@@ -169,7 +172,8 @@ const styles = StyleSheet.create({
   lemma: { fontSize: 26, lineHeight: 34 },
   translit: { fontSize: 17 },
   count: { fontSize: 13, marginTop: 2 },
-  chips: { flexGrow: 0, borderBottomWidth: StyleSheet.hairlineWidth },
+  // A ScrollView may shrink by default; the verse list below would squeeze the chips.
+  chips: { flexGrow: 0, flexShrink: 0, borderBottomWidth: StyleSheet.hairlineWidth },
   chipsContent: { paddingHorizontal: 12, paddingVertical: 10, gap: 8 },
   chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1 },
   chipText: { fontSize: 14, fontWeight: '600' },

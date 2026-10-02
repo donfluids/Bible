@@ -1,5 +1,6 @@
 import React from 'react';
 import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from '../components/Header';
 import { useEdition } from '../edition';
 import { useT } from '../i18n';
@@ -12,6 +13,8 @@ import { useTheme } from '../theme';
 /** Where the texts, data, fonts and code come from, their licences, and what was changed. */
 export function LicencesScreen({ onBack }: { onBack: () => void }) {
   const theme = useTheme();
+  // Lists run under the system navigation bar; the last row must clear it.
+  const insets = useSafeAreaInsets();
   const t = useT();
   const edition = useEdition();
   const { settings } = useSettings();
@@ -24,7 +27,7 @@ export function LicencesScreen({ onBack }: { onBack: () => void }) {
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Header title={t('sourcesLicences')} onBack={onBack} />
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}>
         {sources.map((s) => (
           <View key={s.title} style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <Text style={[styles.title, { color: theme.text }]} accessibilityRole="header">

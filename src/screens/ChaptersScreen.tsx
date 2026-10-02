@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from '../components/Header';
 import { useT } from '../i18n';
 import { useSettings } from '../settings';
@@ -15,6 +16,8 @@ interface Props {
 
 export function ChaptersScreen({ book, current, onPick, onBack }: Props) {
   const theme = useTheme();
+  // Lists run under the system navigation bar; the last row must clear it.
+  const insets = useSafeAreaInsets();
   const t = useT();
   const { settings } = useSettings();
   const title = book.names[settings.translation] && settings.translation !== 'KJV' && settings.translation !== 'WEB' ? book.names[settings.translation]! : book.name;
@@ -22,7 +25,7 @@ export function ChaptersScreen({ book, current, onPick, onBack }: Props) {
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Header title={title} onBack={onBack} backLabel={t('back')} />
-      <ScrollView contentContainerStyle={styles.grid}>
+      <ScrollView contentContainerStyle={[styles.grid, { paddingBottom: insets.bottom + 24 }]}>
         {chapters.map((c) => {
           const active = c === current;
           return (
