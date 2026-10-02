@@ -1,7 +1,7 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { inflateSync, strFromU8 } from 'fflate';
 import { plainText } from './text';
-import type { Book, Heading, LexiconHit, Note, OriginalWord, Ref, Rendering, StrongsEntry, TranslationId, VerseRow } from './types';
+import type { Book, Heading, LexiconHit, Note, OriginalWord, Ref, RelatedWord, Rendering, StrongsEntry, TranslationId, VerseRow } from './types';
 
 export async function getBooks(db: SQLiteDatabase): Promise<Book[]> {
   const [books, names] = await Promise.all([
@@ -89,9 +89,32 @@ export async function getRenderingRefs(db: SQLiteDatabase, strongs: string, tran
 
 export async function getStrongs(db: SQLiteDatabase, id: string): Promise<StrongsEntry | null> {
   return db.getFirstAsync<StrongsEntry>(
-    'SELECT id, lemma, translit, pron, derivation, definition, kjv_usage FROM strongs WHERE id = ?',
+    'SELECT id, lemma, translit, pron, derivation, definition, kjv_usage, gloss FROM strongs WHERE id = ?',
     id,
   );
+}
+
+/**
+ * Words related to an entry through Strong's derivations: the ones it comes from (named
+ * in its derivation) and the ones that name it in theirs, those it comes from first.
+ */
+export async function getRelated(db: SQLiteDatabase, entry: StrongsEntry, limit = 6): Promise<RelatedWord[]> {
+  const parents = [...new Set((entry.derivation ?? '').match(/\b[HG]\d{1,4}\b/g) ?? [])].filter((id) => id !== entry.id);
+  const out: RelatedWord[] = [];
+  for (const id of parents.slice(0, limit)) {
+    const row = await db.getFirstAsync<RelatedWord>('SELECT id, lemma, gloss FROM strongs WHERE id = ?', id);
+    if (row) out.push(row);
+  }
+  if (out.length < limit) {
+    // "H430 (" so that H4300 does not match; the derivations always name a word this way.
+    const children = await db.getAllAsync<RelatedWord>(
+      "SELECT id, lemma, gloss FROM strongs WHERE derivation LIKE ? ESCAPE '\\' AND gloss IS NOT NULL LIMIT ?",
+      `%${entry.id} (%`,
+      limit - out.length,
+    );
+    out.push(...children.filter((c) => c.id !== entry.id && !out.some((o) => o.id === c.id)));
+  }
+  return out;
 }
 
 /** Every verse in which a Strong's number occurs, in canonical order. */

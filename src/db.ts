@@ -6,7 +6,7 @@ import { Directory, File, Paths } from 'expo-file-system';
  * on first launch and kept. Bump the suffix whenever assets/db/bible.db is
  * rebuilt so devices that already have a copy pick up the new one.
  */
-export const DATABASE_NAME = 'bible-v8.db';
+export const DATABASE_NAME = 'bible-v9.db';
 
 export const DATABASE_ASSET = require('../assets/db/bible.db');
 

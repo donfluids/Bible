@@ -78,17 +78,11 @@ const en = {
   asWord: ' as “{word}”',
   all: 'All',
   notInTranslation: 'Not in this translation.',
-  derivation: 'Derivation',
-  definition: 'Definition',
-  kjvRenderings: 'Translated in the KJV as',
-  showVerses: 'Show {n} verses in the {translation}',
-  showOneVerse: 'Show 1 verse in the {translation}',
   notTagged: 'Not tagged in the {translation}',
   noEntry: 'No dictionary entry for {id}.',
   noStrongs: "This word has no Strong's number.",
   marksQuestion: 'What do the marks mean?',
   marksHide: 'Hide the key to the marks',
-  legendStrongs: 'In the KJV renderings, × or [idiom] marks an idiomatic rendering, + marks a phrase made with other words, and (-ly) or (-ness) shows another ending of the same rendering. Numbers such as H433 in the derivation are other entries; tap one to open it.',
   legendGloss: 'In the gloss, <a word> in angle brackets is in the original but best left untranslated, and [a word] in square brackets is implied but not in the original.',
   legendTranslit: ' In the transliteration, dots separate syllables and the capital letter marks the stressed syllable.',
   legendVariant: 'A line under a Hebrew or Greek word marks text that differs between editions; the note above explains this one.',
@@ -103,6 +97,15 @@ const en = {
   previousEntry: 'Previous entry',
   close: 'Close',
   wordsInVerse: 'Words in this verse',
+  moreAboutWord: 'Meaning, examples and related words',
+  inThisVerse: 'In this verse',
+  examples: 'Examples',
+  relatedWords: 'Related words',
+  strongsDictionary: "Strong's dictionary (1890)",
+  strongsNumberLine: "Strong's number {id}, for looking the word up in other Bible tools",
+  seeAllVerses: 'See all {n} verses',
+  seeOneVerse: 'See the one verse',
+  inTranslationSub: 'in {name}',
   wordsInVerseDetail: 'Open the Hebrew or Greek entry for each linked word',
   verseHint: 'Double-tap and hold for highlight, note, copy and more',
   verseActions: 'Verse {n}, actions',
@@ -226,17 +229,11 @@ const ml: Record<StringKey, string> = {
   asWord: ' “{word}” എന്ന്',
   all: 'എല്ലാം',
   notInTranslation: 'ഈ പരിഭാഷയിൽ ഇല്ല.',
-  derivation: 'ഉത്ഭവം',
-  definition: 'അർത്ഥം',
-  kjvRenderings: 'KJV-യിൽ പരിഭാഷപ്പെടുത്തിയിരിക്കുന്നത്',
-  showVerses: '{translation}-ലെ {n} വാക്യങ്ങൾ കാണിക്കുക',
-  showOneVerse: '{translation}-ലെ 1 വാക്യം കാണിക്കുക',
   notTagged: '{translation}-ൽ ഈ പദം അടയാളപ്പെടുത്തിയിട്ടില്ല',
   noEntry: '{id} എന്നതിന് നിഘണ്ടുവിൽ വിവരമില്ല.',
   noStrongs: 'ഈ വാക്കിന് സ്ട്രോങ്സ് നമ്പർ ഇല്ല.',
   marksQuestion: 'ഈ അടയാളങ്ങളുടെ അർത്ഥമെന്ത്?',
   marksHide: 'അടയാളങ്ങളുടെ വിശദീകരണം മറയ്ക്കുക',
-  legendStrongs: 'KJV പരിഭാഷകളിൽ × അല്ലെങ്കിൽ [idiom] എന്നത് ശൈലീപരമായ പരിഭാഷയെയും, + എന്നത് മറ്റു വാക്കുകളോടൊപ്പം ചേർന്ന പ്രയോഗത്തെയും, (-ly) പോലുള്ളവ അതേ പരിഭാഷയുടെ മറ്റൊരു രൂപത്തെയും സൂചിപ്പിക്കുന്നു. ഉത്ഭവത്തിലെ H433 പോലുള്ള നമ്പറുകൾ മറ്റു പദങ്ങളാണ്; തൊട്ടാൽ തുറക്കാം.',
   legendGloss: 'അർത്ഥത്തിൽ <കോണുള്ള ബ്രാക്കറ്റിലെ> വാക്ക് മൂലത്തിലുണ്ടെങ്കിലും പരിഭാഷയിൽ ഒഴിവാക്കാവുന്നതാണ്; [ചതുര ബ്രാക്കറ്റിലെ] വാക്ക് മൂലത്തിലില്ലെങ്കിലും അർത്ഥത്തിന് ആവശ്യമായതാണ്.',
   legendTranslit: ' ലിപ്യന്തരണത്തിൽ കുത്തുകൾ അക്ഷരങ്ങളെ വേർതിരിക്കുന്നു; വലിയ അക്ഷരം ഊന്നൽ നൽകേണ്ട ഭാഗം കാണിക്കുന്നു.',
   legendVariant: 'മൂലപാഠത്തിൽ വാക്കിനു താഴെയുള്ള വര പതിപ്പുകൾ തമ്മിൽ വ്യത്യാസമുള്ള ഭാഗം സൂചിപ്പിക്കുന്നു; മുകളിലെ കുറിപ്പ് അത് വിശദീകരിക്കുന്നു.',
@@ -251,6 +248,15 @@ const ml: Record<StringKey, string> = {
   previousEntry: 'മുമ്പത്തെ പദം',
   close: 'അടയ്ക്കുക',
   wordsInVerse: 'ഈ വാക്യത്തിലെ പദങ്ങൾ',
+  moreAboutWord: 'അർത്ഥം, ഉദാഹരണങ്ങൾ, ബന്ധപ്പെട്ട പദങ്ങൾ',
+  inThisVerse: 'ഈ വാക്യത്തിൽ',
+  examples: 'ഉദാഹരണങ്ങൾ',
+  relatedWords: 'ബന്ധപ്പെട്ട പദങ്ങൾ',
+  strongsDictionary: 'സ്ട്രോങ്സ് നിഘണ്ടു (1890)',
+  strongsNumberLine: 'സ്ട്രോങ്സ് നമ്പർ {id}; മറ്റു ബൈബിൾ ഉപകരണങ്ങളിൽ ഈ പദം തിരയാൻ',
+  seeAllVerses: '{n} വാക്യങ്ങളും കാണുക',
+  seeOneVerse: 'ആ ഒരു വാക്യം കാണുക',
+  inTranslationSub: '{name}',
   wordsInVerseDetail: 'ബന്ധിപ്പിച്ച ഓരോ പദത്തിന്റെയും എബ്രായ അല്ലെങ്കിൽ ഗ്രീക്ക് വിവരണം തുറക്കുക',
   verseHint: 'ഹൈലൈറ്റ്, കുറിപ്പ്, പകർത്തൽ മുതലായവയ്ക്ക് രണ്ടുതവണ തൊട്ട് അമർത്തിപ്പിടിക്കുക',
   verseActions: 'വാക്യം {n}, പ്രവർത്തനങ്ങൾ',
@@ -314,6 +320,12 @@ export function useT(): (key: StringKey, params?: Record<string, string | number
   const { settings } = useSettings();
   const lang = settings.language;
   return useCallback((key: StringKey, params?: Record<string, string | number>) => translate(lang, key, params), [lang]);
+}
+
+/** Heading for how a translation renders a word: "In the KJV", "സത്യവേദപുസ്തകത്തിൽ". */
+export function renderingsLabel(language: Language, id: string): string {
+  if (language === 'ml') return id === 'MAL' ? 'സത്യവേദപുസ്തകത്തിൽ' : id === 'KJV' ? 'KJV-യിൽ' : id === 'WEB' ? 'WEB-ൽ' : id;
+  return id === 'MAL' ? 'In Sathyavedapusthakam' : `In the ${id}`;
 }
 
 /** Display name of a translation in the interface language. */

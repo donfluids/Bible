@@ -11,7 +11,8 @@ export type RootStackParamList = {
   Chapters: { bookId: number };
   Bookmarks: undefined;
   Search: undefined;
-  Concordance: { strongs: string };
+  /** `rendering` opens the list filtered to verses that translate the word that way. */
+  Concordance: { strongs: string; rendering?: string };
   Settings: undefined;
 };
 

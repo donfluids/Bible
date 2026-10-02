@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
-import { useT } from '../i18n';
+import { translationName, useT } from '../i18n';
 import { VerseListItem } from '../components/VerseListItem';
 import { getConcordance, getRenderingRefs, getRenderings, getStrongs, getVerses } from '../queries';
 import { useSettings } from '../settings';
@@ -13,6 +13,8 @@ import type { Book, Ref, Rendering, StrongsEntry, VerseRow, WordPick } from '../
 
 interface Props {
   strongs: string;
+  /** Start filtered to verses that render the word this way. */
+  rendering?: string;
   books: Book[];
   onOpenRef: (ref: Ref) => void;
   onWord: (pick: WordPick) => void;
@@ -22,7 +24,7 @@ interface Props {
 const PAGE = 40;
 
 /** Every verse in the current translation tagged with one Strong's number. */
-export function ConcordanceScreen({ strongs, books, onOpenRef, onWord, onBack }: Props) {
+export function ConcordanceScreen({ strongs, rendering, books, onOpenRef, onWord, onBack }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const t = useT();
@@ -33,7 +35,7 @@ export function ConcordanceScreen({ strongs, books, onOpenRef, onWord, onBack }:
   const [renderings, setRenderings] = useState<Rendering[]>([]);
   const [total, setTotal] = useState(0);
   /** The English rendering the list is filtered to, or null for all verses. */
-  const [filter, setFilter] = useState<string | null>(null);
+  const [filter, setFilter] = useState<string | null>(rendering ?? null);
   const [refs, setRefs] = useState<Ref[] | null>(null);
   const [verses, setVerses] = useState<VerseRow[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -41,7 +43,7 @@ export function ConcordanceScreen({ strongs, books, onOpenRef, onWord, onBack }:
 
   useEffect(() => {
     let cancelled = false;
-    setFilter(null);
+    setFilter(rendering ?? null);
     Promise.all([getStrongs(db, strongs), getRenderings(db, strongs, translation)])
       .then(([e, r]) => {
         if (cancelled) return;
@@ -105,7 +107,9 @@ export function ConcordanceScreen({ strongs, books, onOpenRef, onWord, onBack }:
           {failed
             ? t('loadFailed')
             : refs
-            ? (refs.length === 1 ? t('oneVerseIn', { translation }) : t('versesIn', { n: formatCount(refs.length), translation })) +
+            ? (refs.length === 1
+                ? t('oneVerseIn', { translation: translationName(settings.language, translation) })
+                : t('versesIn', { n: formatCount(refs.length), translation: translationName(settings.language, translation) })) +
               (filter ? t('asWord', { word: filter }) : '')
             : t('loading')}
         </Text>

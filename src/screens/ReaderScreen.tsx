@@ -11,6 +11,7 @@ import { useKeepAwake } from 'expo-keep-awake';
 import { CompareSheet } from '../components/CompareSheet';
 import { Header, HeaderButton } from '../components/Header';
 import { useEdition } from '../edition';
+import { scriptureFont } from '../fonts';
 import { useT } from '../i18n';
 import { InterlinearVerse } from '../components/InterlinearVerse';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
@@ -31,6 +32,8 @@ interface Props {
   books: Book[];
   /** Open at this verse with a place of its own (a reader pushed from a list). */
   jumpTo?: Ref;
+  /** The word whose sheet is open, marked in its verse. */
+  activePick?: WordPick | null;
   /** Present when the reader was opened from a list; goes back to it. */
   onBack?: () => void;
   backLabel?: string;
@@ -119,7 +122,7 @@ function KeepAwake() {
   return null;
 }
 
-export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onWord }: Props) {
+export function ReaderScreen({ books, jumpTo, activePick, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onWord }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const t = useT();
@@ -433,6 +436,13 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
     setToast(text ? t('noteSaved') : t('noteRemoved'));
   };
 
+  // Offset of the open word in a verse, when it is in that verse.
+  const selectedIn = (v: VerseRow) => {
+    const at = activePick?.at;
+    return at && at.book === v.book && at.chapter === v.chapter && at.verse === v.verse ? at.start : undefined;
+  };
+  const scriptFont = scriptureFont(translation === 'MAL', settings.serif) ?? theme.font;
+
   const toggleExpanded = useCallback((verse: number) => {
     setExpanded((prev) => {
       const next = new Set(prev);
@@ -446,14 +456,17 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
     ({ item }: { item: Item }) => {
       if (item.kind === 'heading') {
         return (
-          <Text accessibilityRole="header" style={[styles.heading, { color: theme.muted, fontSize: fontSize - 3, fontFamily: theme.font }]}>
+          <Text
+            accessibilityRole="header"
+            style={[styles.heading, { color: theme.muted, fontSize: fontSize - 3, fontFamily: scriptFont }, translation === 'MAL' && styles.headingMalayalam]}
+          >
             {item.text}
           </Text>
         );
       }
       if (item.kind === 'para') {
         return (
-          <Text style={[styles.para, { fontSize, lineHeight: Math.round(fontSize * translationInfo(translation).lineHeight), color: theme.text, fontFamily: theme.font }]}>
+          <Text style={[styles.para, { fontSize, lineHeight: Math.round(fontSize * translationInfo(translation).lineHeight), color: theme.text, fontFamily: scriptFont }]}>
             {item.verses.map((v, i) => (
               <React.Fragment key={v.verse}>
                 {i > 0 ? ' ' : null}
@@ -472,6 +485,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                   highlightColor={highlights[bookmarkKey(v)] ? theme.marks[highlights[bookmarkKey(v)]] : undefined}
                   hasNote={bookmarkKey(v) in userNotes}
                   onNotePress={() => openNote(v)}
+                  selectedStart={selectedIn(v)}
                 />
               </React.Fragment>
             ))}
@@ -509,6 +523,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
             notes={notes.get(v.verse)}
             onNote={(n) => setNote({ verse: v, note: n })}
             underline={underlineWords}
+            selectedStart={selectedIn(v)}
           />
           {words && words.length > 0 ? (
             <InterlinearVerse
@@ -524,7 +539,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
       );
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [theme, fontSize, handleWord, underlineWords, flash, interlinear, interlinearMode, expanded, originalWords, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, toggleExpanded, translation, t],
+    [theme, fontSize, handleWord, underlineWords, flash, interlinear, interlinearMode, expanded, originalWords, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, toggleExpanded, translation, t, activePick, scriptFont],
   );
 
   const title = useMemo(() => `${bookName(books, position.book, translation)} ${position.chapter}`, [books, position, translation]);
@@ -770,6 +785,8 @@ const styles = StyleSheet.create({
   pill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1 },
   pillText: { fontSize: 13, fontWeight: '600' },
   heading: { fontWeight: '700', letterSpacing: 1, marginTop: 14, marginBottom: 2 },
+  // Letter spacing breaks up Malayalam conjuncts on some phones.
+  headingMalayalam: { letterSpacing: 0 },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',

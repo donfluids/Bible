@@ -8,6 +8,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import { DATABASE_ASSET, DATABASE_NAME, databaseCopyExists, removeStaleDatabases } from './src/db';
+import { useAppFonts } from './src/fonts';
 import { navigationRef } from './src/navigation';
 import type { RootStackParamList } from './src/navigation';
 import { translate, useT } from './src/i18n';
@@ -32,7 +33,9 @@ export default function App() {
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <ErrorBoundary>
-          <Database />
+          <Fonts>
+            <Database />
+          </Fonts>
         </ErrorBoundary>
       </SafeAreaProvider>
     </GestureHandlerRootView>
@@ -40,6 +43,12 @@ export default function App() {
 }
 
 const STARTUP_LANGUAGE = CONFIGURED_EDITION.languages[0];
+
+/** The bundled Hebrew and Malayalam faces load first (a fraction of a second, from the app). */
+function Fonts({ children }: { children: React.ReactNode }) {
+  const ready = useAppFonts();
+  return ready ? <>{children}</> : <Loading message={translate(STARTUP_LANGUAGE, 'loading')} />;
+}
 
 /**
  * Opens the database. The first launch copies it out of the app (about 45 MB); if that
@@ -151,6 +160,8 @@ interface AppContextValue {
   books: Book[];
   /** Open the word sheet for a tapped word. */
   onWord: (pick: WordPick) => void;
+  /** The word whose sheet is open, so the reader can mark it in the verse. */
+  activePick: WordPick | null;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -196,12 +207,21 @@ function Shell() {
   const closeSheet = useCallback(() => setPicks([]), []);
   const followLink = useCallback((p: WordPick) => setPicks((prev) => [...prev, p]), []);
   const backEntry = useCallback(() => setPicks((prev) => prev.slice(0, -1)), []);
-  const showOccurrences = useCallback((strongs: string) => {
+  const showOccurrences = useCallback((strongs: string, rendering?: string) => {
     setPicks([]);
-    if (navigationRef.isReady()) navigationRef.dispatch(StackActions.push('Concordance', { strongs }));
+    if (navigationRef.isReady()) navigationRef.dispatch(StackActions.push('Concordance', { strongs, rendering }));
   }, []);
+  const openRefFromSheet = useCallback(
+    (ref: Ref) => {
+      setPicks([]);
+      if (navigationRef.isReady()) {
+        navigationRef.dispatch(StackActions.push('Reader', { from: translate(settings.language, 'back'), ref: { book: ref.book, chapter: ref.chapter, verse: ref.verse } }));
+      }
+    },
+    [settings.language],
+  );
 
-  const appValue = useMemo(() => (books ? { books, onWord } : null), [books, onWord]);
+  const appValue = useMemo(() => (books ? { books, onWord, activePick: pick } : null), [books, onWord, pick]);
 
   const navTheme = useMemo(
     () => ({
@@ -235,6 +255,8 @@ function Shell() {
         onBack={picks.length > 1 ? backEntry : undefined}
         onPick={followLink}
         onShowOccurrences={showOccurrences}
+        onOpenRef={openRefFromSheet}
+        books={appValue.books}
       />
     </AppContext.Provider>
   );
@@ -256,12 +278,13 @@ function useOpenRef(navigation: Props<keyof RootStackParamList>['navigation'], f
 }
 
 function ReaderRoute({ navigation, route }: Props<'Reader'>) {
-  const { books, onWord } = useApp();
+  const { books, onWord, activePick } = useApp();
   const from = route.params?.from;
   return (
     <ReaderScreen
       books={books}
       jumpTo={route.params?.ref}
+      activePick={activePick}
       onBack={from ? () => navigation.goBack() : undefined}
       backLabel={from}
       onOpenBooks={() => navigation.navigate('Books')}
@@ -326,7 +349,7 @@ function ConcordanceRoute({ navigation, route }: Props<'Concordance'>) {
   const { books, onWord } = useApp();
   const t = useT();
   const openRef = useOpenRef(navigation, t('results'));
-  return <ConcordanceScreen strongs={route.params.strongs} books={books} onOpenRef={openRef} onWord={onWord} onBack={() => navigation.goBack()} />;
+  return <ConcordanceScreen strongs={route.params.strongs} rendering={route.params.rendering} books={books} onOpenRef={openRef} onWord={onWord} onBack={() => navigation.goBack()} />;
 }
 
 function SettingsRoute({ navigation }: Props<'Settings'>) {

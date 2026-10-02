@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { HEBREW_FONT } from '../fonts';
 import { stripCantillation } from '../text';
 import { useTheme } from '../theme';
 import { FLAG_LXX, FLAG_NOT_IN_NA, FLAG_RESTORED } from '../types';
@@ -34,7 +35,7 @@ export function InterlinearVerse({ words, hebrew, fontSize, onWord, showTranslit
             accessibilityRole="button"
             accessibilityLabel={`${w.text}, ${w.gloss}`}
           >
-            <Text style={[styles.original, { color: theme.text, fontSize: fontSize + (hebrew ? 5 : 3), writingDirection: hebrew ? 'rtl' : 'ltr' }]}>
+            <Text style={[styles.original, { color: theme.text, fontSize: fontSize + (hebrew ? 5 : 3), writingDirection: hebrew ? 'rtl' : 'ltr', fontFamily: hebrew ? HEBREW_FONT : undefined }]}>
               {hebrew && hideCantillation ? stripCantillation(w.text) : w.text}
             </Text>
             {showTranslit ? <Text style={[styles.sub, { color: theme.muted, fontSize: small }]}>{w.translit}</Text> : null}

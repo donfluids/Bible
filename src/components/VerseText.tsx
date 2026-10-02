@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text } from 'react-native';
+import { isMalayalam, scriptureFont } from '../fonts';
 import { useT } from '../i18n';
 import { useSettings } from '../settings';
 import { parseSegments } from '../text';
@@ -40,6 +41,8 @@ interface Props {
   /** The verse has a personal note; tapping the pencil opens it. */
   hasNote?: boolean;
   onNotePress?: () => void;
+  /** Start offset of the word whose entry is open, marked while the word sheet shows. */
+  selectedStart?: number;
 }
 
 /** Character ranges of `query` inside `text`, ignoring case and apostrophe style. */
@@ -81,6 +84,7 @@ export function VerseText({
   highlightColor,
   hasNote,
   onNotePress,
+  selectedStart,
 }: Props) {
   const theme = useTheme();
   const t = useT();
@@ -88,13 +92,17 @@ export function VerseText({
   const segments = useMemo(() => parseSegments(verse), [verse]);
   const ranges = useMemo(() => (highlightText ? matchRanges(verse.text, highlightText) : []), [verse.text, highlightText]);
   const isTitle = verse.verse === 0;
-  const lineHeight = Math.round(fontSize * translationInfo(settings.translation).lineHeight);
+  // The verse's own script decides its face and spacing (Compare shows two at once).
+  const ml = isMalayalam(verse.text);
+  const font = scriptureFont(ml, settings.serif) ?? theme.font;
+  const bold = ml ? { fontFamily: scriptureFont(true, settings.serif, true) } : { fontWeight: '700' as const };
+  const lineHeight = Math.round(fontSize * translationInfo(ml ? 'MAL' : 'KJV').lineHeight);
   const small = Math.max(11, fontSize - 6);
 
   if (verse.omitted) {
     return (
       <Text
-        style={[styles.text, styles.omitted, { fontSize: fontSize - 2, lineHeight, color: theme.muted, fontFamily: theme.font }]}
+        style={[styles.text, styles.omitted, { fontSize: fontSize - 2, lineHeight, color: theme.muted, fontFamily: font }]}
         numberOfLines={numberOfLines}
         onLongPress={onLongPress}
       >
@@ -116,7 +124,7 @@ export function VerseText({
       const to = Math.min(b, end);
       if (from > pos) out.push(text.slice(pos - start, from - start));
       out.push(
-        <Text key={from} style={{ fontWeight: '700', backgroundColor: theme.highlight }}>
+        <Text key={from} style={[bold, { backgroundColor: theme.highlight }]}>
           {text.slice(from - start, to - start)}
         </Text>,
       );
@@ -161,7 +169,7 @@ export function VerseText({
     <Text
       style={[
         styles.text,
-        { fontSize, lineHeight, color: theme.text, fontFamily: theme.font },
+        { fontSize, lineHeight, color: theme.text, fontFamily: font },
         isTitle && styles.title,
         highlightColor ? { backgroundColor: highlightColor } : null,
         flash && { backgroundColor: theme.highlight },
@@ -196,14 +204,19 @@ export function VerseText({
         return (
           <Text
             key={i}
-            onPress={onWord ? () => onWord({ strongs: seg.strongs!, word: seg.text }) : undefined}
+            onPress={
+              onWord
+                ? () => onWord({ strongs: seg.strongs!, word: seg.text, at: { book: verse.book, chapter: verse.chapter, verse: verse.verse, start } })
+                : undefined
+            }
             onLongPress={onLongPress}
             // Android exposes a tappable span inside text to TalkBack and keyboards only as a link.
             accessibilityRole={onWord ? 'link' : undefined}
             suppressHighlighting={false}
             style={[
               underline && { textDecorationLine: 'underline', textDecorationColor: theme.linked },
-              strong && { fontWeight: '700', color: theme.accent, backgroundColor: theme.highlight },
+              strong && [bold, { color: theme.accent, backgroundColor: theme.highlight }],
+              selectedStart === start && [bold, { color: theme.accent, backgroundColor: theme.accentSoft }],
             ]}
           >
             {pieces(seg.text, start, i === 0)}

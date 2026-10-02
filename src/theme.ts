@@ -41,7 +41,8 @@ const light: Omit<Theme, 'font'> = {
   accent: '#7A4E1D',
   onAccent: '#FFFFFF',
   accentSoft: '#F1E6D4',
-  linked: '#D8C8B0',
+  // Faint, so a chapter of linked words still reads as text; Android draws only solid underlines.
+  linked: '#E3D8C6',
   highlight: '#FFF1C2',
 };
 
@@ -57,7 +58,7 @@ const sepia: Omit<Theme, 'font'> = {
   accent: '#7A4E1D',
   onAccent: '#FFFFFF',
   accentSoft: '#E6D5B3',
-  linked: '#C9B38A',
+  linked: '#D6C5A2',
   highlight: '#F5DC9C',
 };
 
@@ -74,7 +75,7 @@ const dark: Omit<Theme, 'font'> = {
   // White on this light tan is 2.2:1; the background colour is 8.6:1.
   onAccent: '#15130F',
   accentSoft: '#2C251B',
-  linked: '#4A4133',
+  linked: '#3B342A',
   highlight: '#3A3220',
 };
 

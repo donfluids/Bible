@@ -20,9 +20,12 @@ rendering counts all work in Malayalam.
 ## What it does
 
 - Read the King James Version or the World English Bible, switchable with one tap.
-- Tap any underlined word to see the original Hebrew or Greek word, its
-  transliteration, pronunciation, Strong's number, derivation, definition and the
-  ways the KJV renders it.
+- Tap any underlined word to see the original Hebrew or Greek word in a sheet that
+  opens at half height: the word you tapped beside the original, a short modern
+  meaning (from STEPBible's glosses), the pronunciation with its stressed syllable, and
+  the words this Bible and the KJV use for it. Drag it up for two example verses,
+  related words and Strong's 1890 dictionary entry, which also gives the Strong's
+  number for looking the word up elsewhere.
 - From that entry, list every verse in the current translation that uses the same
   original word, and jump to any of them.
 - Tap the Hebrew words or Greek words button (മൂലപാഠം in the Malayalam app) to see
@@ -215,7 +218,10 @@ Malayalam in 15 chapters), so the reader shows the right Hebrew or Greek under t
   Greek NT (TAGNT) by [STEPBible](https://github.com/STEPBible/STEPBible-Data),
   Tyndale House Cambridge, CC BY 4.0. Their licence permits bundling the data in
   software and asks that the source files are not redistributed, so only the built
-  database is committed here, never the files in `data/raw/`.
+  database is committed here, never the files in `data/raw/`. The short meanings in
+  the word sheet are the senses their glosses give each word most often.
+- **Fonts**: Noto Serif Hebrew, Noto Sans Malayalam and Noto Serif Malayalam (Google),
+  SIL Open Font License, bundled through the `@expo-google-fonts` packages.
 
 ## Malayalam word links
 
@@ -271,6 +277,15 @@ Bible; the corrections file lists them.
 
 The eBible source also carries five illustration captions (`\fig`) inside verses, for
 example after Genesis 5:5; the build drops them.
+
+### Links the build leaves out, and grouped forms
+
+Hebrew writes "your", "our" or "him" as a suffix on a noun or verb, and the aligner
+often gave a Malayalam pronoun such as നിന്റെ the number of the word it belongs to (in
+നിന്റെ ദൈവം both words linked to Elohim). The build leaves such a pronoun unlinked
+unless its Hebrew counterpart is a pronoun word, and never links to the untranslatable
+object marker אֵת (H853): 3,164 links in all. In the "renders it as" lists, Malayalam
+forms of one word are grouped (ദൈവം, ദൈവമായ, ദൈവത്തിന്റെ … as ദൈവം).
 
 ## Malayalam interface
 

@@ -95,6 +95,15 @@ export interface StrongsEntry {
   derivation: string | null;
   definition: string | null;
   kjv_usage: string | null;
+  /** A short modern meaning, e.g. "God" or "word; thing". */
+  gloss: string | null;
+}
+
+/** A word linked to another through Strong's derivations. */
+export interface RelatedWord {
+  id: string;
+  lemma: string | null;
+  gloss: string | null;
 }
 
 /** A run of verse text. When `strongs` is set the run is one tagged word or phrase. */
@@ -131,4 +140,6 @@ export interface WordPick {
   word?: string;
   /** The original-language word, when tapped in the interlinear view. */
   original?: OriginalWord;
+  /** Where the tapped word is: its verse and its start offset in the verse text. */
+  at?: Ref & { start: number };
 }

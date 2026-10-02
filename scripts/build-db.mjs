@@ -30,10 +30,13 @@
 //     offset in the verse text where the note marker belongs
 //   renderings(strongs, translation, word, count, refs)
 //     how a Strong's number is rendered in a translation: the English word or phrase,
-//     how many verses use it, and those verses packed like concordance.refs
-//   strongs(id, lemma, translit, pron, derivation, definition, kjv_usage, lemma_plain, translit_plain)
+//     how many verses use it, and those verses packed like concordance.refs. Malayalam
+//     forms of one word (ദൈവം, ദൈവമായ, ദൈവത്തിന്റെ …) are grouped under the shortest
+//   strongs(id, lemma, translit, pron, derivation, definition, kjv_usage, lemma_plain, translit_plain, gloss)
 //     lemma_plain and translit_plain are lowercase with accents, vowel points and
-//     diacritics removed, for accent-insensitive dictionary search
+//     diacritics removed, for accent-insensitive dictionary search; gloss is a short
+//     modern meaning: the one or two senses STEPBible's dictionaries give the word
+//     most often in the Hebrew and Greek text (null for words that never occur)
 //   concordance(strongs, translation, count, refs)
 //     refs = BLOB of 3 bytes per verse: book, chapter, verse (each fits a byte)
 //   interlinear(book, chapter, data)
@@ -108,6 +111,35 @@ const FLAG_RESTORED = 4;
 const FLAG_NOT_IN_TR = 8;
 const FLAG_NOT_IN_BYZ = 16;
 const FLAG_REPLACES_NA = 32;
+
+// Dictionary senses seen for each Strong's number, counted over every word of the
+// Hebrew and Greek text, for strongs.gloss.
+const senseCounts = new Map(); // "H430" -> Map(sense -> count)
+function countSense(strongs, sense) {
+  const clean = (sense || '').replace(/^[:\s]+/, '').replace(/[@|].*$/, '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+  // Placeholders such as "[Obj.]" or "<the>" are not meanings.
+  if (!strongs || !clean || /^[\[<].*[\]>]$/.test(clean)) return;
+  if (!senseCounts.has(strongs)) senseCounts.set(strongs, new Map());
+  const m = senseCounts.get(strongs);
+  m.set(clean, (m.get(clean) || 0) + 1);
+}
+// "God" or "God; gods": the commonest sense, and the next when it is common too.
+function shortGloss(strongs) {
+  const ranked = [...(senseCounts.get(strongs) ?? new Map()).entries()].sort((a, b) => b[1] - a[1]);
+  if (ranked.length === 0) return null;
+  const out = [ranked[0][0]];
+  if (ranked[1] && ranked[1][1] >= ranked[0][1] * 0.15 && ranked[1][0].toLowerCase() !== out[0].toLowerCase()) out.push(ranked[1][0]);
+  return out
+    .join('; ')
+    .replace(/\//g, ', ')
+    .replace(/\s*\(?(KJV|NIV|Qere)[:=.][^)]*\)?/g, '') // translators' notes
+    .replace(/[([]([^)\]]+)[)\]](?=\p{L})/gu, '$1') // "(Sea of )Chinnereth", "[Ben]jaminite"
+    .replace(/\s*[([][^)\]]*[)\]]?/g, '') // "serve[someone]", "(PERSON)"
+    .replace(/\s+/g, ' ')
+    .split(/\s*;\s*/)
+    .filter((g, i, all) => g && all.findIndex((x) => x.toLowerCase() === g.toLowerCase()) === i)
+    .join('; ');
+}
 // Internal markers used while a verse is being assembled; none appear in the output.
 const BREAK = '\x07'; // followed by an indent level digit
 const NOTE = '\x06'; // wraps a note index
@@ -293,6 +325,10 @@ function stepHebrewWords() {
     const gloss = fields[3].replace(/\//g, '').replace(/\s+/g, ' ').trim();
     const root = /\{H(\d+)/.exec(fields[4]) || /\bH(\d+)/.exec(fields[4]);
     const strongs = root && Number(root[1]) < 9000 ? 'H' + Number(root[1]) : '';
+    // The root's dictionary entry: "{H7225G=רֵאשִׁית=: beginning»first:1_beginning}" (a
+    // sense, then the word's general gloss) or "{H1254A=בָּרָא=to create}".
+    const dict = /\{H\d+[A-Z]?=[^=}]*=([^}]*)\}/.exec(fields[11] || '');
+    if (dict) countSense(strongs, dict[1].split('»')[0]);
     const morph = fields[5].trim();
     let flags = 0;
     if (ref.type.startsWith('X')) flags |= FLAG_LXX;
@@ -346,6 +382,8 @@ function stepGreekWords() {
     const sm = /G(\d+)/.exec(fields[3]);
     const strongs = sm ? 'G' + Number(sm[1]) : '';
     const morph = (fields[3].split('=')[1] || '').trim();
+    // The sense used here (": spirit»spirit/breath|1_spirit"), else the dictionary gloss.
+    countSense(strongs, (fields[9] || '').split('»')[0] || (fields[4] || '').split('=')[1]);
     words.push({ ...ref, text, translit, gloss, strongs, morph, flags: editionFlags(editions) });
   }
   return { words, skipped, replaced };
@@ -440,6 +478,60 @@ function alignmentFor(alignments, key, text) {
   return matching.sort((a, b) => (a.created < b.created ? 1 : -1))[0];
 }
 
+// Links the aligner makes systematically wrong. Hebrew writes "your", "our", "him" as a
+// suffix on the noun or verb, so a Malayalam pronoun such as നിന്റെ got the number of the
+// word it is attached to (നിന്റെ ദൈവം: both words linked to Elohim). Such a pronoun is left
+// unlinked unless its Hebrew counterpart is a pronoun in its own right. The object
+// marker אֵת (H853) is never translated, so nothing links to it.
+const ML_PRONOUNS = new Set(('എന്റെ നിന്റെ അവന്റെ അവളുടെ അതിന്റെ നമ്മുടെ ഞങ്ങളുടെ നിങ്ങളുടെ അവരുടെ തന്റെ തങ്ങളുടെ ' +
+  'എന്നെ നിന്നെ അവനെ അവളെ അതിനെ നമ്മെ ഞങ്ങളെ നിങ്ങളെ അവരെ അവയെ').split(' '));
+const HEBREW_PRONOUNS = new Set(['H589', 'H595', 'H587', 'H5168', 'H859', 'H1931', 'H1992', 'H1993', 'H2004', 'H2007', 'H1158']);
+let misLinks = 0;
+function misLinked(span, text) {
+  const wrong = span.n === 'H853' || (span.n.startsWith('H') && ML_PRONOUNS.has(text.slice(span.s, span.e)) && !HEBREW_PRONOUNS.has(span.n));
+  if (wrong) misLinks++;
+  return wrong;
+}
+
+// Forms of one Malayalam word under one Strong's number, grouped by stem: the shortest
+// form heads the group, and a later form joins it when it starts with the head's stem
+// (the head less a final ം ൻ ർ ൽ ൾ ൺ ു ്; three characters at least) or shares most of
+// the head (സൃഷ്ടിച്ച, സൃഷ്ടിക്കും). The group is shown by its commonest form that ends
+// where the stem does, so ദൈവം rather than ദൈവത്തിന്റെ.
+const mlStem = (w) => w.replace(/[ംൻർൽൾൺു്]+$/u, '');
+function sharedStart(a, b) {
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  return i;
+}
+function groupForms(entries) {
+  const groups = [];
+  const sorted = [...entries].sort((a, b) => a.display.length - b.display.length || b.refs.length - a.refs.length);
+  for (const e of sorted) {
+    const g = groups.find((x) => {
+      if (x.stem.length >= 3 && e.display.startsWith(x.stem)) return true;
+      const n = sharedStart(x.head, e.display);
+      return n >= 5 && n >= 0.6 * x.head.length;
+    });
+    if (g) g.members.push(e);
+    else groups.push({ stem: mlStem(e.display), head: e.display, members: [e] });
+  }
+  return groups.map((g) => {
+    const plain = g.members.filter((m) => mlStem(m.display) === g.stem && m.display !== g.stem);
+    g.display = (plain.length ? plain : g.members).reduce((a, b) => (b.refs.length > a.refs.length ? b : a)).display;
+    const seen = new Set();
+    const refs = [];
+    for (const m of g.members) {
+      for (let i = 0; i < m.refs.length; i += 3) {
+        const key = (m.refs[i] << 16) | (m.refs[i + 1] << 8) | m.refs[i + 2];
+        if (!seen.has(key)) { seen.add(key); refs.push([m.refs[i], m.refs[i + 1], m.refs[i + 2]]); }
+      }
+    }
+    refs.sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2]);
+    return { display: g.display, refs: refs.flat() };
+  });
+}
+
 // Verses numbered differently from the KJV, from data/overrides/versification.json.
 function loadVerseMap() {
   try {
@@ -476,7 +568,7 @@ function buildEdition(edition) {
     CREATE TABLE renderings(strongs TEXT NOT NULL, translation TEXT NOT NULL, word TEXT NOT NULL, count INTEGER NOT NULL,
                         refs BLOB NOT NULL, PRIMARY KEY(strongs, translation, word)) WITHOUT ROWID;
     CREATE TABLE strongs(id TEXT PRIMARY KEY, lemma TEXT, translit TEXT, pron TEXT, derivation TEXT, definition TEXT, kjv_usage TEXT,
-                        lemma_plain TEXT, translit_plain TEXT) WITHOUT ROWID;
+                        lemma_plain TEXT, translit_plain TEXT, gloss TEXT) WITHOUT ROWID;
     CREATE INDEX strongs_translit ON strongs(translit_plain);
     CREATE TABLE concordance(strongs TEXT NOT NULL, translation TEXT NOT NULL, count INTEGER NOT NULL, refs BLOB NOT NULL,
                         PRIMARY KEY(strongs, translation)) WITHOUT ROWID;
@@ -494,7 +586,7 @@ function buildEdition(edition) {
   const insRendering = db.prepare('INSERT INTO renderings VALUES (?,?,?,?,?)');
   const insBook = db.prepare('INSERT INTO books VALUES (?,?,?,?,?)');
   const insBookName = db.prepare('INSERT INTO book_names VALUES (?,?,?)');
-  const insStrongs = db.prepare('INSERT INTO strongs VALUES (?,?,?,?,?,?,?,?,?)');
+  const insStrongs = db.prepare('INSERT INTO strongs VALUES (?,?,?,?,?,?,?,?,?,NULL)');
   const insConc = db.prepare('INSERT INTO concordance VALUES (?,?,?,?)');
   const insMeta = db.prepare('INSERT INTO meta VALUES (?,?)');
 
@@ -547,7 +639,9 @@ function buildEdition(edition) {
             const al = alignmentFor(alignments, `${book.id}:${chapter}:${verse}`, text);
             if (al) {
               const prefix = book.id <= 39 ? 'H' : 'G';
-              const spans = al.spans.filter((x) => x.c >= 2 && x.n.startsWith(prefix)).sort((a, b) => a.s - b.s);
+              const spans = al.spans
+                .filter((x) => x.c >= 2 && x.n.startsWith(prefix) && !misLinked(x, text))
+                .sort((a, b) => a.s - b.s);
               const parts = [];
               let prevEnd = 0;
               entries = [];
@@ -593,15 +687,19 @@ function buildEdition(edition) {
     }
     let renderingRows = 0;
     for (const [strongs, byWord] of rend) {
-      for (const entry of byWord.values()) {
-        // Display the most frequent spelling (keeps LORD rather than lord).
-        const display = [...entry.forms.entries()].sort((a, b) => b[1] - a[1])[0][0];
-        insRendering.run(strongs, t.id, display, entry.refs.length / 3, new Uint8Array(entry.refs));
+      // Display the most frequent spelling (keeps LORD rather than lord).
+      let entries = [...byWord.values()].map((entry) => ({
+        display: [...entry.forms.entries()].sort((a, b) => b[1] - a[1])[0][0],
+        refs: entry.refs,
+      }));
+      if (t.id === 'MAL') entries = groupForms(entries);
+      for (const entry of entries) {
+        insRendering.run(strongs, t.id, entry.display, entry.refs.length / 3, new Uint8Array(entry.refs));
         renderingRows++;
       }
     }
     db.exec('COMMIT');
-    stats[t.id] = { verses, omittedVerses: omitted, ...(t.id === 'MAL' ? { alignedVerses } : {}), tags: tagCount, strongsNumbers: conc.size, notes: noteCount, renderings: renderingRows };
+    stats[t.id] = { verses, omittedVerses: omitted, ...(t.id === 'MAL' ? { alignedVerses, misLinksDropped: misLinks } : {}), tags: tagCount, strongsNumbers: conc.size, notes: noteCount, renderings: renderingRows };
   }
 
   db.exec('BEGIN');
@@ -629,7 +727,7 @@ function buildEdition(edition) {
     }
   }
   stats.verseMap = mapped;
-  insMeta.run('schema', '8');
+  insMeta.run('schema', '9');
   insMeta.run('edition', edition);
   insMeta.run('built', new Date().toISOString().slice(0, 10));
   insMeta.run('translations', JSON.stringify(TRANSLATIONS.map(({ id, name }) => ({ id, name }))));
@@ -645,6 +743,15 @@ function buildEdition(edition) {
   }));
   db.exec('COMMIT');
   const interlinear = buildInterlinear(db);
+  const setGloss = db.prepare('UPDATE strongs SET gloss = ? WHERE id = ?');
+  let glosses = 0;
+  db.exec('BEGIN');
+  for (const id of senseCounts.keys()) {
+    const g = shortGloss(id);
+    if (g && setGloss.run(g, id).changes) glosses++;
+  }
+  db.exec('COMMIT');
+  stats.glosses = glosses;
   // Sanity check: interlinear verses should line up with the KJV's verse numbering.
   const kjv = new Set(db.prepare("SELECT book || ':' || chapter || ':' || verse k FROM verses WHERE translation = 'KJV' AND omitted = 0").all().map((r) => r.k));
   const have = new Set();
