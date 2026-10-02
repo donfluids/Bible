@@ -537,22 +537,6 @@
    "hash": "a967109c3388",
    "tokens": 12,
    "spans": []
-  },
-  {
-   "book": 44,
-   "chapter": 28,
-   "v": 29,
-   "hash": "1763dbc10a30",
-   "tokens": 13,
-   "spans": []
-  },
-  {
-   "book": 44,
-   "chapter": 28,
-   "v": 30,
-   "hash": "f3e263f46a7b",
-   "tokens": 9,
-   "spans": []
   }
  ]
 }

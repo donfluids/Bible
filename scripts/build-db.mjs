@@ -40,11 +40,20 @@
 //     data = raw deflate (zlib, no header) of the chapter's words as text. Verses are
 //            separated by U+001C and each verse is "<verse number>U+001D<words>"; words
 //            are records separated by U+001E with fields separated by U+001F:
-//            text, transliteration, gloss, Strong's id (may be empty), grammar code, flags
-//             flags: 1 = not in Nestle-Aland editions, 2 = supplied from the Septuagint,
-//                    4 = restored where the Leningrad Codex is damaged
-//     Source: STEPBible TAHOT and TAGNT (CC BY 4.0). Greek words are those found in the
-//     Textus Receptus or the Byzantine text; verse numbers follow the KJV.
+//            text, transliteration, gloss, Strong's id (may be empty), grammar code, flags,
+//            and for a replaced word the Nestle-Aland reading it replaces (may be absent)
+//             flags: 1 = not in the Nestle-Aland editions, 2 = supplied from the Septuagint,
+//                    4 = restored where the Leningrad Codex is damaged,
+//                    8 = not in the Textus Receptus, 16 = not in the Byzantine text,
+//                    32 = the Textus Receptus or Byzantine reading where Nestle-Aland has
+//                         a different word (the seventh field holds that word)
+//     Source: STEPBible TAHOT and TAGNT (CC BY 4.0). TAGNT spells words as NA28 does. The
+//     Greek here is every word found in the Textus Receptus or the Byzantine text, in the
+//     place TAGNT gives it; where those texts read a different word from Nestle-Aland, their
+//     word is shown. Hebrew section marks (פ ס) are dropped. Verse numbers follow the KJV.
+//   verse_map(translation, book, chapter, verse, n, obook, ochapter, overse)
+//     translation verses numbered differently from the KJV numbering of the interlinear;
+//     n orders the KJV verses when one verse holds two. From data/overrides/versification.json
 //   meta(key, value)
 import { DatabaseSync } from 'node:sqlite';
 import { deflateRawSync, inflateRawSync } from 'node:zlib';
@@ -96,6 +105,9 @@ const STEP_BOOKS = ('Gen Exo Lev Num Deu Jos Jdg Rut 1Sa 2Sa 1Ki 2Ki 1Ch 2Ch Ezr
 const FLAG_NOT_IN_NA = 1;
 const FLAG_LXX = 2;
 const FLAG_RESTORED = 4;
+const FLAG_NOT_IN_TR = 8;
+const FLAG_NOT_IN_BYZ = 16;
+const FLAG_REPLACES_NA = 32;
 // Internal markers used while a verse is being assembled; none appear in the output.
 const BREAK = '\x07'; // followed by an indent level digit
 const NOTE = '\x06'; // wraps a note index
@@ -122,7 +134,8 @@ function normalizeStrongs(raw) {
 
 // Turn one verse's raw USFM into tagged text.
 function cleanVerse(raw) {
-  let s = raw;
+  // Figures (\fig caption|src=… copy=…\fig*) are illustrations, not text.
+  let s = raw.replace(/\\fig\s[\s\S]*?\\fig\*/g, '');
   // \w word|strong="H0430"\w*  and nested  \+w ...\+w*
   s = s.replace(/\\\+?w\s+([^|\\]*?)\|([^\\]*?)\\\+?w\*/g, (_, word, attrs) => {
     const sm = /strong="([^"]+)"/.exec(attrs);
@@ -146,7 +159,7 @@ function cleanVerse(raw) {
 
 // Footnote or cross reference body to plain text.
 function cleanNote(body) {
-  let s = body.replace(/\\(fr|xo)\s+[^\\]*/g, '');
+  let s = body.replace(/\\fig\s[\s\S]*?\\fig\*/g, '').replace(/\\(fr|xo)\s+[^\\]*/g, '');
   s = s.replace(/\\\+?w\s+([^|\\]*?)\|[^\\]*?\\\+?w\*/g, '$1');
   s = s.replace(/\\\+?[a-z]+\d?\*?/g, '');
   return s.replace(/\s+/g, ' ').trim();
@@ -273,7 +286,8 @@ function stepLines(files) {
 function stepHebrewWords() {
   const words = [];
   for (const { ref, fields } of stepLines(STEP_FILES.hebrew)) {
-    const text = fields[1].replace(/[\/\\]/g, '').trim();
+    // A closing section mark is written as its own segment: "אֶחָֽד\׃\ \פ".
+    const text = fields[1].replace(/\\\s*\\[פס]\s*$/, '').replace(/[\/\\]/g, '').trim();
     if (!text) continue; // Qere with no written form
     const translit = fields[2].replace(/\//g, '').trim();
     const gloss = fields[3].replace(/\//g, '').replace(/\s+/g, ' ').trim();
@@ -288,32 +302,60 @@ function stepHebrewWords() {
   return words;
 }
 
+// Which of the three printed texts lack a word, as flags, from an editions list
+// such as "NA28+NA27+Tyn+SBL+WH+Treg+TR+Byz".
+function editionFlags(editions) {
+  return (/NA2/.test(editions) ? 0 : FLAG_NOT_IN_NA) | (/\bTR\b/.test(editions) ? 0 : FLAG_NOT_IN_TR) | (/Byz/.test(editions) ? 0 : FLAG_NOT_IN_BYZ);
+}
+
+// The Textus Receptus or Byzantine reading recorded against a word they do not have,
+// e.g. "θεὸς (T=theos) God - G2316=N-NSM-T in: TR+Byz". Alternatives are separated by ¦;
+// one with both texts wins, then the Textus Receptus. A reading of several words keeps
+// them in one cell, numbered by its first word that is not an article or particle.
+const VARIANT = /^(.+?) \([A-Za-z]=([^)]*)\) (.*?) - (G\d+[A-Z]?=\S+(?: \+ G\d+[A-Z]?=\S+)*) in: (\S+)$/;
+function traditionalReading(field) {
+  const readings = (field || '').split(/\s*¦\s*/).map((p) => VARIANT.exec(p.trim())).filter((m) => m && /\bTR\b|Byz/.test(m[5]));
+  const rank = (m) => (/\bTR\b/.test(m[5]) && /Byz/.test(m[5]) ? 0 : /\bTR\b/.test(m[5]) ? 1 : 2);
+  const m = readings.sort((a, b) => rank(a) - rank(b))[0];
+  if (!m) return null;
+  const codes = m[4].split(' + ').map((c) => c.split('='));
+  const [code, morph] = codes.find(([, mo]) => !/^(T-|PREP|CONJ|PRT)/.test(mo)) ?? codes[0];
+  return { text: m[1].trim(), translit: m[2].trim(), gloss: m[3].trim(), strongs: 'G' + Number(code.slice(1).replace(/[A-Z]$/, '')), morph, editions: m[5] };
+}
+
 function stepGreekWords() {
   const words = [];
-  let skipped = 0;
+  let skipped = 0, replaced = 0;
   for (const { ref, fields } of stepLines(STEP_FILES.greek)) {
     const editions = fields[5];
-    if (!/\bTR\b|Byz/.test(editions)) { skipped++; continue; } // not in the traditional text
     const raw = fields[1].replace(/[¶]|\[\[|\]\]/g, '').trim();
     const split = raw.lastIndexOf(' (');
     const text = (split > 0 ? raw.slice(0, split) : raw).trim();
     const translit = split > 0 ? raw.slice(split + 2).replace(/\)$/, '').trim() : '';
     if (!text) continue;
     const gloss = fields[2].replace(/\s+/g, ' ').trim();
+    if (!/\bTR\b|Byz/.test(editions)) {
+      // Not in the traditional text; show what it reads here instead, if anything.
+      const t = traditionalReading(fields[6]);
+      if (!t) { skipped++; continue; }
+      replaced++;
+      const flags = FLAG_NOT_IN_NA | FLAG_REPLACES_NA | (editionFlags(t.editions) & (FLAG_NOT_IN_TR | FLAG_NOT_IN_BYZ));
+      words.push({ ...ref, text: t.text, translit: t.translit, gloss: t.gloss, strongs: t.strongs, morph: t.morph, flags, alt: `${text} (${translit}) ‘${gloss}’` });
+      continue;
+    }
     const sm = /G(\d+)/.exec(fields[3]);
     const strongs = sm ? 'G' + Number(sm[1]) : '';
     const morph = (fields[3].split('=')[1] || '').trim();
-    const flags = /NA2/.test(editions) ? 0 : FLAG_NOT_IN_NA;
-    words.push({ ...ref, text, translit, gloss, strongs, morph, flags });
+    words.push({ ...ref, text, translit, gloss, strongs, morph, flags: editionFlags(editions) });
   }
-  return { words, skipped };
+  return { words, skipped, replaced };
 }
 
 function buildInterlinear(db) {
   const ins = db.prepare('INSERT INTO interlinear VALUES (?,?,?)');
   const known = new Set(db.prepare('SELECT id FROM strongs').all().map((r) => r.id));
   const hebrew = stepHebrewWords();
-  const { words: greek, skipped } = stepGreekWords();
+  const { words: greek, skipped, replaced } = stepGreekWords();
   // STEPBible extends Strong's numbering for a few words; without a dictionary entry the number is dropped.
   let unknown = 0;
   for (const w of [...hebrew, ...greek]) {
@@ -329,7 +371,7 @@ function buildInterlinear(db) {
   for (const [key, list] of byVerse) {
     list.sort((a, b) => a.order - b.order);
     const [book, chapter, verse] = key.split(':').map(Number);
-    const packed = list.map((w) => [w.text, w.translit, w.gloss, w.strongs, w.morph, String(w.flags)].join(US)).join(RS);
+    const packed = list.map((w) => [w.text, w.translit, w.gloss, w.strongs, w.morph, String(w.flags), ...(w.alt ? [w.alt] : [])].join(US)).join(RS);
     const ck = `${book}:${chapter}`;
     if (!byChapter.has(ck)) byChapter.set(ck, []);
     byChapter.get(ck).push({ verse, packed });
@@ -345,7 +387,7 @@ function buildInterlinear(db) {
     ins.run(book, chapter, blob);
   }
   db.exec('COMMIT');
-  return { hebrewWords: hebrew.length, greekWords: greek.length, greekSkippedNaOnly: skipped, wordsWithoutDictionaryEntry: unknown, verses: byVerse.size, chapters: byChapter.size, compressedBytes: bytes };
+  return { hebrewWords: hebrew.length, greekWords: greek.length, greekNaOnlySkipped: skipped, greekTraditionalReadings: replaced, wordsWithoutDictionaryEntry: unknown, verses: byVerse.size, chapters: byChapter.size, compressedBytes: bytes };
 }
 
 // Lowercase and strip accents, Hebrew points and other combining marks, so that
@@ -374,15 +416,38 @@ function loadCorrections() {
 
 // Word-level links from Malayalam words to Strong's numbers, made by
 // scripts/align-malayalam.mjs. Only confident links (c = 2) are used.
+// A verse can appear in several files when it was aligned again after its text changed;
+// the newest alignment made for the verse's current text is the one used.
 function loadAlignments() {
   const dir = join(ROOT, 'data', 'align', 'mal');
-  const map = new Map();
+  const map = new Map(); // "book:chapter:verse" -> [{ ...verse, created }]
   let files = [];
   try { files = readdirSync(dir).filter((f) => f.endsWith('.json')).sort(); } catch { return map; }
   for (const f of files) {
-    for (const v of JSON.parse(readFileSync(join(dir, f), 'utf8')).verses) map.set(`${v.book}:${v.chapter}:${v.v}`, v);
+    const doc = JSON.parse(readFileSync(join(dir, f), 'utf8'));
+    for (const v of doc.verses) {
+      const key = `${v.book}:${v.chapter}:${v.v}`;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push({ ...v, created: doc.created ?? '' });
+    }
   }
   return map;
+}
+
+function alignmentFor(alignments, key, text) {
+  const hash = textHash(text);
+  const matching = (alignments.get(key) ?? []).filter((a) => a.hash === hash);
+  return matching.sort((a, b) => (a.created < b.created ? 1 : -1))[0];
+}
+
+// Verses numbered differently from the KJV, from data/overrides/versification.json.
+function loadVerseMap() {
+  try {
+    const doc = JSON.parse(readFileSync(join(ROOT, 'data', 'overrides', 'versification.json'), 'utf8'));
+    return Object.fromEntries(Object.entries(doc).filter(([k]) => /^[A-Z]{3}$/.test(k)));
+  } catch {
+    return {};
+  }
 }
 
 function buildEdition(edition) {
@@ -417,6 +482,9 @@ function buildEdition(edition) {
                         PRIMARY KEY(strongs, translation)) WITHOUT ROWID;
     CREATE TABLE interlinear(book INTEGER NOT NULL, chapter INTEGER NOT NULL, data BLOB NOT NULL,
                         PRIMARY KEY(book, chapter)) WITHOUT ROWID;
+    CREATE TABLE verse_map(translation TEXT NOT NULL, book INTEGER NOT NULL, chapter INTEGER NOT NULL, verse INTEGER NOT NULL,
+                        n INTEGER NOT NULL, obook INTEGER NOT NULL, ochapter INTEGER NOT NULL, overse INTEGER NOT NULL,
+                        PRIMARY KEY(translation, book, chapter, verse, n)) WITHOUT ROWID;
     CREATE TABLE meta(key TEXT PRIMARY KEY, value TEXT NOT NULL) WITHOUT ROWID;
   `);
 
@@ -476,8 +544,8 @@ function buildEdition(edition) {
           // Tagged words: the source's own tags, or for Malayalam the aligned links.
           let entries = [...tagged.matchAll(/⟨([^|⟩]*)\|([HG]\d+)⟩/g)].map((m) => ({ word: m[1].trim(), id: m[2] }));
           if (t.id === 'MAL') {
-            const al = alignments.get(`${book.id}:${chapter}:${verse}`);
-            if (al && al.hash === textHash(text)) {
+            const al = alignmentFor(alignments, `${book.id}:${chapter}:${verse}`, text);
+            if (al) {
               const prefix = book.id <= 39 ? 'H' : 'G';
               const spans = al.spans.filter((x) => x.c >= 2 && x.n.startsWith(prefix)).sort((a, b) => a.s - b.s);
               const parts = [];
@@ -550,7 +618,18 @@ function buildEdition(edition) {
       nStrongs++;
     }
   }
-  insMeta.run('schema', '7');
+  const insMap = db.prepare('INSERT INTO verse_map VALUES (?,?,?,?,?,?,?,?)');
+  let mapped = 0;
+  for (const [id, entries] of Object.entries(loadVerseMap())) {
+    if (!TRANSLATIONS.some((t) => t.id === id)) continue;
+    for (const [from, to] of Object.entries(entries)) {
+      const [b, c, v] = from.split(':').map(Number);
+      [to].flat().forEach((ref, n) => insMap.run(id, b, c, v, n, ...ref.split(':').map(Number)));
+      mapped++;
+    }
+  }
+  stats.verseMap = mapped;
+  insMeta.run('schema', '8');
   insMeta.run('edition', edition);
   insMeta.run('built', new Date().toISOString().slice(0, 10));
   insMeta.run('translations', JSON.stringify(TRANSLATIONS.map(({ id, name }) => ({ id, name }))));

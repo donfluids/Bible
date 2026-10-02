@@ -172,11 +172,22 @@ mostly read as prose in either layout.
 `interlinear.data` is raw deflate of the chapter as text. Verses are separated by
 U+001C, each verse is its number, U+001D, then its words. Words are separated by
 U+001E and their fields by U+001F: text, transliteration, gloss, Strong's id (may be
-empty), grammar code, flags. Flag 1 marks a Greek word absent from the Nestle-Aland
-editions, 2 a Hebrew word supplied from the Septuagint, 4 text restored where the
-Leningrad Codex is damaged. The Greek line holds every word found in the Textus
-Receptus or the Byzantine text; the 3,600 words found only in Nestle-Aland are left
-out. Verse numbers follow the KJV where editions differ.
+empty), grammar code, flags, and for a replaced word the Nestle-Aland reading it
+replaces. Flags: 1 a Greek word absent from the Nestle-Aland editions, 2 a Hebrew word
+supplied from the Septuagint, 4 text restored where the Leningrad Codex is damaged,
+8 not in the Textus Receptus, 16 not in the Byzantine text, 32 a Textus Receptus or
+Byzantine word standing where Nestle-Aland has a different one.
+
+The Greek line is TAGNT's text (spelled as in NA28) with every word that the Textus
+Receptus or the Byzantine text has. Where those texts read a different word from
+Nestle-Aland (2,591 places, such as θεὸς for ὃς in 1 Timothy 3:16), their word is
+shown and the Nestle-Aland word is kept with it; the 1,009 words found only in
+Nestle-Aland with no traditional counterpart are left out. A phrase that replaces one
+word is shown in one cell. The Hebrew paragraph marks פ and ס that end some verses in
+TAHOT are dropped. Verse numbers follow the KJV.
+
+`verse_map` lists the verses a translation numbers differently from the KJV (the
+Malayalam in 15 chapters), so the reader shows the right Hebrew or Greek under them.
 
 ## Sources and licences
 
@@ -228,12 +239,14 @@ counterpart in the original. Two helpers keep the result complete:
   occasionally leaves out the last verses of a chunk; answers that skip more than a
   quarter of their verses are now retried automatically).
 - `data/overrides/versification.json` pairs Malayalam verses with differently numbered
-  original verses. Deuteronomy 13 in the Malayalam follows the Hebrew numbering, so its
-  13:1 is KJV 12:32.
+  original verses, in 15 chapters: Exodus 8:1 and 1 Samuel 30:30 and 2 Samuel 17:28
+  each hold two KJV verses; Deuteronomy 13 and 28:69–29 and Song of Songs 7 follow
+  the Hebrew chapter breaks; Acts 15:34, Acts 28:29 and Romans 16:24 are absent and
+  the verses after them are numbered one lower; 1 Timothy 6:21 and 3 John 14 are
+  split in two. The same map goes into the database for the reader.
+  `--fill-gaps` also re-sends verses whose text changed after they were aligned.
 
-A few Malayalam verses have no counterpart in the STEPBible data at all (for example
-Deuteronomy 28:69 and 3 John 1:15, which exist only in the Malayalam numbering) and stay
-unlinked.
+The title the Malayalam gives Psalm 146 has no Hebrew counterpart and stays unlinked.
 
 ### Corrections to the Malayalam source
 
@@ -244,6 +257,12 @@ the 1910 text from [Malayalam Wikisource](https://ml.wikisource.org/wiki/സത�
 (public domain) and removes the stray words; `scripts/build-db.mjs` applies it.
 Wikisource's transcription joins and splits a few compound words differently from
 eBible's, so these two chapters may differ slightly in spacing from the rest.
+Seven transcription slips in the Wikisource text (one a vowel sign doubled so that it
+rendered as a dotted circle) are corrected to the spelling used elsewhere in this
+Bible; the corrections file lists them.
+
+The eBible source also carries five illustration captions (`\fig`) inside verses, for
+example after Genesis 5:5; the build drops them.
 
 ## Malayalam interface
 
@@ -262,4 +281,5 @@ once with its English reference.
 - The interlinear line and the English line are not linked word to word. Tapping
   an English word opens its Strong's entry; tapping an original word opens the same
   entry plus that word's grammar.
-- Greek words that occur only in the Nestle-Aland editions are not shown.
+- Greek words that occur only in the Nestle-Aland editions are not shown, except
+  as the replaced reading noted on a Textus Receptus or Byzantine word.

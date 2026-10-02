@@ -723,62 +723,6 @@
      "w": 4
     }
    ]
-  },
-  {
-   "book": 44,
-   "chapter": 15,
-   "v": 34,
-   "hash": "565a4312a576",
-   "tokens": 13,
-   "spans": []
-  },
-  {
-   "book": 44,
-   "chapter": 15,
-   "v": 35,
-   "hash": "d7e1619a1d6f",
-   "tokens": 17,
-   "spans": []
-  },
-  {
-   "book": 44,
-   "chapter": 15,
-   "v": 36,
-   "hash": "39f539a29dcd",
-   "tokens": 7,
-   "spans": []
-  },
-  {
-   "book": 44,
-   "chapter": 15,
-   "v": 37,
-   "hash": "0e9028c7a936",
-   "tokens": 12,
-   "spans": []
-  },
-  {
-   "book": 44,
-   "chapter": 15,
-   "v": 38,
-   "hash": "28d7ba91aac0",
-   "tokens": 13,
-   "spans": []
-  },
-  {
-   "book": 44,
-   "chapter": 15,
-   "v": 39,
-   "hash": "21b041b880d0",
-   "tokens": 7,
-   "spans": []
-  },
-  {
-   "book": 44,
-   "chapter": 15,
-   "v": 40,
-   "hash": "821a0e2674cf",
-   "tokens": 10,
-   "spans": []
   }
  ]
 }

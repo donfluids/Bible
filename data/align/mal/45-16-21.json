@@ -269,30 +269,6 @@
      "w": 11
     }
    ]
-  },
-  {
-   "book": 45,
-   "chapter": 16,
-   "v": 24,
-   "hash": "fc5bdb163a65",
-   "tokens": 11,
-   "spans": []
-  },
-  {
-   "book": 45,
-   "chapter": 16,
-   "v": 25,
-   "hash": "1146073ba1e9",
-   "tokens": 12,
-   "spans": []
-  },
-  {
-   "book": 45,
-   "chapter": 16,
-   "v": 26,
-   "hash": "875f5e097131",
-   "tokens": 7,
-   "spans": []
   }
  ]
 }

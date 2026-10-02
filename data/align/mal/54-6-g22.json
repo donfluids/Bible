@@ -1,0 +1,40 @@
+{
+ "model": "claude-sonnet-5-5",
+ "effort": "medium",
+ "created": "2026-10-02T14:56:22.400Z",
+ "cost": 0.0096126,
+ "usage": {
+  "in": 2,
+  "cacheRead": 1008,
+  "cacheCreate": 1744,
+  "out": 86
+ },
+ "problems": [],
+ "verses": [
+  {
+   "book": 54,
+   "chapter": 6,
+   "v": 22,
+   "hash": "729d2b7becba",
+   "tokens": 3,
+   "spans": [
+    {
+     "s": 0,
+     "e": 3,
+     "n": "G5485",
+     "c": 2,
+     "t": 1,
+     "w": 9
+    },
+    {
+     "s": 4,
+     "e": 17,
+     "n": "G4675",
+     "c": 2,
+     "t": 2,
+     "w": 11
+    }
+   ]
+  }
+ ]
+}

@@ -11,7 +11,8 @@
 //          --commit-every 10 (git commit and push the output folder after every N chunks;
 //          0 turns it off; only when the output folder is inside this repository)
 //          --fill-gaps (with --all or --chapters: align only verses that no cached chunk
-//          covers, e.g. ones a model answer left out)
+//          covers for its current text: ones a model answer left out, or whose text
+//          was corrected after it was aligned)
 //          --save-to data/align/mal (with --out elsewhere: copy new chunks into this repo
 //          folder only when saving, so the working tree stays clean between saves)
 //
@@ -116,9 +117,13 @@ function loadChapter(db, book, chapter) {
   const verses = db.prepare("SELECT verse, text FROM verses WHERE translation = 'MAL' AND book = ? AND chapter = ? AND omitted = 0 ORDER BY verse").all(book, chapter);
   return verses
     .map((v) => {
-      const mapped = VERSE_MAP[`${book}:${chapter}:${v.verse}`];
-      const [b, c, n] = mapped ? mapped.split(':').map(Number) : [book, chapter, v.verse];
-      return { v: v.verse, text: v.text, tokens: tokenize(v.text), words: chapterWords(db, b, c).get(n) ?? [] };
+      // A Malayalam verse that holds two KJV verses is paired with the words of both.
+      const refs = [VERSE_MAP[`${book}:${chapter}:${v.verse}`] ?? `${book}:${chapter}:${v.verse}`].flat();
+      const words = refs.flatMap((ref) => {
+        const [b, c, n] = ref.split(':').map(Number);
+        return chapterWords(db, b, c).get(n) ?? [];
+      });
+      return { v: v.verse, text: v.text, tokens: tokenize(v.text), words };
     })
     .filter((v) => v.tokens.length > 0 && v.words.length > 0);
 }
@@ -273,8 +278,12 @@ function saveProgress(stats, final = false) {
 }
 
 async function alignChunk(job, stats) {
-  const file = join(OUT, `${job.book}-${job.chapter}-${job.tag ?? ''}${job.verses[0].v}.json`);
-  if (!opt('redo', false) && existsSync(file)) { stats.cached++; return; }
+  let file = join(OUT, `${job.book}-${job.chapter}-${job.tag ?? ''}${job.verses[0].v}.json`);
+  if (job.tag) {
+    // Gap chunks are chosen by what is missing, so an existing file of the same name is an
+    // older gap chunk, not this one: write beside it.
+    for (let i = 2; existsSync(file); i++) file = join(OUT, `${job.book}-${job.chapter}-${job.tag}${job.verses[0].v}-${i}.json`);
+  } else if (!opt('redo', false) && existsSync(file)) { stats.cached++; return; }
   const prompt = buildPrompt(job.book, job.chapter, job.verses);
   if (opt('dry-run', false)) { console.log(prompt.slice(0, 1800) + '\n…'); return; }
   let lastError;
@@ -356,12 +365,14 @@ async function main() {
   if (opt('fill-gaps', false)) {
     covered = new Set();
     for (const f of readdirSync(OUT).filter((x) => x.endsWith('.json'))) {
-      for (const v of JSON.parse(readFileSync(join(OUT, f), 'utf8')).verses) covered.add(`${v.book}:${v.chapter}:${v.v}`);
+      // Covered means aligned for the verse's current text (the hash), so verses whose text
+      // has since been corrected count as gaps too.
+      for (const v of JSON.parse(readFileSync(join(OUT, f), 'utf8')).verses) covered.add(`${v.book}:${v.chapter}:${v.v}:${v.hash}`);
     }
   }
   const jobs = targets.flatMap(([book, chapter]) => {
     let verses = loadChapter(db, book, chapter);
-    if (covered) verses = verses.filter((v) => !covered.has(`${book}:${chapter}:${v.v}`));
+    if (covered) verses = verses.filter((v) => !covered.has(`${book}:${chapter}:${v.v}:${textHash(v.text)}`));
     return chunkVerses(verses).map((vs) => ({ book, chapter, verses: vs, tag: covered ? 'g' : '' }));
   });
   console.log(`${jobs.length} calls for ${targets.length} chapters, model ${MODEL}, effort ${EFFORT}, ${CONCURRENCY} at a time`);
