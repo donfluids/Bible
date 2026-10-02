@@ -220,6 +220,21 @@ npm run build-db                           # apply the links
 Words with no link (words added for sense, auxiliary words, uncertain cases) are not
 tappable. Links are made by a language model and are not hand-checked.
 
+The full run covered all 31,215 Malayalam verses in 2,154 calls. About 57% of Malayalam
+words carry a confident link and 70% some link; the rest are mostly words with no
+counterpart in the original. Two helpers keep the result complete:
+
+- `--fill-gaps` re-sends only verses that no cached chunk covers (a model answer
+  occasionally leaves out the last verses of a chunk; answers that skip more than a
+  quarter of their verses are now retried automatically).
+- `data/overrides/versification.json` pairs Malayalam verses with differently numbered
+  original verses. Deuteronomy 13 in the Malayalam follows the Hebrew numbering, so its
+  13:1 is KJV 12:32.
+
+A few Malayalam verses have no counterpart in the STEPBible data at all (for example
+Deuteronomy 28:69 and 3 John 1:15, which exist only in the Malayalam numbering) and stay
+unlinked.
+
 ### Corrections to the Malayalam source
 
 The eBible mal2015 edition repeats Titus 1 in place of Titus 2 and 3, and Titus 1:1

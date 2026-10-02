@@ -10,6 +10,8 @@
 //          --nt-first (with --all: New Testament before Old)
 //          --commit-every 10 (git commit and push the output folder after every N chunks;
 //          0 turns it off; only when the output folder is inside this repository)
+//          --fill-gaps (with --all or --chapters: align only verses that no cached chunk
+//          covers, e.g. ones a model answer left out)
 //          --save-to data/align/mal (with --out elsewhere: copy new chunks into this repo
 //          folder only when saving, so the working tree stays clean between saves)
 //
@@ -82,8 +84,19 @@ const SCHEMA = {
 const FS = '\x1c', GS = '\x1d', RS = '\x1e', US = '\x1f';
 const stripCantillation = (s) => s.replace(/[֑-֯]/g, '');
 
-function loadChapter(db, book, chapter) {
-  const verses = db.prepare("SELECT verse, text FROM verses WHERE translation = 'MAL' AND book = ? AND chapter = ? AND omitted = 0 ORDER BY verse").all(book, chapter);
+// Malayalam verses numbered differently from the original-language data.
+const VERSE_MAP = (() => {
+  try {
+    return JSON.parse(readFileSync(join(ROOT, 'data', 'overrides', 'versification.json'), 'utf8')).MAL ?? {};
+  } catch {
+    return {};
+  }
+})();
+const wordCache = new Map();
+
+function chapterWords(db, book, chapter) {
+  const key = `${book}:${chapter}`;
+  if (wordCache.has(key)) return wordCache.get(key);
   const row = db.prepare('SELECT data FROM interlinear WHERE book = ? AND chapter = ?').get(book, chapter);
   const words = new Map();
   if (row) {
@@ -95,7 +108,19 @@ function loadChapter(db, book, chapter) {
       }));
     }
   }
-  return verses.map((v) => ({ v: v.verse, text: v.text, tokens: tokenize(v.text), words: words.get(v.verse) ?? [] })).filter((v) => v.tokens.length > 0 && v.words.length > 0);
+  wordCache.set(key, words);
+  return words;
+}
+
+function loadChapter(db, book, chapter) {
+  const verses = db.prepare("SELECT verse, text FROM verses WHERE translation = 'MAL' AND book = ? AND chapter = ? AND omitted = 0 ORDER BY verse").all(book, chapter);
+  return verses
+    .map((v) => {
+      const mapped = VERSE_MAP[`${book}:${chapter}:${v.verse}`];
+      const [b, c, n] = mapped ? mapped.split(':').map(Number) : [book, chapter, v.verse];
+      return { v: v.verse, text: v.text, tokens: tokenize(v.text), words: chapterWords(db, b, c).get(n) ?? [] };
+    })
+    .filter((v) => v.tokens.length > 0 && v.words.length > 0);
 }
 
 function chunkVerses(verses) {
@@ -248,7 +273,7 @@ function saveProgress(stats, final = false) {
 }
 
 async function alignChunk(job, stats) {
-  const file = join(OUT, `${job.book}-${job.chapter}-${job.verses[0].v}.json`);
+  const file = join(OUT, `${job.book}-${job.chapter}-${job.tag ?? ''}${job.verses[0].v}.json`);
   if (!opt('redo', false) && existsSync(file)) { stats.cached++; return; }
   const prompt = buildPrompt(job.book, job.chapter, job.verses);
   if (opt('dry-run', false)) { console.log(prompt.slice(0, 1800) + '\n…'); return; }
@@ -259,7 +284,10 @@ async function alignChunk(job, stats) {
       const res = await runClaude(prompt);
       limitStreak = 0;
       const { verses, problems } = resolve(job.book, job.chapter, job.verses, res.structured_output);
-      if (verses.length === 0 || problems.length > job.verses.length) throw new Error(`unusable answer: ${problems.slice(0, 3).join('; ')}`);
+      const missing = problems.filter((p) => p.includes('missing from the answer')).length;
+      if (verses.length === 0 || problems.length > job.verses.length || missing > job.verses.length / 4) {
+        throw new Error(`unusable answer (${missing} verses missing): ${problems.slice(0, 3).join('; ')}`);
+      }
       writeFileSync(file, JSON.stringify({ model: MODEL, effort: EFFORT, created: new Date().toISOString(), cost: res.total_cost_usd, usage: res.usage && { in: res.usage.input_tokens, cacheRead: res.usage.cache_read_input_tokens, cacheCreate: res.usage.cache_creation_input_tokens, out: res.usage.output_tokens }, problems, verses }, null, 1));
       stats.done++; stats.cost += res.total_cost_usd ?? 0; stats.out += res.usage?.output_tokens ?? 0; stats.problems += problems.length;
       console.log(`ok   ${BOOK_NAMES[job.book - 1]} ${job.chapter}:${job.verses[0].v}-${job.verses.at(-1).v}  $${(res.total_cost_usd ?? 0).toFixed(3)}  ${problems.length} problems`);
@@ -324,7 +352,18 @@ async function main() {
   }
   if (!targets.length) { console.error('give --chapters book:chapter,… or --all'); process.exit(1); }
   mkdirSync(OUT, { recursive: true });
-  const jobs = targets.flatMap(([book, chapter]) => chunkVerses(loadChapter(db, book, chapter)).map((verses) => ({ book, chapter, verses })));
+  let covered = null;
+  if (opt('fill-gaps', false)) {
+    covered = new Set();
+    for (const f of readdirSync(OUT).filter((x) => x.endsWith('.json'))) {
+      for (const v of JSON.parse(readFileSync(join(OUT, f), 'utf8')).verses) covered.add(`${v.book}:${v.chapter}:${v.v}`);
+    }
+  }
+  const jobs = targets.flatMap(([book, chapter]) => {
+    let verses = loadChapter(db, book, chapter);
+    if (covered) verses = verses.filter((v) => !covered.has(`${book}:${chapter}:${v.v}`));
+    return chunkVerses(verses).map((vs) => ({ book, chapter, verses: vs, tag: covered ? 'g' : '' }));
+  });
   console.log(`${jobs.length} calls for ${targets.length} chapters, model ${MODEL}, effort ${EFFORT}, ${CONCURRENCY} at a time`);
   const stats = { total: jobs.length, done: 0, cached: 0, failed: 0, limited: 0, cost: 0, out: 0, problems: 0 };
   let next = 0;
