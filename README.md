@@ -8,6 +8,7 @@ the Android APK workflow on every push.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Bible-0.2.7-b9.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.2.7-b9.apk) | 0.2.7 | 9 | release key | 6ea3364 | 43.6 MiB | `e4e7cf1ec0f3bddd26111b1d050251f5642420de96e7a86fa95e955551b8ee01` |
 | [Bible-0.2.6-b8.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.2.6-b8.apk) | 0.2.6 | 8 | release key | f5d89aa | 43.3 MiB | `f8f504bd1ed13f74ad68e9a51ac7279983fc6d20715c1ff2f1b85ac9638b3e9d` |
 | [Bible-0.2.2-b4.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.2.2-b4.apk) | 0.2.2 | 4 | release key | 8fa0e0a | 43.2 MiB | `7d584971ac9104faeb6e57509066da0f86fb474eb89604343a71a1caee12a175` |
 | [Bible-0.2.2.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.2.2.apk) | 0.2.2 | 3 | release key | 521cd2c | 43.2 MiB | 2509883b233a9ad94e05302a270067ff6740680f20bac3c6b39f7001c30cbaee |
@@ -18,6 +19,7 @@ the Android APK workflow on every push.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Vedapusthakam-0.2.7-b9.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.2.7-b9.apk) | 0.2.7 | 9 | release key | 6ea3364 | 43.2 MiB | `f2b0d6da44ec15c1524c478194c6e09466cb9f63cf5716d94e2ec57aa645d5c2` |
 | [Vedapusthakam-0.2.6-b8.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.2.6-b8.apk) | 0.2.6 | 8 | release key | f5d89aa | 43.4 MiB | `fc41ddcee222d03256435fe9c29330df5e024535f76bac03aedca2d201b9a144` |
 | [Vedapusthakam-0.2.5-b7.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.2.5-b7.apk) | 0.2.5 | 7 | release key | full Malayalam word links | 43.3 MiB | `f1f8cbc2d0ee27476e9e266e542d1672270916ecde5a00db23c48bcb32101870` |
 
