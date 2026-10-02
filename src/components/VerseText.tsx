@@ -2,11 +2,12 @@ import React, { useMemo } from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { isMalayalam, scriptureFont } from '../fonts';
 import { useT } from '../i18n';
+import { useSelectedStart } from '../selection';
 import { useSettings } from '../settings';
 import { parseSegments } from '../text';
 import { useTheme } from '../theme';
 import { translationInfo } from '../types';
-import type { Note, VerseRow, WordPick } from '../types';
+import type { Note, TranslationId, VerseRow, WordPick } from '../types';
 
 interface Props {
   verse: VerseRow;
@@ -41,8 +42,8 @@ interface Props {
   /** The verse has a personal note; tapping the pencil opens it. */
   hasNote?: boolean;
   onNotePress?: () => void;
-  /** Start offset of the word whose entry is open, marked while the word sheet shows. */
-  selectedStart?: number;
+  /** Mark the word whose sheet is open when it is in this verse (the reader's translation). */
+  selectionTranslation?: TranslationId;
 }
 
 /** Character ranges of `query` inside `text`, ignoring case and apostrophe style. */
@@ -84,12 +85,13 @@ export function VerseText({
   highlightColor,
   hasNote,
   onNotePress,
-  selectedStart,
+  selectionTranslation,
 }: Props) {
   const theme = useTheme();
   const t = useT();
   const { settings } = useSettings();
   const segments = useMemo(() => parseSegments(verse), [verse]);
+  const selectedStart = useSelectedStart(selectionTranslation, verse.book, verse.chapter, verse.verse);
   const ranges = useMemo(() => (highlightText ? matchRanges(verse.text, highlightText) : []), [verse.text, highlightText]);
   const isTitle = verse.verse === 0;
   // The verse's own script decides its face and spacing (Compare shows two at once).

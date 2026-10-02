@@ -19,7 +19,9 @@ import { noteLetter, VerseText } from '../components/VerseText';
 import { getChapter, getInterlinear, getNotes, mapRef } from '../queries';
 import type { ChapterData } from '../queries';
 import { useSettings } from '../settings';
-import type { Position, Settings } from '../settings';
+import type { Settings } from '../settings';
+import { getPlace, moveMainReader, selectBook, selectChapter, updatePlace, usePlace } from '../place';
+import type { Position } from '../place';
 import { MAX_CONTENT_WIDTH, bookName, flattenVerse, formatRef, parseSegments } from '../text';
 import { useTheme } from '../theme';
 import { HIGHLIGHT_COLORS, translationInfo } from '../types';
@@ -32,8 +34,6 @@ interface Props {
   books: Book[];
   /** Open at this verse with a place of its own (a reader pushed from a list). */
   jumpTo?: Ref;
-  /** The word whose sheet is open, marked in its verse. */
-  activePick?: WordPick | null;
   /** Present when the reader was opened from a list; goes back to it. */
   onBack?: () => void;
   backLabel?: string;
@@ -122,7 +122,7 @@ function KeepAwake() {
   return null;
 }
 
-export function ReaderScreen({ books, jumpTo, activePick, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onWord }: Props) {
+export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onWord }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const t = useT();
@@ -148,7 +148,12 @@ export function ReaderScreen({ books, jumpTo, activePick, onBack, backLabel, onO
   const [ownPosition, setOwnPosition] = useState<{ book: number; chapter: number } | null>(
     jumpTo ? { book: jumpTo.book, chapter: jumpTo.chapter } : null,
   );
-  const position: Position = ownPosition ?? settings.position;
+  // The main reader follows the saved place; it redraws only when the chapter changes,
+  // not when the first verse on screen is saved.
+  const mainBook = usePlace(selectBook);
+  const mainChapter = usePlace(selectChapter);
+  const mainPosition = useMemo(() => ({ book: mainBook, chapter: mainChapter }), [mainBook, mainChapter]);
+  const position: Position = ownPosition ?? mainPosition;
   const pushed = ownPosition !== null;
   // Paragraph layout cannot hold the interlinear cells, so the interlinear view uses one verse per line.
   const paragraphs = layout === 'paragraphs' && !interlinear;
@@ -176,13 +181,14 @@ export function ReaderScreen({ books, jumpTo, activePick, onBack, backLabel, onO
   // Where to scroll once the next verses are on screen: a verse (flashed after a jump
   // from a list), or the top. The main reader opens where it was left.
   const scrollTarget = useRef<{ verse?: number; flash: boolean } | null>(
-    jumpTo ? { verse: jumpTo.verse, flash: true } : settings.position.verse !== undefined ? { verse: settings.position.verse, flash: false } : null,
+    jumpTo ? { verse: jumpTo.verse, flash: true } : getPlace().position.verse !== undefined ? { verse: getPlace().position.verse, flash: false } : null,
   );
   const shownKey = useRef<string | null>(null);
+  // The scroll the list is asked for, kept for its retry when the row is not laid out yet.
+  const pendingScroll = useRef<{ index: number; viewPosition: number } | null>(null);
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // The first verse on screen, for keeping the place across a translation switch and a relaunch.
   const firstVisible = useRef<{ key: string; verse: number } | null>(null);
-  const recentRef = useRef(settings.recent);
-  recentRef.current = settings.recent;
 
   useEffect(() => {
     let cancelled = false;
@@ -207,9 +213,9 @@ export function ReaderScreen({ books, jumpTo, activePick, onBack, backLabel, onO
           if (!scrollTarget.current) scrollTarget.current = { flash: false };
           shownKey.current = chapterKey;
           setExpanded(new Set());
-          const recent = recentRef.current;
+          const recent = getPlace().recent;
           if (recent[0]?.book !== position.book || recent[0]?.chapter !== position.chapter) {
-            update({
+            updatePlace({
               recent: [{ book: position.book, chapter: position.chapter }, ...recent.filter((r) => r.book !== position.book || r.chapter !== position.chapter)].slice(0, 8),
             });
           }
@@ -265,16 +271,22 @@ export function ReaderScreen({ books, jumpTo, activePick, onBack, backLabel, onO
       listRef.current?.scrollToOffset({ offset: 0, animated: false });
       return;
     }
+    // A jump shows the verse a little below the top; a restored place puts it at the top,
+    // so the verse saved next time is the same one.
+    pendingScroll.current = { index, viewPosition: target.flash ? 0.15 : 0 };
     const timer = setTimeout(() => {
-      listRef.current?.scrollToIndex({ index, viewPosition: target.flash ? 0.15 : 0, animated: false });
+      listRef.current?.scrollToIndex({ ...pendingScroll.current!, animated: false });
       if (target.flash) setFlash(target.verse ?? null);
     }, 60);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (retryTimer.current) clearTimeout(retryTimer.current);
+    };
   }, [items]);
 
   // Remember the first verse on screen, so the main reader reopens there.
-  const placeRef = useRef({ pushed, chapterKey, position, update });
-  placeRef.current = { pushed, chapterKey, position, update };
+  const placeRef = useRef({ pushed, chapterKey, position });
+  placeRef.current = { pushed, chapterKey, position };
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -291,8 +303,8 @@ export function ReaderScreen({ books, jumpTo, activePick, onBack, backLabel, onO
     saveTimer.current = setTimeout(() => {
       const now = placeRef.current;
       const seen = firstVisible.current;
-      if (!seen || seen.key !== now.chapterKey || now.position.verse === seen.verse) return;
-      now.update({ position: { book: now.position.book, chapter: now.position.chapter, verse: seen.verse } });
+      if (!seen || seen.key !== now.chapterKey || getPlace().position.verse === seen.verse) return;
+      updatePlace({ position: { book: now.position.book, chapter: now.position.chapter, verse: seen.verse } });
     }, 1000);
   }).current;
 
@@ -314,7 +326,8 @@ export function ReaderScreen({ books, jumpTo, activePick, onBack, backLabel, onO
         setOwnPosition({ book: target.book, chapter: target.chapter });
         if (Object.keys(extra).length > 0) update(extra);
       } else {
-        update({ ...extra, position: { book: target.book, chapter: target.chapter } });
+        moveMainReader({ book: target.book, chapter: target.chapter });
+        if (Object.keys(extra).length > 0) update(extra);
       }
     },
     [pushed, update],
@@ -369,12 +382,13 @@ export function ReaderScreen({ books, jumpTo, activePick, onBack, backLabel, onO
   };
   const originalLanguage = (v: { book: number }) => (v.book <= 39 ? t('hebrew') : t('greek'));
 
+  // Words tapped in this reader carry its translation, so it marks only its own word.
   const handleWord = useCallback(
     (pick: WordPick) => {
       if (!tipSeen) update({ tipSeen: true });
-      onWord(pick);
+      onWord(pick.at ? { ...pick, at: { ...pick.at, translation } } : pick);
     },
-    [tipSeen, update, onWord],
+    [tipSeen, update, onWord, translation],
   );
 
   const bookmarkKey = (v: VerseRow) => `${v.book}:${v.chapter}:${v.verse}`;
@@ -436,11 +450,6 @@ export function ReaderScreen({ books, jumpTo, activePick, onBack, backLabel, onO
     setToast(text ? t('noteSaved') : t('noteRemoved'));
   };
 
-  // Offset of the open word in a verse, when it is in that verse.
-  const selectedIn = (v: VerseRow) => {
-    const at = activePick?.at;
-    return at && at.book === v.book && at.chapter === v.chapter && at.verse === v.verse ? at.start : undefined;
-  };
   const scriptFont = scriptureFont(translation === 'MAL', settings.serif) ?? theme.font;
 
   const toggleExpanded = useCallback((verse: number) => {
@@ -485,7 +494,7 @@ export function ReaderScreen({ books, jumpTo, activePick, onBack, backLabel, onO
                   highlightColor={highlights[bookmarkKey(v)] ? theme.marks[highlights[bookmarkKey(v)]] : undefined}
                   hasNote={bookmarkKey(v) in userNotes}
                   onNotePress={() => openNote(v)}
-                  selectedStart={selectedIn(v)}
+                  selectionTranslation={translation}
                 />
               </React.Fragment>
             ))}
@@ -523,7 +532,7 @@ export function ReaderScreen({ books, jumpTo, activePick, onBack, backLabel, onO
             notes={notes.get(v.verse)}
             onNote={(n) => setNote({ verse: v, note: n })}
             underline={underlineWords}
-            selectedStart={selectedIn(v)}
+            selectionTranslation={translation}
           />
           {words && words.length > 0 ? (
             <InterlinearVerse
@@ -539,7 +548,7 @@ export function ReaderScreen({ books, jumpTo, activePick, onBack, backLabel, onO
       );
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [theme, fontSize, handleWord, underlineWords, flash, interlinear, interlinearMode, expanded, originalWords, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, toggleExpanded, translation, t, activePick, scriptFont],
+    [theme, fontSize, handleWord, underlineWords, flash, interlinear, interlinearMode, expanded, originalWords, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, toggleExpanded, translation, t, scriptFont],
   );
 
   const title = useMemo(() => `${bookName(books, position.book, translation)} ${position.chapter}`, [books, position, translation]);
@@ -604,8 +613,12 @@ export function ReaderScreen({ books, jumpTo, activePick, onBack, backLabel, onO
             </>
           }
           onScrollToIndexFailed={(info) => {
+            // The row is not measured yet: get near it, then retry with the same placement.
+            const pending = pendingScroll.current;
+            if (!pending || pending.index !== info.index) return;
             listRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: false });
-            setTimeout(() => listRef.current?.scrollToIndex({ index: info.index, viewPosition: 0.15, animated: false }), 120);
+            if (retryTimer.current) clearTimeout(retryTimer.current);
+            retryTimer.current = setTimeout(() => listRef.current?.scrollToIndex({ ...pending, animated: false }), 120);
           }}
           ListFooterComponent={<View style={{ height: 24 }} />}
         />

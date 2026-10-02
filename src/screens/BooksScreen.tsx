@@ -2,6 +2,7 @@ import React, { useMemo, useRef } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Header } from '../components/Header';
 import { useT } from '../i18n';
+import { selectPosition, selectRecent, usePlace } from '../place';
 import { useSettings } from '../settings';
 import { bookName } from '../text';
 import { useTheme } from '../theme';
@@ -51,7 +52,9 @@ export function BooksScreen({ books, current, onPick, onOpenBookmarks, bookmarkC
   }, [rows]);
 
   // Recently read chapters other than the one open now.
-  const recent = settings.recent.filter((r) => r.book !== settings.position.book || r.chapter !== settings.position.chapter);
+  const allRecent = usePlace(selectRecent);
+  const position = usePlace(selectPosition);
+  const recent = allRecent.filter((r) => r.book !== position.book || r.chapter !== position.chapter);
 
   const currentIndex = rows.findIndex((r) => r.kind === 'book' && r.book.id === current);
   const initialIndex = Math.max(0, currentIndex - 3);

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Modal, PanResponder, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -28,6 +28,8 @@ interface Props {
   /** Every verse with this word, optionally only those rendering it one way. */
   onShowOccurrences: (strongs: string, rendering?: string) => void;
   onOpenRef: (ref: Ref) => void;
+  /** The first entry of this sheet's history; a new one starts the sheet at half height. */
+  rootPick: WordPick | null;
 }
 
 interface Loaded {
@@ -74,10 +76,13 @@ function syllables(pron: string | null): { text: string; stressed: boolean }[] {
     .map((p) => ({ text: p.includes("'") ? p.replace(/'/g, '').toUpperCase() : p, stressed: p.includes("'") }));
 }
 
-/** The renderings worth a chip: the main ones, not the one-off phrasings. */
-function topRenderings(list: Rendering[], max: number): Rendering[] {
-  const main = list.filter((r, i) => i === 0 || r.count >= 2);
-  return main.slice(0, max);
+/**
+ * The renderings worth a chip: the main ones, not one-off phrasings or the stray words a
+ * machine-made link leaves (under 1% of the verses, and never fewer than two).
+ */
+function topRenderings(list: Rendering[], max: number, total?: number): Rendering[] {
+  const floor = Math.max(2, (total ?? list[0]?.count ?? 0) * 0.01);
+  return list.filter((r, i) => i === 0 || r.count >= floor).slice(0, max);
 }
 
 /**
@@ -85,7 +90,7 @@ function topRenderings(list: Rendering[], max: number): Rendering[] {
  * pronunciation and how this Bible translates it; dragging the top up (or the button
  * above "See all") shows examples, related words and Strong's dictionary entry.
  */
-export function WordSheet({ pick, translation, books, onClose, onBack, onPick, onShowOccurrences, onOpenRef }: Props) {
+export function WordSheet({ pick, rootPick, translation, books, onClose, onBack, onPick, onShowOccurrences, onOpenRef }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const t = useT();
@@ -99,52 +104,64 @@ export function WordSheet({ pick, translation, books, onClose, onBack, onPick, o
   const [data, setData] = useState<Loaded | null>(null);
   const [showLegend, setShowLegend] = useState(false);
 
-  // Heights the sheet rests at, and the drag that moves between them.
+  // The sheet is laid out at full height and slid down to rest at half height (or off
+  // screen to close), on the native driver so the drag stays smooth while JS is busy.
+  // Offsets: 0 = full height, halfY = half height, fullH = closed.
   const fullH = Math.max(320, winH - insets.top - 24);
   const halfH = Math.min(fullH, Math.max(380, Math.round(winH * 0.56)));
-  const height = useRef(new Animated.Value(halfH)).current;
-  const currentH = useRef(halfH);
+  const halfY = fullH - halfH;
+  const offset = useRef(new Animated.Value(halfY)).current;
+  const restY = useRef(halfY);
   const [expanded, setExpanded] = useState(false);
-  useEffect(() => {
-    const id = height.addListener(({ value }) => (currentH.current = value));
-    return () => height.removeListener(id);
-  }, [height]);
+  const [footerH, setFooterH] = useState(120);
   const snap = useCallback(
     (to: 'half' | 'full' | 'closed') => {
-      const target = to === 'full' ? fullH : to === 'half' ? halfH : 0;
+      const target = to === 'full' ? 0 : to === 'half' ? halfY : fullH;
+      restY.current = target;
       setExpanded(to === 'full');
-      Animated.spring(height, { toValue: target, useNativeDriver: false, bounciness: 0, speed: 18 }).start(({ finished }) => {
+      Animated.spring(offset, { toValue: target, useNativeDriver: true, bounciness: 0, speed: 18 }).start(({ finished }) => {
         if (finished && to === 'closed') onClose();
       });
     },
-    [fullH, halfH, height, onClose],
+    [fullH, halfY, offset, onClose],
   );
-  // A new word (not a link followed from this one) starts at half height again.
-  const isNewWord = !onBack;
-  useEffect(() => {
-    if (!pick || !isNewWord) return;
-    height.setValue(halfH);
+  // A new word starts at half height; going back from a followed link keeps the height.
+  // Before paint, so a sheet closed by dragging does not flash empty when next opened.
+  useLayoutEffect(() => {
+    if (!rootPick) return;
+    offset.setValue(halfY);
+    restY.current = halfY;
     setExpanded(false);
     setShowLegend(false);
-  }, [pick, isNewWord, halfH, height]);
-  const startH = useRef(0);
-  const drag = useMemo(
-    () =>
-      PanResponder.create({
-        onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 6 && Math.abs(g.dy) > Math.abs(g.dx),
-        onPanResponderGrant: () => {
-          startH.current = currentH.current;
-        },
-        onPanResponderMove: (_, g) => height.setValue(Math.max(60, Math.min(fullH, startH.current - g.dy))),
-        onPanResponderRelease: (_, g) => {
-          const h = startH.current - g.dy;
-          if (g.vy > 1 || h < halfH * 0.6) snap('closed');
-          else if (g.vy < -0.5 || h > (halfH + fullH) / 2) snap('full');
-          else snap('half');
-        },
-      }),
-    [fullH, halfH, height, snap],
-  );
+  }, [rootPick, halfY, offset]);
+  const startY = useRef(0);
+  const drag = useMemo(() => {
+    const settle = (dy: number, vy: number) => {
+      const y = startY.current + dy;
+      if (vy > 1 || y > halfY + halfH * 0.4) snap('closed');
+      else if (vy < -0.5 || y < halfY / 2) snap('full');
+      else snap('half');
+    };
+    return PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 6 && Math.abs(g.dy) > Math.abs(g.dx),
+      onPanResponderGrant: () => {
+        startY.current = restY.current;
+        offset.stopAnimation((v) => {
+          if (typeof v === 'number') startY.current = v;
+        });
+      },
+      onPanResponderMove: (_, g) => offset.setValue(Math.max(0, Math.min(fullH, startY.current + g.dy))),
+      onPanResponderRelease: (_, g) => settle(g.dy, g.vy),
+      // The system took the touch (a notification shade, say): settle where it was left.
+      onPanResponderTerminate: (_, g) => settle(g.dy, 0),
+    });
+  }, [fullH, halfH, halfY, offset, snap]);
+  // The button row stays at the bottom of the screen while the sheet rests at half or
+  // full height, and goes down with it when it closes.
+  const footerOffset =
+    halfY > 0
+      ? offset.interpolate({ inputRange: [0, halfY, fullH], outputRange: [0, 0, fullH - halfY], extrapolate: 'clamp' })
+      : offset;
 
   useEffect(() => {
     if (!pick) return;
@@ -191,7 +208,9 @@ export function WordSheet({ pick, translation, books, onClose, onBack, onPick, o
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onBack ?? onClose} statusBarTranslucent>
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={t('close')} />
-      <Animated.View style={[styles.sheet, { height, backgroundColor: theme.card, paddingBottom: insets.bottom + 12, borderColor: theme.border }]}>
+      <Animated.View
+        style={[styles.sheet, { height: fullH, backgroundColor: theme.card, borderColor: theme.border, transform: [{ translateY: offset }] }]}
+      >
         <View {...drag.panHandlers} style={styles.dragArea}>
           <Pressable
             onPress={() => snap(expanded ? 'half' : 'full')}
@@ -220,7 +239,7 @@ export function WordSheet({ pick, translation, books, onClose, onBack, onPick, o
         {!data ? (
           <ActivityIndicator style={styles.spinner} color={theme.accent} accessibilityLabel={t('loading')} />
         ) : (
-          <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+          <ScrollView style={styles.scroll} contentContainerStyle={[styles.scrollContent, { paddingBottom: (entry ? footerH : 0) + 16 }]}>
             {original ? (
               <View style={[styles.inText, { backgroundColor: theme.accentSoft }]}>
                 <Text style={[styles.inTextLabel, { color: theme.muted }]}>{t('inThisVerse')}</Text>
@@ -273,7 +292,7 @@ export function WordSheet({ pick, translation, books, onClose, onBack, onPick, o
 
                 <Renderings
                   label={renderingsLabel(settings.language, tagged)}
-                  list={topRenderings(data.renderings, 6)}
+                  list={topRenderings(data.renderings, 6, data.count)}
                   theme={theme}
                   onPress={(word) => onShowOccurrences(entry.id, word)}
                 />
@@ -340,8 +359,15 @@ export function WordSheet({ pick, translation, books, onClose, onBack, onPick, o
           </ScrollView>
         )}
 
+      </Animated.View>
         {entry ? (
-          <View style={[styles.footer, { borderTopColor: expanded ? theme.border : 'transparent' }]}>
+          <Animated.View
+            onLayout={(e) => setFooterH(e.nativeEvent.layout.height)}
+            style={[
+              styles.footer,
+              { backgroundColor: theme.card, borderTopColor: theme.border, paddingBottom: insets.bottom + 12, transform: [{ translateY: footerOffset }] },
+            ]}
+          >
             {!expanded ? (
               <Pressable onPress={() => snap('full')} accessibilityRole="button" style={styles.more}>
                 <Text style={[styles.moreText, { color: theme.accent }]}>⌃  {t('moreAboutWord')}</Text>
@@ -362,9 +388,8 @@ export function WordSheet({ pick, translation, books, onClose, onBack, onPick, o
               </Text>
               {data!.count > 0 ? <Text style={[styles.ctaSub, { color: theme.onAccent }]}>{t('inTranslationSub', { name })}</Text> : null}
             </Pressable>
-          </View>
+          </Animated.View>
         ) : null}
-      </Animated.View>
     </Modal>
   );
 }
@@ -495,7 +520,16 @@ const styles = StyleSheet.create({
   legendToggleText: { fontSize: 14, fontWeight: '600' },
   legend: { marginTop: 8, padding: 12, borderRadius: 10, borderWidth: StyleSheet.hairlineWidth },
   legendText: { fontSize: 13, lineHeight: 19 },
-  footer: { paddingTop: 6, borderTopWidth: StyleSheet.hairlineWidth },
+  footer: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    maxWidth: 720,
+    alignSelf: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 6,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
   more: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
   moreText: { fontSize: 15, fontWeight: '600' },
   cta: { minHeight: 56, paddingVertical: 8, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginTop: 4 },

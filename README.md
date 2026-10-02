@@ -118,23 +118,30 @@ Built APKs are published on the `apk-builds` branch.
 
 ```
 App.tsx                  App shell: database provider, screen stack, word sheet
-src/db.ts                Database asset, on-device database name, stale copy cleanup
-plugins/                 Expo config plugin for Android release signing and shrinking
-app.config.js            Per-build values (Android version code) layered over app.json
+src/db.ts                Database asset and folder; checks the on-device copy is complete
+src/dbSizes.json         Byte size of each built database, written by build-db, for that check
+src/place.ts             Reading place (position, recent and last chapters), saved in the background
+src/selection.ts         The word whose sheet is open, so only its verse redraws
+src/fonts.ts             Hebrew and Malayalam typefaces built into the app
+src/licences.ts          Sources, licences and changes shown under Sources and licences
+plugins/withAndroidRelease.js  Android release signing and shrinking
+plugins/withBackupRules.js     Keeps the 45 MB database out of Android backup, so notes are backed up
+app.config.js            Per-edition and per-build values layered over app.json
 src/navigation.ts        Screen names and parameters for the native stack
 src/refs.ts              Parses typed references like "1 Cor 13:4"
 src/theme.ts             Light, sepia and dark palettes and the serif face
 src/queries.ts           All SQL, typed
 src/text.ts              Expands offset-encoded Strong's tags into text runs
 src/morph.ts             Turns Hebrew and Greek grammar codes into plain words
-src/settings.tsx         Persisted settings (translation, text size, position)
+src/settings.tsx         Persisted settings (translation, text size, bookmarks, notes)
 src/components/          Header, VerseText, InterlinearVerse, WordSheet, CompareSheet, SimpleSheet, VerseListItem
-src/screens/             Reader, Books, Chapters, Saved, Search, Concordance, Settings
+src/screens/             Reader, Books, Chapters, Saved, Search, Concordance, Settings, Licences
 scripts/fetch-data.sh    Downloads the source texts into data/raw/ (not committed)
-scripts/build-db.mjs     Builds assets/db/bible.db from data/raw/
+scripts/build-db.mjs     Builds assets/db/bible-<edition>.db from data/raw/
 scripts/make-icons.sh    Draws the icon, adaptive icon layers and splash images with ImageMagick
-assets/db/               bible-en.db (41 MB) and bible-ml.db (38 MB), one per edition
+assets/db/               bible-en.db (30 MB) and bible-ml.db (45 MB), one per edition
 assets/icons/            Icon, adaptive icon layers and splash images per edition
+data/overrides/          Hand corrections: Malayalam text, verse map, short meanings
 src/edition.ts           Which texts and interface languages this build carries
 src/i18n.ts              Interface strings in English and Malayalam
 ```
@@ -205,9 +212,10 @@ Malayalam in 15 chapters), so the reader shows the right Hebrew or Greek under t
 - **King James Version**, 1769 text with Strong's numbers, from
   [eBible.org](https://ebible.org/find/details.php?id=eng-kjv2006). Public domain
   (outside the United Kingdom, where printing rights are held by the Crown's patentees).
-- **World English Bible** with Strong's numbers, from
+- **World English Bible**, from
   [eBible.org](https://ebible.org/find/details.php?id=engwebp). Public domain;
-  "World English Bible" is a trademark of eBible.org.
+  "World English Bible" is a trademark of eBible.org. Its Strong's numbers are not
+  used (see Known limitations).
 - **Malayalam Sathyavedapusthakam 1910**, revised edition in contemporary orthography,
   copyright © 2015 The Free Bible Foundation, from
   [eBible.org](https://ebible.org/find/details.php?id=mal2015), CC BY-SA 4.0.
@@ -221,7 +229,29 @@ Malayalam in 15 chapters), so the reader shows the right Hebrew or Greek under t
   database is committed here, never the files in `data/raw/`. The short meanings in
   the word sheet are the senses their glosses give each word most often.
 - **Fonts**: Noto Serif Hebrew, Noto Sans Malayalam and Noto Serif Malayalam (Google),
-  SIL Open Font License, bundled through the `@expo-google-fonts` packages.
+  SIL Open Font License, taken from the `@expo-google-fonts` packages and built into
+  the Android app by the expo-font config plugin (`app.config.js`; the English edition
+  carries only the Hebrew one). Expo Go does not have them and shows the phone's fonts.
+
+The app shows these sources, their licences with links and the changes made to each
+under Settings → Sources and licences (`src/licences.ts`, with the full Open Font
+License text).
+
+### Licences of the data
+
+- The app's source code is MIT licensed (`LICENSE`).
+- `assets/db/bible-ml.db`, `data/align/mal/` and the Malayalam corrections in
+  `data/overrides/` are adapted from the CC BY-SA 4.0 Malayalam text (and CC BY 4.0
+  STEPBible data), so they are shared under **CC BY-SA 4.0**. The Malayalam word links
+  are machine-made and not checked by hand.
+- The `strongs` table in both databases adapts Open Scriptures' CC BY-SA dictionary
+  (adding short meanings from STEPBible), and is shared under **CC BY-SA 4.0**.
+- The interlinear data in both databases adapts STEPBible's CC BY 4.0 data. Changes:
+  words found only in the Nestle-Aland editions left out, Textus Receptus or Byzantine
+  readings shown where they differ, the Hebrew marks פ and ס removed, verse numbers
+  mapped. Attribution: STEPBible.org, Tyndale House Cambridge,
+  https://github.com/STEPBible/STEPBible-Data.
+- The KJV and WEB text is public domain (the KJV outside the United Kingdom).
 
 ## Malayalam word links
 
@@ -295,8 +325,10 @@ once with its English reference.
 
 ## Known limitations
 
-- The Strong's tagging in the World English Bible is less precise than in the
-  KJV. Occasionally a word opens the entry of a neighbouring word.
+- The World English Bible is plain text in the app. The Strong's numbers in eBible's
+  WEB file are attached to the wrong words too often (Genesis 1:1 tags "In", "God" and
+  "and" as H8064 "heavens"), so `scripts/build-db.mjs` leaves them out and word lookups
+  use the KJV.
 - The WEB omits five New Testament verses that are absent from the earliest
   manuscripts (for example Matthew 17:21). They appear as greyed rows carrying the
   translators' note.

@@ -1,14 +1,8 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 import Storage from 'expo-sqlite/kv-store';
 import type { Edition, Language } from './edition';
 import type { Bookmark, HighlightColor, TranslationId } from './types';
-
-export interface Position {
-  book: number;
-  chapter: number;
-  /** Verse to scroll to when the chapter opens: the first verse on screen when the reader left. */
-  verse?: number;
-}
 
 export type ThemeChoice = 'system' | 'light' | 'sepia' | 'dark';
 export type Layout = 'verses' | 'paragraphs';
@@ -36,13 +30,9 @@ export interface Settings {
   highlights: Record<string, HighlightColor>;
   /** Verse key "book:chapter:verse" to note text. */
   notes: Record<string, string>;
-  position: Position;
   /** The first-launch tip about tapping words has been dismissed. */
   tipSeen: boolean;
-  /** Last chapter visited in each book, keyed by book id. */
-  lastChapters: Record<string, number>;
-  /** Chapters read most recently, newest first. */
-  recent: { book: number; chapter: number }[];
+  // The reading place (position, recent and last chapters) is kept in src/place.ts.
 }
 
 const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
@@ -59,10 +49,7 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
   bookmarks: [],
   highlights: {},
   notes: {},
-  position: { book: 43, chapter: 1 },
   tipSeen: false,
-  lastChapters: {},
-  recent: [],
 };
 
 export const FONT_SIZES = [15, 17, 19, 21, 24, 28];
@@ -77,7 +64,9 @@ function load(edition: Edition): Settings {
     const raw = Storage.getItemSync(`settings.v1.${edition.id}`);
     if (!raw) return defaults;
     const parsed = JSON.parse(raw) as Partial<Settings>;
-    const merged = { ...defaults, ...parsed, position: { ...defaults.position, ...parsed.position } };
+    const merged = { ...defaults, ...parsed };
+    // Fields of older versions that moved to src/place.ts.
+    for (const old of ['position', 'recent', 'lastChapters']) delete (merged as Record<string, unknown>)[old];
     if (!edition.translations.includes(merged.translation)) merged.translation = edition.defaultTranslation;
     if (!edition.languages.includes(merged.language)) merged.language = edition.languages[0];
     return merged;
@@ -95,17 +84,37 @@ const SettingsContext = createContext<SettingsContextValue | null>(null);
 
 export function SettingsProvider({ edition, children }: { edition: Edition; children: React.ReactNode }) {
   const [settings, setSettings] = useState<Settings>(() => load(edition));
-  const update = useCallback((patch: Partial<Settings>) => {
-    setSettings((prev) => {
-      const next = { ...prev, ...patch };
+  const update = useCallback((patch: Partial<Settings>) => setSettings((prev) => ({ ...prev, ...patch })), []);
+  // Written in the background a moment after a change, and at once when the app is left.
+  const key = `settings.v1.${edition.id}`;
+  const latest = useRef(settings);
+  latest.current = settings;
+  const pending = useRef(false);
+  const first = useRef(true);
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    pending.current = true;
+    const timer = setTimeout(() => {
+      pending.current = false;
+      Storage.setItem(key, JSON.stringify(settings)).catch(() => undefined);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [settings, key]);
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active' || !pending.current) return;
+      pending.current = false;
       try {
-        Storage.setItemSync(`settings.v1.${edition.id}`, JSON.stringify(next));
+        Storage.setItemSync(key, JSON.stringify(latest.current));
       } catch {
-        // Persistence is best effort; the in-memory value still applies.
+        // Best effort; the in-memory value still applies.
       }
-      return next;
     });
-  }, [edition.id]);
+    return () => sub.remove();
+  }, [key]);
   const value = useMemo(() => ({ settings, update }), [settings, update]);
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }

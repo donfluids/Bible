@@ -11,7 +11,8 @@ export interface Translation {
 
 export const TRANSLATIONS: Translation[] = [
   { id: 'KJV', name: 'King James Version', tagged: true, lineHeight: 1.55 },
-  { id: 'WEB', name: 'World English Bible', tagged: true, lineHeight: 1.55 },
+  // The WEB source's Strong's tags are unreliable, so they are not built (scripts/build-db.mjs).
+  { id: 'WEB', name: 'World English Bible', tagged: false, lineHeight: 1.55 },
   // Tagged by scripts/align-malayalam.mjs (machine alignment, confident links only).
   { id: 'MAL', name: 'സത്യവേദപുസ്തകം 1910 (Malayalam)', tagged: true, lineHeight: 1.75 },
 ];
@@ -140,6 +141,9 @@ export interface WordPick {
   word?: string;
   /** The original-language word, when tapped in the interlinear view. */
   original?: OriginalWord;
-  /** Where the tapped word is: its verse and its start offset in the verse text. */
-  at?: Ref & { start: number };
+  /**
+   * Where the tapped word is: its verse, its start offset in the verse text and, when it
+   * was tapped in the reader, the translation (so the reader marks it only there).
+   */
+  at?: Ref & { start: number; translation?: TranslationId };
 }

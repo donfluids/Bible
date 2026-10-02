@@ -12,9 +12,10 @@ import { useTheme } from '../theme';
 
 interface Props {
   onBack: () => void;
+  onOpenLicences: () => void;
 }
 
-export function SettingsScreen({ onBack }: Props) {
+export function SettingsScreen({ onBack, onOpenLicences }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const t = useT();
@@ -178,6 +179,9 @@ export function SettingsScreen({ onBack }: Props) {
           <Text style={[styles.about, { color: theme.text, marginTop: 10 }]}>{t('aboutInterlinear')}</Text>
           {EDITION.translations.includes('WEB') ? <Text style={[styles.about, { color: theme.muted, marginTop: 10 }]}>{t('aboutWeb')}</Text> : null}
           {meta.built ? <Text style={[styles.rowSub, { color: theme.muted, marginTop: 10 }]}>{t('databaseBuilt', { date: meta.built })}</Text> : null}
+          <Pressable onPress={onOpenLicences} accessibilityRole="button" hitSlop={6} style={styles.licencesRow}>
+            <Text style={[styles.rowTitle, { color: theme.accent }]}>{t('sourcesLicences')} ›</Text>
+          </Pressable>
         </View>
       </ScrollView>
     </View>
@@ -213,6 +217,7 @@ function SizeButton({ label, small, onPress, disabled }: { label: string; small?
 }
 
 const styles = StyleSheet.create({
+  licencesRow: { marginTop: 12, minHeight: 44, justifyContent: 'center' },
   screen: { flex: 1 },
   content: { padding: 16, paddingBottom: 48, alignSelf: 'center', width: '100%', maxWidth: 720 },
   label: { fontSize: 12, fontWeight: '700', letterSpacing: 0.8, marginTop: 18, marginBottom: 8 },

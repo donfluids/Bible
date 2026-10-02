@@ -61,7 +61,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import { deflateRawSync, inflateRawSync } from 'node:zlib';
 import { textHash } from './lib/tokens.mjs';
-import { readFileSync, readdirSync, mkdirSync, rmSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -112,11 +112,27 @@ const FLAG_NOT_IN_TR = 8;
 const FLAG_NOT_IN_BYZ = 16;
 const FLAG_REPLACES_NA = 32;
 
-// Dictionary senses seen for each Strong's number, counted over every word of the
+// Dictionary glosses seen for each Strong's number, counted over every word of the
 // Hebrew and Greek text, for strongs.gloss.
-const senseCounts = new Map(); // "H430" -> Map(sense -> count)
+const senseCounts = new Map(); // "H430" -> Map(gloss -> count)
+
+// The word's own gloss from a STEPBible dictionary entry. A word with several senses is
+// written ": sense»gloss:1_sense" (the part before » only tells the senses apart, e.g.
+// ": depart»to send" for שָׁלַח); a word with one is written "gloss" or "gloss»link@ref".
+function entryGloss(value) {
+  const v = (value || '').trim();
+  if (v.startsWith(':')) return v.includes('»') ? v.split('»')[1].split(/[:@]/)[0] : '';
+  return v.split(/[»@]/)[0];
+}
+
 function countSense(strongs, sense) {
-  const clean = (sense || '').replace(/^[:\s]+/, '').replace(/[@|].*$/, '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+  const clean = (sense || '')
+    .replace(/^[:\s]+/, '')
+    .replace(/[@|].*$/, '')
+    .replace(/_/g, ' ')
+    .replace(/(\p{L})\((\p{L}+)\)/gu, '$1$2') // "to(wards)"
+    .replace(/\s+/g, ' ')
+    .trim();
   // Placeholders such as "[Obj.]" or "<the>" are not meanings.
   if (!strongs || !clean || /^[\[<].*[\]>]$/.test(clean)) return;
   if (!senseCounts.has(strongs)) senseCounts.set(strongs, new Map());
@@ -147,6 +163,11 @@ const FS = '\x1c';
 const GS = '\x1d';
 const RS = '\x1e';
 const US = '\x1f';
+
+// The WEB source's Strong's tags are not used: many sit on the wrong words (Genesis 1:1
+// tags "In", "God" and "and" as H8064 "heavens"; no word in the WEB carries H430). The
+// app looks words up in the KJV instead, and the WEB is read as plain text.
+const UNTAGGED = new Set(['WEB']);
 
 const ALL_TRANSLATIONS = [
   { id: 'KJV', name: 'King James Version', dir: 'kjv', suffix: 'eng-kjv2006.usfm' },
@@ -328,7 +349,7 @@ function stepHebrewWords() {
     // The root's dictionary entry: "{H7225G=רֵאשִׁית=: beginning»first:1_beginning}" (a
     // sense, then the word's general gloss) or "{H1254A=בָּרָא=to create}".
     const dict = /\{H\d+[A-Z]?=[^=}]*=([^}]*)\}/.exec(fields[11] || '');
-    if (dict) countSense(strongs, dict[1].split('»')[0]);
+    if (dict) countSense(strongs, entryGloss(dict[1]));
     const morph = fields[5].trim();
     let flags = 0;
     if (ref.type.startsWith('X')) flags |= FLAG_LXX;
@@ -382,8 +403,9 @@ function stepGreekWords() {
     const sm = /G(\d+)/.exec(fields[3]);
     const strongs = sm ? 'G' + Number(sm[1]) : '';
     const morph = (fields[3].split('=')[1] || '').trim();
-    // The sense used here (": spirit»spirit/breath|1_spirit"), else the dictionary gloss.
-    countSense(strongs, (fields[9] || '').split('»')[0] || (fields[4] || '').split('=')[1]);
+    // The dictionary gloss ("κύριος=lord"); the column after the editions holds links to
+    // people and things ("LORD@Gen.1.1"), not meanings, so it is not used here.
+    countSense(strongs, (fields[4] || '').split('=').slice(1).join('='));
     words.push({ ...ref, text, translit, gloss, strongs, morph, flags: editionFlags(editions) });
   }
   return { words, skipped, replaced };
@@ -442,6 +464,15 @@ function loadStrongs(file, varName) {
   return JSON.parse(src.slice(start, end + 1));
 }
 
+function loadGlossOverrides() {
+  try {
+    const doc = JSON.parse(readFileSync(join(ROOT, 'data', 'overrides', 'glosses.json'), 'utf8'));
+    return Object.fromEntries(Object.entries(doc).filter(([k]) => /^[HG]\d+$/.test(k)));
+  } catch {
+    return {};
+  }
+}
+
 // Known faults in a source text, corrected from another public-domain copy.
 // See data/overrides/text-corrections.json for what is replaced and why.
 function loadCorrections() {
@@ -485,8 +516,31 @@ function alignmentFor(alignments, key, text) {
 // marker אֵת (H853) is never translated, so nothing links to it.
 const ML_PRONOUNS = new Set(('എന്റെ നിന്റെ അവന്റെ അവളുടെ അതിന്റെ നമ്മുടെ ഞങ്ങളുടെ നിങ്ങളുടെ അവരുടെ തന്റെ തങ്ങളുടെ ' +
   'എന്നെ നിന്നെ അവനെ അവളെ അതിനെ നമ്മെ ഞങ്ങളെ നിങ്ങളെ അവരെ അവയെ').split(' '));
+// Pronoun words, for the renderings lists: a pronoun counted as the rendering of a noun or
+// verb comes from a wrong link, and would show as a chip such as "നിങ്ങൾ" under "believe".
+const ML_PRONOUN_WORDS = new Set([...ML_PRONOUNS, ...('ഞാൻ നീ അവൻ അവൾ അവർ നാം ഞങ്ങൾ നിങ്ങൾ അതു അവ ' +
+  'എനിക്കു നിനക്കു അവന്നു അവൾക്കു അവർക്കു നമുക്കു ഞങ്ങൾക്കു നിങ്ങൾക്കു').split(' ')]);
+const GREEK_PRONOUNS = new Set(['G1473', 'G3165', 'G3427', 'G3450', 'G1698', 'G1700', 'G1691', 'G2249', 'G2257', 'G2254', 'G2248',
+  'G4771', 'G4675', 'G4671', 'G4571', 'G4674', 'G5210', 'G5216', 'G5213', 'G5209', 'G5212', 'G846', 'G1438', 'G3778', 'G1683', 'G4572', 'G848']);
 const HEBREW_PRONOUNS = new Set(['H589', 'H595', 'H587', 'H5168', 'H859', 'H1931', 'H1992', 'H1993', 'H2004', 'H2007', 'H1158']);
 let misLinks = 0;
+// In "നിങ്ങളുടെ ദൈവമായ യഹോവ" the aligner followed the Hebrew order (YHWH Elohim) and
+// linked യഹോവ to God and ദൈവം to the LORD. യഹോവ always renders the divine name, so a
+// യഹോവ linked to H430 is set to H3068, and a ദൈവ… word in the same verse linked to H3068
+// is set to H430. `entries` and the tag `parts` are index-aligned.
+let lordGodFixes = 0;
+function fixLordGod(entries, parts) {
+  const setId = (i, id) => {
+    entries[i].id = id;
+    parts[i] = parts[i].replace(/,\d+$/, ',' + id.slice(1));
+    lordGodFixes++;
+  };
+  const crossedLord = entries.findIndex((e) => e.id === 'H430' && e.word.startsWith('യഹോവ'));
+  if (crossedLord < 0) return;
+  setId(crossedLord, 'H3068');
+  const crossedGod = entries.findIndex((e) => e.id === 'H3068' && e.word.startsWith('ദൈവ'));
+  if (crossedGod >= 0) setId(crossedGod, 'H430');
+}
 function misLinked(span, text) {
   const wrong = span.n === 'H853' || (span.n.startsWith('H') && ML_PRONOUNS.has(text.slice(span.s, span.e)) && !HEBREW_PRONOUNS.has(span.n));
   if (wrong) misLinks++;
@@ -495,10 +549,18 @@ function misLinked(span, text) {
 
 // Forms of one Malayalam word under one Strong's number, grouped by stem: the shortest
 // form heads the group, and a later form joins it when it starts with the head's stem
-// (the head less a final ം ൻ ർ ൽ ൾ ൺ ു ്; three characters at least) or shares most of
-// the head (സൃഷ്ടിച്ച, സൃഷ്ടിക്കും). The group is shown by its commonest form that ends
-// where the stem does, so ദൈവം rather than ദൈവത്തിന്റെ.
-const mlStem = (w) => w.replace(/[ംൻർൽൾൺു്]+$/u, '');
+// (three characters at least) or shares most of the head (സൃഷ്ടിച്ച, സൃഷ്ടിക്കും). The stem
+// is the head less a final ം ു ്, or with a final chillu written as its consonant, since
+// inflections continue from it (മകൻ: മകനെ, മകനായ). A group is labelled by its commonest
+// base form (one ending in ം, ു, ് or a chillu, like ദൈവം or മകൻ) unless that form is
+// rare in the group, and then by the group's commonest form.
+const CHILLU = { 'ൻ': 'ന', 'ർ': 'ര', 'ൽ': 'ല', 'ൾ': 'ള', 'ൺ': 'ണ' };
+const mlStem = (w) => {
+  const last = w.slice(-1);
+  return CHILLU[last] ? w.slice(0, -1) + CHILLU[last] : w.replace(/[ംു്]+$/u, '');
+};
+// Not "…ും" (and, also) or a case ending such as "…ത്തു", "…ക്കു", "…ന്നു".
+const isBaseForm = (w) => /[്ൻർൽൾൺ]$|[^ു]ം$|[^ുത്കന്ട]ു$/u.test(w) && !/(ത്തു|ക്കു|ന്നു|ട്ടു)$/u.test(w);
 function sharedStart(a, b) {
   let i = 0;
   while (i < a.length && i < b.length && a[i] === b[i]) i++;
@@ -517,8 +579,13 @@ function groupForms(entries) {
     else groups.push({ stem: mlStem(e.display), head: e.display, members: [e] });
   }
   return groups.map((g) => {
-    const plain = g.members.filter((m) => mlStem(m.display) === g.stem && m.display !== g.stem);
-    g.display = (plain.length ? plain : g.members).reduce((a, b) => (b.refs.length > a.refs.length ? b : a)).display;
+    const commonest = (list) => list.reduce((a, b) => (b.refs.length > a.refs.length ? b : a));
+    const top = commonest(g.members);
+    const bases = g.members.filter((m) => isBaseForm(m.display));
+    const base = bases.length ? commonest(bases) : null;
+    // Else the shortest form that is still common in the group.
+    const shortCommon = [...g.members].sort((a, b) => a.display.length - b.display.length).find((m) => m.refs.length >= top.refs.length * 0.3);
+    g.display = base && base.refs.length >= top.refs.length * 0.3 ? base.display : (shortCommon ?? top).display;
     const seen = new Set();
     const refs = [];
     for (const m of g.members) {
@@ -609,6 +676,17 @@ function buildEdition(edition) {
         chapters.set(Number(ch), new Map(Object.entries(versesById).map(([v, text]) => [Number(v), text])));
         for (const k of [...paras.keys()]) if (k.startsWith(`${ch}:`)) paras.delete(k);
       }
+      for (const [ref, pairs] of Object.entries(corrections.replace?.[t.id] ?? {})) {
+        const [b, ch, v] = ref.split(':').map(Number);
+        const raw = b === book.id ? chapters.get(ch)?.get(v) : undefined;
+        if (raw === undefined) continue;
+        let fixed = raw;
+        for (const [from, to] of pairs) {
+          if (!fixed.includes(from)) throw new Error(`text-corrections: "${from}" not found in ${t.id} ${ref}`);
+          fixed = fixed.replace(from, to);
+        }
+        chapters.get(ch).set(v, fixed);
+      }
       for (const [ref, junk] of Object.entries(corrections.strip?.[t.id] ?? {})) {
         const [b, ch, v] = ref.split(':').map(Number);
         const raw = b === book.id ? chapters.get(ch)?.get(v) : undefined;
@@ -632,9 +710,9 @@ function buildEdition(edition) {
           }
           const split = splitTags(tagged);
           const { text, notes: markers } = split;
-          let tags = split.tags;
+          let tags = UNTAGGED.has(t.id) ? '' : split.tags;
           // Tagged words: the source's own tags, or for Malayalam the aligned links.
-          let entries = [...tagged.matchAll(/⟨([^|⟩]*)\|([HG]\d+)⟩/g)].map((m) => ({ word: m[1].trim(), id: m[2] }));
+          let entries = UNTAGGED.has(t.id) ? [] : [...tagged.matchAll(/⟨([^|⟩]*)\|([HG]\d+)⟩/g)].map((m) => ({ word: m[1].trim(), id: m[2] }));
           if (t.id === 'MAL') {
             const al = alignmentFor(alignments, `${book.id}:${chapter}:${verse}`, text);
             if (al) {
@@ -651,6 +729,7 @@ function buildEdition(edition) {
                 entries.push({ word: text.slice(sp.s, sp.e), id: sp.n });
                 prevEnd = sp.e;
               }
+              fixLordGod(entries, parts);
               tags = parts.join(' ');
               alignedVerses++;
             }
@@ -668,6 +747,11 @@ function buildEdition(edition) {
             tagCount++;
             const word = m.word;
             const lower = word.toLowerCase();
+            const strayPronoun = t.id === 'MAL' && ML_PRONOUN_WORDS.has(word) && !HEBREW_PRONOUNS.has(m.id) && !GREEK_PRONOUNS.has(m.id);
+            if (strayPronoun) {
+              if (!seen.has(m.id)) { seen.add(m.id); if (!conc.has(m.id)) conc.set(m.id, []); conc.get(m.id).push(book.id, chapter, verse); }
+              continue;
+            }
             if (!rend.has(m.id)) rend.set(m.id, new Map());
             const byWord = rend.get(m.id);
             if (!byWord.has(lower)) byWord.set(lower, { forms: new Map(), refs: [], lastKey: '' });
@@ -699,7 +783,7 @@ function buildEdition(edition) {
       }
     }
     db.exec('COMMIT');
-    stats[t.id] = { verses, omittedVerses: omitted, ...(t.id === 'MAL' ? { alignedVerses, misLinksDropped: misLinks } : {}), tags: tagCount, strongsNumbers: conc.size, notes: noteCount, renderings: renderingRows };
+    stats[t.id] = { verses, omittedVerses: omitted, ...(t.id === 'MAL' ? { alignedVerses, misLinksDropped: misLinks, lordGodFixes } : {}), tags: tagCount, strongsNumbers: conc.size, notes: noteCount, renderings: renderingRows };
   }
 
   db.exec('BEGIN');
@@ -750,8 +834,20 @@ function buildEdition(edition) {
     const g = shortGloss(id);
     if (g && setGloss.run(g, id).changes) glosses++;
   }
+  // Words the Hebrew and Greek text never uses under their own number (often forms that
+  // Strong's numbered separately, such as ἐστί, "of G1510") take the gloss of the word
+  // their derivation names first.
+  let inherited = 0;
+  for (const row of db.prepare('SELECT id, derivation FROM strongs WHERE gloss IS NULL AND derivation IS NOT NULL').all()) {
+    const m = /\b([HG])0*(\d{1,4})\b/.exec(row.derivation);
+    const parent = m && db.prepare('SELECT gloss FROM strongs WHERE id = ?').get(m[1] + m[2]);
+    if (parent?.gloss && setGloss.run(parent.gloss, row.id).changes) inherited++;
+  }
+  // Hand corrections: data/overrides/glosses.json.
+  let overridden = 0;
+  for (const [id, g] of Object.entries(loadGlossOverrides())) if (setGloss.run(g, id).changes) overridden++;
   db.exec('COMMIT');
-  stats.glosses = glosses;
+  stats.glosses = { fromText: glosses, inherited, overridden };
   // Sanity check: interlinear verses should line up with the KJV's verse numbering.
   const kjv = new Set(db.prepare("SELECT book || ':' || chapter || ':' || verse k FROM verses WHERE translation = 'KJV' AND omitted = 0").all().map((r) => r.k));
   const have = new Set();
@@ -766,6 +862,13 @@ function buildEdition(edition) {
   db.exec('VACUUM');
   db.close();
 
+  // The app checks the copy it makes on the phone against this size, so a copy cut short
+  // (the app closed, or the phone out of space) is noticed and made again (src/db.ts).
+  const SIZES = join(ROOT, 'src', 'dbSizes.json');
+  let sizes = {};
+  try { sizes = JSON.parse(readFileSync(SIZES, 'utf8')); } catch { /* first build */ }
+  sizes[edition] = statSync(OUT).size;
+  writeFileSync(SIZES, JSON.stringify(sizes, null, 1) + '\n');
   console.log(JSON.stringify({ edition, ...stats, strongsEntries: nStrongs, bytes: statSync(OUT).size }, null, 2));
 }
 

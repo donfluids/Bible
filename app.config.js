@@ -26,6 +26,20 @@ const EDITIONS = {
   },
 };
 
+// Typefaces built into the app (src/fonts.ts uses them by file name): Hebrew in both
+// editions, Malayalam only in the Malayalam one.
+const FONT = (pkg, file) => `./node_modules/@expo-google-fonts/${pkg}/${file.split('_')[1].replace('.ttf', '')}/${file}`;
+const FONTS = {
+  en: [FONT('noto-serif-hebrew', 'NotoSerifHebrew_500Medium.ttf')],
+  ml: [
+    FONT('noto-serif-hebrew', 'NotoSerifHebrew_500Medium.ttf'),
+    FONT('noto-sans-malayalam', 'NotoSansMalayalam_400Regular.ttf'),
+    FONT('noto-sans-malayalam', 'NotoSansMalayalam_700Bold.ttf'),
+    FONT('noto-serif-malayalam', 'NotoSerifMalayalam_400Regular.ttf'),
+    FONT('noto-serif-malayalam', 'NotoSerifMalayalam_700Bold.ttf'),
+  ],
+};
+
 // Gradle evaluates this file again during a native build, without the shell
 // environment, so fall back to the edition recorded by plugins/withAndroidRelease.js.
 function editionFromGradleProperties() {
@@ -56,6 +70,7 @@ module.exports = ({ config }) => {
     }
     return plugin;
   });
+  plugins.push(['expo-font', { fonts: FONTS[edition] }]);
   return {
     ...config,
     name: e.name,

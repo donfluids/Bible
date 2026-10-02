@@ -7,9 +7,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
-import { DATABASE_ASSET, DATABASE_NAME, databaseCopyExists, removeStaleDatabases } from './src/db';
-import { useAppFonts } from './src/fonts';
+import { DATABASE_ASSET, DATABASE_DIRECTORY, DATABASE_NAME, databaseCopyComplete, removeIncompleteCopy, removeStaleDatabases } from './src/db';
 import { navigationRef } from './src/navigation';
+import { initPlace, moveMainReader, selectBook, selectLastChapters, selectPosition, usePlace } from './src/place';
+import { setSelection } from './src/selection';
 import type { RootStackParamList } from './src/navigation';
 import { translate, useT } from './src/i18n';
 import type { StringKey } from './src/i18n';
@@ -26,6 +27,7 @@ import { ChaptersScreen } from './src/screens/ChaptersScreen';
 import { ConcordanceScreen } from './src/screens/ConcordanceScreen';
 import { ReaderScreen } from './src/screens/ReaderScreen';
 import { SearchScreen } from './src/screens/SearchScreen';
+import { LicencesScreen } from './src/screens/LicencesScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 
 export default function App() {
@@ -33,9 +35,7 @@ export default function App() {
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <ErrorBoundary>
-          <Fonts>
-            <Database />
-          </Fonts>
+          <Database />
         </ErrorBoundary>
       </SafeAreaProvider>
     </GestureHandlerRootView>
@@ -44,24 +44,29 @@ export default function App() {
 
 const STARTUP_LANGUAGE = CONFIGURED_EDITION.languages[0];
 
-/** The bundled Hebrew and Malayalam faces load first (a fraction of a second, from the app). */
-function Fonts({ children }: { children: React.ReactNode }) {
-  const ready = useAppFonts();
-  return ready ? <>{children}</> : <Loading message={translate(STARTUP_LANGUAGE, 'loading')} />;
-}
+
+// Whether this launch copied the database from the app; its leftovers are then kept
+// until the next launch, in case the copy has to be made again.
+let copiedThisLaunch = false;
 
 /**
  * Opens the database. The first launch copies it out of the app (about 45 MB); if that
  * fails, for instance for lack of storage, the reader can try again instead of being
- * left with a blank screen.
+ * left with a blank screen. A copy that is not complete (the app was closed during it)
+ * is deleted and made again.
  */
 function Database() {
   const [attempt, setAttempt] = useState(0);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
-  // The bundled copy is needed only when there is no copy on the phone yet.
-  const firstCopy = useMemo(() => !databaseCopyExists(), [attempt]);
-  const assetSource = useMemo(() => (firstCopy ? { assetId: DATABASE_ASSET } : undefined), [firstCopy]);
+  // The bundled copy is needed only when there is no complete copy on the phone.
+  const firstCopy = useMemo(() => {
+    if (databaseCopyComplete()) return false;
+    removeIncompleteCopy();
+    copiedThisLaunch = true;
+    return true;
+  }, [attempt]);
+  const assetSource = useMemo(() => (firstCopy ? { assetId: DATABASE_ASSET, forceOverwrite: true } : undefined), [firstCopy]);
   const onInit = useCallback(async () => setReady(true), []);
   // The provider reports errors while rendering, so record them afterwards.
   const onError = useCallback(() => {
@@ -84,7 +89,14 @@ function Database() {
   return (
     <View style={styles.root}>
       {ready ? null : <Loading message={translate(STARTUP_LANGUAGE, firstCopy ? 'preparing' : 'loading')} />}
-      <SQLiteProvider key={attempt} databaseName={DATABASE_NAME} assetSource={assetSource} onInit={onInit} onError={onError}>
+      <SQLiteProvider
+        key={attempt}
+        databaseName={DATABASE_NAME}
+        directory={DATABASE_DIRECTORY}
+        assetSource={assetSource}
+        onInit={onInit}
+        onError={onError}
+      >
         <EditionGate />
       </SQLiteProvider>
     </View>
@@ -140,16 +152,22 @@ function Failure({
 function EditionGate() {
   const db = useSQLiteContext();
   const [edition, setEdition] = useState<Edition | null>(null);
+  const [books, setBooks] = useState<Book[] | null>(null);
   useEffect(() => {
+    // The book list is read in the same round as the edition; if it fails, Shell retries.
+    getBooks(db)
+      .then(setBooks)
+      .catch(() => undefined);
     getMeta(db)
       .then((meta) => setEdition(isEditionId(meta.edition) ? EDITIONS[meta.edition] : CONFIGURED_EDITION))
       .catch(() => setEdition(CONFIGURED_EDITION));
   }, [db]);
   if (!edition) return <Loading message={translate(CONFIGURED_EDITION.languages[0], 'loading')} />;
+  initPlace(edition);
   return (
     <EditionContext.Provider value={edition}>
       <SettingsProvider edition={edition}>
-        <Shell />
+        <Shell initialBooks={books} />
       </SettingsProvider>
     </EditionContext.Provider>
   );
@@ -160,8 +178,6 @@ interface AppContextValue {
   books: Book[];
   /** Open the word sheet for a tapped word. */
   onWord: (pick: WordPick) => void;
-  /** The word whose sheet is open, so the reader can mark it in the verse. */
-  activePick: WordPick | null;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -174,11 +190,12 @@ function useApp(): AppContextValue {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-function Shell() {
+function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
   const db = useSQLiteContext();
   const theme = useTheme();
-  const { settings, update } = useSettings();
-  const [books, setBooks] = useState<Book[] | null>(null);
+  const { settings } = useSettings();
+  const [loadedBooks, setBooks] = useState<Book[] | null>(null);
+  const books = loadedBooks ?? initialBooks;
   const [booksFailed, setBooksFailed] = useState(false);
   const [booksAttempt, setBooksAttempt] = useState(0);
   // Word sheet entries; following a link in the derivation pushes, the back arrow pops.
@@ -186,6 +203,7 @@ function Shell() {
   const pick = picks.length > 0 ? picks[picks.length - 1] : null;
 
   useEffect(() => {
+    if (initialBooks && booksAttempt === 0) return;
     setBooksFailed(false);
     getBooks(db)
       .then(setBooks)
@@ -193,15 +211,8 @@ function Shell() {
   }, [db, booksAttempt]);
 
   // The current database is open by now, so older copies can go.
-  useEffect(() => removeStaleDatabases(), []);
+  useEffect(() => removeStaleDatabases(!copiedThisLaunch), []);
 
-  // Remember the last chapter visited in each book, for the chapter picker.
-  useEffect(() => {
-    const { book, chapter } = settings.position;
-    if (settings.lastChapters[book] !== chapter) {
-      update({ lastChapters: { ...settings.lastChapters, [book]: chapter } });
-    }
-  }, [settings.position, settings.lastChapters, update]);
 
   const onWord = useCallback((p: WordPick) => setPicks([p]), []);
   const closeSheet = useCallback(() => setPicks([]), []);
@@ -221,7 +232,12 @@ function Shell() {
     [settings.language],
   );
 
-  const appValue = useMemo(() => (books ? { books, onWord, activePick: pick } : null), [books, onWord, pick]);
+  const appValue = useMemo(() => (books ? { books, onWord } : null), [books, onWord]);
+  // The reader marks the open word through a small store, so only its verse redraws.
+  useEffect(() => {
+    const at = pick?.at;
+    setSelection(at?.translation ? { translation: at.translation, book: at.book, chapter: at.chapter, verse: at.verse, start: at.start } : null);
+  }, [pick]);
 
   const navTheme = useMemo(
     () => ({
@@ -246,6 +262,7 @@ function Shell() {
           <Stack.Screen name="Search" component={SearchRoute} />
           <Stack.Screen name="Concordance" component={ConcordanceRoute} />
           <Stack.Screen name="Settings" component={SettingsRoute} />
+          <Stack.Screen name="Licences" component={LicencesRoute} />
         </Stack.Navigator>
       </NavigationContainer>
       <WordSheet
@@ -256,6 +273,7 @@ function Shell() {
         onPick={followLink}
         onShowOccurrences={showOccurrences}
         onOpenRef={openRefFromSheet}
+        rootPick={picks[0] ?? null}
         books={appValue.books}
       />
     </AppContext.Provider>
@@ -278,13 +296,12 @@ function useOpenRef(navigation: Props<keyof RootStackParamList>['navigation'], f
 }
 
 function ReaderRoute({ navigation, route }: Props<'Reader'>) {
-  const { books, onWord, activePick } = useApp();
+  const { books, onWord } = useApp();
   const from = route.params?.from;
   return (
     <ReaderScreen
       books={books}
       jumpTo={route.params?.ref}
-      activePick={activePick}
       onBack={from ? () => navigation.goBack() : undefined}
       backLabel={from}
       onOpenBooks={() => navigation.navigate('Books')}
@@ -297,15 +314,16 @@ function ReaderRoute({ navigation, route }: Props<'Reader'>) {
 
 function BooksRoute({ navigation }: Props<'Books'>) {
   const { books } = useApp();
-  const { settings, update } = useSettings();
+  const { settings } = useSettings();
+  const current = usePlace(selectBook);
   return (
     <BooksScreen
       books={books}
-      current={settings.position.book}
+      current={current}
       onPick={(book) => navigation.navigate('Chapters', { bookId: book.id })}
       onOpenBookmarks={() => navigation.navigate('Bookmarks')}
       onOpenRecent={(place) => {
-        update({ position: { book: place.book, chapter: place.chapter } });
+        moveMainReader({ book: place.book, chapter: place.chapter });
         navigation.popToTop();
       }}
       bookmarkCount={settings.bookmarks.length + Object.keys(settings.highlights).length + Object.keys(settings.notes).length}
@@ -316,14 +334,15 @@ function BooksRoute({ navigation }: Props<'Books'>) {
 
 function ChaptersRoute({ navigation, route }: Props<'Chapters'>) {
   const { books } = useApp();
-  const { settings, update } = useSettings();
+  const position = usePlace(selectPosition);
+  const lastChapters = usePlace(selectLastChapters);
   const book = books.find((b) => b.id === route.params.bookId) ?? books[0];
   return (
     <ChaptersScreen
       book={book}
-      current={settings.lastChapters[book.id] ?? (book.id === settings.position.book ? settings.position.chapter : undefined)}
+      current={lastChapters[book.id] ?? (book.id === position.book ? position.chapter : undefined)}
       onPick={(chapter) => {
-        update({ position: { book: book.id, chapter } });
+        moveMainReader({ book: book.id, chapter });
         navigation.popToTop();
       }}
       onBack={() => navigation.goBack()}
@@ -353,7 +372,11 @@ function ConcordanceRoute({ navigation, route }: Props<'Concordance'>) {
 }
 
 function SettingsRoute({ navigation }: Props<'Settings'>) {
-  return <SettingsScreen onBack={() => navigation.goBack()} />;
+  return <SettingsScreen onBack={() => navigation.goBack()} onOpenLicences={() => navigation.navigate('Licences')} />;
+}
+
+function LicencesRoute({ navigation }: Props<'Licences'>) {
+  return <LicencesScreen onBack={() => navigation.goBack()} />;
 }
 
 function Loading({ message }: { message: string }) {

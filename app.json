@@ -2,7 +2,7 @@
   "expo": {
     "name": "Bible",
     "slug": "bible",
-    "version": "0.2.7",
+    "version": "0.2.8",
     "orientation": "default",
     "userInterfaceStyle": "automatic",
     "assetBundlePatterns": [
@@ -22,7 +22,8 @@
           }
         }
       ],
-      "./plugins/withAndroidRelease"
+      "./plugins/withAndroidRelease",
+      "./plugins/withBackupRules"
     ],
     "ios": {
       "supportsTablet": true

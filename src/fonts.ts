@@ -1,15 +1,12 @@
-import { useFonts } from 'expo-font';
-import { NotoSerifHebrew_500Medium } from '@expo-google-fonts/noto-serif-hebrew/500Medium';
-import { NotoSansMalayalam_400Regular } from '@expo-google-fonts/noto-sans-malayalam/400Regular';
-import { NotoSansMalayalam_700Bold } from '@expo-google-fonts/noto-sans-malayalam/700Bold';
-import { NotoSerifMalayalam_400Regular } from '@expo-google-fonts/noto-serif-malayalam/400Regular';
-import { NotoSerifMalayalam_700Bold } from '@expo-google-fonts/noto-serif-malayalam/700Bold';
 import { SERIF_FONT } from './theme';
 
 /**
- * Bundled typefaces (SIL Open Font License), so Hebrew points and Malayalam letters
- * look the same on every phone instead of depending on the fonts the phone ships.
- * Android does not reliably embolden a bundled face, so bold Malayalam has its own family.
+ * Typefaces built into the app (SIL Open Font License), so Hebrew points and Malayalam
+ * letters look the same on every phone instead of depending on the fonts the phone ships.
+ * The expo-font config plugin (app.config.js) puts the font files in the Android app,
+ * where they are found by file name, so nothing loads at startup. Expo Go does not have
+ * them and shows the phone's own fonts. Android does not reliably embolden a bundled
+ * face, so bold Malayalam has its own family.
  */
 export const HEBREW_FONT = 'NotoSerifHebrew_500Medium';
 
@@ -19,18 +16,6 @@ const MALAYALAM = {
   serif: 'NotoSerifMalayalam_400Regular',
   serifBold: 'NotoSerifMalayalam_700Bold',
 };
-
-/** Loads the bundled fonts; true once they are ready (or failed, so the app still starts). */
-export function useAppFonts(): boolean {
-  const [loaded, error] = useFonts({
-    NotoSerifHebrew_500Medium,
-    NotoSansMalayalam_400Regular,
-    NotoSansMalayalam_700Bold,
-    NotoSerifMalayalam_400Regular,
-    NotoSerifMalayalam_700Bold,
-  });
-  return loaded || !!error;
-}
 
 export const isMalayalam = (text: string) => /[ഀ-ൿ]/.test(text);
 

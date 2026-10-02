@@ -14,6 +14,7 @@ export type RootStackParamList = {
   /** `rendering` opens the list filtered to verses that translate the word that way. */
   Concordance: { strongs: string; rendering?: string };
   Settings: undefined;
+  Licences: undefined;
 };
 
 /** Lets the word sheet, which sits outside the navigator, open the concordance. */
