@@ -17,7 +17,7 @@ the Android APK workflow on every push.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
-| [Vedapusthakam-0.2.3-b5.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.2.3-b5.apk) | 0.2.3 | 5 | release key | dc8993b | 40.6 MiB | `92f5dfdb0be6aa5605368f284ebd5cfe1bf866c2c0b8107b6b29cf54b6edbbed` |
+| [Vedapusthakam-0.2.5-b7.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.2.5-b7.apk) | 0.2.5 | 7 | release key | full Malayalam word links | 43.3 MiB | `f1f8cbc2d0ee27476e9e266e542d1672270916ecde5a00db23c48bcb32101870` |
 
 The two apps install side by side (different package ids). Vedapusthakam build 4 was withdrawn: it carried the Malayalam text but started as the English edition. Build 5 installs over it. Use the newest build
 of each. Release-key builds install over each other as updates and keep
