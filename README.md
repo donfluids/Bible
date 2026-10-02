@@ -8,6 +8,7 @@ the Android APK workflow on every push.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Bible-0.2.6-b8.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.2.6-b8.apk) | 0.2.6 | 8 | release key | f5d89aa | 43.3 MiB | `f8f504bd1ed13f74ad68e9a51ac7279983fc6d20715c1ff2f1b85ac9638b3e9d` |
 | [Bible-0.2.2-b4.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.2.2-b4.apk) | 0.2.2 | 4 | release key | 8fa0e0a | 43.2 MiB | `7d584971ac9104faeb6e57509066da0f86fb474eb89604343a71a1caee12a175` |
 | [Bible-0.2.2.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.2.2.apk) | 0.2.2 | 3 | release key | 521cd2c | 43.2 MiB | 2509883b233a9ad94e05302a270067ff6740680f20bac3c6b39f7001c30cbaee |
 | [Bible-0.2.1.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.2.1.apk) | 0.2.1 | 2 | release key | 92830b2 | 43.0 MiB | ae22d86f0966b2a7b67603f099bb7db9861f2f8f95340a58af45ba154448b4c8 |
@@ -17,6 +18,7 @@ the Android APK workflow on every push.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Vedapusthakam-0.2.6-b8.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.2.6-b8.apk) | 0.2.6 | 8 | release key | f5d89aa | 43.4 MiB | `fc41ddcee222d03256435fe9c29330df5e024535f76bac03aedca2d201b9a144` |
 | [Vedapusthakam-0.2.5-b7.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.2.5-b7.apk) | 0.2.5 | 7 | release key | full Malayalam word links | 43.3 MiB | `f1f8cbc2d0ee27476e9e266e542d1672270916ecde5a00db23c48bcb32101870` |
 
 The two apps install side by side (different package ids). Vedapusthakam build 4 was withdrawn: it carried the Malayalam text but started as the English edition. Build 5 installs over it. Use the newest build
