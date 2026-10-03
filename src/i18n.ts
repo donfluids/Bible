@@ -256,7 +256,7 @@ const ml: Record<StringKey, string> = {
   inThisVerse: 'ഈ വാക്യത്തിൽ',
   examples: 'ഉദാഹരണങ്ങൾ',
   relatedWords: 'ബന്ധപ്പെട്ട പദങ്ങൾ',
-  strongsDictionary: 'സ്ട്രോങ്സ് നിഘണ്ടു (1890)',
+  strongsDictionary: 'സ്ട്രോങ്സ് നിഘണ്ടു (ഇംഗ്ലീഷ്, 1890)',
   strongsNumberLine: 'സ്ട്രോങ്സ് നമ്പർ {id}; മറ്റു ബൈബിൾ ഉപകരണങ്ങളിൽ ഈ പദം തിരയാൻ',
   seeAllVerses: '{n} വാക്യങ്ങളും കാണുക',
   seeOneVerse: 'ആ ഒരു വാക്യം കാണുക',

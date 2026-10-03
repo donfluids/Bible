@@ -36,6 +36,8 @@ interface Loaded {
   entry: StrongsEntry | null;
   count: number;
   renderings: Rendering[];
+  /** Malayalam renderings for the headline in the Malayalam interface, else empty. */
+  malayalam: Rendering[];
   /** The KJV's renderings, beside another translation's. */
   kjv: Rendering[];
   examples: VerseRow[];
@@ -43,7 +45,7 @@ interface Loaded {
   failed?: boolean;
 }
 
-const EMPTY: Omit<Loaded, 'entry'> = { count: 0, renderings: [], kjv: [], examples: [], related: [] };
+const EMPTY: Omit<Loaded, 'entry'> = { count: 0, renderings: [], malayalam: [], kjv: [], examples: [], related: [] };
 
 /**
  * Which printed texts have an original word, when that is worth saying: a Hebrew word
@@ -86,6 +88,22 @@ function topRenderings(list: Rendering[], max: number, total?: number): Renderin
 }
 
 /**
+ * The Malayalam headline: the commonest rendering, and a second one when it is a real
+ * alternative: at least 4% of uses, and not another form of the first (ജനം beside
+ * ജനത്തെ, ദൈവസ്നേഹം beside സ്നേഹം, മരിക്കും beside മരിച്ചു, by the same first two
+ * letters). ദൈവം · ദേവന്മാർ, സമാധാനം · സുഖം, സ്നേഹം.
+ */
+function headlineWords(list: Rendering[]): string[] {
+  if (list.length === 0) return [];
+  const total = list.reduce((n, r) => n + r.count, 0);
+  const first = list[0].word;
+  const stem = (word: string) => word.slice(0, -1);
+  const sameWord = (word: string) => word.slice(0, 2) === first.slice(0, 2) || word.includes(stem(first)) || first.includes(stem(word));
+  const second = list.slice(1).find((r) => r.count >= total * 0.04 && !sameWord(r.word));
+  return second ? [first, second.word] : [first];
+}
+
+/**
  * Bottom sheet for a tapped word. It opens at half height with the word, its meaning and
  * pronunciation and how this Bible translates it; dragging the top up (or the button
  * above "See all") shows examples, related words and Strong's dictionary entry.
@@ -101,6 +119,9 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
   // Occurrence counts come from a tagged translation; an untagged one uses the KJV.
   const tagged = taggedTranslation(translation);
   const withKjv = tagged !== 'KJV' && edition.translations.includes('KJV');
+  // In the Malayalam interface the headline is the Malayalam rendering, whichever
+  // translation is open, and the English meaning goes under it.
+  const malayalamFirst = settings.language === 'ml' && edition.translations.includes('MAL');
   const [data, setData] = useState<Loaded | null>(null);
   const [showLegend, setShowLegend] = useState(false);
 
@@ -173,15 +194,17 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
     }
     const strongs = pick.strongs;
     (async () => {
-      const [entry, count, renderings, kjv, refs] = await Promise.all([
+      const [entry, count, renderings, malayalamOther, kjv, refs] = await Promise.all([
         getStrongs(db, strongs),
         getConcordanceCount(db, strongs, tagged),
         getRenderings(db, strongs, tagged),
+        malayalamFirst && tagged !== 'MAL' ? getRenderings(db, strongs, 'MAL') : Promise.resolve([] as Rendering[]),
         withKjv ? getRenderings(db, strongs, 'KJV') : Promise.resolve([] as Rendering[]),
         getConcordance(db, strongs, tagged),
       ]);
       const [examples, related] = await Promise.all([getVerses(db, tagged, refs.slice(0, 2)), entry ? getRelated(db, entry) : Promise.resolve([])]);
-      return { entry, count, renderings, kjv, examples, related };
+      const malayalam = !malayalamFirst ? [] : tagged === 'MAL' ? renderings : malayalamOther;
+      return { entry, count, renderings, malayalam, kjv, examples, related };
     })()
       .then((loaded) => {
         if (!cancelled) setData(loaded);
@@ -192,7 +215,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
     return () => {
       cancelled = true;
     };
-  }, [db, pick, tagged, withKjv]);
+  }, [db, pick, tagged, withKjv, malayalamFirst]);
 
   if (!pick) return null;
   const original = pick.original;
@@ -203,6 +226,8 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
   const note = original ? textNote(original, t) : '';
   const tappedFont = pick.word && isMalayalam(pick.word) ? scriptureFont(true, settings.serif, true) : undefined;
   const pron = syllables(entry?.pron ?? null);
+  const headline = data ? headlineWords(data.malayalam) : [];
+  const kjvChips = withKjv ? <Renderings label={renderingsLabel(settings.language, 'KJV')} list={topRenderings(data?.kjv ?? [], 5)} theme={theme} /> : null;
   const name = translationName(settings.language, tagged);
 
   return (
@@ -277,7 +302,16 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                   ) : null}
                   <Text style={[styles.lemma, { color: theme.text, fontFamily: originalFont }]}>{entry.lemma}</Text>
                 </View>
-                {entry.gloss ? <Text style={[styles.meaning, { color: theme.text }]}>{entry.gloss}</Text> : null}
+                {headline.length > 0 ? (
+                  <>
+                    <Text style={[styles.meaning, styles.meaningMalayalam, { color: theme.text, fontFamily: scriptureFont(true, settings.serif, true) }]}>
+                      {headline.join(' · ')}
+                    </Text>
+                    {entry.gloss ? <Text style={[styles.meaningSub, { color: theme.muted }]}>{entry.gloss}</Text> : null}
+                  </>
+                ) : entry.gloss ? (
+                  <Text style={[styles.meaning, { color: theme.text }]}>{entry.gloss}</Text>
+                ) : null}
                 {pron.length > 0 || entry.translit ? (
                   <Text style={styles.pronRow}>
                     {pron.map((s, i) => (
@@ -296,7 +330,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                   theme={theme}
                   onPress={(word) => onShowOccurrences(entry.id, word)}
                 />
-                {withKjv ? <Renderings label={renderingsLabel(settings.language, 'KJV')} list={topRenderings(data.kjv, 5)} theme={theme} /> : null}
+                {malayalamFirst ? null : kjvChips}
 
                 {data.examples.length > 0 ? (
                   <Section label={t('examples')} theme={theme}>
@@ -313,6 +347,9 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                     ))}
                   </Section>
                 ) : null}
+
+                {/* In the Malayalam interface the KJV chips wait in the full view. */}
+                {malayalamFirst ? kjvChips : null}
 
                 {data.related.length > 0 ? (
                   <Section label={t('relatedWords')} theme={theme}>
@@ -501,6 +538,8 @@ const styles = StyleSheet.create({
   arrow: { fontSize: 20 },
   lemma: { fontSize: 42, lineHeight: 58 },
   meaning: { fontSize: 26, fontWeight: '700', marginTop: 2 },
+  meaningMalayalam: { fontWeight: undefined, lineHeight: 40 },
+  meaningSub: { fontSize: 17, marginTop: 2 },
   pronRow: { marginTop: 4 },
   pron: { fontSize: 17 },
   translit: { fontSize: 14 },

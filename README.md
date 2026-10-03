@@ -25,7 +25,10 @@ rendering counts all work in Malayalam.
   meaning (from STEPBible's glosses), the pronunciation with its stressed syllable, and
   the words this Bible and the KJV use for it. Drag it up for two example verses,
   related words and Strong's 1890 dictionary entry, which also gives the Strong's
-  number for looking the word up elsewhere.
+  number for looking the word up elsewhere. In the Malayalam interface the large line
+  is the Malayalam word the Sathyavedapusthakam uses most (and a second when it is a
+  real alternative: ദൈവം · ദേവന്മാർ), with the English meaning under it, and the KJV
+  words wait in the full view.
 - From that entry, list every verse in the current translation that uses the same
   original word, and jump to any of them.
 - Tap the Hebrew words or Greek words button (മൂലപാഠം in the Malayalam app) to see
