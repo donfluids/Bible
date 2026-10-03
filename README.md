@@ -352,6 +352,18 @@ moved to it, unless the word contains a usual rendering of its own number (a com
 such as പൊന്മണി, "golden bell"). That moves 3,413 links; in a sample of 40, about 31
 became right, 5 were judgement calls and 4 got worse.
 
+### Compound words
+
+Malayalam writes many phrases as one word: നിത്യജീവൻ "eternal life", ദൈവപുരുഷൻ "man of
+God", സകലവൃക്ഷങ്ങളുടെയും "of all the trees". The first alignment linked each word to one
+Hebrew or Greek word only. `data/align/compound-verses.json` lists 9,131 verses where an
+unlinked content word's usual Malayalam rendering sits inside another linked word; those
+were aligned again with `--compound`, which lets a word link to each content word it
+renders (not to prepositions, conjunctions or pronouns). 1,196 calls cost $48.88. The
+result: 8,087 compound words in 5,701 verses; in a sample of 30, about 25 were right and
+5 had a wrong extra word. In the tags such a word lists its numbers with "+" (chief word
+first); tapping it opens the word sheet with a chooser row for each word.
+
 In the "renders it as" lists, Malayalam forms of one word are grouped (ദൈവം, ദൈവമായ,
 ദൈവത്തിന്റെ … as ദൈവം).
 
