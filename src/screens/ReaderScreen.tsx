@@ -611,9 +611,12 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         }
         right={
           <>
+            {/* The Malayalam app tells its two Bibles apart by language (MAL, ENG); the English
+                app has two English ones, so it uses their names (KJV, WEB). Settings lists each
+                version in full. */}
             <HeaderChip
               icon="swap_horiz"
-              label={translation === 'MAL' && settings.language === 'ml' ? 'മലയാളം' : translation}
+              label={edition.translations.includes('MAL') ? (translation === 'MAL' ? 'MAL' : 'ENG') : translation}
               onPress={toggleTranslation}
               accessibilityLabel={t('switchTranslation')}
             />

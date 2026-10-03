@@ -108,7 +108,8 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
               <Pressable key={id} onPress={() => update({ translation: id })} android_ripple={{ color: theme.accentSoft }} accessibilityRole="radio" accessibilityState={{ checked: active }} style={[styles.row, i > 0 && divider]}>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.rowTitle, { color: theme.text }]}>{translationName(settings.language, id)}</Text>
-                  <Text style={[styles.rowSub, { color: theme.muted }]}>{id}</Text>
+                  {/* The short label the reader's chip shows, and the version's code. */}
+                  <Text style={[styles.rowSub, { color: theme.muted }]}>{EDITION.translations.includes('MAL') && id !== 'MAL' ? `ENG · ${id}` : id}</Text>
                 </View>
                 <View style={styles.check}>{active ? <Icon name="check" color={theme.accent} /> : null}</View>
               </Pressable>
