@@ -50,6 +50,12 @@ rendering counts all work in Malayalam.
   compare the KJV and WEB side by side with the Hebrew or Greek, list its linked words,
   copy it, share it, or bookmark it. Bookmarks, highlights and notes are listed under
   Saved on the Books screen, with the chapters read most recently.
+- To highlight part of a verse, or a passage running over several verses, tap the
+  marker in the top bar (or Mark text in the verse sheet). Hold a word still, drag to the
+  last word and let go; the bottom bar picks the colour, has an eraser for taking marks
+  off, and Done. Scrolling still works as usual, and dragging to the top or bottom edge
+  scrolls on. Marks belong to the Bible they were made in and are listed under Saved as
+  Marked text.
 - A verse opened from search, Saved or a word's verse list opens in a reader of its own;
   Back returns to the list and then to the chapter you were reading.
 - The search box also searches the dictionary: an English meaning ("love"), a

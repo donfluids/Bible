@@ -5,13 +5,15 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
 import { IconButton, Icon } from '../components/Icon';
 import { SectionLabel } from '../components/SectionLabel';
+import { scriptureFont } from '../fonts';
 import { useT } from '../i18n';
 import { VerseText } from '../components/VerseText';
 import { getVerses } from '../queries';
 import { useSettings } from '../settings';
 import { MAX_CONTENT_WIDTH, formatRef } from '../text';
 import { useTheme } from '../theme';
-import type { Book, Ref, VerseRow, WordPick } from '../types';
+import { translationInfo } from '../types';
+import type { Book, Ref, TextMark, TranslationId, VerseRow, WordPick } from '../types';
 
 interface Props {
   books: Book[];
@@ -20,7 +22,7 @@ interface Props {
   onBack: () => void;
 }
 
-type Saved = { kind: 'bookmark' | 'highlight' | 'note'; ref: Ref; key: string; color?: string; note?: string; order: number };
+type Saved = { kind: 'bookmark' | 'highlight' | 'note' | 'mark'; ref: Ref; key: string; color?: string; note?: string; mark?: TextMark; order: number };
 
 const keyOf = (r: Ref) => `${r.book}:${r.chapter}:${r.verse}`;
 const parseKey = (key: string): Ref => {
@@ -28,7 +30,20 @@ const parseKey = (key: string): Ref => {
   return { book, chapter, verse };
 };
 
-/** Bookmarks, highlighted verses and notes, each in its own section, newest or latest first. */
+/** The words a mark covers, from the verses of its translation. */
+function markedWords(mark: TextMark, verses: Map<string, VerseRow>): string | null {
+  const parts: string[] = [];
+  for (let v = mark.from.verse; v <= mark.to.verse; v++) {
+    const row = verses.get(`${mark.translation}:${mark.book}:${mark.chapter}:${v}`);
+    if (!row) return null;
+    const start = v === mark.from.verse ? mark.from.offset : 0;
+    const end = v === mark.to.verse ? mark.to.offset : row.text.length;
+    parts.push(row.text.slice(start, end));
+  }
+  return parts.join(' ').replace(/\s+/g, ' ').trim();
+}
+
+/** Bookmarks, highlighted verses, marked text and notes, each in its own section, newest or latest first. */
 export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
@@ -37,6 +52,8 @@ export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
   const t = useT();
   const { settings, update } = useSettings();
   const [verses, setVerses] = useState<Map<string, VerseRow>>(new Map());
+  // Verses of marked text, keyed with their translation: a mark belongs to the Bible it was made in.
+  const [markVerses, setMarkVerses] = useState<Map<string, VerseRow>>(new Map());
 
   const sections = useMemo(() => {
     const canon = (r: Ref) => r.book * 1000000 + r.chapter * 1000 + r.verse;
@@ -46,21 +63,25 @@ export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
     const highlights: Saved[] = Object.entries(settings.highlights)
       .map(([key, color]) => ({ kind: 'highlight' as const, ref: parseKey(key), key, color, order: 0 }))
       .sort((a, b) => canon(a.ref) - canon(b.ref));
+    const marks: Saved[] = [...settings.marks]
+      .map((m) => ({ kind: 'mark' as const, ref: { book: m.book, chapter: m.chapter, verse: m.from.verse }, key: m.id, color: m.color, mark: m, order: m.from.offset }))
+      .sort((a, b) => canon(a.ref) - canon(b.ref) || a.order - b.order);
     const notes: Saved[] = Object.entries(settings.notes)
       .map(([key, note]) => ({ kind: 'note' as const, ref: parseKey(key), key, note, order: 0 }))
       .sort((a, b) => canon(a.ref) - canon(b.ref));
     return [
       { title: t('bookmarks'), data: bookmarks },
       { title: t('highlights'), data: highlights },
+      { title: t('markedText'), data: marks },
       { title: t('notes'), data: notes },
     ].filter((s) => s.data.length > 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.bookmarks, settings.highlights, settings.notes, settings.language]);
+  }, [settings.bookmarks, settings.highlights, settings.marks, settings.notes, settings.language]);
 
   useEffect(() => {
     let cancelled = false;
     const refs = new Map<string, Ref>();
-    for (const s of sections) for (const item of s.data) refs.set(item.key, item.ref);
+    for (const s of sections) for (const item of s.data) if (item.kind !== 'mark') refs.set(item.key, item.ref);
     getVerses(db, settings.translation, [...refs.values()])
       .then((rows) => {
         if (!cancelled) setVerses(new Map(rows.map((r) => [keyOf(r), r])));
@@ -71,8 +92,27 @@ export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
     };
   }, [db, settings.translation, sections]);
 
+  useEffect(() => {
+    let cancelled = false;
+    const wanted = new Map<TranslationId, Ref[]>();
+    for (const m of settings.marks) {
+      const list = wanted.get(m.translation) ?? [];
+      for (let v = m.from.verse; v <= m.to.verse; v++) list.push({ book: m.book, chapter: m.chapter, verse: v });
+      wanted.set(m.translation, list);
+    }
+    Promise.all([...wanted].map(([tr, refs]) => getVerses(db, tr, refs).then((rows) => rows.map((r) => [`${tr}:${keyOf(r)}`, r] as const))))
+      .then((lists) => {
+        if (!cancelled) setMarkVerses(new Map(lists.flat()));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [db, settings.marks]);
+
   const remove = (item: Saved) => {
-    if (item.kind === 'bookmark') update({ bookmarks: settings.bookmarks.filter((b) => keyOf(b) !== item.key) });
+    if (item.kind === 'mark') update({ marks: settings.marks.filter((m) => m.id !== item.key) });
+    else if (item.kind === 'bookmark') update({ bookmarks: settings.bookmarks.filter((b) => keyOf(b) !== item.key) });
     else if (item.kind === 'highlight') {
       const next = { ...settings.highlights };
       delete next[item.key];
@@ -85,6 +125,27 @@ export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
   };
 
   const listFont = Math.min(settings.fontSize, 18);
+
+  // A mark's reference, across verses when it runs on (John 3:16-17), with its Bible when
+  // that is not the one being read.
+  const markRef = (m: TextMark) => {
+    const ref = formatRef(books, { book: m.book, chapter: m.chapter, verse: m.from.verse }, m.translation);
+    const range = m.to.verse > m.from.verse ? `${ref}-${m.to.verse}` : ref;
+    return m.translation === settings.translation ? range : `${range} · ${m.translation === 'MAL' ? 'MAL' : m.translation}`;
+  };
+  const markText = (m: TextMark, color: string | undefined) => {
+    const text = markedWords(m, markVerses);
+    if (!text) return null;
+    const malayalam = m.translation === 'MAL';
+    return (
+      <Text
+        numberOfLines={3}
+        style={[{ fontSize: listFont, lineHeight: Math.round(listFont * translationInfo(m.translation).lineHeight), color: theme.text, fontFamily: scriptureFont(malayalam, settings.serif) ?? theme.font }]}
+      >
+        <Text style={{ backgroundColor: color }}>{text}</Text>
+      </Text>
+    );
+  };
   const empty = sections.length === 0;
 
   return (
@@ -120,12 +181,14 @@ export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
                   <Text style={[styles.ref, { color: theme.accent }]}>
                     {color ? <Text style={{ backgroundColor: color }}>  </Text> : null}
                     {color ? ' ' : ''}
-                    {formatRef(books, item.ref, settings.translation)}
+                    {item.mark ? markRef(item.mark) : formatRef(books, item.ref, settings.translation)}
                   </Text>
                   <IconButton name="delete" onPress={() => remove(item)} accessibilityLabel={t('remove')} size={22} style={styles.remove} />
                 </View>
                 {item.note ? <Text style={[styles.note, { color: theme.text }]}>{item.note}</Text> : null}
-                {verse ? (
+                {item.mark ? (
+                  markText(item.mark, color)
+                ) : verse ? (
                   <VerseText verse={verse} fontSize={listFont} onWord={onWord} underline={false} showNumber={false} numberOfLines={3} />
                 ) : null}
               </Pressable>

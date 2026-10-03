@@ -17,6 +17,9 @@ import { isMalayalam, scriptureFont } from '../fonts';
 import { shortBookName } from '../shortNames';
 import { useT } from '../i18n';
 import { InterlinearVerse } from '../components/InterlinearVerse';
+import { MarkableVerse } from '../components/MarkableVerse';
+import type { WordSlot } from '../components/MarkableVerse';
+import { addMark, comparePoints, eraseMarks, markRanges } from '../marks';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
 import { noteLetter, VerseText } from '../components/VerseText';
 import { getChapter, getInterlinear, getNotes, mapRef } from '../queries';
@@ -28,7 +31,7 @@ import type { Position } from '../place';
 import { MAX_CONTENT_WIDTH, bookName, flattenVerse, formatRef, parseSegments, shareText } from '../text';
 import { useTheme } from '../theme';
 import { HIGHLIGHT_COLORS, translationInfo } from '../types';
-import type { Book, HighlightColor, Note, OriginalWord, Ref, TranslationId, VerseRow, WordPick } from '../types';
+import type { Book, HighlightColor, Note, OriginalWord, Ref, TextPoint, TranslationId, VerseRow, WordPick } from '../types';
 
 // Width at each screen edge where a horizontal swipe belongs to the system back gesture.
 const EDGE = 32;
@@ -120,6 +123,45 @@ function neighbour(books: Book[], book: number, chapter: number, delta: 1 | -1):
   return { book: other.id, chapter: delta === 1 ? 1 : other.chapters };
 }
 
+/** A word in marker mode as measured on screen, in window coordinates at the time of measuring. */
+interface WordBox {
+  verse: number;
+  start: number;
+  end: number;
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
+/** The word under a point, or the one nearest to it (a finger between words or past a line's end). */
+function nearestWord(boxes: WordBox[], x: number, y: number): WordBox | null {
+  let best: WordBox | null = null;
+  let bestScore = Infinity;
+  for (const b of boxes) {
+    const dy = Math.max(0, b.top - y, y - b.bottom);
+    const dx = Math.max(0, b.left - x, x - b.right);
+    const score = dy * 1000 + dx;
+    if (score < bestScore) {
+      best = b;
+      bestScore = score;
+    }
+  }
+  return best;
+}
+
+/** The stretch from one word to another, whichever comes first. */
+function spanOf(a: WordBox, b: WordBox): { from: TextPoint; to: TextPoint } {
+  const [first, last] = a.verse < b.verse || (a.verse === b.verse && a.start <= b.start) ? [a, b] : [b, a];
+  return { from: { verse: first.verse, offset: first.start }, to: { verse: last.verse, offset: last.end } };
+}
+
+// The colour marker mode starts with: the one used last.
+let lastMarkColor: HighlightColor = 'yellow';
+
+// Height of the band at the top and bottom of the text where a marking finger scrolls it.
+const SCROLL_BAND = 56;
+
 function KeepAwake() {
   useKeepAwake();
   return null;
@@ -144,6 +186,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
     bookmarks,
     highlights,
     notes: userNotes,
+    marks,
     layout,
     keepAwake,
   } = settings;
@@ -158,8 +201,15 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
   const mainPosition = useMemo(() => ({ book: mainBook, chapter: mainChapter }), [mainBook, mainChapter]);
   const position: Position = ownPosition ?? mainPosition;
   const pushed = ownPosition !== null;
-  // Paragraph layout cannot hold the interlinear cells, so the interlinear view uses one verse per line.
-  const paragraphs = layout === 'paragraphs' && !interlinear;
+  // Marker mode: the colour a finger marks words with, or the eraser; null while reading.
+  const [markTool, setMarkTool] = useState<HighlightColor | 'erase' | null>(null);
+  const marking = markTool !== null;
+  // The words being marked while a finger is down, and whether one is (the list then holds still).
+  const [selection, setSelection] = useState<{ from: TextPoint; to: TextPoint } | null>(null);
+  const [dragging, setDragging] = useState(false);
+  // Paragraph layout cannot hold the interlinear cells or the words of marker mode, so those
+  // use one verse per line.
+  const paragraphs = layout === 'paragraphs' && !interlinear && !marking;
   const [items, setItems] = useState<Item[] | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -287,28 +337,33 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
     };
   }, [items]);
 
-  // Keep the place when the Hebrew or Greek words are switched on or off. The rows change
-  // height once the words arrive, and in paragraph layout the list is rebuilt verse by
-  // verse, so the list is scrolled back to the verse that was at the top once the new rows
-  // are in (not before: the old list or missing words would put it in the wrong place).
-  const restoreVerse = useRef<number | null>(null);
-  const lastInterlinear = useRef(interlinear);
-  if (lastInterlinear.current !== interlinear) {
-    lastInterlinear.current = interlinear;
+  // Keep the place when the Hebrew or Greek words or marker mode are switched on or off.
+  // The rows change height once the words arrive, and in paragraph layout the list is
+  // rebuilt verse by verse, so the list is scrolled back to the verse that was at the top
+  // once the new rows are in (not before: the old list or missing words would put it in
+  // the wrong place). Marker mode opened from a verse's sheet brings that verse back instead.
+  const restoreVerse = useRef<{ verse: number; viewPosition: number } | null>(null);
+  const markFrom = useRef<number | null>(null);
+  const lastView = useRef({ interlinear, marking });
+  if (lastView.current.interlinear !== interlinear || lastView.current.marking !== marking) {
+    lastView.current = { interlinear, marking };
     const seen = firstVisible.current;
-    restoreVerse.current = seen && seen.key === chapterKey ? seen.verse : null;
+    restoreVerse.current =
+      markFrom.current !== null ? { verse: markFrom.current, viewPosition: 0.15 } : seen && seen.key === chapterKey ? { verse: seen.verse, viewPosition: 0 } : null;
+    markFrom.current = null;
   }
   useEffect(() => {
-    const verse = restoreVerse.current;
-    if (verse === null || !items) return;
-    if (interlinear && !originalWords) return;
+    const target = restoreVerse.current;
+    if (target === null || !items) return;
+    if (interlinear && !marking && !originalWords) return;
     if (paragraphs !== items.some((it) => it.kind === 'para')) return;
     restoreVerse.current = null;
+    const { verse, viewPosition } = target;
     const index = items.findIndex((it) => (it.kind === 'verse' && it.verse.verse === verse) || (it.kind === 'para' && it.verses.some((v) => v.verse === verse)));
     if (index < 0) return;
-    pendingScroll.current = { index, viewPosition: 0 };
-    setTimeout(() => listRef.current?.scrollToIndex({ index, viewPosition: 0, animated: false }), 80);
-  }, [items, originalWords, interlinear, paragraphs]);
+    pendingScroll.current = { index, viewPosition };
+    setTimeout(() => listRef.current?.scrollToIndex({ index, viewPosition, animated: false }), 80);
+  }, [items, originalWords, interlinear, marking, paragraphs]);
 
   // Remember the first verse on screen, so the main reader reopens there.
   const placeRef = useRef({ pushed, chapterKey, position });
@@ -422,7 +477,209 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [t],
   );
-  const gestures = useMemo(() => Gesture.Simultaneous(swipe, pinch), [swipe, pinch]);
+
+  // The marked parts of each verse on screen, kept per verse so a verse redraws only when its own marks change.
+  const verseMarks = useMemo(() => {
+    const out = new Map<number, [number, number, HighlightColor][]>();
+    if (!items || marks.length === 0) return out;
+    for (const it of items) {
+      for (const v of it.kind === 'verse' ? [it.verse] : it.kind === 'para' ? it.verses : []) {
+        const ranges = markRanges(marks, translation, v.book, v.chapter, v.verse, v.text.length);
+        if (ranges.length > 0) out.set(v.verse, ranges);
+      }
+    }
+    return out;
+  }, [items, marks, translation]);
+
+  // Marker mode. Each word is its own view; when a finger has been held still on one, every
+  // word of the chapter is measured once, and the finger is matched against those boxes as
+  // it moves. The list's scroll since then is added in, so near the top or bottom edge the
+  // text scrolls on under the finger without measuring again.
+  const bodyRef = useRef<View>(null);
+  const wordSlots = useRef(new Map<string, WordSlot>());
+  const registerWord = useCallback((key: string, slot: WordSlot | null) => {
+    if (slot) wordSlots.current.set(key, slot);
+    else wordSlots.current.delete(key);
+  }, []);
+  const scrollY = useRef(0);
+  const contentHeight = useRef(0);
+  type DragState = {
+    boxes: WordBox[] | null;
+    body: { x: number; y: number; height: number } | null;
+    scrollAt: number;
+    point: { x: number; y: number };
+    anchor: WordBox | null;
+    current: WordBox | null;
+    ended: boolean;
+  };
+  const drag = useRef<DragState | null>(null);
+  const autoScroll = useRef<ReturnType<typeof setInterval> | null>(null);
+  const markRef = useRef({ markTool, marks, translation, position, update });
+  markRef.current = { markTool, marks, translation, position, update };
+
+  const measureWords = (): Promise<{ boxes: WordBox[]; body: { x: number; y: number; height: number } | null }> => {
+    const { position: at } = markRef.current;
+    const prefix = `${at.book}:${at.chapter}:`;
+    const slots = [...wordSlots.current].filter(([key]) => key.startsWith(prefix)).map(([, slot]) => slot);
+    const boxes: WordBox[] = [];
+    let body: { x: number; y: number; height: number } | null = null;
+    return new Promise((resolve) => {
+      let left = slots.length + 1;
+      // A view that has gone from the screen may never answer; settle with what has.
+      const timer = setTimeout(() => resolve({ boxes, body }), 400);
+      const done = () => {
+        left -= 1;
+        if (left === 0) {
+          clearTimeout(timer);
+          resolve({ boxes, body });
+        }
+      };
+      if (bodyRef.current) {
+        bodyRef.current.measureInWindow((x, y, _w, height) => {
+          body = { x, y, height };
+          done();
+        });
+      } else done();
+      for (const slot of slots) {
+        slot.view.measureInWindow((x, y, w, h) => {
+          if (w > 0 && h > 0) boxes.push({ verse: slot.verse, start: slot.start, end: slot.end, left: x, top: y, right: x + w, bottom: y + h });
+          done();
+        });
+      }
+    });
+  };
+
+  // Match the finger to a word and show the stretch from the first word to it.
+  const followFinger = (state: DragState) => {
+    if (!state.boxes || !state.body) return;
+    const x = state.body.x + state.point.x;
+    const y = state.body.y + state.point.y + (scrollY.current - state.scrollAt);
+    const hit = nearestWord(state.boxes, x, y);
+    if (!hit || hit === state.current) return;
+    if (!state.anchor) state.anchor = hit;
+    state.current = hit;
+    setSelection(spanOf(state.anchor, hit));
+  };
+
+  const stopAutoScroll = () => {
+    if (autoScroll.current) clearInterval(autoScroll.current);
+    autoScroll.current = null;
+  };
+
+  const finishMark = (state: DragState) => {
+    stopAutoScroll();
+    if (drag.current === state) drag.current = null;
+    setSelection(null);
+    setDragging(false);
+    const { markTool: tool, marks: saved, translation: tr, position: at, update: save } = markRef.current;
+    if (!tool || !state.anchor || !state.current) return;
+    const { from, to } = spanOf(state.anchor, state.current);
+    if (tool === 'erase') {
+      const next = eraseMarks(saved, tr, at.book, at.chapter, from, to);
+      if (next.length !== saved.length) save({ marks: next });
+    } else {
+      const now = Date.now();
+      save({ marks: addMark(saved, { id: `${now}`, translation: tr, book: at.book, chapter: at.chapter, from, to, color: tool, added: now }) });
+    }
+    Haptics.selectionAsync().catch(() => undefined);
+  };
+
+  const markHandlers = useRef({
+    start: (_x: number, _y: number) => undefined as void,
+    move: (_x: number, _y: number) => undefined as void,
+    end: () => undefined as void,
+    cancel: () => undefined as void,
+  });
+  markHandlers.current = {
+    start: (x, y) => {
+      if (!markRef.current.markTool) return;
+      const state: DragState = { boxes: null, body: null, scrollAt: scrollY.current, point: { x, y }, anchor: null, current: null, ended: false };
+      drag.current = state;
+      setDragging(true);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
+      measureWords().then(({ boxes, body }) => {
+        if (drag.current !== state) return;
+        state.boxes = boxes;
+        state.body = body;
+        state.scrollAt = scrollY.current;
+        followFinger(state);
+        if (state.ended) finishMark(state);
+      });
+    },
+    move: (x, y) => {
+      const state = drag.current;
+      if (!state) return;
+      state.point = { x, y };
+      followFinger(state);
+      // Near the top or bottom of the text, scroll on while the finger stays there.
+      const height = state.body?.height ?? 0;
+      const speed = height > 0 ? (y < SCROLL_BAND ? -1 : y > height - SCROLL_BAND ? 1 : 0) : 0;
+      if (speed === 0) {
+        stopAutoScroll();
+        return;
+      }
+      if (autoScroll.current) return;
+      autoScroll.current = setInterval(() => {
+        const now = drag.current;
+        if (!now || !now.body) return stopAutoScroll();
+        const dir = now.point.y < SCROLL_BAND ? -1 : now.point.y > now.body.height - SCROLL_BAND ? 1 : 0;
+        const max = Math.max(0, contentHeight.current - now.body.height);
+        const next = Math.min(max, Math.max(0, scrollY.current + dir * 14));
+        if (dir === 0 || next === scrollY.current) return stopAutoScroll();
+        scrollY.current = next;
+        listRef.current?.scrollToOffset({ offset: next, animated: false });
+        followFinger(now);
+      }, 16);
+    },
+    end: () => {
+      const state = drag.current;
+      if (!state) return;
+      if (!state.boxes) state.ended = true;
+      else finishMark(state);
+    },
+    cancel: () => {
+      const state = drag.current;
+      if (!state || state.ended) return;
+      state.anchor = null;
+      finishMark(state);
+    },
+  };
+  useEffect(() => stopAutoScroll, []);
+
+  // Hold a word still, then drag to the last word to mark and let go. A finger that moves
+  // before the hold is a scroll, as usual.
+  const markPan = useMemo(
+    () =>
+      Gesture.Pan()
+        .activateAfterLongPress(300)
+        .maxPointers(1)
+        .runOnJS(true)
+        .onStart((e) => markHandlers.current.start(e.x, e.y))
+        .onUpdate((e) => markHandlers.current.move(e.x, e.y))
+        // A drag cut short (a second finger, a call coming in) marks nothing.
+        .onEnd((_e, success) => (success ? markHandlers.current.end() : markHandlers.current.cancel())),
+    [],
+  );
+
+  const gestures = useMemo(() => (marking ? Gesture.Simultaneous(markPan, pinch) : Gesture.Simultaneous(swipe, pinch)), [marking, markPan, swipe, pinch]);
+
+  const startMarking = (from?: VerseRow) => {
+    setActions(null);
+    if (from) markFrom.current = from.verse;
+    setMarkTool(lastMarkColor);
+  };
+  const chooseTool = (tool: HighlightColor | 'erase') => {
+    if (tool !== 'erase') lastMarkColor = tool;
+    setMarkTool(tool);
+  };
+  const stopMarking = () => {
+    const state = drag.current;
+    if (state) {
+      state.anchor = null;
+      finishMark(state);
+    }
+    setMarkTool(null);
+  };
 
   // Cycle through the translations bundled in this edition, staying on the verse at the
   // top of the screen (which can have another number, or chapter, in the other translation).
@@ -554,6 +811,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                   flash={flash === v.verse}
                   bookmarked={bookmarked.has(bookmarkKey(v))}
                   highlightColor={highlights[bookmarkKey(v)] ? theme.marks[highlights[bookmarkKey(v)]] : undefined}
+                  marks={verseMarks.get(v.verse)}
                   hasNote={bookmarkKey(v) in userNotes}
                   onNotePress={() => openNote(v)}
                   selectionTranslation={translation}
@@ -565,11 +823,33 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
       }
       const v = item.verse;
       const flashing = flash === v.verse;
+      const marked = bookmarked.has(bookmarkKey(v));
+      const mark = highlights[bookmarkKey(v)];
+      if (marking && !v.omitted) {
+        // Only the part of the selection inside this verse, so other verses keep their props.
+        const inVerse =
+          selection && v.verse >= selection.from.verse && v.verse <= selection.to.verse
+            ? ([v.verse === selection.from.verse ? selection.from.offset : 0, v.verse === selection.to.verse ? selection.to.offset : v.text.length] as [number, number])
+            : null;
+        return (
+          <View style={[styles.verse, marked && [styles.verseBookmarked, { borderLeftColor: theme.accent }], mark ? { backgroundColor: theme.marks[mark] } : null]}>
+            <MarkableVerse
+              verse={v}
+              fontSize={fontSize}
+              lineHeight={Math.round(fontSize * translationInfo(translation).lineHeight)}
+              font={scriptFont}
+              theme={theme}
+              marks={verseMarks.get(v.verse) ?? NO_MARKS}
+              selection={inVerse}
+              selectionColor={markTool === 'erase' || !markTool ? theme.border : theme.marks[markTool]}
+              register={registerWord}
+            />
+          </View>
+        );
+      }
       const tapMode = interlinear && interlinearMode === 'tap';
       const showOriginal = interlinear && (interlinearMode === 'all' || expanded.has(v.verse));
       const words = showOriginal ? originalWords?.get(v.verse) : undefined;
-      const marked = bookmarked.has(bookmarkKey(v));
-      const mark = highlights[bookmarkKey(v)];
       return (
         <View
           style={[
@@ -594,6 +874,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
             notes={notes.get(v.verse)}
             onNote={(n) => setNote({ verse: v, note: n })}
             underline={underlineWords}
+            marks={verseMarks.get(v.verse)}
             selectionTranslation={translation}
           />
           {words && words.length > 0 ? (
@@ -610,7 +891,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
       );
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [theme, fontSize, handleWord, underlineWords, flash, interlinear, interlinearMode, expanded, originalWords, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, toggleExpanded, translation, t, scriptFont],
+    [theme, fontSize, handleWord, underlineWords, flash, interlinear, interlinearMode, expanded, originalWords, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, toggleExpanded, translation, t, scriptFont, verseMarks, marking, markTool, selection, registerWord],
   );
 
   const title = useMemo(() => `${bookName(books, position.book, translation)} ${position.chapter}`, [books, position, translation]);
@@ -643,6 +924,11 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
               onPress={toggleTranslation}
               accessibilityLabel={t('switchTranslation')}
             />
+            <HeaderIconButton
+              icon="ink_highlighter"
+              onPress={marking ? stopMarking : () => startMarking()}
+              accessibilityLabel={marking ? t('markDone') : t('markText')}
+            />
             <HeaderIconButton icon="search" onPress={onOpenSearch} accessibilityLabel={t('search')} />
             <HeaderIconButton icon="settings" onPress={onOpenSettings} accessibilityLabel={t('settings')} />
           </>
@@ -650,7 +936,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
       />
       {keepAwake ? <KeepAwake /> : null}
       <GestureDetector gesture={gestures}>
-        <View style={styles.body}>
+        <View style={styles.body} ref={bodyRef} collapsable={false}>
       {loadFailed ? (
         <View style={styles.failed}>
           <Text style={[styles.failedText, { color: theme.muted }]}>{t('loadFailed')}</Text>
@@ -667,6 +953,14 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
           keyExtractor={(it) => it.key}
           renderItem={renderItem}
           contentContainerStyle={styles.list}
+          scrollEnabled={!dragging}
+          onScroll={(e) => {
+            scrollY.current = e.nativeEvent.contentOffset.y;
+          }}
+          scrollEventThrottle={16}
+          onContentSizeChange={(_w, h) => {
+            contentHeight.current = h;
+          }}
           initialNumToRender={20}
           viewabilityConfig={viewability}
           onViewableItemsChanged={onViewableItemsChanged}
@@ -680,7 +974,9 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                   </Pressable>
                 </View>
               )}
-              {interlinear && interlinearMode === 'tap' ? (
+              {marking ? (
+                <Text style={[styles.modeHint, { color: theme.muted }]}>{markTool === 'erase' ? t('eraseHint') : t('markHint')}</Text>
+              ) : interlinear && interlinearMode === 'tap' ? (
                 <Text style={[styles.modeHint, { color: theme.muted }]}>{t('tapVerseNumber', { lang: book?.testament === 'OT' ? t('hebrew') : t('greek') })}</Text>
               ) : null}
             </>
@@ -698,6 +994,46 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
       )}
         </View>
       </GestureDetector>
+      {marking ? (
+        <View style={[styles.footer, { paddingBottom: insets.bottom + 8, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
+          <View style={styles.markTools}>
+            {HIGHLIGHT_COLORS.map((c) => (
+              <Pressable
+                key={c}
+                onPress={() => chooseTool(c)}
+                accessibilityRole="button"
+                accessibilityLabel={`${t('highlight')} ${c}`}
+                accessibilityState={{ selected: markTool === c }}
+                hitSlop={4}
+                style={[
+                  styles.markSwatch,
+                  { backgroundColor: theme.marks[c], borderColor: markTool === c ? theme.accent : theme.dark ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.12)' },
+                  markTool === c && styles.markSwatchChosen,
+                ]}
+              >
+                {markTool === c ? <Icon name="check" size={18} color={theme.text} /> : null}
+              </Pressable>
+            ))}
+            <Pressable
+              onPress={() => chooseTool('erase')}
+              accessibilityRole="button"
+              accessibilityLabel={t('eraser')}
+              accessibilityState={{ selected: markTool === 'erase' }}
+              hitSlop={4}
+              style={[
+                styles.markSwatch,
+                { borderColor: markTool === 'erase' ? theme.accent : theme.border, backgroundColor: markTool === 'erase' ? theme.accentSoft : 'transparent' },
+                markTool === 'erase' && styles.markSwatchChosen,
+              ]}
+            >
+              <Icon name="ink_eraser" size={20} color={markTool === 'erase' ? theme.accent : theme.muted} />
+            </Pressable>
+          </View>
+          <Pressable onPress={stopMarking} accessibilityRole="button" style={({ pressed }) => [styles.markDone, { backgroundColor: theme.accent, opacity: pressed ? 0.7 : 1 }]}>
+            <Text style={[styles.markDoneText, { color: theme.onAccent }]}>{t('markDone')}</Text>
+          </Pressable>
+        </View>
+      ) : (
       <View style={[styles.footer, { paddingBottom: insets.bottom + 8, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
         <NavButton label={t('previous')} onPress={() => go(-1)} disabled={atStart} />
         <Pressable
@@ -717,6 +1053,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         </Pressable>
         <NavButton label={t('next')} onPress={() => go(1)} disabled={atEnd} />
       </View>
+      )}
 
       {toast ? (
         <View style={[styles.toast, { backgroundColor: theme.text, bottom: insets.bottom + 70 }]} pointerEvents="none">
@@ -786,6 +1123,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
               </Pressable>
             </View>
             <View style={[styles.actionsDivider, { backgroundColor: theme.border }]} />
+            <SheetAction icon="ink_highlighter" label={t('markText')} detail={t('markTextDetail')} onPress={() => startMarking(actions)} />
             <SheetAction
               icon="compare_arrows"
               label={t('compare')}
@@ -906,6 +1244,8 @@ function ReaderTitle({ name, short, chapter, malayalam, onPress, accessibilityLa
 
 const ARROW_WIDTH = 28;
 
+const NO_MARKS: [number, number, HighlightColor][] = [];
+
 /** One of the four round buttons at the top of the verse sheet: an icon over a short label. */
 function ActionButton({ icon, label, onPress, accessibilityLabel }: { icon: IconName; label: string; onPress: () => void; accessibilityLabel?: string }) {
   const theme = useTheme();
@@ -954,6 +1294,11 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   nav: { fontSize: 16, fontWeight: '600' },
+  markTools: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  markSwatch: { width: 34, height: 34, borderRadius: 17, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  markSwatchChosen: { borderWidth: 2 },
+  markDone: { paddingHorizontal: 18, paddingVertical: 8, borderRadius: 999 },
+  markDoneText: { fontSize: 15, fontWeight: '600' },
   toast: { position: 'absolute', alignSelf: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 },
   toastText: { fontSize: 14, fontWeight: '600' },
   noteText: { fontSize: 16, lineHeight: 23, paddingBottom: 8 },

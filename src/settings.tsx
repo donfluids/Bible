@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { AppState } from 'react-native';
 import Storage from 'expo-sqlite/kv-store';
 import type { Edition, Language } from './edition';
-import type { Bookmark, HighlightColor, TranslationId } from './types';
+import type { Bookmark, HighlightColor, TextMark, TranslationId } from './types';
 
 export type ThemeChoice = 'system' | 'light' | 'sepia' | 'dark';
 export type Layout = 'verses' | 'paragraphs';
@@ -28,6 +28,8 @@ export interface Settings {
   bookmarks: Bookmark[];
   /** Verse key "book:chapter:verse" to highlight colour. */
   highlights: Record<string, HighlightColor>;
+  /** Parts of verses marked in a colour (marker mode in the reader). */
+  marks: TextMark[];
   /** Verse key "book:chapter:verse" to note text. */
   notes: Record<string, string>;
   /** The first-launch tip about tapping words has been dismissed. */
@@ -48,6 +50,7 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
   hideCantillation: false,
   bookmarks: [],
   highlights: {},
+  marks: [],
   notes: {},
   tipSeen: false,
 };

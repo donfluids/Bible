@@ -9,7 +9,7 @@ import { parseSegments } from '../text';
 import { malayalamPattern } from '../malayalamSearch';
 import { useTheme } from '../theme';
 import { translationInfo } from '../types';
-import type { Note, TranslationId, VerseRow, WordPick } from '../types';
+import type { HighlightColor, Note, TranslationId, VerseRow, WordPick } from '../types';
 
 interface Props {
   verse: VerseRow;
@@ -41,6 +41,8 @@ interface Props {
   bookmarked?: boolean;
   /** Background colour of a highlighted verse. */
   highlightColor?: string;
+  /** Marked parts of the verse, as [start, end, colour] by character offset. */
+  marks?: [number, number, HighlightColor][];
   /** The verse has a personal note; tapping the pencil opens it. */
   hasNote?: boolean;
   onNotePress?: () => void;
@@ -90,6 +92,7 @@ export function VerseText({
   flash,
   bookmarked,
   highlightColor,
+  marks,
   hasNote,
   onNotePress,
   selectionTranslation,
@@ -121,25 +124,34 @@ export function VerseText({
     );
   }
 
-  // Split a run of text into plain and highlighted pieces by the match ranges.
+  // Split a run of text into pieces by the search matches (bold on the highlight colour)
+  // and the marked parts (their colour; a later mark shows over an earlier one).
   const highlighted = (text: string, start: number): React.ReactNode => {
-    if (ranges.length === 0) return text;
+    const marked = marks ?? [];
+    if (ranges.length === 0 && marked.length === 0) return text;
     const end = start + text.length;
+    const cuts = new Set([start, end]);
+    for (const [a, b] of [...ranges, ...marked]) {
+      if (a > start && a < end) cuts.add(a);
+      if (b > start && b < end) cuts.add(b);
+    }
+    const points = [...cuts].sort((a, b) => a - b);
     const out: React.ReactNode[] = [];
-    let pos = start;
-    for (const [a, b] of ranges) {
-      if (b <= pos || a >= end) continue;
-      const from = Math.max(a, pos);
-      const to = Math.min(b, end);
-      if (from > pos) out.push(text.slice(pos - start, from - start));
+    for (let i = 0; i + 1 < points.length; i++) {
+      const [from, to] = [points[i], points[i + 1]];
+      const piece = text.slice(from - start, to - start);
+      const match = ranges.some(([a, b]) => a <= from && b >= to);
+      const mark = [...marked].reverse().find(([a, b]) => a <= from && b >= to);
+      if (!match && !mark) {
+        out.push(piece);
+        continue;
+      }
       out.push(
-        <Text key={from} style={[bold, { backgroundColor: theme.highlight }]}>
-          {text.slice(from - start, to - start)}
+        <Text key={from} style={[match && bold, { backgroundColor: mark ? theme.marks[mark[2]] : theme.highlight }]}>
+          {piece}
         </Text>,
       );
-      pos = to;
     }
-    if (pos < end) out.push(text.slice(pos - start));
     return out;
   };
 

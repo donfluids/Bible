@@ -75,6 +75,28 @@ export interface Bookmark extends Ref {
 }
 
 export type HighlightColor = 'yellow' | 'green' | 'blue' | 'pink';
+
+/** A place in a verse's text: the verse and a character offset into it. */
+export interface TextPoint {
+  verse: number;
+  offset: number;
+}
+
+/**
+ * A marked stretch of text, from one word to another, possibly in a later verse of the
+ * same chapter. Offsets belong to one translation's text, so a mark shows only there.
+ */
+export interface TextMark {
+  id: string;
+  translation: TranslationId;
+  book: number;
+  chapter: number;
+  from: TextPoint;
+  /** Exclusive: the end of the last marked word. */
+  to: TextPoint;
+  color: HighlightColor;
+  added: number;
+}
 export const HIGHLIGHT_COLORS: HighlightColor[] = ['yellow', 'green', 'blue', 'pink'];
 
 /** A dictionary entry as listed in search results. */

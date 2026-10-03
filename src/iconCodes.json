@@ -28,5 +28,7 @@
  "text_increase": 57370,
  "text_decrease": 57371,
  "add": 57372,
- "remove": 57373
+ "remove": 57373,
+ "ink_highlighter": 57374,
+ "ink_eraser": 57375
 }
