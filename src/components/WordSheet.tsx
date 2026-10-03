@@ -14,6 +14,7 @@ import { useTheme } from '../theme';
 import type { Theme } from '../theme';
 import { FLAG_LXX, FLAG_NOT_IN_BYZ, FLAG_NOT_IN_NA, FLAG_NOT_IN_TR, FLAG_REPLACES_NA, FLAG_RESTORED, taggedTranslation } from '../types';
 import type { Book, OriginalWord, Ref, RelatedWord, Rendering, StrongsEntry, TranslationId, VerseRow, WordPick } from '../types';
+import { Icon, IconButton } from './Icon';
 import { VerseText } from './VerseText';
 
 interface Props {
@@ -276,18 +277,12 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
             <View style={[styles.grip, { backgroundColor: theme.border }]} />
           </Pressable>
           <View style={styles.headRow}>
-            {onBack ? (
-              <Pressable onPress={onBack} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('previousEntry')} style={styles.iconButton}>
-                <Text style={[styles.back, { color: theme.accent }]}>‹</Text>
-              </Pressable>
-            ) : null}
+            {onBack ? <IconButton name="arrow_back" onPress={onBack} accessibilityLabel={t('previousEntry')} color={theme.text} style={styles.backButton} /> : null}
             <View style={[styles.langChip, { backgroundColor: theme.accentSoft }]}>
               <Text style={[styles.langChipText, { color: theme.accent }]}>{hebrew ? t('hebrew') : t('greek')}</Text>
             </View>
             <View style={styles.spacer} />
-            <Pressable onPress={onClose} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('close')} style={styles.iconButton}>
-              <Text style={[styles.close, { color: theme.muted }]}>✕</Text>
-            </Pressable>
+            <IconButton name="close" onPress={onClose} accessibilityLabel={t('close')} style={styles.closeButton} />
           </View>
         </View>
 
@@ -317,9 +312,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                       <Text numberOfLines={1} style={[styles.tapped, { color: theme.muted, fontFamily: tappedFont, fontWeight: tappedFont ? undefined : '600' }]}>
                         {pick.word}
                       </Text>
-                      <Text style={[styles.arrow, { color: theme.muted }]} accessibilityElementsHidden importantForAccessibility="no">
-                        →
-                      </Text>
+                      <Icon name="arrow_forward" size={20} color={theme.muted} />
                     </>
                   ) : null}
                   <Text style={[styles.lemma, { color: theme.text, fontFamily: originalFont }]}>{entry.lemma}</Text>
@@ -368,6 +361,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                   <Section label={t('examples')} theme={theme}>
                     {data.examples.map((v) => (
                       <Pressable
+                        android_ripple={{ color: theme.accentSoft }}
                         key={`${v.book}:${v.chapter}:${v.verse}`}
                         onPress={() => onOpenRef(v)}
                         accessibilityRole="button"
@@ -388,6 +382,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                     <View style={styles.chips}>
                       {data.related.map((r) => (
                         <Pressable
+                          android_ripple={{ color: theme.accentSoft }}
                           key={r.id}
                           onPress={() => onPick({ strongs: r.id })}
                           accessibilityRole="button"
@@ -443,11 +438,13 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
             ]}
           >
             {!expanded ? (
-              <Pressable onPress={() => snap('full')} accessibilityRole="button" style={styles.more}>
-                <Text style={[styles.moreText, { color: theme.accent }]}>⌃  {t('moreAboutWord')}</Text>
+              <Pressable onPress={() => snap('full')} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.more}>
+                <Icon name="expand_less" size={22} color={theme.accent} />
+                <Text style={[styles.moreText, { color: theme.accent }]}>{t('moreAboutWord')}</Text>
               </Pressable>
             ) : null}
             <Pressable
+              android_ripple={{ color: theme.accentSoft }}
               onPress={() => onShowOccurrences(entry.id)}
               disabled={listCount === 0}
               style={({ pressed }) => [styles.cta, { backgroundColor: theme.accent, opacity: pressed || listCount === 0 ? 0.6 : 1 }]}
@@ -516,6 +513,7 @@ function Renderings({ label, list, theme, onPress }: { label: string; list: Rend
           );
           return onPress ? (
             <Pressable
+              android_ripple={{ color: theme.accentSoft }}
               key={r.word}
               onPress={() => onPress(r.word)}
               accessibilityRole="button"
@@ -578,9 +576,8 @@ const styles = StyleSheet.create({
   gripHit: { alignSelf: 'center', paddingVertical: 8, paddingHorizontal: 24 },
   grip: { width: 40, height: 5, borderRadius: 3 },
   headRow: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44 },
-  iconButton: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
-  back: { fontSize: 30, lineHeight: 34 },
-  close: { fontSize: 18 },
+  backButton: { marginLeft: -12 },
+  closeButton: { marginRight: -12 },
   langChip: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999 },
   langChipText: { fontSize: 13, fontWeight: '600' },
   spacer: { flex: 1 },
@@ -596,7 +593,6 @@ const styles = StyleSheet.create({
   dictionaryLabel: { marginTop: 4 },
   wordRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', columnGap: 12 },
   tapped: { fontSize: 20, flexShrink: 1, maxWidth: '45%' },
-  arrow: { fontSize: 20 },
   lemma: { fontSize: 42, lineHeight: 58 },
   meaning: { fontSize: 26, fontWeight: '700', marginTop: 2 },
   meaningMalayalam: { fontWeight: undefined, lineHeight: 40 },
@@ -632,7 +628,7 @@ const styles = StyleSheet.create({
     paddingTop: 6,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
-  more: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  more: { minHeight: 48, flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'center' },
   moreText: { fontSize: 15, fontWeight: '600' },
   cta: { minHeight: 56, paddingVertical: 8, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
   ctaText: { fontSize: 16, fontWeight: '600' },

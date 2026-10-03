@@ -25,6 +25,7 @@ export function InterlinearVerse({ words, hebrew, fontSize, onWord, showTranslit
         const marked = (w.flags & (FLAG_NOT_IN_NA | FLAG_LXX | FLAG_RESTORED)) !== 0;
         return (
           <Pressable
+            android_ripple={{ color: theme.accentSoft }}
             key={i}
             onPress={() => onWord({ strongs: w.strongs, original: w })}
             disabled={!w.strongs && !w.morph}

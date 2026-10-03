@@ -3,6 +3,8 @@ import { Pressable, SectionList, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
+import { IconButton, Icon } from '../components/Icon';
+import { SectionLabel } from '../components/SectionLabel';
 import { useT } from '../i18n';
 import { VerseText } from '../components/VerseText';
 import { getVerses } from '../queries';
@@ -89,7 +91,13 @@ export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Header title={t('saved')} onBack={onBack} />
       {empty ? (
-        <Text style={[styles.empty, { color: theme.muted }]}>{t('nothingSaved')}</Text>
+        <View style={styles.emptyBox}>
+          <View style={[styles.emptyIcon, { backgroundColor: theme.accentSoft }]}>
+            <Icon name="bookmarks" size={36} color={theme.accent} />
+          </View>
+          <Text style={[styles.emptyTitle, { color: theme.text }]}>{t('nothingSavedTitle')}</Text>
+          <Text style={[styles.empty, { color: theme.muted }]}>{t('nothingSaved')}</Text>
+        </View>
       ) : (
         <SectionList
           sections={sections}
@@ -97,7 +105,7 @@ export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
           contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
           stickySectionHeadersEnabled
           renderSectionHeader={({ section }) => (
-            <Text style={[styles.section, { color: theme.muted, backgroundColor: theme.bg }]}>{section.title.toUpperCase()}</Text>
+            <SectionLabel text={section.title} style={[styles.section, { backgroundColor: theme.bg }]} />
           )}
           renderItem={({ item }) => {
             const verse = verses.get(item.key);
@@ -105,6 +113,7 @@ export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
             return (
               <Pressable
                 onPress={() => onOpenRef(item.ref)}
+                android_ripple={{ color: theme.accentSoft }}
                 style={({ pressed }) => [styles.row, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
               >
                 <View style={styles.refRow}>
@@ -113,9 +122,7 @@ export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
                     {color ? ' ' : ''}
                     {formatRef(books, item.ref, settings.translation)}
                   </Text>
-                  <Pressable onPress={() => remove(item)} hitSlop={10} accessibilityRole="button" accessibilityLabel={t('remove')}>
-                    <Text style={[styles.remove, { color: theme.muted }]}>{t('remove')}</Text>
-                  </Pressable>
+                  <IconButton name="delete" onPress={() => remove(item)} accessibilityLabel={t('remove')} size={22} style={styles.remove} />
                 </View>
                 {item.note ? <Text style={[styles.note, { color: theme.text }]}>{item.note}</Text> : null}
                 {verse ? (
@@ -134,11 +141,14 @@ export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   list: { alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
-  empty: { padding: 24, fontSize: 15, lineHeight: 22, textAlign: 'center' },
-  section: { fontSize: 12, fontWeight: '700', letterSpacing: 0.8, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 },
+  emptyBox: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, paddingBottom: 96 },
+  emptyIcon: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  emptyTitle: { fontSize: 20, fontWeight: '500', marginBottom: 8, textAlign: 'center' },
+  empty: { fontSize: 15, lineHeight: 22, textAlign: 'center', maxWidth: 320 },
+  section: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 },
   row: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
-  refRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  refRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', minHeight: 36 },
   ref: { fontSize: 14, fontWeight: '700' },
-  remove: { fontSize: 13 },
+  remove: { marginRight: -12, marginVertical: -6 },
   note: { fontSize: 15, lineHeight: 21, marginBottom: 6, fontStyle: 'italic' },
 });

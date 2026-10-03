@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
 import { Platform, useColorScheme } from 'react-native';
+import { useEdition } from './edition';
+import type { EditionId } from './edition';
 import { useOptionalSettings } from './settings';
 import type { HighlightColor } from './types';
 
@@ -16,6 +18,8 @@ export interface Theme {
   accent: string;
   /** Text on an accent-coloured fill (buttons, selected pills). */
   onAccent: string;
+  /** Destructive actions and errors. */
+  error: string;
   accentSoft: string;
   linked: string;
   highlight: string;
@@ -40,6 +44,7 @@ const light: Omit<Theme, 'font'> = {
   border: '#E6DFD2',
   accent: '#7A4E1D',
   onAccent: '#FFFFFF',
+  error: '#B3261E',
   accentSoft: '#F1E6D4',
   // Faint, so a chapter of linked words still reads as text; Android draws only solid underlines.
   linked: '#E3D8C6',
@@ -53,10 +58,12 @@ const sepia: Omit<Theme, 'font'> = {
   bg: '#F0E4CC',
   card: '#F7EEDC',
   text: '#3B2A14',
-  muted: '#7D6A4C',
+  // Darker than the page's own brown-grey so small text passes 4.5:1.
+  muted: '#6A5A3F',
   border: '#D9C7A3',
   accent: '#7A4E1D',
   onAccent: '#FFFFFF',
+  error: '#A1281E',
   accentSoft: '#E6D5B3',
   linked: '#D6C5A2',
   highlight: '#F5DC9C',
@@ -74,9 +81,49 @@ const dark: Omit<Theme, 'font'> = {
   accent: '#D9A86C',
   // White on this light tan is 2.2:1; the background colour is 8.6:1.
   onAccent: '#15130F',
+  error: '#F2B8B5',
   accentSoft: '#2C251B',
   linked: '#3B342A',
   highlight: '#3A3220',
+};
+
+/**
+ * The Malayalam app is green, like its icon (ink #1F4D2E on #EEF3E6); the English app is
+ * brown. Same structure, different hue; every pair is checked for 4.5:1 or better.
+ */
+const greenLight: Omit<Theme, 'font'> = {
+  ...light,
+  bg: '#F7F9F2',
+  text: '#1A1F18',
+  muted: '#5C6758',
+  border: '#DCE3D2',
+  accent: '#2B5E3A',
+  accentSoft: '#E2ECDA',
+  linked: '#D3DEC8',
+};
+
+const greenSepia: Omit<Theme, 'font'> = {
+  ...sepia,
+  accent: '#35603A',
+  accentSoft: '#DCDDB9',
+};
+
+const greenDark: Omit<Theme, 'font'> = {
+  ...dark,
+  bg: '#111511',
+  card: '#1A201A',
+  text: '#E4EBE0',
+  muted: '#9AA596',
+  border: '#2C352B',
+  accent: '#8CC79A',
+  onAccent: '#111511',
+  accentSoft: '#1F2C21',
+  linked: '#2E3A2D',
+};
+
+const PALETTES: Record<EditionId, Record<ThemeName, Omit<Theme, 'font'>>> = {
+  en: { light, sepia, dark },
+  ml: { light: greenLight, sepia: greenSepia, dark: greenDark },
 };
 
 /** A serif face available on every phone without bundling a font file. */
@@ -85,8 +132,9 @@ export const SERIF_FONT = Platform.select({ ios: 'Georgia', android: 'serif', de
 export function useTheme(): Theme {
   const system = useColorScheme();
   const settings = useOptionalSettings();
+  const palette = PALETTES[useEdition().id];
   const choice = settings?.theme ?? 'system';
-  const base = choice === 'system' ? (system === 'dark' ? dark : light) : choice === 'sepia' ? sepia : choice === 'dark' ? dark : light;
+  const base = choice === 'system' ? (system === 'dark' ? palette.dark : palette.light) : palette[choice === 'sepia' ? 'sepia' : choice === 'dark' ? 'dark' : 'light'];
   const serif = settings?.serif ?? false;
   // The same object while nothing changes, so memoised lists do not redraw on unrelated settings.
   return useMemo(() => ({ ...base, font: serif ? SERIF_FONT : undefined }), [base, serif]);

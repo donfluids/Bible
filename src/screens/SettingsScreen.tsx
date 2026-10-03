@@ -3,6 +3,8 @@ import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-nat
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
+import { Icon, IconButton } from '../components/Icon';
+import { SectionLabel } from '../components/SectionLabel';
 import { useEdition } from '../edition';
 import type { Language } from '../edition';
 import { translationName, useT } from '../i18n';
@@ -46,61 +48,55 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
         <Label text={t('appearance')} />
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           {EDITION.languages.length > 1 ? (
-            <View style={styles.row}>
-              <Text style={[styles.rowTitle, { color: theme.text, width: 90 }]}>{t('language')}</Text>
-              <View style={styles.pills}>
-                {(
-                  [
-                    ['ml', 'മലയാളം'],
-                    ['en', 'English'],
-                  ] as [Language, string][]
-                ).map(([value, label]) => (
-                  <Pill key={value} label={label} active={settings.language === value} onPress={() => update({ language: value })} />
-                ))}
-              </View>
+            <View style={styles.block}>
+              <Text style={[styles.rowTitle, { color: theme.text }]}>{t('language')}</Text>
+              <Segmented
+                options={[
+                  ['ml', 'മലയാളം'],
+                  ['en', 'English'],
+                ] as [Language, string][]}
+                value={settings.language}
+                onChange={(language) => update({ language })}
+              />
             </View>
           ) : null}
-          <View style={[styles.row, EDITION.languages.length > 1 && divider]}>
-            <Text style={[styles.rowTitle, { color: theme.text, width: 90 }]}>{t('theme')}</Text>
-            <View style={styles.pills}>
-              {(
-                [
-                  ['system', t('themeAuto')],
-                  ['light', t('themeLight')],
-                  ['sepia', t('themeSepia')],
-                  ['dark', t('themeDark')],
-                ] as [ThemeChoice, string][]
-              ).map(([value, label]) => (
-                <Pill key={value} label={label} active={settings.theme === value} onPress={() => update({ theme: value })} />
-              ))}
-            </View>
+          <View style={[styles.block, EDITION.languages.length > 1 && divider]}>
+            <Text style={[styles.rowTitle, { color: theme.text }]}>{t('theme')}</Text>
+            <Segmented
+              options={[
+                ['system', t('themeAuto')],
+                ['light', t('themeLight')],
+                ['sepia', t('themeSepia')],
+                ['dark', t('themeDark')],
+              ] as [ThemeChoice, string][]}
+              value={settings.theme}
+              onChange={(value) => update({ theme: value })}
+            />
           </View>
-          <View style={[styles.row, divider]}>
-            <Text style={[styles.rowTitle, { color: theme.text, width: 90 }]}>{t('layout')}</Text>
-            <View style={styles.pills}>
-              {(
-                [
-                  ['verses', t('layoutVerses')],
-                  ['paragraphs', t('layoutParagraphs')],
-                ] as [Layout, string][]
-              ).map(([value, label]) => (
-                <Pill key={value} label={label} active={settings.layout === value} onPress={() => update({ layout: value })} />
-              ))}
-            </View>
+          <View style={[styles.block, divider]}>
+            <Text style={[styles.rowTitle, { color: theme.text }]}>{t('layout')}</Text>
+            <Segmented
+              options={[
+                ['verses', t('layoutVerses')],
+                ['paragraphs', t('layoutParagraphs')],
+              ] as [Layout, string][]}
+              value={settings.layout}
+              onChange={(layout) => update({ layout })}
+            />
           </View>
           <View style={[styles.row, divider]}>
             <View style={{ flex: 1 }}>
               <Text style={[styles.rowTitle, { color: theme.text }]}>{t('serif')}</Text>
               <Text style={[styles.rowSub, { color: theme.muted }]}>{t('serifDetail')}</Text>
             </View>
-            <Switch value={settings.serif} onValueChange={(v) => update({ serif: v })} trackColor={{ true: theme.accent }} />
+            <AppSwitch value={settings.serif} onValueChange={(v) => update({ serif: v })} />
           </View>
           <View style={[styles.row, divider]}>
             <View style={{ flex: 1 }}>
               <Text style={[styles.rowTitle, { color: theme.text }]}>{t('keepAwake')}</Text>
               <Text style={[styles.rowSub, { color: theme.muted }]}>{t('keepAwakeDetail')}</Text>
             </View>
-            <Switch value={settings.keepAwake} onValueChange={(v) => update({ keepAwake: v })} trackColor={{ true: theme.accent }} />
+            <AppSwitch value={settings.keepAwake} onValueChange={(v) => update({ keepAwake: v })} />
           </View>
         </View>
 
@@ -109,12 +105,12 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
           {EDITION.translations.map((id, i) => {
             const active = settings.translation === id;
             return (
-              <Pressable key={id} onPress={() => update({ translation: id })} style={[styles.row, i > 0 && divider]}>
+              <Pressable key={id} onPress={() => update({ translation: id })} android_ripple={{ color: theme.accentSoft }} accessibilityRole="radio" accessibilityState={{ checked: active }} style={[styles.row, i > 0 && divider]}>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.rowTitle, { color: theme.text }]}>{translationName(settings.language, id)}</Text>
                   <Text style={[styles.rowSub, { color: theme.muted }]}>{id}</Text>
                 </View>
-                <Text style={[styles.check, { color: theme.accent }]}>{active ? '✓' : ''}</Text>
+                <View style={styles.check}>{active ? <Icon name="check" color={theme.accent} /> : null}</View>
               </Pressable>
             );
           })}
@@ -122,9 +118,9 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
 
         <Label text={t('textSize')} />
         <View style={[styles.card, styles.row, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <SizeButton label="A" small onPress={() => setSize(-1)} disabled={sizeIndex <= 0} />
+          <IconButton name="text_decrease" onPress={() => setSize(-1)} disabled={sizeIndex <= 0} accessibilityLabel={t('smallerText')} color={theme.accent} />
           <Text style={[styles.preview, { color: theme.text, fontSize: settings.fontSize, fontFamily: theme.font }]}>{t('previewText')}</Text>
-          <SizeButton label="A" onPress={() => setSize(1)} disabled={sizeIndex >= FONT_SIZES.length - 1} />
+          <IconButton name="text_increase" onPress={() => setSize(1)} disabled={sizeIndex >= FONT_SIZES.length - 1} accessibilityLabel={t('largerText')} color={theme.accent} />
         </View>
         <Text style={[styles.rowSub, styles.hint, { color: theme.muted }]}>{t('textSizeHint')}</Text>
 
@@ -135,7 +131,7 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
               <Text style={[styles.rowTitle, { color: theme.text }]}>{t('showInterlinear')}</Text>
               <Text style={[styles.rowSub, { color: theme.muted }]}>{t('showInterlinearDetail')}</Text>
             </View>
-            <Switch value={settings.interlinear} onValueChange={(v) => update({ interlinear: v })} trackColor={{ true: theme.accent }} />
+            <AppSwitch value={settings.interlinear} onValueChange={(v) => update({ interlinear: v })} />
           </View>
           {(
             [
@@ -143,12 +139,12 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
               ['tap', t('tappedVerses'), t('tappedVersesDetail')],
             ] as const
           ).map(([mode, title, sub]) => (
-            <Pressable key={mode} onPress={() => update({ interlinearMode: mode })} style={[styles.row, divider]}>
+            <Pressable key={mode} onPress={() => update({ interlinearMode: mode })} android_ripple={{ color: theme.accentSoft }} accessibilityRole="radio" accessibilityState={{ checked: settings.interlinearMode === mode }} style={[styles.row, divider]}>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.rowTitle, { color: theme.text }]}>{title}</Text>
                 <Text style={[styles.rowSub, { color: theme.muted }]}>{sub}</Text>
               </View>
-              <Text style={[styles.check, { color: theme.accent }]}>{settings.interlinearMode === mode ? '✓' : ''}</Text>
+              <View style={styles.check}>{settings.interlinearMode === mode ? <Icon name="check" color={theme.accent} /> : null}</View>
             </Pressable>
           ))}
           <View style={[styles.row, divider]}>
@@ -156,14 +152,14 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
               <Text style={[styles.rowTitle, { color: theme.text }]}>{t('transliteration')}</Text>
               <Text style={[styles.rowSub, { color: theme.muted }]}>{t('transliterationDetail')}</Text>
             </View>
-            <Switch value={settings.showTranslit} onValueChange={(v) => update({ showTranslit: v })} trackColor={{ true: theme.accent }} />
+            <AppSwitch value={settings.showTranslit} onValueChange={(v) => update({ showTranslit: v })} />
           </View>
           <View style={[styles.row, divider]}>
             <View style={{ flex: 1 }}>
               <Text style={[styles.rowTitle, { color: theme.text }]}>{t('hideCantillation')}</Text>
               <Text style={[styles.rowSub, { color: theme.muted }]}>{t('hideCantillationDetail')}</Text>
             </View>
-            <Switch value={settings.hideCantillation} onValueChange={(v) => update({ hideCantillation: v })} trackColor={{ true: theme.accent }} />
+            <AppSwitch value={settings.hideCantillation} onValueChange={(v) => update({ hideCantillation: v })} />
           </View>
         </View>
 
@@ -173,7 +169,7 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
             <Text style={[styles.rowTitle, { color: theme.text }]}>{t('underline')}</Text>
             <Text style={[styles.rowSub, { color: theme.muted }]}>{t('underlineDetail')}</Text>
           </View>
-          <Switch value={settings.underlineWords} onValueChange={(v) => update({ underlineWords: v })} trackColor={{ true: theme.accent }} />
+          <AppSwitch value={settings.underlineWords} onValueChange={(v) => update({ underlineWords: v })} />
         </View>
 
         <Label text={t('aboutTexts')} />
@@ -183,8 +179,9 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
           <Text style={[styles.about, { color: theme.text, marginTop: 10 }]}>{t('aboutInterlinear')}</Text>
           {EDITION.translations.includes('WEB') ? <Text style={[styles.about, { color: theme.muted, marginTop: 10 }]}>{t('aboutWeb')}</Text> : null}
           {meta.built ? <Text style={[styles.rowSub, { color: theme.muted, marginTop: 10 }]}>{t('databaseBuilt', { date: meta.built })}</Text> : null}
-          <Pressable onPress={onOpenLicences} accessibilityRole="button" hitSlop={6} style={styles.licencesRow}>
-            <Text style={[styles.rowTitle, { color: theme.accent }]}>{t('sourcesLicences')} ›</Text>
+          <Pressable onPress={onOpenLicences} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>
+            <Text style={[styles.rowTitle, { color: theme.accent, flex: 1 }]}>{t('sourcesLicences')}</Text>
+            <Icon name="chevron_right" color={theme.accent} />
           </Pressable>
         </View>
       </ScrollView>
@@ -192,48 +189,69 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
   );
 }
 
-function Pill({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+/**
+ * Connected buttons for picking one of a few options. The selected one is filled, and
+ * ticked when there is room (three options or fewer; four Malayalam words leave none).
+ */
+function Segmented<T extends string>({ options, value, onChange }: { options: [T, string][]; value: T; onChange: (value: T) => void }) {
   const theme = useTheme();
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityState={{ selected: active }}
-      style={[styles.pill, { borderColor: active ? theme.accent : theme.border, backgroundColor: active ? theme.accent : 'transparent' }]}
-    >
-      <Text style={[styles.pillText, { color: active ? theme.onAccent : theme.text }]}>{label}</Text>
-    </Pressable>
+    <View style={[styles.segmented, { borderColor: theme.muted }]} accessibilityRole="radiogroup">
+      {options.map(([option, label], i) => {
+        const active = option === value;
+        return (
+          <Pressable
+            key={option}
+            onPress={() => onChange(option)}
+            accessibilityRole="radio"
+            accessibilityState={{ checked: active }}
+            android_ripple={{ color: theme.accentSoft }}
+            style={[styles.segment, i > 0 && { borderLeftWidth: 1, borderLeftColor: theme.muted }, active && { backgroundColor: theme.accentSoft }]}
+          >
+            {active && options.length <= 3 ? <Icon name="check" size={18} color={theme.accent} /> : null}
+            <Text numberOfLines={1} style={[styles.segmentText, { color: active ? theme.accent : theme.text }]}>
+              {label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+/** A switch whose track shows when off as well as on. */
+function AppSwitch({ value, onValueChange }: { value: boolean; onValueChange: (value: boolean) => void }) {
+  const theme = useTheme();
+  return (
+    <Switch
+      value={value}
+      onValueChange={onValueChange}
+      trackColor={{ false: theme.dark ? '#4A4238' : '#CFC6B8', true: theme.accent }}
+      thumbColor={value ? theme.onAccent : theme.dark ? theme.muted : '#FFFFFF'}
+      ios_backgroundColor={theme.dark ? '#4A4238' : '#CFC6B8'}
+    />
   );
 }
 
 function Label({ text }: { text: string }) {
-  const theme = useTheme();
-  return <Text style={[styles.label, { color: theme.muted }]}>{text.toUpperCase()}</Text>;
-}
-
-function SizeButton({ label, small, onPress, disabled }: { label: string; small?: boolean; onPress: () => void; disabled?: boolean }) {
-  const theme = useTheme();
-  return (
-    <Pressable onPress={onPress} disabled={disabled} hitSlop={10} style={({ pressed }) => ({ opacity: disabled ? 0.3 : pressed ? 0.6 : 1 })}>
-      <Text style={{ color: theme.accent, fontSize: small ? 16 : 26, fontWeight: '700', width: 36, textAlign: 'center' }}>{label}</Text>
-    </Pressable>
-  );
+  return <SectionLabel text={text} style={styles.label} />;
 }
 
 const styles = StyleSheet.create({
   hint: { marginTop: 6, marginHorizontal: 4 },
-  licencesRow: { marginTop: 12, minHeight: 44, justifyContent: 'center' },
+  licencesRow: { marginTop: 12, minHeight: 48, flexDirection: 'row', alignItems: 'center' },
   screen: { flex: 1 },
   content: { padding: 16, paddingBottom: 48, alignSelf: 'center', width: '100%', maxWidth: 720 },
-  label: { fontSize: 12, fontWeight: '700', letterSpacing: 0.8, marginTop: 18, marginBottom: 8 },
-  card: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
+  label: { marginTop: 22, marginBottom: 8, marginHorizontal: 4 },
+  block: { paddingHorizontal: 14, paddingVertical: 12 },
+  segmented: { flexDirection: 'row', borderWidth: 1, borderRadius: 20, overflow: 'hidden', marginTop: 10 },
+  segment: { flex: 1, minHeight: 40, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingHorizontal: 6 },
+  segmentText: { fontSize: 14, fontWeight: '500', flexShrink: 1 },
+  card: { borderRadius: 16, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12 },
   rowTitle: { fontSize: 16, lineHeight: 24 },
   rowSub: { fontSize: 13, lineHeight: 19, marginTop: 2 },
-  check: { fontSize: 18, fontWeight: '700', width: 24, textAlign: 'right' },
+  check: { width: 24, alignItems: 'flex-end' },
   preview: { flex: 1, textAlign: 'center' },
-  pills: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 6, justifyContent: 'flex-end' },
-  pill: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, borderWidth: 1 },
-  pillText: { fontSize: 13, fontWeight: '600' },
   about: { fontSize: 14, lineHeight: 21 },
 });

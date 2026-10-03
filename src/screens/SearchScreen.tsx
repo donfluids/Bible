@@ -3,6 +3,8 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, Vi
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
+import { Icon, IconButton } from '../components/Icon';
+import { SectionLabel } from '../components/SectionLabel';
 import { useT } from '../i18n';
 import { VerseListItem } from '../components/VerseListItem';
 import { searchLexicon, searchText } from '../queries';
@@ -21,6 +23,10 @@ interface Props {
 
 const LIMIT = 300;
 
+// Shown under an empty search box: a reference, a word and a Strong's number.
+const ENGLISH_EXAMPLES = ['John 3:16', 'Psalm 23', 'love', 'G26'];
+const MALAYALAM_EXAMPLES = ['യോഹന്നാൻ 3:16', 'സങ്കീർത്തനം 23', 'സ്നേഹം', 'H430'];
+
 export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
@@ -30,6 +36,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
   const { settings } = useSettings();
   const { translation } = settings;
   const [query, setQuery] = useState('');
+  const inputRef = useRef<TextInput>(null);
   const [results, setResults] = useState<VerseRow[] | null>(null);
   const [entries, setEntries] = useState<LexiconHit[]>([]);
   const [busy, setBusy] = useState(false);
@@ -76,20 +83,53 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Header title={t('searchTitle', { translation })} onBack={onBack} />
-      <TextInput
-        value={query}
-        onChangeText={setQuery}
-        placeholder={t('searchPlaceholder')}
-        placeholderTextColor={theme.muted}
-        autoFocus
-        autoCorrect={false}
-        returnKeyType="search"
-        clearButtonMode="while-editing"
-        style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
-      />
+      <View style={[styles.inputBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
+        <Icon name="search" color={theme.muted} />
+        <TextInput
+          ref={inputRef}
+          value={query}
+          onChangeText={setQuery}
+          placeholder={t('searchPlaceholder')}
+          placeholderTextColor={theme.muted}
+          autoFocus
+          autoCorrect={false}
+          returnKeyType="search"
+          style={[styles.input, { color: theme.text }]}
+        />
+        {query ? (
+          <IconButton
+            name="close"
+            onPress={() => {
+              setQuery('');
+              inputRef.current?.focus();
+            }}
+            accessibilityLabel={t('clearSearch')}
+            style={styles.clear}
+          />
+        ) : null}
+      </View>
+      {!query.trim() ? (
+        <View style={styles.examples}>
+          <Text style={[styles.examplesLabel, { color: theme.muted }]}>{t('searchExamples')}</Text>
+          <View style={styles.exampleRow}>
+            {(translation === 'MAL' ? MALAYALAM_EXAMPLES : ENGLISH_EXAMPLES).map((example) => (
+              <Pressable
+                key={example}
+                onPress={() => setQuery(example)}
+                accessibilityRole="button"
+                android_ripple={{ color: theme.accentSoft }}
+                style={[styles.example, { borderColor: theme.border }]}
+              >
+                <Text style={[styles.exampleText, { color: theme.text }]}>{example}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      ) : null}
       {goTo ? (
         <Pressable
           onPress={() => onOpenRef({ book: goTo.book, chapter: goTo.chapter, verse: goTo.verse })}
+          android_ripple={{ color: theme.accentSoft }}
           style={({ pressed }) => [styles.strongsRow, { backgroundColor: pressed ? theme.accentSoft : theme.card, borderColor: theme.border }]}
           accessibilityRole="button"
         >
@@ -102,6 +142,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
       {strongsId ? (
         <Pressable
           onPress={() => onWord({ strongs: strongsId })}
+          android_ripple={{ color: theme.accentSoft }}
           style={({ pressed }) => [styles.strongsRow, { backgroundColor: pressed ? theme.accentSoft : theme.card, borderColor: theme.border }]}
           accessibilityRole="button"
         >
@@ -113,11 +154,12 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
       {failed && !busy ? <Text style={[styles.failed, { color: theme.muted }]}>{t('loadFailed')}</Text> : null}
       {entries.length > 0 && !busy ? (
         <View style={[styles.lexicon, { borderColor: theme.border, backgroundColor: theme.card }]}>
-          <Text style={[styles.lexiconTitle, { color: theme.muted }]}>{t('dictionary')}</Text>
+          <SectionLabel text={t('dictionary')} style={styles.lexiconTitle} />
           {entries.map((e) => (
             <Pressable
               key={e.id}
               onPress={() => onWord({ strongs: e.id })}
+          android_ripple={{ color: theme.accentSoft }}
               style={({ pressed }) => [styles.entry, { borderTopColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
               accessibilityRole="button"
             >
@@ -162,21 +204,32 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   list: { alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
-  input: {
+  inputBox: {
     alignSelf: 'center',
     width: '100%',
     maxWidth: MAX_CONTENT_WIDTH - 28,
     margin: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-    borderRadius: 12,
+    marginTop: 4,
+    minHeight: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingLeft: 16,
+    paddingRight: 4,
+    borderRadius: 26,
     borderWidth: StyleSheet.hairlineWidth,
-    fontSize: 17,
   },
+  input: { flex: 1, fontSize: 17, paddingVertical: 12 },
+  clear: { width: 44, height: 44 },
+  examples: { paddingHorizontal: 18, paddingTop: 4 },
+  examplesLabel: { fontSize: 13, marginBottom: 8 },
+  exampleRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  example: { minHeight: 36, paddingHorizontal: 14, borderRadius: 18, borderWidth: 1, justifyContent: 'center', overflow: 'hidden' },
+  exampleText: { fontSize: 15 },
   spinner: { marginVertical: 12 },
   failed: { fontSize: 15, paddingHorizontal: 18, paddingVertical: 12 },
   lexicon: { marginHorizontal: 14, marginBottom: 10, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
-  lexiconTitle: { fontSize: 11, fontWeight: '700', letterSpacing: 0.8, paddingHorizontal: 12, paddingTop: 10, paddingBottom: 6 },
+  lexiconTitle: { paddingHorizontal: 12, paddingTop: 10, paddingBottom: 6 },
   entry: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth },
   entryId: { fontSize: 13, fontWeight: '700', width: 56, fontVariant: ['tabular-nums'] },
   entryLemma: { fontSize: 17 },

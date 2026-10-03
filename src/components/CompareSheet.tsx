@@ -9,6 +9,7 @@ import { formatRef } from '../text';
 import { useTheme } from '../theme';
 import type { Book, OriginalWord, Ref, TranslationId, VerseRow, WordPick } from '../types';
 import { InterlinearVerse } from './InterlinearVerse';
+import { SectionLabel } from './SectionLabel';
 import { SimpleSheet } from './SimpleSheet';
 import { VerseText } from './VerseText';
 
@@ -84,10 +85,7 @@ export function CompareSheet({ target, translation, books, onClose, onWord }: Pr
         <View style={styles.body}>
           {rows.map((r) => (
             <View key={r.translation} style={[styles.block, { borderBottomColor: theme.border }]}>
-              <Text style={[styles.label, { color: theme.muted }]}>
-                {translationName(settings.language, r.translation).toUpperCase()}
-                {r.ref ? ` · ${formatRef(books, r.ref, r.translation)}` : ''}
-              </Text>
+              <SectionLabel text={translationName(settings.language, r.translation) + (r.ref ? ` · ${formatRef(books, r.ref, r.translation)}` : '')} style={styles.label} />
               {r.verse ? (
                 <VerseText verse={r.verse} fontSize={size} onWord={pickWord} underline={false} showNumber={false} />
               ) : (
@@ -97,7 +95,7 @@ export function CompareSheet({ target, translation, books, onClose, onWord }: Pr
           ))}
           {original && original.length > 0 && target ? (
             <View style={styles.block}>
-              <Text style={[styles.label, { color: theme.muted }]}>{(target.book <= 39 ? t('hebrew') : t('greek')).toUpperCase()}</Text>
+              <SectionLabel text={target.book <= 39 ? t('hebrew') : t('greek')} style={styles.label} />
               <InterlinearVerse
                 words={original}
                 hebrew={target.book <= 39}
@@ -118,6 +116,6 @@ const styles = StyleSheet.create({
   spinner: { marginVertical: 30 },
   body: { paddingBottom: 8 },
   block: { paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
-  label: { fontSize: 11, fontWeight: '700', letterSpacing: 0.8, marginBottom: 6 },
+  label: { marginBottom: 6 },
   missing: { fontSize: 15, fontStyle: 'italic' },
 });

@@ -172,6 +172,7 @@ function Chip({ label, count, active, onPress }: { label: string; count: number;
   const theme = useTheme();
   return (
     <Pressable
+      android_ripple={{ color: theme.accentSoft }}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: active }}

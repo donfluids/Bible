@@ -3,86 +3,78 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useT } from '../i18n';
 import { useTheme } from '../theme';
+import { Icon, IconButton } from './Icon';
+import type { IconName } from './Icon';
 
 interface Props {
   title?: string;
   onBack?: () => void;
+  /** Read out for the back button; it shows as an arrow. */
   backLabel?: string;
   /** Replaces the plain title when given. */
   center?: React.ReactNode;
   right?: React.ReactNode;
 }
 
+/** The Android top bar: back arrow, title on the left, icon buttons on the right. */
 export function Header({ title, onBack, backLabel, center, right }: Props) {
   const theme = useTheme();
   const t = useT();
-  const back = backLabel ?? t('back');
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.bar, { paddingTop: insets.top + 6, backgroundColor: theme.bg, borderBottomColor: theme.border }]}>
-      <View style={[styles.side, !onBack && styles.sideEmpty]}>
-        {onBack ? (
-          <Pressable onPress={onBack} hitSlop={12} style={styles.back} accessibilityRole="button" accessibilityLabel="Back">
-            <Text style={[styles.backGlyph, { color: theme.accent }]}>‹</Text>
-            <Text style={[styles.backText, { color: theme.accent }]}>{back}</Text>
-          </Pressable>
-        ) : null}
-      </View>
-      <View style={[styles.center, !onBack && styles.centerLeft]}>
+    <View style={[styles.bar, { paddingTop: insets.top, backgroundColor: theme.bg, paddingLeft: onBack ? 4 : 16 }]}>
+      {onBack ? <IconButton name="arrow_back" onPress={onBack} accessibilityLabel={backLabel ?? t('back')} color={theme.text} /> : null}
+      <View style={[styles.center, onBack && styles.centerAfterBack]}>
         {center ?? (
-          <Text numberOfLines={1} style={[styles.title, { color: theme.text }]}>
+          <Text numberOfLines={1} style={[styles.title, { color: theme.text }]} accessibilityRole="header">
             {title}
           </Text>
         )}
       </View>
-      <View style={[styles.side, styles.right]}>{right}</View>
+      {right ? <View style={styles.right}>{right}</View> : null}
     </View>
   );
 }
 
-interface ButtonProps {
-  label: string;
-  onPress: () => void;
-  active?: boolean;
-  accessibilityLabel?: string;
+/** An icon button for the top bar. */
+export function HeaderIconButton({ icon, onPress, accessibilityLabel }: { icon: IconName; onPress: () => void; accessibilityLabel: string }) {
+  return <IconButton name={icon} onPress={onPress} accessibilityLabel={accessibilityLabel} />;
 }
 
-/** Compact text button for the header bar. */
-export function HeaderButton({ label, onPress, active, accessibilityLabel }: ButtonProps) {
+/** A tonal chip with an icon and a short label, such as the translation switch. */
+export function HeaderChip({ icon, label, onPress, accessibilityLabel }: { icon: IconName; label: string; onPress: () => void; accessibilityLabel: string }) {
   const theme = useTheme();
   return (
     <Pressable
       onPress={onPress}
-      hitSlop={8}
       accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel ?? label}
-      style={({ pressed }) => [
-        styles.button,
-        { borderColor: theme.border, backgroundColor: active ? theme.accentSoft : 'transparent', opacity: pressed ? 0.6 : 1 },
-      ]}
+      accessibilityLabel={accessibilityLabel}
+      android_ripple={{ color: theme.border }}
+      hitSlop={8}
+      style={({ pressed }) => [styles.chip, { backgroundColor: theme.accentSoft, opacity: pressed ? 0.8 : 1 }]}
     >
-      <Text style={[styles.buttonText, { color: theme.accent }]}>{label}</Text>
+      <Icon name={icon} size={18} color={theme.accent} />
+      <Text style={[styles.chipText, { color: theme.accent }]}>{label}</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  bar: {
+  bar: { flexDirection: 'row', alignItems: 'center', minHeight: 64, paddingRight: 4 },
+  center: { flex: 1, justifyContent: 'center', minHeight: 48 },
+  centerAfterBack: { marginLeft: 4 },
+  title: { fontSize: 22, fontWeight: '500' },
+  right: { flexDirection: 'row', alignItems: 'center' },
+  chip: {
+    height: 32,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingBottom: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    gap: 4,
+    paddingLeft: 8,
+    paddingRight: 12,
+    marginRight: 4,
+    borderRadius: 16,
+    overflow: 'hidden',
   },
-  side: { minWidth: 72, flexDirection: 'row', alignItems: 'center' },
-  sideEmpty: { minWidth: 0 },
-  right: { justifyContent: 'flex-end', gap: 6 },
-  center: { flex: 1, alignItems: 'center' },
-  centerLeft: { alignItems: 'flex-start' },
-  title: { fontSize: 17, fontWeight: '600' },
-  back: { flexDirection: 'row', alignItems: 'center' },
-  backGlyph: { fontSize: 30, lineHeight: 32, marginRight: 2, marginTop: -3 },
-  backText: { fontSize: 16 },
-  button: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: StyleSheet.hairlineWidth },
-  buttonText: { fontSize: 14, fontWeight: '600' },
+  chipText: { fontSize: 14, fontWeight: '600' },
 });

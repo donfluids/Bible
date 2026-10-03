@@ -9,9 +9,11 @@ import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
 import { CompareSheet } from '../components/CompareSheet';
-import { Header, HeaderButton } from '../components/Header';
+import { Header, HeaderChip, HeaderIconButton } from '../components/Header';
+import { Icon } from '../components/Icon';
+import type { IconName } from '../components/Icon';
 import { useEdition } from '../edition';
-import { scriptureFont } from '../fonts';
+import { isMalayalam, scriptureFont } from '../fonts';
 import { useT } from '../i18n';
 import { InterlinearVerse } from '../components/InterlinearVerse';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
@@ -597,17 +599,23 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         onBack={onBack}
         backLabel={backLabel}
         center={
-          <Pressable onPress={onOpenBooks} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('choosePassage', { title })}>
-            <Text numberOfLines={1} style={[styles.title, { color: theme.text }]}>
-              {title} <Text style={{ color: theme.accent }}>▾</Text>
+          <Pressable onPress={onOpenBooks} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('choosePassage', { title })} style={styles.titleButton}>
+            <Text numberOfLines={1} style={[styles.title, { color: theme.text }, translation === 'MAL' && { fontFamily: scriptureFont(true, false, true), fontWeight: 'normal', fontSize: 20 }]}>
+              {title}
             </Text>
+            <Icon name="arrow_drop_down" color={theme.accent} />
           </Pressable>
         }
         right={
           <>
-            <HeaderButton label={translation} onPress={toggleTranslation} active accessibilityLabel={t('switchTranslation')} />
-            <HeaderButton label="Aa" onPress={onOpenSettings} accessibilityLabel={t('settings')} />
-            <HeaderButton label={t('search')} onPress={onOpenSearch} />
+            <HeaderChip
+              icon="swap_horiz"
+              label={translation === 'MAL' && settings.language === 'ml' ? 'മലയാളം' : translation}
+              onPress={toggleTranslation}
+              accessibilityLabel={t('switchTranslation')}
+            />
+            <HeaderIconButton icon="search" onPress={onOpenSearch} accessibilityLabel={t('search')} />
+            <HeaderIconButton icon="settings" onPress={onOpenSettings} accessibilityLabel={t('settings')} />
           </>
         }
       />
@@ -664,6 +672,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
       <View style={[styles.footer, { paddingBottom: insets.bottom + 8, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
         <NavButton label={t('previous')} onPress={() => go(-1)} disabled={atStart} />
         <Pressable
+          android_ripple={{ color: theme.accentSoft }}
           onPress={() => update({ interlinear: !interlinear })}
           hitSlop={6}
           accessibilityRole="switch"
@@ -697,36 +706,69 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
       <SimpleSheet visible={!!actions} title={actions ? formatRef(books, actions, translation) : ''} onClose={() => setActions(null)}>
         {actions ? (
           <>
-            <Text style={[styles.actionsPreview, { color: theme.muted }]} numberOfLines={3}>
+            <Text style={[styles.actionsPreview, { color: theme.muted, fontFamily: scriptFont }]} numberOfLines={3}>
               {flattenVerse(actions.text)}
             </Text>
-            <View style={[styles.swatchRow, { borderTopColor: theme.border }]}>
-              <Text style={[styles.swatchLabel, { color: theme.text }]}>{t('highlight')}</Text>
-              {HIGHLIGHT_COLORS.map((c) => (
-                <Pressable
-                  key={c}
-                  onPress={() => setHighlight(actions, c)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${t('highlight')} ${c}`}
-                  style={[
-                    styles.swatch,
-                    { backgroundColor: theme.marks[c], borderColor: highlights[bookmarkKey(actions)] === c ? theme.accent : theme.border },
-                  ]}
-                />
-              ))}
-              {highlights[bookmarkKey(actions)] ? (
-                <Pressable onPress={() => setHighlight(actions, null)} hitSlop={8} accessibilityRole="button">
-                  <Text style={[styles.swatchClear, { color: theme.muted }]}>{t('clear')}</Text>
-                </Pressable>
-              ) : null}
+            <View style={styles.actionButtons}>
+              <ActionButton icon="content_copy" label={t('actCopy')} onPress={() => copyVerse(actions)} />
+              <ActionButton icon="share" label={t('actShare')} onPress={() => shareVerse(actions)} />
+              {bookmarked.has(bookmarkKey(actions)) ? (
+                <ActionButton icon="bookmark_fill" label={t('actBookmarked')} onPress={() => toggleBookmark(actions)} accessibilityLabel={t('removeBookmark')} />
+              ) : (
+                <ActionButton icon="bookmark_add" label={t('actBookmark')} onPress={() => toggleBookmark(actions)} />
+              )}
+              <ActionButton icon="edit_note" label={t('actNote')} onPress={() => openNote(actions)} accessibilityLabel={bookmarkKey(actions) in userNotes ? t('editNote') : t('addNote')} />
             </View>
+            {bookmarkKey(actions) in userNotes ? (
+              <Pressable onPress={() => openNote(actions)} accessibilityRole="button" accessibilityLabel={t('editNote')} style={[styles.notePreview, { backgroundColor: theme.accentSoft }]}>
+                <Icon name="sticky_note_2" size={20} color={theme.accent} />
+                <Text style={[styles.notePreviewText, { color: theme.text }]} numberOfLines={3}>
+                  {userNotes[bookmarkKey(actions)]}
+                </Text>
+              </Pressable>
+            ) : null}
+            <Text style={[styles.swatchLabel, { color: theme.muted }]}>{t('highlight')}</Text>
+            <View style={styles.swatchRow}>
+              {HIGHLIGHT_COLORS.map((c) => {
+                const chosen = highlights[bookmarkKey(actions)] === c;
+                return (
+                  <Pressable
+                    key={c}
+                    onPress={() => setHighlight(actions, c)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${t('highlight')} ${c}`}
+                    accessibilityState={{ selected: chosen }}
+                    hitSlop={6}
+                    style={[styles.swatch, { backgroundColor: theme.marks[c], borderColor: theme.dark ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.12)' }]}
+                  >
+                    {chosen ? <Icon name="check" size={20} color={theme.text} /> : null}
+                  </Pressable>
+                );
+              })}
+              <Pressable
+                onPress={() => setHighlight(actions, null)}
+                disabled={!highlights[bookmarkKey(actions)]}
+                accessibilityRole="button"
+                accessibilityLabel={t('noHighlight')}
+                hitSlop={6}
+                style={[styles.swatch, { borderColor: theme.border, opacity: highlights[bookmarkKey(actions)] ? 1 : 0.4 }]}
+              >
+                <Icon name="format_color_reset" size={20} color={theme.muted} />
+              </Pressable>
+            </View>
+            <View style={[styles.actionsDivider, { backgroundColor: theme.border }]} />
             <SheetAction
-              label={bookmarkKey(actions) in userNotes ? t('editNote') : t('addNote')}
-              detail={userNotes[bookmarkKey(actions)]}
-              onPress={() => openNote(actions)}
+              icon="compare_arrows"
+              label={t('compare')}
+              detail={t('compareDetail', { lang: originalLanguage(actions) })}
+              onPress={() => {
+                setActions(null);
+                setCompare({ book: actions.book, chapter: actions.chapter, verse: actions.verse });
+              }}
             />
             {actions.tags ? (
               <SheetAction
+                icon="translate"
                 label={t('wordsInVerse')}
                 detail={t('wordsInVerseDetail')}
                 onPress={() => {
@@ -735,21 +777,6 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                 }}
               />
             ) : null}
-            <SheetAction
-              label={t('compare')}
-              detail={t('compareDetail', { lang: originalLanguage(actions) })}
-              onPress={() => {
-                setActions(null);
-                setCompare({ book: actions.book, chapter: actions.chapter, verse: actions.verse });
-              }}
-            />
-            <SheetAction label={t('copy')} detail={t('copyDetail')} onPress={() => copyVerse(actions)} />
-            <SheetAction label={t('share')} onPress={() => shareVerse(actions)} />
-            <SheetAction
-              label={bookmarked.has(bookmarkKey(actions)) ? t('removeBookmark') : t('bookmark')}
-              detail={t('bookmarkDetail')}
-              onPress={() => toggleBookmark(actions)}
-            />
           </>
         ) : null}
       </SimpleSheet>
@@ -788,6 +815,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
               .filter((seg) => seg.strongs)
               .map((seg, i) => (
                 <Pressable
+                  android_ripple={{ color: theme.accentSoft }}
                   key={i}
                   onPress={() => {
                     setWordsFor(null);
@@ -811,15 +839,32 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
 function NavButton({ label, onPress, disabled }: { label: string; onPress: () => void; disabled?: boolean }) {
   const theme = useTheme();
   return (
-    <Pressable onPress={onPress} disabled={disabled} hitSlop={8} style={({ pressed }) => ({ opacity: disabled ? 0.3 : pressed ? 0.6 : 1 })}>
+    <Pressable android_ripple={{ color: theme.accentSoft }} onPress={onPress} disabled={disabled} hitSlop={8} style={({ pressed }) => ({ opacity: disabled ? 0.3 : pressed ? 0.6 : 1 })}>
       <Text style={[styles.nav, { color: theme.accent }]}>{label}</Text>
+    </Pressable>
+  );
+}
+
+/** One of the four round buttons at the top of the verse sheet: an icon over a short label. */
+function ActionButton({ icon, label, onPress, accessibilityLabel }: { icon: IconName; label: string; onPress: () => void; accessibilityLabel?: string }) {
+  const theme = useTheme();
+  const malayalam = isMalayalam(label);
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label} android_ripple={{ color: theme.accentSoft }} style={styles.actionButton}>
+      <View style={[styles.actionIcon, { backgroundColor: theme.accentSoft }]}>
+        <Icon name={icon} color={theme.accent} />
+      </View>
+      <Text style={[styles.actionLabel, { color: theme.text }, malayalam && { fontFamily: scriptureFont(true, false), fontWeight: 'normal' }]} numberOfLines={1}>
+        {label}
+      </Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  title: { fontSize: 18, fontWeight: '700' },
+  titleButton: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', minHeight: 48, maxWidth: '100%' },
+  title: { fontSize: 22, fontWeight: '500', flexShrink: 1 },
   body: { flex: 1 },
   loading: { flex: 1 },
   para: { marginBottom: 12 },
@@ -848,16 +893,22 @@ const styles = StyleSheet.create({
   toast: { position: 'absolute', alignSelf: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 },
   toastText: { fontSize: 14, fontWeight: '600' },
   noteText: { fontSize: 16, lineHeight: 23, paddingBottom: 8 },
-  swatchRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, borderTopWidth: StyleSheet.hairlineWidth },
-  swatchLabel: { fontSize: 17, marginRight: 4 },
-  swatch: { width: 30, height: 30, borderRadius: 15, borderWidth: 2 },
-  swatchClear: { fontSize: 14, marginLeft: 4 },
+  swatchLabel: { fontSize: 13, fontWeight: '500', marginBottom: 10 },
+  swatchRow: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 14 },
+  swatch: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  actionButtons: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
+  actionButton: { width: 80, alignItems: 'center', gap: 6, paddingVertical: 4, borderRadius: 12, overflow: 'hidden' },
+  actionIcon: { width: 56, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  actionLabel: { fontSize: 12, fontWeight: '500', textAlign: 'center' },
+  notePreview: { flexDirection: 'row', gap: 10, padding: 12, borderRadius: 12, marginBottom: 16 },
+  notePreviewText: { flex: 1, fontSize: 14, lineHeight: 20 },
+  actionsDivider: { height: StyleSheet.hairlineWidth, marginBottom: 4 },
   noteInput: { minHeight: 110, maxHeight: 220, borderWidth: StyleSheet.hairlineWidth, borderRadius: 10, padding: 12, fontSize: 16, lineHeight: 22, textAlignVertical: 'top' },
   noteButtons: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 },
   noteDelete: { fontSize: 15 },
   noteSave: { paddingHorizontal: 22, paddingVertical: 10, borderRadius: 10 },
   noteSaveText: { fontSize: 16, fontWeight: '600' },
-  actionsPreview: { fontSize: 14, lineHeight: 20, marginBottom: 8 },
+  actionsPreview: { fontSize: 15, lineHeight: 22, marginBottom: 16 },
   failed: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24 },
   failedText: { fontSize: 16, textAlign: 'center' },
   failedButton: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 12 },

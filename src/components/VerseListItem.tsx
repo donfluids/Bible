@@ -4,6 +4,7 @@ import { useSettings } from '../settings';
 import { formatRef } from '../text';
 import { useTheme } from '../theme';
 import type { Book, VerseRow, WordPick } from '../types';
+import { Icon } from './Icon';
 import { VerseText } from './VerseText';
 
 interface Props {
@@ -23,11 +24,12 @@ export function VerseListItem({ verse, books, fontSize, onOpen, onWord, emphasiz
   return (
     <Pressable
       onPress={() => onOpen(verse)}
+      android_ripple={{ color: theme.accentSoft }}
       style={({ pressed }) => [styles.row, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
     >
       <View style={styles.refRow}>
         <Text style={[styles.ref, { color: theme.accent }]}>{formatRef(books, verse, settings.translation)}</Text>
-        <Text style={[styles.chevron, { color: theme.muted }]}>›</Text>
+        <Icon name="chevron_right" size={20} color={theme.muted} />
       </View>
       <VerseText verse={verse} fontSize={fontSize} onWord={onWord} underline={false} emphasize={emphasize} highlightText={highlightText} showNumber={false} />
     </Pressable>
@@ -38,5 +40,4 @@ const styles = StyleSheet.create({
   row: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
   refRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   ref: { fontSize: 14, fontWeight: '700' },
-  chevron: { fontSize: 20, lineHeight: 20 },
 });

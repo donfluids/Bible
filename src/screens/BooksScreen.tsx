@@ -2,6 +2,8 @@ import React, { useMemo, useRef } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from '../components/Header';
+import { Icon } from '../components/Icon';
+import { SectionLabel } from '../components/SectionLabel';
 import { useT } from '../i18n';
 import { selectPosition, selectRecent, usePlace } from '../place';
 import { useSettings } from '../settings';
@@ -67,14 +69,22 @@ export function BooksScreen({ books, current, onPick, onOpenBookmarks, bookmarkC
       <Header title={t('books')} onBack={onBack} />
       <Pressable
         onPress={onOpenBookmarks}
+        android_ripple={{ color: theme.accentSoft }}
         style={({ pressed }) => [styles.bookmarks, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
         accessibilityRole="button"
       >
-        <Text style={[styles.name, { color: theme.accent, fontWeight: '600' }]} numberOfLines={1}>{t('savedRow')}</Text>
-        <Text style={[styles.count, { color: theme.muted }]}>{bookmarkCount}</Text>
+        <Icon name="bookmarks" color={theme.accent} />
+        <Text style={[styles.name, styles.savedName, { color: theme.accent }]} numberOfLines={1}>{t('savedRow')}</Text>
+        {bookmarkCount > 0 ? (
+          <View style={[styles.badge, { backgroundColor: theme.accentSoft }]}>
+            <Text style={[styles.badgeText, { color: theme.accent }]}>{bookmarkCount}</Text>
+          </View>
+        ) : null}
+        <Icon name="chevron_right" color={theme.muted} />
       </Pressable>
       {recent.length > 0 ? (
         <View style={[styles.recent, { borderBottomColor: theme.border }]}>
+          <Icon name="history" size={20} color={theme.muted} />
           <Text style={[styles.recentLabel, { color: theme.muted }]}>{t('recent')}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.recentRow}>
             {recent.map((r) => (
@@ -82,6 +92,7 @@ export function BooksScreen({ books, current, onPick, onOpenBookmarks, bookmarkC
                 key={`${r.book}:${r.chapter}`}
                 onPress={() => onOpenRecent(r)}
                 accessibilityRole="button"
+                android_ripple={{ color: theme.accentSoft }}
                 style={({ pressed }) => [styles.chip, { borderColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
               >
                 <Text style={[styles.chipText, { color: theme.text }]}>{`${bookName(books, r.book, settings.translation)} ${r.chapter}`}</Text>
@@ -99,12 +110,13 @@ export function BooksScreen({ books, current, onPick, onOpenBookmarks, bookmarkC
         onScrollToIndexFailed={() => listRef.current?.scrollToOffset({ offset: offsets[initialIndex] ?? 0, animated: false })}
         renderItem={({ item }) => {
           if (item.kind === 'header') {
-            return <Text style={[styles.section, { color: theme.muted, backgroundColor: theme.bg }]}>{item.title.toUpperCase()}</Text>;
+            return <SectionLabel text={item.title} style={[styles.section, { backgroundColor: theme.bg }]} />;
           }
           const active = item.book.id === current;
           return (
             <Pressable
               onPress={() => onPick(item.book)}
+              android_ripple={{ color: theme.accentSoft }}
               style={({ pressed }) => [
                 styles.row,
                 { borderBottomColor: theme.border, backgroundColor: pressed || active ? theme.accentSoft : 'transparent' },
@@ -125,7 +137,7 @@ export function BooksScreen({ books, current, onPick, onOpenBookmarks, bookmarkC
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  section: { height: HEADER_H, fontSize: 12, fontWeight: '700', letterSpacing: 0.8, paddingHorizontal: 18, paddingTop: 20, paddingBottom: 6 },
+  section: { height: HEADER_H, paddingHorizontal: 18, paddingTop: 18, paddingBottom: 6 },
   row: {
     height: ROW_H,
     flexDirection: 'row',
@@ -135,17 +147,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   bookmarks: {
-    height: ROW_H,
+    height: 56,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 14,
     paddingHorizontal: 18,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
+  savedName: { flex: 1, fontWeight: '600' },
+  badge: { minWidth: 28, height: 24, borderRadius: 12, paddingHorizontal: 8, alignItems: 'center', justifyContent: 'center' },
+  badgeText: { fontSize: 13, fontWeight: '700', fontVariant: ['tabular-nums'] },
   recent: { flexDirection: 'row', alignItems: 'center', paddingLeft: 18, paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth, gap: 10 },
   recentLabel: { fontSize: 13, fontWeight: '600' },
   recentRow: { gap: 8, paddingRight: 18 },
-  chip: { minHeight: 36, paddingHorizontal: 12, borderRadius: 999, borderWidth: 1, justifyContent: 'center' },
+  chip: { minHeight: 36, paddingHorizontal: 12, borderRadius: 18, borderWidth: 1, justifyContent: 'center', overflow: 'hidden' },
   chipText: { fontSize: 15 },
   name: { fontSize: 17 },
   count: { fontSize: 15, fontVariant: ['tabular-nums'] },

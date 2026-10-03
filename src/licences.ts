@@ -127,6 +127,28 @@ const FONTS = (lang: Language, edition: EditionId): Source => ({
   licence: OFL,
 });
 
+const APACHE = { name: 'Apache License 2.0', url: 'https://www.apache.org/licenses/LICENSE-2.0' };
+
+const ICONS = (lang: Language): Source => ({
+  title: pick({ en: 'Icons', ml: 'ചിഹ്നങ്ങൾ' }, lang),
+  credit: pick(
+    {
+      en: 'Material Symbols Rounded © Google. The licence text is below.',
+      ml: 'Material Symbols Rounded © Google. അനുമതിപത്രം താഴെ.',
+    },
+    lang,
+  ),
+  licence: APACHE,
+  links: [{ label: 'fonts.google.com/icons', url: 'https://fonts.google.com/icons' }],
+  changes: pick(
+    {
+      en: 'Only the 30 icons the app uses are kept, fixed at one weight and size (scripts/make-icon-font.py).',
+      ml: 'ആപ്പ് ഉപയോഗിക്കുന്ന 30 ചിഹ്നങ്ങൾ മാത്രം, ഒരേ കനത്തിലും വലുപ്പത്തിലും (scripts/make-icon-font.py).',
+    },
+    lang,
+  ),
+});
+
 const SOFTWARE = (lang: Language): Source => ({
   title: pick({ en: 'Software', ml: 'സോഫ്റ്റ്‌വെയർ' }, lang),
   credit: pick(
@@ -142,5 +164,5 @@ const SOFTWARE = (lang: Language): Source => ({
 
 export function sourcesFor(edition: EditionId, lang: Language): Source[] {
   const texts = edition === 'ml' ? [MALAYALAM(lang), MALAYALAM_LINKS(lang), KJV(lang)] : [KJV(lang), WEB(lang)];
-  return [...texts, STRONGS(lang), STEPBIBLE(lang), FONTS(lang, edition), SOFTWARE(lang)];
+  return [...texts, STRONGS(lang), STEPBIBLE(lang), FONTS(lang, edition), ICONS(lang), SOFTWARE(lang)];
 }

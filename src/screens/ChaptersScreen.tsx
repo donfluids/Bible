@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from '../components/Header';
 import { useT } from '../i18n';
@@ -22,6 +22,12 @@ export function ChaptersScreen({ book, current, onPick, onBack }: Props) {
   const { settings } = useSettings();
   const title = book.names[settings.translation] && settings.translation !== 'KJV' && settings.translation !== 'WEB' ? book.names[settings.translation]! : book.name;
   const chapters = Array.from({ length: book.chapters }, (_, i) => i + 1);
+  // As many columns of at least 56 dp as fit, stretched to fill the row exactly, so the
+  // grid has no ragged gap on the right.
+  const { width: windowWidth } = useWindowDimensions();
+  const inner = Math.min(windowWidth, MAX_WIDTH) - PADDING * 2;
+  const columns = Math.max(1, Math.floor((inner + GAP) / (MIN_CELL + GAP)));
+  const cell = Math.floor((inner - GAP * (columns - 1)) / columns);
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Header title={title} onBack={onBack} backLabel={t('back')} />
@@ -32,8 +38,10 @@ export function ChaptersScreen({ book, current, onPick, onBack }: Props) {
             <Pressable
               key={c}
               onPress={() => onPick(c)}
+              android_ripple={{ color: theme.accentSoft }}
               style={({ pressed }) => [
                 styles.cell,
+                { width: cell, height: Math.min(cell, 64) },
                 { borderColor: theme.border, backgroundColor: active ? theme.accent : pressed ? theme.accentSoft : theme.card },
               ]}
               accessibilityRole="button"
@@ -48,13 +56,17 @@ export function ChaptersScreen({ book, current, onPick, onBack }: Props) {
   );
 }
 
+const MIN_CELL = 56;
+const GAP = 10;
+const PADDING = 14;
+const MAX_WIDTH = 720;
+
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', padding: 14, gap: 10, paddingBottom: 40 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', padding: PADDING, gap: GAP, paddingBottom: 40, width: '100%', maxWidth: MAX_WIDTH, alignSelf: 'center' },
   cell: {
-    width: 56,
-    height: 56,
     borderRadius: 12,
+    overflow: 'hidden',
     borderWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
     justifyContent: 'center',

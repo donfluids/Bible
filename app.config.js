@@ -11,7 +11,8 @@ const EDITIONS = {
     slug: 'bible',
     package: 'org.donfluids.bible',
     icons: './assets/icons/en',
-    splashBackground: '#F4EFE4',
+    // Splash colours are the app's own backgrounds, so opening does not flash.
+    splashBackground: '#FBF8F1',
     splashBackgroundDark: '#15130F',
     adaptiveBackground: '#F4EFE4',
   },
@@ -20,18 +21,21 @@ const EDITIONS = {
     slug: 'bible-malayalam',
     package: 'org.donfluids.bible.malayalam',
     icons: './assets/icons/ml',
-    splashBackground: '#EEF3E6',
-    splashBackgroundDark: '#0F1A12',
+    splashBackground: '#F7F9F2',
+    splashBackgroundDark: '#111511',
     adaptiveBackground: '#EEF3E6',
   },
 };
 
-// Typefaces built into the app (src/fonts.ts uses them by file name): Hebrew in both
-// editions, Malayalam only in the Malayalam one.
+// Typefaces built into the app (src/fonts.ts uses them by file name): the icons
+// (scripts/make-icon-font.py) and Hebrew in both editions, Malayalam only in the
+// Malayalam one.
 const FONT = (pkg, file) => `./node_modules/@expo-google-fonts/${pkg}/${file.split('_')[1].replace('.ttf', '')}/${file}`;
+const ICONS = './assets/fonts/BibleIcons.ttf';
 const FONTS = {
-  en: [FONT('noto-serif-hebrew', 'NotoSerifHebrew_500Medium.ttf')],
+  en: [ICONS, FONT('noto-serif-hebrew', 'NotoSerifHebrew_500Medium.ttf')],
   ml: [
+    ICONS,
     FONT('noto-serif-hebrew', 'NotoSerifHebrew_500Medium.ttf'),
     FONT('noto-sans-malayalam', 'NotoSansMalayalam_400Regular.ttf'),
     FONT('noto-sans-malayalam', 'NotoSansMalayalam_700Bold.ttf'),

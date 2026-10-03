@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "material-symbols": "^0.47.6",
     "typescript": "~6.0.3"
   },
   "scripts": {

@@ -5,6 +5,7 @@ import { Header } from '../components/Header';
 import { useEdition } from '../edition';
 import { useT } from '../i18n';
 import { sourcesFor } from '../licences';
+import { APACHE_TEXT } from '../apacheText';
 import { OFL_TEXT } from '../oflText';
 import { useSettings } from '../settings';
 import { MAX_CONTENT_WIDTH } from '../text';
@@ -54,6 +55,12 @@ export function LicencesScreen({ onBack }: { onBack: () => void }) {
           </Text>
           <Text style={[styles.licenceText, { color: theme.muted }]}>{OFL_TEXT}</Text>
         </View>
+        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <Text style={[styles.title, { color: theme.text }]} accessibilityRole="header">
+            Apache License 2.0
+          </Text>
+          <Text style={[styles.licenceText, { color: theme.muted }]}>{APACHE_TEXT}</Text>
+        </View>
       </ScrollView>
     </View>
   );
@@ -62,7 +69,7 @@ export function LicencesScreen({ onBack }: { onBack: () => void }) {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { padding: 16, gap: 12, alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
-  card: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, padding: 14, gap: 6 },
+  card: { borderRadius: 16, borderWidth: StyleSheet.hairlineWidth, padding: 14, gap: 6 },
   title: { fontSize: 16, fontWeight: '600' },
   subhead: { fontSize: 13, fontWeight: '600', marginTop: 4 },
   body: { fontSize: 15, lineHeight: 21 },

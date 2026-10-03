@@ -3,6 +3,7 @@ import { StyleSheet, Text } from 'react-native';
 import { isMalayalam, scriptureFont } from '../fonts';
 import { useT } from '../i18n';
 import { useSelectedStart } from '../selection';
+import { ICON_FONT_FAMILY, iconChar } from './Icon';
 import { useSettings } from '../settings';
 import { parseSegments } from '../text';
 import { malayalamPattern } from '../malayalamSearch';
@@ -189,8 +190,8 @@ export function VerseText({
     >
       {bookmarked ? <Text style={{ color: theme.accent }}>▎</Text> : null}
       {hasNote ? (
-        <Text onPress={onNotePress} style={{ color: theme.accent, fontSize: small }} accessibilityRole="button" accessibilityLabel={t('editNote')}>
-          ✎{' '}
+        <Text onPress={onNotePress} style={{ color: theme.accent, fontSize: small + 2 }} accessibilityRole="button" accessibilityLabel={t('editNote')}>
+          <Text style={{ fontFamily: ICON_FONT_FAMILY }}>{iconChar('edit_note')}</Text>{' '}
         </Text>
       ) : null}
       {showNumber && !isTitle ? (

@@ -68,7 +68,10 @@ rendering counts all work in Malayalam.
   the left edge. Rotates to landscape; on tablets the text keeps a
   comfortable column width.
 - Appearance: light, sepia or dark (or follow the phone), a serif typeface, verse-per-line
-  or paragraph layout, and keep-the-screen-awake.
+  or paragraph layout, and keep-the-screen-awake. The English app is brown, the
+  Malayalam app green like its icon. Android-style top bars and icons (Material Symbols
+  Rounded), and one bottom-sheet style throughout; the verse sheet has Copy, Share,
+  Bookmark and Note buttons and highlight colours in one place.
 - Text size in eight steps, from Settings or by pinching the text with two fingers.
   Remembers the verse you left off at, and keeps your place when
   you switch translation.
@@ -148,11 +151,12 @@ src/text.ts              Expands offset-encoded Strong's tags into text runs
 src/morph.ts             Turns Hebrew and Greek grammar codes into plain words
 src/malayalamSearch.ts   Matches modern Malayalam spelling against the 1910 text
 src/settings.tsx         Persisted settings (translation, text size, bookmarks, notes)
-src/components/          Header, VerseText, InterlinearVerse, WordSheet, CompareSheet, SimpleSheet, VerseListItem
+src/components/          Header, Icon, SectionLabel, VerseText, InterlinearVerse, WordSheet, CompareSheet, SimpleSheet, VerseListItem
 src/screens/             Reader, Books, Chapters, Saved, Search, Concordance, Settings, Licences
 scripts/fetch-data.sh    Downloads the source texts into data/raw/ (not committed)
 scripts/build-db.mjs     Builds assets/db/bible-<edition>.db from data/raw/
 scripts/make-icons.sh    Draws the icon, adaptive icon layers and splash images with ImageMagick
+scripts/make-icon-font.py  Cuts the interface icons out of Material Symbols Rounded
 assets/db/               bible-en.db (32 MB) and bible-ml.db (47 MB), one per edition
 assets/icons/            Icon, adaptive icon layers and splash images per edition
 data/overrides/          Hand corrections: Malayalam text, verse map, short meanings
@@ -246,10 +250,14 @@ Malayalam in 15 chapters), so the reader shows the right Hebrew or Greek under t
   SIL Open Font License, taken from the `@expo-google-fonts` packages and built into
   the Android app by the expo-font config plugin (`app.config.js`; the English edition
   carries only the Hebrew one). Expo Go does not have them and shows the phone's fonts.
+- **Icons**: Material Symbols Rounded (Google), Apache License 2.0, from the
+  `material-symbols` npm package. `scripts/make-icon-font.py` keeps only the icons the
+  app uses, at one weight and size, as `assets/fonts/BibleIcons.ttf` (6 KB) with the
+  code points in `src/iconCodes.json`; `src/components/Icon.tsx` draws them.
 
 The app shows these sources, their licences with links and the changes made to each
 under Settings → Sources and licences (`src/licences.ts`, with the full Open Font
-License text).
+License and Apache License texts).
 
 ### Licences of the data
 
