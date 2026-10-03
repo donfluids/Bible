@@ -7,7 +7,7 @@ import { HEBREW_FONT, isMalayalam, scriptureFont } from '../fonts';
 import { renderingsLabel, translationName, useT } from '../i18n';
 import type { StringKey } from '../i18n';
 import { describeMorph } from '../morph';
-import { getConcordance, getConcordanceCount, getOriginalCount, getRelated, getRenderings, getStrongs, getVerses } from '../queries';
+import { getConcordance, getConcordanceCount, getInterlinear, getOriginalCount, getRelated, getRenderings, getStrongs, getVerses } from '../queries';
 import { useSettings } from '../settings';
 import { formatCount, formatRef, isHebrew, plainKjvUsage } from '../text';
 import { useTheme } from '../theme';
@@ -37,6 +37,8 @@ interface Loaded {
   count: number;
   /** Verses the word is in, in the Hebrew or Greek text. */
   original: number;
+  /** For a tapped translation word, the Hebrew or Greek words of its verse with this number. */
+  inVerse: OriginalWord[];
   /** Verses the KJV and the Malayalam tag with it, for hiding their chips when few are. */
   kjvCount: number;
   malayalamCount: number;
@@ -50,7 +52,7 @@ interface Loaded {
   failed?: boolean;
 }
 
-const EMPTY: Omit<Loaded, 'entry'> = { count: 0, original: 0, kjvCount: 0, malayalamCount: 0, renderings: [], malayalam: [], kjv: [], examples: [], related: [] };
+const EMPTY: Omit<Loaded, 'entry'> = { count: 0, original: 0, inVerse: [], kjvCount: 0, malayalamCount: 0, renderings: [], malayalam: [], kjv: [], examples: [], related: [] };
 
 /**
  * Which printed texts have an original word, when that is worth saying: a Hebrew word
@@ -214,7 +216,20 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
       const [examples, related] = await Promise.all([getVerses(db, tagged, refs.slice(0, 2)), entry ? getRelated(db, entry) : Promise.resolve([])]);
       const malayalam = !malayalamFirst ? [] : tagged === 'MAL' ? renderings : malayalamOther;
       const malayalamCount = tagged === 'MAL' ? count : malayalamOtherCount;
-      return { entry, count, original, kjvCount, malayalamCount, renderings, malayalam, kjv, examples, related };
+      // A word tapped in a translation: the form the Hebrew or Greek has in that verse.
+      let inVerse: OriginalWord[] = [];
+      const at = pick.at;
+      if (!pick.original && at) {
+        const words = (await getInterlinear(db, at.book, at.chapter, at.translation ?? tagged)).get(at.verse) ?? [];
+        const seen = new Set<string>();
+        inVerse = words.filter((w) => {
+          const key = `${w.text}|${w.morph}`;
+          if (w.strongs !== strongs || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      }
+      return { entry, count, original, inVerse, kjvCount, malayalamCount, renderings, malayalam, kjv, examples, related };
     })()
       .then((loaded) => {
         if (!cancelled) setData(loaded);
@@ -232,8 +247,9 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
   const hebrew = pick.strongs ? isHebrew(pick.strongs) : !!original && /[֐-׿]/.test(original.text);
   const originalFont = hebrew ? HEBREW_FONT : theme.font;
   const entry = data?.entry;
-  const grammar = original?.morph ? describeMorph(original.morph, hebrew) : '';
-  const note = original ? textNote(original, t) : '';
+  // The Hebrew or Greek as it stands in the verse: the word tapped in the Hebrew or Greek
+  // view, or for a translation word, every form with its number in that verse.
+  const inVerse = original ? [original] : (data?.inVerse ?? []);
   const tappedFont = pick.word && isMalayalam(pick.word) ? scriptureFont(true, settings.serif, true) : undefined;
   const pron = syllables(entry?.pron ?? null);
   // A translation's renderings mislead when it tags the word in under half the verses
@@ -279,21 +295,12 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
           <ActivityIndicator style={styles.spinner} color={theme.accent} accessibilityLabel={t('loading')} />
         ) : (
           <ScrollView style={styles.scroll} contentContainerStyle={[styles.scrollContent, { paddingBottom: (entry ? footerH : 0) + 16 }]}>
-            {original ? (
+            {inVerse.length > 0 ? (
               <View style={[styles.inText, { backgroundColor: theme.accentSoft }]}>
                 <Text style={[styles.inTextLabel, { color: theme.muted }]}>{t('inThisVerse')}</Text>
-                <Text style={[styles.inTextWord, { color: theme.text, fontFamily: originalFont, textAlign: hebrew ? 'right' : 'left' }]}>{original.text}</Text>
-                <Text style={[styles.inTextLine, { color: theme.text }]}>
-                  {original.translit}
-                  {original.gloss ? <Text style={{ color: theme.muted }}>  ·  {original.gloss}</Text> : null}
-                </Text>
-                {grammar ? (
-                  <Text style={[styles.inTextLine, { color: theme.muted }]}>
-                    {grammar}
-                    {grammar !== original.morph ? <Text style={{ fontVariant: ['tabular-nums'] }}>  ({original.morph})</Text> : null}
-                  </Text>
-                ) : null}
-                {note ? <Text style={[styles.note, { color: theme.accent }]}>{note}</Text> : null}
+                {inVerse.map((w, i) => (
+                  <InVerseWord key={`${w.text}|${w.morph}`} word={w} hebrew={hebrew} font={originalFont} theme={theme} t={t} first={i === 0} />
+                ))}
               </View>
             ) : null}
 
@@ -303,6 +310,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
               </Text>
             ) : (
               <>
+                {inVerse.length > 0 ? <Text style={[styles.inTextLabel, styles.dictionaryLabel, { color: theme.muted }]}>{t('dictionaryForm')}</Text> : null}
                 <View style={styles.wordRow}>
                   {pick.word ? (
                     <>
@@ -404,7 +412,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                   <Text style={[styles.numberLine, { color: theme.muted }]}>{t('strongsNumberLine', { id: entry.id })}</Text>
                 </Section>
 
-                {original ? (
+                {inVerse.length > 0 ? (
                   <>
                     <Pressable onPress={() => setShowLegend((v) => !v)} hitSlop={6} accessibilityRole="button" style={styles.legendToggle}>
                       <Text style={[styles.legendToggleText, { color: theme.accent }]}>{showLegend ? t('marksHide') : t('marksQuestion')}</Text>
@@ -415,7 +423,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                           {t('legendGloss')}
                           {hebrew ? t('legendTranslit') : ''}
                         </Text>
-                        {original.flags ? <Text style={[styles.legendText, { color: theme.muted, marginTop: 6 }]}>{t('legendVariant')}</Text> : null}
+                        {inVerse.some((w) => w.flags) ? <Text style={[styles.legendText, { color: theme.muted, marginTop: 6 }]}>{t('legendVariant')}</Text> : null}
                       </View>
                     ) : null}
                   </>
@@ -457,6 +465,28 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
           </Animated.View>
         ) : null}
     </Modal>
+  );
+}
+
+/** One Hebrew or Greek word as it stands in the verse: form, transliteration, gloss, grammar. */
+function InVerseWord({ word, hebrew, font, theme, t, first }: { word: OriginalWord; hebrew: boolean; font: string | undefined; theme: Theme; t: ReturnType<typeof useT>; first: boolean }) {
+  const grammar = word.morph ? describeMorph(word.morph, hebrew) : '';
+  const note = textNote(word, t);
+  return (
+    <View style={first ? null : styles.inTextMore}>
+      <Text style={[styles.inTextWord, { color: theme.text, fontFamily: font, textAlign: hebrew ? 'right' : 'left' }]}>{word.text}</Text>
+      <Text style={[styles.inTextLine, { color: theme.text }]}>
+        {word.translit}
+        {word.gloss ? <Text style={{ color: theme.muted }}>  ·  {word.gloss}</Text> : null}
+      </Text>
+      {grammar ? (
+        <Text style={[styles.inTextLine, { color: theme.muted }]}>
+          {grammar}
+          {grammar !== word.morph ? <Text style={{ fontVariant: ['tabular-nums'] }}>  ({word.morph})</Text> : null}
+        </Text>
+      ) : null}
+      {note ? <Text style={[styles.note, { color: theme.accent }]}>{note}</Text> : null}
+    </View>
   );
 }
 
@@ -562,6 +592,8 @@ const styles = StyleSheet.create({
   inTextWord: { fontSize: 32, lineHeight: 46 },
   inTextLine: { fontSize: 15, lineHeight: 21, marginTop: 2 },
   note: { fontSize: 13, lineHeight: 18, marginTop: 8 },
+  inTextMore: { marginTop: 12 },
+  dictionaryLabel: { marginTop: 4 },
   wordRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', columnGap: 12 },
   tapped: { fontSize: 20, flexShrink: 1, maxWidth: '45%' },
   arrow: { fontSize: 20 },

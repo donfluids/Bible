@@ -21,7 +21,9 @@ rendering counts all work in Malayalam.
 
 - Read the King James Version or the World English Bible, switchable with one tap.
 - Tap any underlined word to see the original Hebrew or Greek word in a sheet that
-  opens at half height: the word you tapped beside the original, a short modern
+  opens at half height: the form the Hebrew or Greek has in that verse (with its
+  grammar; every form, when the word is there more than once), the word you tapped
+  beside the dictionary form, a short modern
   meaning (from STEPBible's glosses), the pronunciation with its stressed syllable, and
   the words this Bible and the KJV use for it. Drag it up for two example verses,
   related words and Strong's 1890 dictionary entry, which also gives the Strong's
