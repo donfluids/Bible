@@ -7,13 +7,13 @@ import DATABASE_SIZES from './dbSizes.json';
  * on first launch and kept. Bump the suffix whenever assets/db/bible.db is
  * rebuilt so devices that already have a copy pick up the new one.
  */
-export const DATABASE_NAME = 'bible-v11.db';
+export const DATABASE_NAME = 'bible-v12.db';
 
 export const DATABASE_ASSET = require('../assets/db/bible.db');
 
 /**
  * The copy lives in a folder of its own, files/SQLite/bible, which Android leaves out of
- * its backup (plugins/withBackupRules.js): at about 45 MB it would push the app over the
+ * its backup (plugins/withBackupRules.js): at about 47 MB it would push the app over the
  * 25 MB backup limit, and then settings, bookmarks and notes would not be backed up
  * either. expo-sqlite takes the folder as a plain path; the file API wants a file:// URI.
  */

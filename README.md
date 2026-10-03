@@ -29,8 +29,12 @@ rendering counts all work in Malayalam.
   is the Malayalam word the Sathyavedapusthakam uses most (and a second when it is a
   real alternative: ദൈവം · ദേവന്മാർ), with the English meaning under it, and the KJV
   words wait in the full view.
-- From that entry, list every verse in the current translation that uses the same
-  original word, and jump to any of them.
+- From that entry, list every verse where the same Hebrew or Greek word stands, shown
+  in the current translation, and jump to any of them. The count comes from the
+  original text, not from a translation's tags, which miss many (the KJV tags הָיָה in
+  72 of its 3,133 verses); chips narrow the list to one rendering. The sheet hides a
+  translation's chips when it tags the word in under half its verses, and the full view
+  shows Strong's own list of KJV renderings in plain words.
 - Tap the Hebrew words or Greek words button (മൂലപാഠം in the Malayalam app) to see
   the Hebrew (Leningrad Codex) or Greek text of every verse, word by word, each with
   its transliteration and a short gloss. (The code and this README call this view the
@@ -132,7 +136,7 @@ src/selection.ts         The word whose sheet is open, so only its verse redraws
 src/fonts.ts             Hebrew and Malayalam typefaces built into the app
 src/licences.ts          Sources, licences and changes shown under Sources and licences
 plugins/withAndroidRelease.js  Android release signing and shrinking
-plugins/withBackupRules.js     Keeps the 45 MB database out of Android backup, so notes are backed up
+plugins/withBackupRules.js     Keeps the 47 MB database out of Android backup, so notes are backed up
 app.config.js            Per-edition and per-build values layered over app.json
 src/navigation.ts        Screen names and parameters for the native stack
 src/refs.ts              Parses typed references like "1 Cor 13:4"
@@ -147,7 +151,7 @@ src/screens/             Reader, Books, Chapters, Saved, Search, Concordance, Se
 scripts/fetch-data.sh    Downloads the source texts into data/raw/ (not committed)
 scripts/build-db.mjs     Builds assets/db/bible-<edition>.db from data/raw/
 scripts/make-icons.sh    Draws the icon, adaptive icon layers and splash images with ImageMagick
-assets/db/               bible-en.db (30 MB) and bible-ml.db (45 MB), one per edition
+assets/db/               bible-en.db (32 MB) and bible-ml.db (47 MB), one per edition
 assets/icons/            Icon, adaptive icon layers and splash images per edition
 data/overrides/          Hand corrections: Malayalam text, verse map, short meanings
 src/edition.ts           Which texts and interface languages this build carries
@@ -176,8 +180,8 @@ so phones that already hold a copy of the old file pick up the new one.
 | `book_names`  | book names in each translation's own language (Malayalam, from the USFM headers) |
 | `verses`      | one row per verse and translation: plain `text` plus offset-encoded `tags`; `omitted` = 1 for the five verses the WEB leaves out, with the translators' note as `text` |
 | `headings`    | section headings that fall between verses (the acrostic labels of Psalm 119 in the WEB) |
-| `strongs`     | 14,197 dictionary entries: lemma, transliteration, pronunciation, derivation, definition, KJV usage, plus accent-free `lemma_plain` and `translit_plain` for search |
-| `concordance` | per Strong's number and translation: verse count and a packed list of verse references |
+| `strongs`     | 14,197 dictionary entries: lemma, transliteration, pronunciation, derivation, definition, KJV usage, plus accent-free `lemma_plain` and `translit_plain` for search, a short `gloss`, and `uses` (times the word is used in the Hebrew or Greek) |
+| `concordance` | per Strong's number and translation: verse count and a packed list of verse references; translation `ORIG` lists every verse the word is in in the Hebrew or Greek itself (KJV numbering) |
 | `interlinear` | per chapter: the Hebrew or Greek words of every verse, deflate-compressed  |
 | `notes`       | translators' footnotes (kind `f`) and cross references (kind `x`) with the character offset of their marker |
 | `renderings`  | per Strong's number and translation: each English rendering, its verse count and packed verse references |

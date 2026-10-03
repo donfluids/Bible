@@ -5,9 +5,9 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
 import { translationName, useT } from '../i18n';
 import { VerseListItem } from '../components/VerseListItem';
-import { getConcordance, getRenderingRefs, getRenderings, getStrongs, getVerses } from '../queries';
+import { getConcordance, getOriginalRefs, getRenderingRefs, getRenderings, getStrongs, getVerses, inTranslation } from '../queries';
 import { useSettings } from '../settings';
-import { MAX_CONTENT_WIDTH, formatCount } from '../text';
+import { MAX_CONTENT_WIDTH, formatCount, isHebrew } from '../text';
 import { useTheme } from '../theme';
 import { taggedTranslation } from '../types';
 import type { Book, Ref, Rendering, StrongsEntry, VerseRow, WordPick } from '../types';
@@ -24,7 +24,11 @@ interface Props {
 
 const PAGE = 40;
 
-/** Every verse in the current translation tagged with one Strong's number. */
+/**
+ * Every verse a Hebrew or Greek word is in, from the original text, shown in the current
+ * translation; the chips narrow it to the verses where the translation renders the word
+ * one way.
+ */
 export function ConcordanceScreen({ strongs, rendering, books, onOpenRef, onWord, onBack }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
@@ -37,6 +41,8 @@ export function ConcordanceScreen({ strongs, rendering, books, onOpenRef, onWord
   const [entry, setEntry] = useState<StrongsEntry | null>(null);
   const [renderings, setRenderings] = useState<Rendering[]>([]);
   const [total, setTotal] = useState(0);
+  /** Whether the full list comes from the Hebrew or Greek text (else from the tags). */
+  const [fromOriginal, setFromOriginal] = useState(false);
   /** The English rendering the list is filtered to, or null for all verses. */
   const [filter, setFilter] = useState<string | null>(rendering ?? null);
   const [refs, setRefs] = useState<Ref[] | null>(null);
@@ -66,11 +72,22 @@ export function ConcordanceScreen({ strongs, rendering, books, onOpenRef, onWord
     setRefs(null);
     setVerses([]);
     setFailed(false);
-    const load = filter === null ? getConcordance(db, strongs, translation) : getRenderingRefs(db, strongs, translation, filter);
-    load
+    const load = async (): Promise<Ref[]> => {
+      if (filter !== null) return getRenderingRefs(db, strongs, translation, filter);
+      const original = await getOriginalRefs(db, strongs);
+      if (cancelled) return [];
+      setFromOriginal(original.length > 0);
+      if (original.length === 0) {
+        const tagged = await getConcordance(db, strongs, translation);
+        setTotal(tagged.length);
+        return tagged;
+      }
+      setTotal(original.length);
+      return inTranslation(db, translation, original);
+    };
+    load()
       .then(async (r) => {
         if (cancelled) return;
-        if (filter === null) setTotal(r.length);
         setRefs(r);
         const first = await getVerses(db, translation, r.slice(0, PAGE));
         if (!cancelled) setVerses(first);
@@ -109,6 +126,11 @@ export function ConcordanceScreen({ strongs, rendering, books, onOpenRef, onWord
         <Text style={[styles.count, { color: theme.muted }]}>
           {failed
             ? t('loadFailed')
+            : refs && filter === null && fromOriginal
+            ? t(
+                total === 1 ? (isHebrew(strongs) ? 'originalVerseHebrew' : 'originalVerseGreek') : isHebrew(strongs) ? 'originalVersesHebrew' : 'originalVersesGreek',
+                { n: formatCount(total), translation: translationName(settings.language, translation) },
+              )
             : refs
             ? (refs.length === 1
                 ? t('oneVerseIn', { translation: translationName(settings.language, translation) })

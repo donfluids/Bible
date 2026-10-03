@@ -91,7 +91,7 @@ export async function getRenderingRefs(db: SQLiteDatabase, strongs: string, tran
 
 export async function getStrongs(db: SQLiteDatabase, id: string): Promise<StrongsEntry | null> {
   return db.getFirstAsync<StrongsEntry>(
-    'SELECT id, lemma, translit, pron, derivation, definition, kjv_usage, gloss FROM strongs WHERE id = ?',
+    'SELECT id, lemma, translit, pron, derivation, definition, kjv_usage, gloss, uses FROM strongs WHERE id = ?',
     id,
   );
 }
@@ -144,6 +144,55 @@ export async function getConcordanceCount(
     translation,
   );
   return row?.count ?? 0;
+}
+
+/**
+ * Every verse a word occurs in, from the Hebrew or Greek text itself rather than a
+ * translation's tags, in KJV numbering (inTranslation renumbers them).
+ */
+export async function getOriginalRefs(db: SQLiteDatabase, strongs: string): Promise<Ref[]> {
+  const row = await db.getFirstAsync<{ refs: Uint8Array | ArrayBuffer }>("SELECT refs FROM concordance WHERE strongs = ? AND translation = 'ORIG'", strongs);
+  return row ? decodeRefs(row.refs) : [];
+}
+
+export async function getOriginalCount(db: SQLiteDatabase, strongs: string): Promise<number> {
+  const row = await db.getFirstAsync<{ count: number }>("SELECT count FROM concordance WHERE strongs = ? AND translation = 'ORIG'", strongs);
+  return row?.count ?? 0;
+}
+
+/**
+ * KJV-numbered verses in a translation's own numbering (the Malayalam numbers some
+ * verses differently), without repeats. A KJV verse gives the translation's verse of
+ * the same number unless that one is mapped elsewhere, plus any verses mapped to it
+ * (KJV 3 John 14 is Malayalam 14 and 15).
+ */
+export async function inTranslation(db: SQLiteDatabase, translation: TranslationId, refs: Ref[]): Promise<Ref[]> {
+  const rows = await db.getAllAsync<{ book: number; chapter: number; verse: number; obook: number; ochapter: number; overse: number }>(
+    'SELECT book, chapter, verse, obook, ochapter, overse FROM verse_map WHERE translation = ? ORDER BY book, chapter, verse, n',
+    translation,
+  );
+  if (rows.length === 0) return refs;
+  const fromKjv = new Map<string, Ref[]>();
+  const mapped = new Set<string>();
+  for (const r of rows) {
+    const key = `${r.obook}:${r.ochapter}:${r.overse}`;
+    fromKjv.set(key, [...(fromKjv.get(key) ?? []), { book: r.book, chapter: r.chapter, verse: r.verse }]);
+    mapped.add(`${r.book}:${r.chapter}:${r.verse}`);
+  }
+  const out: Ref[] = [];
+  const seen = new Set<string>();
+  for (const ref of refs) {
+    const key = `${ref.book}:${ref.chapter}:${ref.verse}`;
+    const same = mapped.has(key) ? [] : [ref];
+    const all = [...same, ...(fromKjv.get(key) ?? [])].sort((a, b) => a.book - b.book || a.chapter - b.chapter || a.verse - b.verse);
+    for (const r of all) {
+      const k = `${r.book}:${r.chapter}:${r.verse}`;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      out.push(r);
+    }
+  }
+  return out;
 }
 
 /** Fetch the text of specific verses. Keeps the order of `refs`. */

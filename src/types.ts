@@ -98,6 +98,8 @@ export interface StrongsEntry {
   kjv_usage: string | null;
   /** A short modern meaning, e.g. "God" or "word; thing". */
   gloss: string | null;
+  /** How many times the word is used in the Hebrew or Greek text. */
+  uses: number | null;
 }
 
 /** A word linked to another through Strong's derivations. */

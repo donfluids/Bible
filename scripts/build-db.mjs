@@ -436,8 +436,29 @@ function buildInterlinear(db) {
     if (!byChapter.has(ck)) byChapter.set(ck, []);
     byChapter.get(ck).push({ verse, packed });
   }
+  // Every verse each word occurs in, and how many times it is used, from the Hebrew and
+  // Greek themselves: a translation's tags miss many (the KJV tags הָיָה in 72 of its 3,133
+  // verses). Stored as the concordance of 'ORIG', in KJV numbering.
+  const origRefs = new Map();
+  const uses = new Map();
+  const keys = [...byVerse.keys()].map((k) => k.split(':').map(Number)).sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2]);
+  for (const [book, chapter, verse] of keys) {
+    const seen = new Set();
+    for (const w of byVerse.get(`${book}:${chapter}:${verse}`)) {
+      if (!w.strongs) continue;
+      uses.set(w.strongs, (uses.get(w.strongs) || 0) + 1);
+      if (seen.has(w.strongs)) continue;
+      seen.add(w.strongs);
+      if (!origRefs.has(w.strongs)) origRefs.set(w.strongs, []);
+      origRefs.get(w.strongs).push(book, chapter, verse);
+    }
+  }
+  const insConc = db.prepare("INSERT INTO concordance VALUES (?, 'ORIG', ?, ?)");
+  const setUses = db.prepare('UPDATE strongs SET uses = ? WHERE id = ?');
   let bytes = 0;
   db.exec('BEGIN');
+  for (const [id, refs] of origRefs) insConc.run(id, refs.length / 3, new Uint8Array(refs));
+  for (const [id, n] of uses) setUses.run(n, id);
   for (const [ck, verses] of byChapter) {
     verses.sort((a, b) => a.verse - b.verse);
     const [book, chapter] = ck.split(':').map(Number);
@@ -447,7 +468,7 @@ function buildInterlinear(db) {
     ins.run(book, chapter, blob);
   }
   db.exec('COMMIT');
-  return { hebrewWords: hebrew.length, greekWords: greek.length, greekNaOnlySkipped: skipped, greekTraditionalReadings: replaced, wordsWithoutDictionaryEntry: unknown, verses: byVerse.size, chapters: byChapter.size, compressedBytes: bytes };
+  return { originalConcordance: origRefs.size, hebrewWords: hebrew.length, greekWords: greek.length, greekNaOnlySkipped: skipped, greekTraditionalReadings: replaced, wordsWithoutDictionaryEntry: unknown, verses: byVerse.size, chapters: byChapter.size, compressedBytes: bytes };
 }
 
 // Lowercase and strip accents, Hebrew points and other combining marks, so that
@@ -696,7 +717,7 @@ function buildEdition(edition) {
     CREATE TABLE renderings(strongs TEXT NOT NULL, translation TEXT NOT NULL, word TEXT NOT NULL, count INTEGER NOT NULL,
                         refs BLOB NOT NULL, PRIMARY KEY(strongs, translation, word)) WITHOUT ROWID;
     CREATE TABLE strongs(id TEXT PRIMARY KEY, lemma TEXT, translit TEXT, pron TEXT, derivation TEXT, definition TEXT, kjv_usage TEXT,
-                        lemma_plain TEXT, translit_plain TEXT, gloss TEXT) WITHOUT ROWID;
+                        lemma_plain TEXT, translit_plain TEXT, gloss TEXT, uses INTEGER) WITHOUT ROWID;
     CREATE INDEX strongs_translit ON strongs(translit_plain);
     CREATE TABLE concordance(strongs TEXT NOT NULL, translation TEXT NOT NULL, count INTEGER NOT NULL, refs BLOB NOT NULL,
                         PRIMARY KEY(strongs, translation)) WITHOUT ROWID;
@@ -714,7 +735,7 @@ function buildEdition(edition) {
   const insRendering = db.prepare('INSERT INTO renderings VALUES (?,?,?,?,?)');
   const insBook = db.prepare('INSERT INTO books VALUES (?,?,?,?,?)');
   const insBookName = db.prepare('INSERT INTO book_names VALUES (?,?,?)');
-  const insStrongs = db.prepare('INSERT INTO strongs VALUES (?,?,?,?,?,?,?,?,?,NULL)');
+  const insStrongs = db.prepare('INSERT INTO strongs VALUES (?,?,?,?,?,?,?,?,?,NULL,NULL)');
   const insConc = db.prepare('INSERT INTO concordance VALUES (?,?,?,?)');
   const insMeta = db.prepare('INSERT INTO meta VALUES (?,?)');
 
@@ -882,7 +903,7 @@ function buildEdition(edition) {
     }
   }
   stats.verseMap = mapped;
-  insMeta.run('schema', '9');
+  insMeta.run('schema', '10');
   insMeta.run('edition', edition);
   insMeta.run('built', new Date().toISOString().slice(0, 10));
   insMeta.run('translations', JSON.stringify(TRANSLATIONS.map(({ id, name }) => ({ id, name }))));

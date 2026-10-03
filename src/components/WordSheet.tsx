@@ -7,9 +7,9 @@ import { HEBREW_FONT, isMalayalam, scriptureFont } from '../fonts';
 import { renderingsLabel, translationName, useT } from '../i18n';
 import type { StringKey } from '../i18n';
 import { describeMorph } from '../morph';
-import { getConcordance, getConcordanceCount, getRelated, getRenderings, getStrongs, getVerses } from '../queries';
+import { getConcordance, getConcordanceCount, getOriginalCount, getRelated, getRenderings, getStrongs, getVerses } from '../queries';
 import { useSettings } from '../settings';
-import { formatCount, formatRef, isHebrew } from '../text';
+import { formatCount, formatRef, isHebrew, plainKjvUsage } from '../text';
 import { useTheme } from '../theme';
 import type { Theme } from '../theme';
 import { FLAG_LXX, FLAG_NOT_IN_BYZ, FLAG_NOT_IN_NA, FLAG_NOT_IN_TR, FLAG_REPLACES_NA, FLAG_RESTORED, taggedTranslation } from '../types';
@@ -35,6 +35,11 @@ interface Props {
 interface Loaded {
   entry: StrongsEntry | null;
   count: number;
+  /** Verses the word is in, in the Hebrew or Greek text. */
+  original: number;
+  /** Verses the KJV and the Malayalam tag with it, for hiding their chips when few are. */
+  kjvCount: number;
+  malayalamCount: number;
   renderings: Rendering[];
   /** Malayalam renderings for the headline in the Malayalam interface, else empty. */
   malayalam: Rendering[];
@@ -45,7 +50,7 @@ interface Loaded {
   failed?: boolean;
 }
 
-const EMPTY: Omit<Loaded, 'entry'> = { count: 0, renderings: [], malayalam: [], kjv: [], examples: [], related: [] };
+const EMPTY: Omit<Loaded, 'entry'> = { count: 0, original: 0, kjvCount: 0, malayalamCount: 0, renderings: [], malayalam: [], kjv: [], examples: [], related: [] };
 
 /**
  * Which printed texts have an original word, when that is worth saying: a Hebrew word
@@ -194,17 +199,22 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
     }
     const strongs = pick.strongs;
     (async () => {
-      const [entry, count, renderings, malayalamOther, kjv, refs] = await Promise.all([
+      const otherMalayalam = malayalamFirst && tagged !== 'MAL';
+      const [entry, count, original, renderings, malayalamOther, malayalamOtherCount, kjv, kjvCount, refs] = await Promise.all([
         getStrongs(db, strongs),
         getConcordanceCount(db, strongs, tagged),
+        getOriginalCount(db, strongs),
         getRenderings(db, strongs, tagged),
-        malayalamFirst && tagged !== 'MAL' ? getRenderings(db, strongs, 'MAL') : Promise.resolve([] as Rendering[]),
+        otherMalayalam ? getRenderings(db, strongs, 'MAL') : Promise.resolve([] as Rendering[]),
+        otherMalayalam ? getConcordanceCount(db, strongs, 'MAL') : Promise.resolve(0),
         withKjv ? getRenderings(db, strongs, 'KJV') : Promise.resolve([] as Rendering[]),
+        withKjv ? getConcordanceCount(db, strongs, 'KJV') : Promise.resolve(0),
         getConcordance(db, strongs, tagged),
       ]);
       const [examples, related] = await Promise.all([getVerses(db, tagged, refs.slice(0, 2)), entry ? getRelated(db, entry) : Promise.resolve([])]);
       const malayalam = !malayalamFirst ? [] : tagged === 'MAL' ? renderings : malayalamOther;
-      return { entry, count, renderings, malayalam, kjv, examples, related };
+      const malayalamCount = tagged === 'MAL' ? count : malayalamOtherCount;
+      return { entry, count, original, kjvCount, malayalamCount, renderings, malayalam, kjv, examples, related };
     })()
       .then((loaded) => {
         if (!cancelled) setData(loaded);
@@ -226,8 +236,12 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
   const note = original ? textNote(original, t) : '';
   const tappedFont = pick.word && isMalayalam(pick.word) ? scriptureFont(true, settings.serif, true) : undefined;
   const pron = syllables(entry?.pron ?? null);
-  const headline = data ? headlineWords(data.malayalam) : [];
-  const kjvChips = withKjv ? <Renderings label={renderingsLabel(settings.language, 'KJV')} list={topRenderings(data?.kjv ?? [], 5)} theme={theme} /> : null;
+  // A translation's renderings mislead when it tags the word in under half the verses
+  // the word is in (the KJV gives ὁ, "the", as "which, that"), so they are left out then.
+  const covers = (n: number) => !data || data.original === 0 || n >= data.original / 2;
+  const headline = data && covers(data.malayalamCount) ? headlineWords(data.malayalam) : [];
+  const kjvChips = withKjv && covers(data?.kjvCount ?? 0) ? <Renderings label={renderingsLabel(settings.language, 'KJV')} list={topRenderings(data?.kjv ?? [], 5)} theme={theme} /> : null;
+  const listCount = data ? data.original || data.count : 0;
   const name = translationName(settings.language, tagged);
 
   return (
@@ -324,12 +338,22 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                   </Text>
                 ) : null}
 
-                <Renderings
-                  label={renderingsLabel(settings.language, tagged)}
-                  list={topRenderings(data.renderings, 6, data.count)}
-                  theme={theme}
-                  onPress={(word) => onShowOccurrences(entry.id, word)}
-                />
+                {entry.uses ? (
+                  <Text style={[styles.uses, { color: theme.muted }]}>
+                    {entry.uses === 1
+                      ? t(hebrew ? 'usedOnceHebrew' : 'usedOnceGreek')
+                      : t(hebrew ? 'usedHebrew' : 'usedGreek', { n: formatCount(entry.uses) })}
+                  </Text>
+                ) : null}
+
+                {covers(data.count) ? (
+                  <Renderings
+                    label={renderingsLabel(settings.language, tagged)}
+                    list={topRenderings(data.renderings, 6, data.count)}
+                    theme={theme}
+                    onPress={(word) => onShowOccurrences(entry.id, word)}
+                  />
+                ) : null}
                 {malayalamFirst ? null : kjvChips}
 
                 {data.examples.length > 0 ? (
@@ -371,6 +395,11 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
 
                 <Section label={t('strongsDictionary')} theme={theme}>
                   {entry.definition ? <Text style={[styles.body, { color: theme.text }]}>{entry.definition}</Text> : null}
+                  {entry.kjv_usage ? (
+                    <Text style={[styles.usage, { color: theme.text }]}>
+                      {t('kjvUsage', { list: plainKjvUsage(entry.kjv_usage, { idiom: t('usageIdiom'), phrase: t('usagePhrase'), with: t('usageWith') }) })}
+                    </Text>
+                  ) : null}
                   {entry.derivation ? <LinkedText text={entry.derivation} color={theme.muted} accent={theme.accent} hebrewFont={HEBREW_FONT} onPick={onPick} /> : null}
                   <Text style={[styles.numberLine, { color: theme.muted }]}>{t('strongsNumberLine', { id: entry.id })}</Text>
                 </Section>
@@ -412,18 +441,18 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
             ) : null}
             <Pressable
               onPress={() => onShowOccurrences(entry.id)}
-              disabled={data!.count === 0}
-              style={({ pressed }) => [styles.cta, { backgroundColor: theme.accent, opacity: pressed || data!.count === 0 ? 0.6 : 1 }]}
+              disabled={listCount === 0}
+              style={({ pressed }) => [styles.cta, { backgroundColor: theme.accent, opacity: pressed || listCount === 0 ? 0.6 : 1 }]}
               accessibilityRole="button"
             >
               <Text style={[styles.ctaText, { color: theme.onAccent }]}>
-                {data!.count === 0
+                {listCount === 0
                   ? t('notTagged', { translation: name })
-                  : data!.count === 1
+                  : listCount === 1
                     ? t('seeOneVerse')
-                    : t('seeAllVerses', { n: formatCount(data!.count) })}
+                    : t('seeAllVerses', { n: formatCount(listCount) })}
               </Text>
-              {data!.count > 0 ? <Text style={[styles.ctaSub, { color: theme.onAccent }]}>{t('inTranslationSub', { name })}</Text> : null}
+              {listCount > 0 ? <Text style={[styles.ctaSub, { color: theme.onAccent }]}>{t('inTranslationSub', { name })}</Text> : null}
             </Pressable>
           </Animated.View>
         ) : null}
@@ -540,6 +569,8 @@ const styles = StyleSheet.create({
   meaning: { fontSize: 26, fontWeight: '700', marginTop: 2 },
   meaningMalayalam: { fontWeight: undefined, lineHeight: 40 },
   meaningSub: { fontSize: 17, marginTop: 2 },
+  uses: { fontSize: 14, marginTop: 6 },
+  usage: { fontSize: 15, lineHeight: 22, marginTop: 8 },
   pronRow: { marginTop: 4 },
   pron: { fontSize: 17 },
   translit: { fontSize: 14 },

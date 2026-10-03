@@ -75,3 +75,40 @@ export const MAX_CONTENT_WIDTH = 720;
 export function formatCount(n: number): string {
   return n.toLocaleString('en-US');
 }
+
+/**
+ * Strong's list of the KJV's renderings in plain words. Strong marks a rendering made
+ * through an idiom ([idiom], or X in the Greek), as part of a phrase ([phrase]) or only
+ * with other words (+); each mark becomes a word in brackets after the rendering:
+ * "[idiom] exceeding" reads "exceeding (idiom)".
+ */
+export function plainKjvUsage(usage: string, labels: { idiom: string; phrase: string; with: string }): string {
+  let text = usage.trim().replace(/\.$/, '');
+  if (/^\([^()]*\)$/.test(text)) text = text.slice(1, -1);
+  const items: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === '(') depth++;
+    else if (text[i] === ')') depth = Math.max(0, depth - 1);
+    else if (text[i] === ',' && depth === 0) {
+      items.push(text.slice(start, i));
+      start = i + 1;
+    }
+  }
+  items.push(text.slice(start));
+  return items
+    .map((raw) => {
+      let item = raw.trim();
+      const marks: string[] = [];
+      for (let m = /^(\[idiom\]|\[phrase\]|\+|X)\s+/.exec(item); m; m = /^(\[idiom\]|\[phrase\]|\+|X)\s+/.exec(item)) {
+        const label = m[1] === '[phrase]' ? labels.phrase : m[1] === '+' ? labels.with : labels.idiom;
+        if (!marks.includes(label)) marks.push(label);
+        item = item.slice(m[0].length);
+      }
+      return marks.length ? `${item} (${marks.join(', ')})` : item;
+    })
+    .filter(Boolean)
+    .join(', ')
+    .replace(/\[(idiom|phrase)\]\s*/g, '');
+}
