@@ -50,7 +50,8 @@ rendering counts all work in Malayalam.
 - Interlinear options: show every verse or only verses whose number you tap, hide
   the transliteration, hide Hebrew cantillation marks.
 - Search the text, type a reference such as `John 3:16` or `Ps 23` to jump to it, or
-  type a Strong's number such as `G26` to open its entry.
+  type a Strong's number such as `G26` to open its entry. Malayalam search accepts
+  modern spelling: ആത്മാവ് finds the 1910 text's ആത്മാവു, and കൽപിച്ചു finds കല്പിച്ചു.
 - Swipe left or right to change chapter (a swipe from the very edge is left to the
   phone's back gesture). Screens slide natively, and on iPhone you can swipe back from
   the left edge. Rotates to landscape; on tablets the text keeps a
@@ -134,6 +135,7 @@ src/theme.ts             Light, sepia and dark palettes and the serif face
 src/queries.ts           All SQL, typed
 src/text.ts              Expands offset-encoded Strong's tags into text runs
 src/morph.ts             Turns Hebrew and Greek grammar codes into plain words
+src/malayalamSearch.ts   Matches modern Malayalam spelling against the 1910 text
 src/settings.tsx         Persisted settings (translation, text size, bookmarks, notes)
 src/components/          Header, VerseText, InterlinearVerse, WordSheet, CompareSheet, SimpleSheet, VerseListItem
 src/screens/             Reader, Books, Chapters, Saved, Search, Concordance, Settings, Licences
@@ -333,7 +335,10 @@ once with its English reference.
 - The WEB omits five New Testament verses that are absent from the earliest
   manuscripts (for example Matthew 17:21). They appear as greyed rows carrying the
   translators' note.
-- Text search is a plain substring match, case-insensitive for English letters.
+- Text search is a plain substring match, case-insensitive for English letters. In
+  Malayalam, a final ് or ു, a chillu or its consonant with ്, and the joiner after
+  some ് all count as the same (src/malayalamSearch.ts); other forms of a word are
+  not found unless typed as a shorter stem.
 - The interlinear line and the English line are not linked word to word. Tapping
   an English word opens its Strong's entry; tapping an original word opens the same
   entry plus that word's grammar.

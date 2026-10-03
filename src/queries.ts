@@ -1,5 +1,7 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { inflateSync, strFromU8 } from 'fflate';
+import { malayalamPattern } from './malayalamSearch';
+import type { MalayalamPattern } from './malayalamSearch';
 import { plainText } from './text';
 import type { Book, Heading, LexiconHit, Note, OriginalWord, Ref, RelatedWord, Rendering, StrongsEntry, TranslationId, VerseRow } from './types';
 
@@ -179,6 +181,8 @@ export async function searchText(
 ): Promise<VerseRow[]> {
   const cleaned = query.trim().replace(/\s+/g, ' ');
   if (!cleaned) return [];
+  const malayalam = malayalamPattern(cleaned);
+  if (malayalam) return searchMalayalam(db, translation, malayalam, limit);
   const pattern = '%' + cleaned.replace(/[\\%_]/g, (c) => '\\' + c).replace(/'/g, '_') + '%';
   return db.getAllAsync<VerseRow>(
     "SELECT book, chapter, verse, text, tags, omitted, para FROM verses WHERE translation = ? AND omitted = 0 AND text LIKE ? ESCAPE '\\' ORDER BY book, chapter, verse LIMIT ?",
@@ -186,6 +190,34 @@ export async function searchText(
     pattern,
     limit,
   );
+}
+
+/**
+ * Malayalam search: LIKE finds the verses that could match, a page at a time in book
+ * order, and the exact pattern keeps the ones that do (src/malayalamSearch.ts).
+ */
+async function searchMalayalam(db: SQLiteDatabase, translation: TranslationId, pattern: MalayalamPattern, limit: number): Promise<VerseRow[]> {
+  const exact = new RegExp(pattern.source);
+  const out: VerseRow[] = [];
+  const PAGE = 500;
+  let after = [0, 0, 0];
+  for (;;) {
+    const rows = await db.getAllAsync<VerseRow>(
+      "SELECT book, chapter, verse, text, tags, omitted, para FROM verses WHERE translation = ? AND omitted = 0 AND text LIKE ? ESCAPE '\\' AND (book, chapter, verse) > (?, ?, ?) ORDER BY book, chapter, verse LIMIT ?",
+      translation,
+      pattern.like,
+      ...after,
+      PAGE,
+    );
+    for (const row of rows) {
+      if (!exact.test(row.text)) continue;
+      out.push(row);
+      if (out.length >= limit) return out;
+    }
+    if (rows.length < PAGE) return out;
+    const last = rows[rows.length - 1];
+    after = [last.book, last.chapter, last.verse];
+  }
 }
 
 /**
