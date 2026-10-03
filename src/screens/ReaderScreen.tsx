@@ -22,7 +22,7 @@ import { FONT_SIZES, useSettings } from '../settings';
 import type { Settings } from '../settings';
 import { getPlace, moveMainReader, selectBook, selectChapter, updatePlace, usePlace } from '../place';
 import type { Position } from '../place';
-import { MAX_CONTENT_WIDTH, bookName, flattenVerse, formatRef, parseSegments } from '../text';
+import { MAX_CONTENT_WIDTH, bookName, flattenVerse, formatRef, parseSegments, shareText } from '../text';
 import { useTheme } from '../theme';
 import { HIGHLIGHT_COLORS, translationInfo } from '../types';
 import type { Book, HighlightColor, Note, OriginalWord, Ref, TranslationId, VerseRow, WordPick } from '../types';
@@ -430,7 +430,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
   const bookmarkKey = (v: VerseRow) => `${v.book}:${v.chapter}:${v.verse}`;
   const bookmarked = useMemo(() => new Set(bookmarks.map((b) => `${b.book}:${b.chapter}:${b.verse}`)), [bookmarks]);
 
-  const verseForClipboard = (v: VerseRow) => `${flattenVerse(v.text)} (${formatRef(books, v, translation)}, ${translation})`;
+  const verseForClipboard = (v: VerseRow) => shareText(books, v, translation, flattenVerse(v.text));
 
   const copyVerse = async (v: VerseRow) => {
     setActions(null);

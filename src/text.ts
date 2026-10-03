@@ -41,7 +41,18 @@ export function bookName(books: Book[], id: number, translation?: TranslationId)
 
 export function formatRef(books: Book[], ref: Ref, translation?: TranslationId): string {
   const name = bookName(books, ref.book, translation);
-  return ref.verse === 0 ? `${name} ${ref.chapter} (title)` : `${name} ${ref.chapter}:${ref.verse}`;
+  // A Psalm's title is verse 0; it is named in the language of the book name.
+  const title = translation === 'MAL' ? '(ശീർഷകം)' : '(title)';
+  return ref.verse === 0 ? `${name} ${ref.chapter} ${title}` : `${name} ${ref.chapter}:${ref.verse}`;
+}
+
+/**
+ * A verse as copied or shared: the text, then the reference and the Bible on a line of
+ * their own. English Bibles go by their usual short names; the Malayalam by its name.
+ */
+export function shareText(books: Book[], verse: VerseRow, translation: TranslationId, text: string): string {
+  const bible = translation === 'MAL' ? 'സത്യവേദപുസ്തകം' : translation;
+  return `${text}\n— ${formatRef(books, verse, translation)} (${bible})`;
 }
 
 export function refKey(ref: Ref): string {
