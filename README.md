@@ -50,7 +50,9 @@ rendering counts all work in Malayalam.
 - Interlinear options: show every verse or only verses whose number you tap, hide
   the transliteration, hide Hebrew cantillation marks.
 - Search the text, type a reference such as `John 3:16` or `Ps 23` to jump to it, or
-  type a Strong's number such as `G26` to open its entry. Malayalam search accepts
+  type a Strong's number such as `G26` to open its entry. Malayalam references take
+  everyday spellings and the Catholic (POC) names too: സങ്കീർത്തനം 23, മർക്കോസ് 1,
+  1 ശമൂവേൽ 3, നടപടികൾ 2. Malayalam search accepts
   modern spelling: ആത്മാവ് finds the 1910 text's ആത്മാവു, and കൽപിച്ചു finds കല്പിച്ചു.
 - Swipe left or right to change chapter (a swipe from the very edge is left to the
   phone's back gesture). Screens slide natively, and on iPhone you can swipe back from

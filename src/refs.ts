@@ -29,6 +29,67 @@ const ABBREVIATIONS: Record<string, number> = {
   jud: 65, jude: 65, jd: 65, rev: 66, re: 66, rv: 66, apoc: 66,
 };
 
+/**
+ * Other Malayalam names for books, beside the names in the Malayalam text: modern
+ * spellings and the names used in the Catholic (POC) Bible. A number in front of a name
+ * (1 ശമൂവേൽ) comes from the book, so names here have none.
+ */
+const MALAYALAM_NAMES: Record<number, string[]> = {
+  3: ['ലേവ്യർ'], 5: ['നിയമാവർത്തനം', 'ആവർത്തനം'], 6: ['ജോഷ്വ'], 8: ['റൂത്ത്'],
+  9: ['സാമുവൽ', 'സാമുവേൽ'], 10: ['സാമുവൽ', 'സാമുവേൽ'], 16: ['നെഹെമിയാ'], 17: ['എസ്തേർ'], 18: ['ജോബ്'],
+  19: ['സങ്കീർത്തനം'], 20: ['സുഭാഷിതങ്ങൾ'], 21: ['സഭാപ്രസംഗകൻ'], 23: ['ഏശയ്യാ'], 24: ['ജറെമിയാ'],
+  26: ['എസെക്കിയേൽ'], 27: ['ദാനിയേൽ'], 28: ['ഹോസിയാ'], 29: ['ജോയേൽ'], 31: ['ഒബാദിയാ'], 33: ['മിക്കാ'],
+  34: ['നാഹും'], 35: ['ഹബക്കുക്ക്'], 36: ['സെഫാനിയാ'], 38: ['സഖറിയാ'], 39: ['മലാക്കി'], 42: ['ലൂക്കാ'],
+  44: ['അപ്പൊസ്തലപ്രവൃത്തികൾ', 'പ്രവൃത്തികൾ', 'അപ്പസ്തോലന്മാരുടെ നടപടികൾ', 'നടപടികൾ'], 45: ['റോമാ'],
+  46: ['കോറിന്തോസ്'], 47: ['കോറിന്തോസ്'], 48: ['ഗലാത്തിയാ'], 49: ['എഫേസോസ്'], 50: ['ഫിലിപ്പി'],
+  51: ['കൊളോസോസ്', 'കൊളോസ്യർ'], 52: ['തെസലോനിക്കാ'], 53: ['തെസലോനിക്കാ'], 54: ['തിമോത്തേയോസ്', 'തിമോത്തിയോസ്'],
+  55: ['തിമോത്തേയോസ്', 'തിമോത്തിയോസ്'], 58: ['ഹെബ്രായർ'], 65: ['യൂദാസ്'], 66: ['വെളിപാട്'],
+};
+
+/**
+ * A Malayalam book name reduced so that spellings people type meet the 1910 ones:
+ * no spaces, dots or joiners; chillus as consonant + ്; long and short vowels alike
+ * (മർക്കോസ്, മർക്കൊസ്); a doubled consonant as one (വെളിപാട്, വെളിപ്പാടു); and no
+ * final ്, ു or ം (പുറപ്പാട്, പുറപ്പാടു; സങ്കീർത്തനം).
+ */
+const CHILLUS: Record<string, string> = { 'ൺ': 'ണ്', 'ൻ': 'ന്', 'ർ': 'ര്', 'ൽ': 'ല്', 'ൾ': 'ള്', 'ൿ': 'ക്' };
+const LONG_SHORT: Record<string, string> = { 'ീ': 'ി', 'ൂ': 'ു', 'േ': 'െ', 'ോ': 'ൊ', 'ഈ': 'ഇ', 'ഊ': 'ഉ', 'ഏ': 'എ', 'ഓ': 'ഒ' };
+function malayalamKey(name: string): string {
+  return name
+    .replace(/[\s.\u200c\u200d]/g, '')
+    .replace(/[ൺൻർൽൾൿ]/g, (c) => CHILLUS[c])
+    .replace(/[ീൂേോഈഊഏഓ]/g, (c) => LONG_SHORT[c])
+    .replace(/([\u0d15-\u0d39])\u0d4d\1/g, '$1')
+    .replace(/[\u0d4d\u0d41\u0d02]+$/, '');
+}
+
+/** Each book's Malayalam names, reduced, with the number in front of the name (or 0). */
+let malayalamIndex: { books: Book[]; names: { id: number; number: number; key: string }[] } | null = null;
+function malayalamNames(books: Book[]) {
+  if (malayalamIndex?.books === books) return malayalamIndex.names;
+  const names: { id: number; number: number; key: string }[] = [];
+  for (const b of books) {
+    const number = Number(/^([1-3])/.exec(b.name)?.[1] ?? 0);
+    const all = [...Object.values(b.names), ...(MALAYALAM_NAMES[b.id] ?? [])].filter((n) => /[\u0d00-\u0d7f]/.test(n));
+    for (const n of all) names.push({ id: b.id, number, key: malayalamKey(n.replace(/^[1-3]\.?\s*/, '')) });
+  }
+  malayalamIndex = { books, names };
+  return names;
+}
+
+/** The book a typed Malayalam name points to: the start of one book's name, or a whole one. */
+function malayalamBook(typed: string, books: Book[]): number | undefined {
+  const m = /^([1-3])?\.?\s*(.*)$/.exec(typed.trim());
+  const number = Number(m?.[1] ?? 0);
+  const key = malayalamKey(m?.[2] ?? '');
+  if (!key) return undefined;
+  const found = malayalamNames(books).filter((n) => n.number === number && n.key.startsWith(key));
+  const ids = new Set(found.map((n) => n.id));
+  if (ids.size === 1) return found[0].id;
+  const whole = new Set(found.filter((n) => n.key === key).map((n) => n.id));
+  return whole.size === 1 ? [...whole][0] : undefined;
+}
+
 export interface ParsedRef extends Ref {
   /** True when the input had no verse; `verse` is then 1. */
   chapterOnly: boolean;
@@ -40,13 +101,18 @@ export interface ParsedRef extends Ref {
  * chapter is out of range for the book.
  */
 export function parseReference(input: string, books: Book[], translation?: TranslationId): ParsedRef | null {
-  const m = /^\s*([1-3]?\s*[^\d:.,]+?)\s*(\d{1,3})(?:\s*[:.,\s]\s*(\d{1,3}))?\s*$/i.exec(input.replace(/\s+/g, ' '));
+  const m = /^\s*([1-3]?\.?\s*[^\d:,]+?)\s*(\d{1,3})(?:\s*[:.,\s]\s*(\d{1,3}))?\s*$/i.exec(input.replace(/\s+/g, ' '));
   if (!m) return null;
   const typed = m[1].trim();
   const rawName = typed.toLowerCase().replace(/[^a-z0-9]/g, '');
+  // Malayalam names, from any translation, e.g. "യോഹന്നാൻ 3:16" or "1 ശമൂവേൽ 3".
+  if (/[\u0d00-\u0d7f]/.test(typed)) {
+    const id = malayalamBook(typed, books);
+    return id ? withChapter(books, id, m) : null;
+  }
   let id = rawName ? ABBREVIATIONS[rawName] : undefined;
   if (!id && translation) {
-    // Book names in the translation's own language, e.g. Malayalam "യോഹന്നാൻ 3:16".
+    // Book names in the translation's own language.
     const local = books.filter((b) => (b.names[translation] ?? '').replace(/\s+/g, '').startsWith(typed.replace(/\s+/g, '')));
     if (local.length === 1) id = local[0].id;
   }
@@ -62,6 +128,10 @@ export function parseReference(input: string, books: Book[], translation?: Trans
     }
   }
   if (!id) return null;
+  return withChapter(books, id, m);
+}
+
+function withChapter(books: Book[], id: number, m: RegExpExecArray): ParsedRef | null {
   const book = books.find((b) => b.id === id);
   if (!book) return null;
   const chapter = Number(m[2]);
