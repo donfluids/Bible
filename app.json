@@ -2,7 +2,7 @@
   "expo": {
     "name": "Bible",
     "slug": "bible",
-    "version": "0.2.9",
+    "version": "0.3.0",
     "orientation": "default",
     "userInterfaceStyle": "automatic",
     "assetBundlePatterns": [
