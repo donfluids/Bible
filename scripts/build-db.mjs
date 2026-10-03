@@ -510,10 +510,11 @@ function alignmentFor(alignments, key, text) {
 }
 
 // Links the aligner makes systematically wrong. Hebrew writes "your", "our", "him" as a
-// suffix on the noun or verb, so a Malayalam pronoun such as നിന്റെ got the number of the
-// word it is attached to (നിന്റെ ദൈവം: both words linked to Elohim). Such a pronoun is left
-// unlinked unless its Hebrew counterpart is a pronoun in its own right. The object
-// marker אֵת (H853) is never translated, so nothing links to it.
+// suffix on the noun or verb, and Hebrew and Greek verbs carry "I", "he", "they" in their
+// endings, so a Malayalam pronoun such as നിന്റെ or ഞാൻ got the number of the word it
+// goes with (നിന്റെ ദൈവം: both words linked to Elohim), or of a neighbour (ഞാൻ → "all" in
+// Philippians 4:13). A pronoun is left unlinked unless its counterpart is a pronoun in its
+// own right. The object marker אֵת (H853) is never translated, so nothing links to it.
 const ML_PRONOUNS = new Set(('എന്റെ നിന്റെ അവന്റെ അവളുടെ അതിന്റെ നമ്മുടെ ഞങ്ങളുടെ നിങ്ങളുടെ അവരുടെ തന്റെ തങ്ങളുടെ ' +
   'എന്നെ നിന്നെ അവനെ അവളെ അതിനെ നമ്മെ ഞങ്ങളെ നിങ്ങളെ അവരെ അവയെ').split(' '));
 // Pronoun words, for the renderings lists: a pronoun counted as the rendering of a noun or
@@ -521,8 +522,10 @@ const ML_PRONOUNS = new Set(('എന്റെ നിന്റെ അവന്റ
 const ML_PRONOUN_WORDS = new Set([...ML_PRONOUNS, ...('ഞാൻ നീ അവൻ അവൾ അവർ നാം ഞങ്ങൾ നിങ്ങൾ അതു അവ ' +
   'എനിക്കു നിനക്കു അവന്നു അവൾക്കു അവർക്കു നമുക്കു ഞങ്ങൾക്കു നിങ്ങൾക്കു').split(' ')]);
 const GREEK_PRONOUNS = new Set(['G1473', 'G3165', 'G3427', 'G3450', 'G1698', 'G1700', 'G1691', 'G2249', 'G2257', 'G2254', 'G2248',
-  'G4771', 'G4675', 'G4671', 'G4571', 'G4674', 'G5210', 'G5216', 'G5213', 'G5209', 'G5212', 'G846', 'G1438', 'G3778', 'G1683', 'G4572', 'G848']);
-const HEBREW_PRONOUNS = new Set(['H589', 'H595', 'H587', 'H5168', 'H859', 'H1931', 'H1992', 'H1993', 'H2004', 'H2007', 'H1158']);
+  'G4771', 'G4675', 'G4671', 'G4571', 'G4674', 'G5210', 'G5216', 'G5213', 'G5209', 'G5212', 'G846', 'G1438', 'G3778', 'G1683', 'G4572', 'G848',
+  'G1565', 'G5124', 'G5023', 'G3739']);
+const HEBREW_PRONOUNS = new Set(['H589', 'H595', 'H587', 'H5168', 'H859', 'H1931', 'H1992', 'H1993', 'H2004', 'H2007', 'H1158',
+  'H2088', 'H2063', 'H428']);
 let misLinks = 0;
 // In "നിങ്ങളുടെ ദൈവമായ യഹോവ" the aligner followed the Hebrew order (YHWH Elohim) and
 // linked യഹോവ to God and ദൈവം to the LORD. യഹോവ always renders the divine name, so a
@@ -542,9 +545,67 @@ function fixLordGod(entries, parts) {
   if (crossedGod >= 0) setId(crossedGod, 'H430');
 }
 function misLinked(span, text) {
-  const wrong = span.n === 'H853' || (span.n.startsWith('H') && ML_PRONOUNS.has(text.slice(span.s, span.e)) && !HEBREW_PRONOUNS.has(span.n));
+  const word = text.slice(span.s, span.e);
+  const wrong = span.n === 'H853' || (ML_PRONOUN_WORDS.has(word) && !HEBREW_PRONOUNS.has(span.n) && !GREEK_PRONOUNS.has(span.n));
   if (wrong) misLinks++;
   return wrong;
+}
+
+// The aligner sometimes slips by one word, so a word gets its neighbour's number:
+// സകലത്തിന്നും ("all") linked to "be strong" in Philippians 4:13. A word linked to a number
+// it renders at most twice in the whole Bible, while another Hebrew or Greek word of the
+// same verse is its usual match (ten times or more, by the word's first four letters), is
+// moved to that word, unless another Malayalam word already renders that one well (as
+// എണ്ണ does "oil" beside അഭിഷേകം in Psalm 23:5). A compound that contains a usual
+// rendering of its number keeps it (പൊന്മണി, "golden bell", stays with "bell" rather than
+// moving to "gold"). Hand-checked verses are left as they are.
+let shiftFixes = 0;
+function originalNumbers() {
+  const map = new Map(); // "book:chapter:verse" (KJV numbering) -> Set of Strong's numbers
+  for (const w of [...stepHebrewWords(), ...stepGreekWords().words]) {
+    if (!w.strongs) continue;
+    const key = `${w.book}:${w.chapter}:${w.verse}`;
+    if (!map.has(key)) map.set(key, new Set());
+    map.get(key).add(w.strongs);
+  }
+  return map;
+}
+function relinkShifted(pending, verseMap) {
+  const originals = originalNumbers();
+  const stem = (w) => [...w].slice(0, 4).join('');
+  const counts = new Map();
+  for (const p of pending) for (const e of p.entries) counts.set(`${stem(e.word)}|${e.id}`, (counts.get(`${stem(e.word)}|${e.id}`) || 0) + 1);
+  const count = (word, id) => counts.get(`${stem(word)}|${id}`) || 0;
+  // Each number's usual renderings, by their first three letters (three uses or more).
+  const short = (w) => [...w].slice(0, 3).join('');
+  const shortCounts = new Map();
+  for (const p of pending) for (const e of p.entries) if ([...e.word].length >= 3) shortCounts.set(`${short(e.word)}|${e.id}`, (shortCounts.get(`${short(e.word)}|${e.id}`) || 0) + 1);
+  const usual = new Map();
+  for (const [k, n] of shortCounts) {
+    if (n < 3) continue;
+    const [st, id] = k.split('|');
+    if (!usual.has(id)) usual.set(id, []);
+    usual.get(id).push(st);
+  }
+  const containsUsual = (word, id) => (usual.get(id) ?? []).some((st) => word.includes(st));
+  for (const p of pending) {
+    if (!p.parts || p.hand) continue;
+    const key = `${p.book}:${p.chapter}:${p.verse}`;
+    const ids = new Set([key, verseMap[key] ?? []].flat().flatMap((k) => [...(originals.get(k) ?? [])]));
+    let changed = false;
+    p.entries.forEach((e, i) => {
+      if (count(e.word, e.id) > 2 || containsUsual(e.word, e.id)) return;
+      const claimed = (id) => p.entries.some((o, j) => j !== i && o.id === id && count(o.word, id) > 2);
+      let best = null;
+      for (const id of ids) if (id !== e.id && count(e.word, id) >= 10 && !claimed(id) && (!best || count(e.word, id) > count(e.word, best))) best = id;
+      if (!best) return;
+      e.id = best;
+      p.parts[i] = p.parts[i].replace(/,\d+$/, ',' + best.slice(1));
+      changed = true;
+      shiftFixes++;
+    });
+    if (changed) p.tags = p.parts.join(' ');
+  }
 }
 
 // Forms of one Malayalam word under one Strong's number, grouped by stem: the shortest
@@ -666,6 +727,7 @@ function buildEdition(edition) {
     const conc = new Map(); // strongs -> array of [b,c,v]
     const rend = new Map(); // strongs -> Map(lowercased word -> { forms: Map(display -> n), refs: [], lastKey })
     let verses = 0, tagCount = 0, omitted = 0, noteCount = 0, alignedVerses = 0;
+    const pending = []; // verses read, written once the whole translation is read
     db.exec('BEGIN');
     for (const book of BOOKS) {
       const file = files.find((f) => f.endsWith(book.osis + t.suffix));
@@ -713,6 +775,8 @@ function buildEdition(edition) {
           let tags = UNTAGGED.has(t.id) ? '' : split.tags;
           // Tagged words: the source's own tags, or for Malayalam the aligned links.
           let entries = UNTAGGED.has(t.id) ? [] : [...tagged.matchAll(/⟨([^|⟩]*)\|([HG]\d+)⟩/g)].map((m) => ({ word: m[1].trim(), id: m[2] }));
+          let parts = null;
+          let hand = false;
           if (t.id === 'MAL') {
             const al = alignmentFor(alignments, `${book.id}:${chapter}:${verse}`, text);
             if (al) {
@@ -720,7 +784,8 @@ function buildEdition(edition) {
               const spans = al.spans
                 .filter((x) => x.c >= 2 && x.n.startsWith(prefix) && !misLinked(x, text))
                 .sort((a, b) => a.s - b.s);
-              const parts = [];
+              parts = [];
+              hand = !!al.hand;
               let prevEnd = 0;
               entries = [];
               for (const sp of spans) {
@@ -734,36 +799,42 @@ function buildEdition(edition) {
               alignedVerses++;
             }
           }
-          insVerse.run(t.id, book.id, chapter, verse, text, tags, 0, paras.get(`${chapter}:${verse}`) || '');
-          verses++;
-          markers.forEach((mk, n) => {
-            const note = notes[mk.idx];
-            insNote.run(t.id, book.id, chapter, verse, n, mk.pos, note.kind, note.text);
-            noteCount++;
-          });
-          const seen = new Set();
-          const verseKey = `${book.id}:${chapter}:${verse}`;
-          for (const m of entries) {
-            tagCount++;
-            const word = m.word;
-            const lower = word.toLowerCase();
-            const strayPronoun = t.id === 'MAL' && ML_PRONOUN_WORDS.has(word) && !HEBREW_PRONOUNS.has(m.id) && !GREEK_PRONOUNS.has(m.id);
-            if (strayPronoun) {
-              if (!seen.has(m.id)) { seen.add(m.id); if (!conc.has(m.id)) conc.set(m.id, []); conc.get(m.id).push(book.id, chapter, verse); }
-              continue;
-            }
-            if (!rend.has(m.id)) rend.set(m.id, new Map());
-            const byWord = rend.get(m.id);
-            if (!byWord.has(lower)) byWord.set(lower, { forms: new Map(), refs: [], lastKey: '' });
-            const entry = byWord.get(lower);
-            entry.forms.set(word, (entry.forms.get(word) || 0) + 1);
-            if (entry.lastKey !== verseKey) { entry.refs.push(book.id, chapter, verse); entry.lastKey = verseKey; }
-            if (seen.has(m.id)) continue;
-            seen.add(m.id);
-            if (!conc.has(m.id)) conc.set(m.id, []);
-            conc.get(m.id).push(book.id, chapter, verse);
-          }
+          pending.push({ book: book.id, chapter, verse, text, tags, parts, hand, entries, markers, notes, para: paras.get(`${chapter}:${verse}`) || '' });
         }
+      }
+    }
+    // Every verse is read before any is written, so the Malayalam links can be checked
+    // against the whole Bible.
+    if (t.id === 'MAL') relinkShifted(pending, loadVerseMap().MAL ?? {});
+    for (const { book: bookId, chapter, verse, text, tags, entries, markers, notes, para } of pending) {
+      insVerse.run(t.id, bookId, chapter, verse, text, tags, 0, para);
+      verses++;
+      markers.forEach((mk, n) => {
+        const note = notes[mk.idx];
+        insNote.run(t.id, bookId, chapter, verse, n, mk.pos, note.kind, note.text);
+        noteCount++;
+      });
+      const seen = new Set();
+      const verseKey = `${bookId}:${chapter}:${verse}`;
+      for (const m of entries) {
+        tagCount++;
+        const word = m.word;
+        const lower = word.toLowerCase();
+        const strayPronoun = t.id === 'MAL' && ML_PRONOUN_WORDS.has(word) && !HEBREW_PRONOUNS.has(m.id) && !GREEK_PRONOUNS.has(m.id);
+        if (strayPronoun) {
+          if (!seen.has(m.id)) { seen.add(m.id); if (!conc.has(m.id)) conc.set(m.id, []); conc.get(m.id).push(bookId, chapter, verse); }
+          continue;
+        }
+        if (!rend.has(m.id)) rend.set(m.id, new Map());
+        const byWord = rend.get(m.id);
+        if (!byWord.has(lower)) byWord.set(lower, { forms: new Map(), refs: [], lastKey: '' });
+        const entry = byWord.get(lower);
+        entry.forms.set(word, (entry.forms.get(word) || 0) + 1);
+        if (entry.lastKey !== verseKey) { entry.refs.push(bookId, chapter, verse); entry.lastKey = verseKey; }
+        if (seen.has(m.id)) continue;
+        seen.add(m.id);
+        if (!conc.has(m.id)) conc.set(m.id, []);
+        conc.get(m.id).push(bookId, chapter, verse);
       }
     }
     for (const [strongs, refs] of conc) {
@@ -783,7 +854,7 @@ function buildEdition(edition) {
       }
     }
     db.exec('COMMIT');
-    stats[t.id] = { verses, omittedVerses: omitted, ...(t.id === 'MAL' ? { alignedVerses, misLinksDropped: misLinks, lordGodFixes } : {}), tags: tagCount, strongsNumbers: conc.size, notes: noteCount, renderings: renderingRows };
+    stats[t.id] = { verses, omittedVerses: omitted, ...(t.id === 'MAL' ? { alignedVerses, misLinksDropped: misLinks, lordGodFixes, shiftFixes } : {}), tags: tagCount, strongsNumbers: conc.size, notes: noteCount, renderings: renderingRows };
   }
 
   db.exec('BEGIN');

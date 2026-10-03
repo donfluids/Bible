@@ -251,7 +251,7 @@ License text).
 - `assets/db/bible-ml.db`, `data/align/mal/` and the Malayalam corrections in
   `data/overrides/` are adapted from the CC BY-SA 4.0 Malayalam text (and CC BY 4.0
   STEPBible data), so they are shared under **CC BY-SA 4.0**. The Malayalam word links
-  are machine-made and not checked by hand.
+  are machine-made; only 33 well-known verses were checked by hand.
 - The `strongs` table in both databases adapts Open Scriptures' CC BY-SA dictionary
   (adding short meanings from STEPBible), and is shared under **CC BY-SA 4.0**.
 - The interlinear data in both databases adapts STEPBible's CC BY 4.0 data. Changes:
@@ -281,7 +281,10 @@ npm run build-db                           # apply the links
 ```
 
 Words with no link (words added for sense, auxiliary words, uncertain cases) are not
-tappable. Links are made by a language model and are not hand-checked.
+tappable. Links are made by a language model. The 33 verses in
+`scripts/hand-check-links.mjs` (Genesis 1:1, Psalm 23, the Lord's Prayer, John 3:16 and
+others people know by heart) were checked by hand; that script writes
+`data/align/mal/hand-checked.json`, which the build prefers to the model's links.
 
 The full run covered all 31,215 Malayalam verses in 2,154 calls. About 57% of Malayalam
 words carry a confident link and 70% some link; the rest are mostly words with no
@@ -318,12 +321,22 @@ example after Genesis 5:5; the build drops them.
 
 ### Links the build leaves out, and grouped forms
 
-Hebrew writes "your", "our" or "him" as a suffix on a noun or verb, and the aligner
-often gave a Malayalam pronoun such as നിന്റെ the number of the word it belongs to (in
-നിന്റെ ദൈവം both words linked to Elohim). The build leaves such a pronoun unlinked
-unless its Hebrew counterpart is a pronoun word, and never links to the untranslatable
-object marker אֵת (H853): 3,164 links in all. In the "renders it as" lists, Malayalam
-forms of one word are grouped (ദൈവം, ദൈവമായ, ദൈവത്തിന്റെ … as ദൈവം).
+Hebrew writes "your", "our" or "him" as a suffix on a noun or verb, and Hebrew and
+Greek verbs carry "I", "he", "they" in their endings, so the aligner often gave a
+Malayalam pronoun the number of the word it goes with (in നിന്റെ ദൈവം both words linked
+to Elohim) or of a neighbour (ഞാൻ → "all" in Philippians 4:13). The build leaves a
+pronoun unlinked unless its counterpart is a pronoun word, and never links to the
+untranslatable object marker אֵת (H853): 5,653 links in all.
+
+The aligner also sometimes slipped by one word. A word linked to a number it renders
+at most twice in the Bible, when another Hebrew or Greek word of the same verse is its
+usual match (ten times or more) and no other Malayalam word renders that one well, is
+moved to it, unless the word contains a usual rendering of its own number (a compound
+such as പൊന്മണി, "golden bell"). That moves 3,413 links; in a sample of 40, about 31
+became right, 5 were judgement calls and 4 got worse.
+
+In the "renders it as" lists, Malayalam forms of one word are grouped (ദൈവം, ദൈവമായ,
+ദൈവത്തിന്റെ … as ദൈവം).
 
 ## Malayalam interface
 

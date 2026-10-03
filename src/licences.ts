@@ -76,8 +76,8 @@ const MALAYALAM_LINKS = (lang: Language): Source => ({
   title: pick({ en: 'Malayalam word links', ml: 'മലയാളം പദബന്ധങ്ങൾ' }, lang),
   credit: pick(
     {
-      en: "The links from Malayalam words to Hebrew and Greek words were made by a language model (Claude) reading each verse beside the STEPBible data, and are not checked by hand, so some are wrong. Built from CC BY-SA and CC BY material, they are shared under CC BY-SA 4.0.",
-      ml: 'മലയാളം വാക്കുകളിൽനിന്ന് എബ്രായ, ഗ്രീക്ക് വാക്കുകളിലേക്കുള്ള ബന്ധങ്ങൾ ഒരു ഭാഷാമാതൃക (Claude) STEPBible വിവരങ്ങൾക്കൊപ്പം ഓരോ വാക്യവും വായിച്ച് ഉണ്ടാക്കിയതാണ്; കൈകൊണ്ട് പരിശോധിച്ചിട്ടില്ല, അതിനാൽ ചിലതു തെറ്റാകാം. CC BY-SA, CC BY വിവരങ്ങളിൽനിന്ന് ഉണ്ടാക്കിയതിനാൽ CC BY-SA 4.0 പ്രകാരം പങ്കുവയ്ക്കുന്നു.',
+      en: "The links from Malayalam words to Hebrew and Greek words were made by a language model (Claude) reading each verse beside the STEPBible data, then corrected by rule (pronouns, words slipped by one). Only 33 well-known verses were checked by hand, so some links are wrong. Built from CC BY-SA and CC BY material, they are shared under CC BY-SA 4.0.",
+      ml: 'മലയാളം വാക്കുകളിൽനിന്ന് എബ്രായ, ഗ്രീക്ക് വാക്കുകളിലേക്കുള്ള ബന്ധങ്ങൾ ഒരു ഭാഷാമാതൃക (Claude) STEPBible വിവരങ്ങൾക്കൊപ്പം ഓരോ വാക്യവും വായിച്ച് ഉണ്ടാക്കിയതാണ്; പിന്നീട് നിയമങ്ങൾ വഴി തിരുത്തി (സർവ്വനാമങ്ങൾ, ഒരു വാക്കു തെറ്റി ചേർന്നവ). പ്രസിദ്ധമായ 33 വാക്യങ്ങൾ മാത്രമേ കൈകൊണ്ട് പരിശോധിച്ചിട്ടുള്ളൂ, അതിനാൽ ചിലതു തെറ്റാകാം. CC BY-SA, CC BY വിവരങ്ങളിൽനിന്ന് ഉണ്ടാക്കിയതിനാൽ CC BY-SA 4.0 പ്രകാരം പങ്കുവയ്ക്കുന്നു.',
     },
     lang,
   ),
