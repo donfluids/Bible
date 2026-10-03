@@ -7,7 +7,7 @@ import DATABASE_SIZES from './dbSizes.json';
  * on first launch and kept. Bump the suffix whenever assets/db/bible.db is
  * rebuilt so devices that already have a copy pick up the new one.
  */
-export const DATABASE_NAME = 'bible-v12.db';
+export const DATABASE_NAME = 'bible-v13.db';
 
 export const DATABASE_ASSET = require('../assets/db/bible.db');
 

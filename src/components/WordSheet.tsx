@@ -546,7 +546,7 @@ function LinkedText({ text, color, accent, hebrewFont, onPick }: { text: string;
         return (
           <Text
             key={i}
-            onPress={() => onPick({ strongs: m[1] })}
+            onPress={() => onPick({ strongs: m[1].replace(/^([HG])0+(?=\d)/, '$1') })}
             accessibilityRole="link"
             style={{ color: accent, fontWeight: m[2] ? undefined : '600', fontFamily: m[2] && m[1].startsWith('H') ? hebrewFont : undefined }}
           >

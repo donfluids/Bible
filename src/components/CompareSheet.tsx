@@ -3,7 +3,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEdition } from '../edition';
 import { translationName, useT } from '../i18n';
-import { getInterlinear, getVerses, mapRef } from '../queries';
+import { getInterlinear, getVerses, mapRefs } from '../queries';
 import { useSettings } from '../settings';
 import { formatRef } from '../text';
 import { useTheme } from '../theme';
@@ -25,13 +25,15 @@ interface Props {
 interface Row {
   translation: TranslationId;
   /** Where the verse is in this translation, when its number differs. */
-  ref: Ref | null;
-  verse: VerseRow | null;
+  refs: Ref[] | null;
+  /** Usually one; two where the other translation joins two verses into one. */
+  verses: VerseRow[];
 }
 
 /**
  * One verse in every translation, with its Hebrew or Greek beneath. Translations that
- * number the verse differently (the Malayalam in a few chapters) show their own verse.
+ * number the verse differently (the Malayalam in a few chapters) show their own verse,
+ * and where one translation joins two verses into one, the other shows both.
  */
 export function CompareSheet({ target, translation, books, onClose, onWord }: Props) {
   const db = useSQLiteContext();
@@ -50,10 +52,10 @@ export function CompareSheet({ target, translation, books, onClose, onWord }: Pr
     setOriginal(null);
     setFailed(false);
     const loadRow = async (id: TranslationId): Promise<Row> => {
-      const ref = await mapRef(db, translation, id, target);
-      const verse = ref ? ((await getVerses(db, id, [ref]))[0] ?? null) : null;
-      const moved = ref && (ref.book !== target.book || ref.chapter !== target.chapter || ref.verse !== target.verse);
-      return { translation: id, ref: moved ? ref : null, verse };
+      const refs = await mapRefs(db, translation, id, target);
+      const verses = await getVerses(db, id, refs);
+      const moved = refs.length !== 1 || refs[0].book !== target.book || refs[0].chapter !== target.chapter || refs[0].verse !== target.verse;
+      return { translation: id, refs: moved && refs.length ? refs : null, verses };
     };
     Promise.all([Promise.all(edition.translations.map(loadRow)), getInterlinear(db, target.book, target.chapter, translation)])
       .then(([loaded, words]) => {
@@ -85,9 +87,11 @@ export function CompareSheet({ target, translation, books, onClose, onWord }: Pr
         <View style={styles.body}>
           {rows.map((r) => (
             <View key={r.translation} style={[styles.block, { borderBottomColor: theme.border }]}>
-              <SectionLabel text={translationName(settings.language, r.translation) + (r.ref ? ` · ${formatRef(books, r.ref, r.translation)}` : '')} style={styles.label} />
-              {r.verse ? (
-                <VerseText verse={r.verse} fontSize={size} onWord={pickWord} underline={false} showNumber={false} />
+              <SectionLabel text={translationName(settings.language, r.translation) + (r.refs ? ` · ${r.refs.map((ref) => formatRef(books, ref, r.translation)).join(', ')}` : '')} style={styles.label} />
+              {r.verses.length > 0 ? (
+                r.verses.map((v) => (
+                  <VerseText key={`${v.chapter}:${v.verse}`} verse={v} fontSize={size} onWord={pickWord} underline={false} showNumber={r.verses.length > 1} />
+                ))
               ) : (
                 <Text style={[styles.missing, { color: theme.muted }]}>{t('notInTranslation')}</Text>
               )}

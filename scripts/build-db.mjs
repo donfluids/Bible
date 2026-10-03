@@ -886,8 +886,10 @@ function buildEdition(edition) {
   for (const dict of [heb, grk]) {
     for (const [id, e] of Object.entries(dict)) {
       const translit = e.xlit ?? e.translit ?? null;
+      // 287 Greek entries cite Hebrew words with leading zeros (H0948); the ids have none.
+      const cite = (text) => (text ?? '').trim().replace(/\b([HG])0+(\d)/g, '$1$2') || null;
       insStrongs.run(id, e.lemma ?? null, translit, e.pron ?? null,
-        (e.derivation ?? '').trim() || null, (e.strongs_def ?? '').trim() || null, (e.kjv_def ?? '').trim() || null,
+        cite(e.derivation), cite(e.strongs_def), cite(e.kjv_def),
         plainText(e.lemma), plainText(translit));
       nStrongs++;
     }

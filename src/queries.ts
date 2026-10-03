@@ -313,37 +313,50 @@ export async function toKjvRefs(db: SQLiteDatabase, translation: TranslationId, 
 }
 
 /**
- * The same verse in another translation's numbering, or null when that translation
- * has no such verse (Acts 15:34 in the Malayalam, for example).
+ * The verse of `to` that holds a KJV-numbered verse, or null when `to` has none (Acts
+ * 15:34 in the Malayalam). A verse with the same number is the match unless `to` numbers
+ * it differently, or has only an empty place for it (the WEB's Romans 16:25, whose words
+ * it gives at 14:24).
  */
-export async function mapRef(db: SQLiteDatabase, from: TranslationId, to: TranslationId, ref: Ref): Promise<Ref | null> {
-  if (from === to) return ref;
-  const kjv = (await toKjvRefs(db, from, ref))[0];
-  // A verse with the same number that is not itself renumbered, and exists, is the match.
-  const remapped = await db.getFirstAsync<{ x: number }>(
-    'SELECT 1 AS x FROM verse_map WHERE translation = ? AND book = ? AND chapter = ? AND verse = ?',
-    to,
-    kjv.book,
-    kjv.chapter,
-    kjv.verse,
-  );
-  if (!remapped) {
-    const exists = await db.getFirstAsync<{ x: number }>(
-      'SELECT 1 AS x FROM verses WHERE translation = ? AND book = ? AND chapter = ? AND verse = ?',
-      to,
-      kjv.book,
-      kjv.chapter,
-      kjv.verse,
-    );
-    if (exists) return kjv;
-  }
-  return db.getFirstAsync<Ref>(
+async function fromKjv(db: SQLiteDatabase, to: TranslationId, kjv: Ref): Promise<Ref | null> {
+  const [remapped, row] = await Promise.all([
+    db.getFirstAsync<{ x: number }>('SELECT 1 AS x FROM verse_map WHERE translation = ? AND book = ? AND chapter = ? AND verse = ?', to, kjv.book, kjv.chapter, kjv.verse),
+    db.getFirstAsync<{ omitted: number }>('SELECT omitted FROM verses WHERE translation = ? AND book = ? AND chapter = ? AND verse = ?', to, kjv.book, kjv.chapter, kjv.verse),
+  ]);
+  if (!remapped && row && !row.omitted) return kjv;
+  const moved = await db.getFirstAsync<Ref>(
     'SELECT book, chapter, verse FROM verse_map WHERE translation = ? AND obook = ? AND ochapter = ? AND overse = ? ORDER BY book, chapter, verse LIMIT 1',
     to,
     kjv.book,
     kjv.chapter,
     kjv.verse,
   );
+  if (moved) return moved;
+  return !remapped && row ? kjv : null;
+}
+
+/**
+ * Every verse of `to` that holds the words of `ref` in `from`: usually one, two where
+ * `from` joins two verses into one (Malayalam Exodus 8:1 is KJV 7:25 and 8:1).
+ */
+export async function mapRefs(db: SQLiteDatabase, from: TranslationId, to: TranslationId, ref: Ref): Promise<Ref[]> {
+  if (from === to) return [ref];
+  const out: Ref[] = [];
+  for (const kjv of await toKjvRefs(db, from, ref)) {
+    const r = await fromKjv(db, to, kjv);
+    if (r && !out.some((o) => o.book === r.book && o.chapter === r.chapter && o.verse === r.verse)) out.push(r);
+  }
+  return out;
+}
+
+/**
+ * The same verse in another translation's numbering, or null when that translation has
+ * no such verse. Where the verse stands for two, the one in the same chapter is taken, so
+ * switching translation does not jump back a chapter.
+ */
+export async function mapRef(db: SQLiteDatabase, from: TranslationId, to: TranslationId, ref: Ref): Promise<Ref | null> {
+  const all = await mapRefs(db, from, to, ref);
+  return all.find((r) => r.book === ref.book && r.chapter === ref.chapter) ?? all[0] ?? null;
 }
 
 /** Words of one chapter, keyed by KJV verse number. */

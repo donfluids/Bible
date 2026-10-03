@@ -223,7 +223,10 @@ word is shown in one cell. The Hebrew paragraph marks פ and ס that end some ve
 TAHOT are dropped. Verse numbers follow the KJV.
 
 `verse_map` lists the verses a translation numbers differently from the KJV (the
-Malayalam in 15 chapters), so the reader shows the right Hebrew or Greek under them.
+Malayalam in 15 chapters; the WEB's Romans 14:24–26, the doxology the KJV has at
+16:25–27), so the reader shows the right Hebrew or Greek under them, switching
+translation keeps the verse (staying in the same chapter where a Malayalam verse holds
+two KJV verses), and Compare shows every verse that holds the same words.
 
 ## Sources and licences
 

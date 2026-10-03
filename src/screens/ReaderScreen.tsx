@@ -287,6 +287,29 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
     };
   }, [items]);
 
+  // Keep the place when the Hebrew or Greek words are switched on or off. The rows change
+  // height once the words arrive, and in paragraph layout the list is rebuilt verse by
+  // verse, so the list is scrolled back to the verse that was at the top once the new rows
+  // are in (not before: the old list or missing words would put it in the wrong place).
+  const restoreVerse = useRef<number | null>(null);
+  const lastInterlinear = useRef(interlinear);
+  if (lastInterlinear.current !== interlinear) {
+    lastInterlinear.current = interlinear;
+    const seen = firstVisible.current;
+    restoreVerse.current = seen && seen.key === chapterKey ? seen.verse : null;
+  }
+  useEffect(() => {
+    const verse = restoreVerse.current;
+    if (verse === null || !items) return;
+    if (interlinear && !originalWords) return;
+    if (paragraphs !== items.some((it) => it.kind === 'para')) return;
+    restoreVerse.current = null;
+    const index = items.findIndex((it) => (it.kind === 'verse' && it.verse.verse === verse) || (it.kind === 'para' && it.verses.some((v) => v.verse === verse)));
+    if (index < 0) return;
+    pendingScroll.current = { index, viewPosition: 0 };
+    setTimeout(() => listRef.current?.scrollToIndex({ index, viewPosition: 0, animated: false }), 80);
+  }, [items, originalWords, interlinear, paragraphs]);
+
   // Remember the first verse on screen, so the main reader reopens there.
   const placeRef = useRef({ pushed, chapterKey, position });
   placeRef.current = { pushed, chapterKey, position };
