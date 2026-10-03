@@ -15,6 +15,9 @@
 //          was corrected after it was aligned)
 //          --save-to data/align/mal (with --out elsewhere: copy new chunks into this repo
 //          folder only when saving, so the working tree stays clean between saves)
+//          --compound (a Malayalam compound word may link to each content word it
+//          renders: നിത്യജീവൻ to "eternal" and "life"; chunk files are marked c)
+//          --verses file.json (only these verses, a JSON list of "book:chapter:verse")
 //
 // When the CLI reports a usage or rate limit, every worker pauses (until the reset
 // time the CLI gives, else 5 to 30 minutes) and carries on; those waits do not count
@@ -38,6 +41,7 @@ const opt = (name, fallback) => {
   return i >= 0 ? (args[i + 1] && !args[i + 1].startsWith('--') ? args[i + 1] : true) : fallback;
 };
 const MODEL = opt('model', 'claude-sonnet-5-5');
+const COMPOUND = !!opt('compound', false);
 const EFFORT = opt('effort', 'medium');
 const CONCURRENCY = Number(opt('concurrency', 3));
 const CHUNK = Number(opt('chunk', 20));
@@ -61,6 +65,18 @@ Rules:
 - Never link by position alone. If a verse's original words clearly do not correspond to its Malayalam (verse numbering sometimes differs), return no links for that verse.
 
 Return only the JSON requested.`;
+
+// In compound mode one token may name several original words: Malayalam writes compounds
+// as one word (നിത്യജീവൻ "eternal life", സകലവൃക്ഷങ്ങളുടെയും "of all the trees").
+const SYSTEM_COMPOUND = SYSTEM.replace(
+  `${'- A token links to the ONE original word it chiefly renders. When a token also carries a prefix, article, preposition or conjunction of that word, still link the content word.'}`,
+  '- A token links to the original word it chiefly renders. When it also carries an article, preposition, conjunction, particle or case ending, link only the content word.\n' +
+    '- A token that is a compound of two or more content words (nouns, verbs, adjectives, numerals, "all", "every"), each rendering its own original word, links to each of them, one triple per word, the chief word first: നിത്യജീവൻ links to "eternal" and to "life"; സകലവൃക്ഷങ്ങളുടെയും to "tree" and to "all"; പച്ചസസ്യം to "green" and to "plant". Do not add a second link for a preposition, conjunction, article, pronoun or negation.',
+).replace(
+  '- Several tokens may point to the same original word (a phrase rendering one word). A token never points to two words.',
+  '- Several tokens may point to the same original word (a phrase rendering one word).',
+);
+if (!SYSTEM_COMPOUND.includes('compound of two') || SYSTEM_COMPOUND.includes('never points to two')) throw new Error('compound prompt not applied');
 
 const SCHEMA = {
   type: 'object',
@@ -189,7 +205,7 @@ function pauseForLimit(message) {
 function runClaude(prompt) {
   return new Promise((resolve, reject) => {
     const child = spawn('claude', [
-      '-p', '--model', MODEL, '--effort', EFFORT, '--system-prompt', SYSTEM, '--tools', '', '--disable-slash-commands',
+      '-p', '--model', MODEL, '--effort', EFFORT, '--system-prompt', COMPOUND ? SYSTEM_COMPOUND : SYSTEM, '--tools', '', '--disable-slash-commands',
       '--no-session-persistence', '--strict-mcp-config', '--setting-sources', '', '--output-format', 'json', '--json-schema', JSON.stringify(SCHEMA),
     ], { cwd: '/tmp', stdio: ['pipe', 'pipe', 'pipe'] });
     let out = '', err = '';
@@ -222,14 +238,16 @@ function resolve(book, chapter, verses, structured) {
     for (const [t, w, c] of links) {
       if (c === 0) continue; // the model's way of saying "no link"
       if (!(t >= 1 && t <= v.tokens.length && w >= 1 && w <= v.words.length && (c === 1 || c === 2))) { problems.push(`verse ${v.v}: bad link [${t},${w},${c}]`); continue; }
-      if (used.has(t)) continue;
-      used.add(t);
       const strongs = v.words[w - 1].strongs;
+      // One link per token, or in compound mode one per token and original word.
+      const key = COMPOUND ? `${t}:${strongs}` : String(t);
+      if (used.has(key)) continue;
+      used.add(key);
       const span = wordSpan(v.tokens[t - 1]);
       if (!strongs || !span) continue;
       spans.push({ s: span.start, e: span.end, n: strongs, c, t, w });
     }
-    spans.sort((a, b) => a.s - b.s);
+    spans.sort((a, b) => a.s - b.s); // stable: a compound's chief word stays first
     out.push({ book, chapter, v: v.v, hash: textHash(v.text), tokens: v.tokens.length, spans });
   }
   return { verses: out, problems };
@@ -353,9 +371,13 @@ async function main() {
     return;
   }
   let targets;
+  let only = null;
   if (opt('all', false)) {
     targets = db.prepare('SELECT id, chapters FROM books ORDER BY id').all().flatMap((b) => Array.from({ length: b.chapters }, (_, i) => [b.id, i + 1]));
     if (opt('nt-first', false)) targets = [...targets.filter(([b]) => b >= 40), ...targets.filter(([b]) => b < 40)];
+  } else if (opt('verses', false)) {
+    only = new Set(JSON.parse(readFileSync(resolvePath(ROOT, String(opt('verses'))), 'utf8')));
+    targets = [...new Set([...only].map((k) => k.split(':').slice(0, 2).join(':')))].map((s) => s.split(':').map(Number)).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
   } else {
     targets = String(opt('chapters', '')).split(',').filter(Boolean).map((s) => s.split(':').map(Number));
   }
@@ -373,7 +395,9 @@ async function main() {
   const jobs = targets.flatMap(([book, chapter]) => {
     let verses = loadChapter(db, book, chapter);
     if (covered) verses = verses.filter((v) => !covered.has(`${book}:${chapter}:${v.v}:${textHash(v.text)}`));
-    return chunkVerses(verses).map((vs) => ({ book, chapter, verses: vs, tag: covered ? 'g' : '' }));
+    if (only) verses = verses.filter((v) => only.has(`${book}:${chapter}:${v.v}`));
+    const tag = COMPOUND ? 'c' : covered ? 'g' : '';
+    return chunkVerses(verses).map((vs) => ({ book, chapter, verses: vs, tag }));
   });
   console.log(`${jobs.length} calls for ${targets.length} chapters, model ${MODEL}, effort ${EFFORT}, ${CONCURRENCY} at a time`);
   const stats = { total: jobs.length, done: 0, cached: 0, failed: 0, limited: 0, cost: 0, out: 0, problems: 0 };
