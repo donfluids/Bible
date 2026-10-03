@@ -8,6 +8,7 @@ the Android APK workflow on every push.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Bible-0.3.0-b12.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.3.0-b12.apk) | 0.3.0 | 12 | release key | d8b22fe | 40.7 MiB | `a8e9a3d097ad178f5f05ffb30fbe44a6e3c578657a490041798710b9250dfdbe` |
 | [Bible-0.2.9-b11.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.2.9-b11.apk) | 0.2.9 | 11 | release key | 8cf3ed7 | 40.3 MiB | `4cf62a797d44995e579bd1d54a90a623ed93054c30fee0342d9968eaefffb92a` |
 | [Bible-0.2.8-b10.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.2.8-b10.apk) | 0.2.8 | 10 | release key | e74563e | 40.3 MiB | `9f0ddc751f6b0ef10638c835cc3c0a7334ca52200ff54fa7af70208fe3a670b5` |
 | [Bible-0.2.7-b9.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.2.7-b9.apk) | 0.2.7 | 9 | release key | 6ea3364 | 43.6 MiB | `e4e7cf1ec0f3bddd26111b1d050251f5642420de96e7a86fa95e955551b8ee01` |
@@ -21,6 +22,7 @@ the Android APK workflow on every push.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Vedapusthakam-0.3.0-b12.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.3.0-b12.apk) | 0.3.0 | 12 | release key | d8b22fe | 43.5 MiB | `75c35c25f5d583bf5289d82a307e0f42138af689110ca7b5aac7b6f4696057db` |
 | [Vedapusthakam-0.2.9-b11.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.2.9-b11.apk) | 0.2.9 | 11 | release key | 8cf3ed7 | 43.1 MiB | `87652fc9868c1bc122df23942fb4ca76f11395c62d2db2b31144ee62d22d1a2f` |
 | [Vedapusthakam-0.2.8-b10.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.2.8-b10.apk) | 0.2.8 | 10 | release key | e74563e | 43.2 MiB | `92085490713505e567cffe6ab61e1768b23dfece79f081d809e720c195d5180c` |
 | [Vedapusthakam-0.2.7-b9.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.2.7-b9.apk) | 0.2.7 | 9 | release key | 6ea3364 | 43.2 MiB | `f2b0d6da44ec15c1524c478194c6e09466cb9f63cf5716d94e2ec57aa645d5c2` |
