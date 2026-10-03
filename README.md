@@ -8,6 +8,7 @@ the Android APK workflow on every push.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Bible-0.3.4-b16.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.3.4-b16.apk) | 0.3.4 | 16 | release key | cd3308f | 40.8 MiB | `7ea917bcf5c975186ee1f9babda655a6f5c3f666f75e3a972aebf722f9c3dbe6` |
 | [Bible-0.3.3-b15.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.3.3-b15.apk) | 0.3.3 | 15 | release key | 816b634 | 40.8 MiB | `197ac8019ebb56658135c2bc280815ff65e8a7364195bb860736c9498fac409c` |
 | [Bible-0.3.2-b14.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.3.2-b14.apk) | 0.3.2 | 14 | release key | 36a1ef1 | 40.8 MiB | `416f42ad6ee87277b77184d0647d396c708622bb5305116af91fce577fc19c51` |
 | [Bible-0.3.1-b13.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.3.1-b13.apk) | 0.3.1 | 13 | release key | a874882 | 40.8 MiB | `62a0437154c56e9dac131c833551f34ed69923d699ce1ee604f2998273c186dd` |
@@ -25,6 +26,7 @@ the Android APK workflow on every push.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Vedapusthakam-0.3.4-b16.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.3.4-b16.apk) | 0.3.4 | 16 | release key | cd3308f | 43.6 MiB | `4cfc1069816ef5c0a31958d277ce72cbf7802dc30f3e63a3e084dfd65f91287d` |
 | [Vedapusthakam-0.3.3-b15.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.3.3-b15.apk) | 0.3.3 | 15 | release key | 816b634 | 43.6 MiB | `2c80b4cf531cf1e10d326777c73492c2317a5272c7afdacc5a19afedefa144aa` |
 | [Vedapusthakam-0.3.2-b14.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.3.2-b14.apk) | 0.3.2 | 14 | release key | 36a1ef1 | 43.5 MiB | `0cbaeb624dfdbef1e20d180690fe9fbe851b6a11540a122659233e3ad5b4c478` |
 | [Vedapusthakam-0.3.1-b13.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.3.1-b13.apk) | 0.3.1 | 13 | release key | a874882 | 43.5 MiB | `8a874f89404b8ab6be196cd43c5e8368880a6793b20b4f25a35906fd97fe7f30` |
