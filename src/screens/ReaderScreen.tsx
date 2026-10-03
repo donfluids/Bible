@@ -14,6 +14,7 @@ import { Icon } from '../components/Icon';
 import type { IconName } from '../components/Icon';
 import { useEdition } from '../edition';
 import { isMalayalam, scriptureFont } from '../fonts';
+import { shortBookName } from '../shortNames';
 import { useT } from '../i18n';
 import { InterlinearVerse } from '../components/InterlinearVerse';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
@@ -599,12 +600,14 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         onBack={onBack}
         backLabel={backLabel}
         center={
-          <Pressable onPress={onOpenBooks} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('choosePassage', { title })} style={styles.titleButton}>
-            <Text numberOfLines={1} style={[styles.title, { color: theme.text }, translation === 'MAL' && { fontFamily: scriptureFont(true, false, true), fontWeight: 'normal', fontSize: 20 }]}>
-              {title}
-            </Text>
-            <Icon name="arrow_drop_down" color={theme.accent} />
-          </Pressable>
+          <ReaderTitle
+            name={bookName(books, position.book, translation)}
+            short={shortBookName(position.book, translation)}
+            chapter={position.chapter}
+            malayalam={translation === 'MAL'}
+            onPress={onOpenBooks}
+            accessibilityLabel={t('choosePassage', { title })}
+          />
         }
         right={
           <>
@@ -845,6 +848,38 @@ function NavButton({ label, onPress, disabled }: { label: string; onPress: () =>
   );
 }
 
+/**
+ * The reader's title: book name and chapter, opening the book list. The full name is used
+ * when it fits beside the buttons, else the short one (2. തിമൊഥെയൊസ് → 2 തിമൊ), and the
+ * chapter number is its own text, so it is never cut off even when the name has to be.
+ */
+function ReaderTitle({ name, short, chapter, malayalam, onPress, accessibilityLabel }: { name: string; short: string; chapter: number; malayalam: boolean; onPress: () => void; accessibilityLabel: string }) {
+  const theme = useTheme();
+  const [room, setRoom] = useState(0);
+  const [fullWidth, setFullWidth] = useState(0);
+  const useShort = !!short && room > 0 && fullWidth > 0 && fullWidth + ARROW_WIDTH > room;
+  const fontStyle = [styles.title, { color: theme.text }, malayalam && { fontFamily: scriptureFont(true, false, true), fontWeight: 'normal' as const, fontSize: 20 }];
+  return (
+    <View style={styles.titleRoom} onLayout={(e) => setRoom(e.nativeEvent.layout.width)}>
+      {/* The full title laid out off screen, to see whether it fits. */}
+      <View style={styles.titleMeasure} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        <Text style={fontStyle} onLayout={(e) => setFullWidth(e.nativeEvent.layout.width)}>
+          {`${name} ${chapter}`}
+        </Text>
+      </View>
+      <Pressable onPress={onPress} hitSlop={8} accessibilityRole="button" accessibilityLabel={accessibilityLabel} style={styles.titleButton}>
+        <Text numberOfLines={1} style={[fontStyle, styles.titleName]}>
+          {useShort ? short : name}
+        </Text>
+        <Text style={fontStyle}>{` ${chapter}`}</Text>
+        <Icon name="arrow_drop_down" color={theme.accent} />
+      </Pressable>
+    </View>
+  );
+}
+
+const ARROW_WIDTH = 28;
+
 /** One of the four round buttons at the top of the verse sheet: an icon over a short label. */
 function ActionButton({ icon, label, onPress, accessibilityLabel }: { icon: IconName; label: string; onPress: () => void; accessibilityLabel?: string }) {
   const theme = useTheme();
@@ -864,7 +899,10 @@ function ActionButton({ icon, label, onPress, accessibilityLabel }: { icon: Icon
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   titleButton: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', minHeight: 48, maxWidth: '100%' },
-  title: { fontSize: 22, fontWeight: '500', flexShrink: 1 },
+  title: { fontSize: 22, fontWeight: '500' },
+  titleName: { flexShrink: 1 },
+  titleRoom: { flex: 1, justifyContent: 'center' },
+  titleMeasure: { position: 'absolute', left: 0, top: 0, width: 2000, flexDirection: 'row', opacity: 0 },
   body: { flex: 1 },
   loading: { flex: 1 },
   para: { marginBottom: 12 },
