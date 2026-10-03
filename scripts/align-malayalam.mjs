@@ -392,10 +392,20 @@ async function main() {
       for (const v of JSON.parse(readFileSync(join(OUT, f), 'utf8')).verses) covered.add(`${v.book}:${v.chapter}:${v.v}:${v.hash}`);
     }
   }
+  let compoundDone = null;
+  if (COMPOUND) {
+    compoundDone = new Set();
+    for (const f of readdirSync(OUT).filter((x) => /-c\d+(-\d+)?\.json$/.test(x))) {
+      for (const v of JSON.parse(readFileSync(join(OUT, f), 'utf8')).verses) compoundDone.add(`${v.book}:${v.chapter}:${v.v}:${v.hash}`);
+    }
+  }
   const jobs = targets.flatMap(([book, chapter]) => {
     let verses = loadChapter(db, book, chapter);
     if (covered) verses = verses.filter((v) => !covered.has(`${book}:${chapter}:${v.v}:${textHash(v.text)}`));
     if (only) verses = verses.filter((v) => only.has(`${book}:${chapter}:${v.v}`));
+    // A compound run picks up where it stopped: verses a compound chunk already covers for
+    // their current text are skipped.
+    if (compoundDone) verses = verses.filter((v) => !compoundDone.has(`${book}:${chapter}:${v.v}:${textHash(v.text)}`));
     const tag = COMPOUND ? 'c' : covered ? 'g' : '';
     return chunkVerses(verses).map((vs) => ({ book, chapter, verses: vs, tag }));
   });
