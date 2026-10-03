@@ -974,9 +974,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                   </Pressable>
                 </View>
               )}
-              {marking ? (
-                <Text style={[styles.modeHint, { color: theme.muted }]}>{markTool === 'erase' ? t('eraseHint') : t('markHint')}</Text>
-              ) : interlinear && interlinearMode === 'tap' ? (
+              {!marking && interlinear && interlinearMode === 'tap' ? (
                 <Text style={[styles.modeHint, { color: theme.muted }]}>{t('tapVerseNumber', { lang: book?.testament === 'OT' ? t('hebrew') : t('greek') })}</Text>
               ) : null}
             </>
@@ -995,43 +993,46 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         </View>
       </GestureDetector>
       {marking ? (
-        <View style={[styles.footer, { paddingBottom: insets.bottom + 8, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
-          <View style={styles.markTools}>
-            {HIGHLIGHT_COLORS.map((c) => (
+        <View style={[styles.markBar, { paddingBottom: insets.bottom + 8, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
+          <Text style={[styles.markHint, { color: theme.muted }]}>{markTool === 'erase' ? t('eraseHint') : t('markHint')}</Text>
+          <View style={styles.markRow}>
+            <View style={styles.markTools}>
+              {HIGHLIGHT_COLORS.map((c) => (
+                <Pressable
+                  key={c}
+                  onPress={() => chooseTool(c)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${t('highlight')} ${c}`}
+                  accessibilityState={{ selected: markTool === c }}
+                  hitSlop={4}
+                  style={[
+                    styles.markSwatch,
+                    { backgroundColor: theme.marks[c], borderColor: markTool === c ? theme.accent : theme.dark ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.12)' },
+                    markTool === c && styles.markSwatchChosen,
+                  ]}
+                >
+                  {markTool === c ? <Icon name="check" size={18} color={theme.text} /> : null}
+                </Pressable>
+              ))}
               <Pressable
-                key={c}
-                onPress={() => chooseTool(c)}
+                onPress={() => chooseTool('erase')}
                 accessibilityRole="button"
-                accessibilityLabel={`${t('highlight')} ${c}`}
-                accessibilityState={{ selected: markTool === c }}
+                accessibilityLabel={t('eraser')}
+                accessibilityState={{ selected: markTool === 'erase' }}
                 hitSlop={4}
                 style={[
                   styles.markSwatch,
-                  { backgroundColor: theme.marks[c], borderColor: markTool === c ? theme.accent : theme.dark ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.12)' },
-                  markTool === c && styles.markSwatchChosen,
+                  { borderColor: markTool === 'erase' ? theme.accent : theme.border, backgroundColor: markTool === 'erase' ? theme.accentSoft : 'transparent' },
+                  markTool === 'erase' && styles.markSwatchChosen,
                 ]}
               >
-                {markTool === c ? <Icon name="check" size={18} color={theme.text} /> : null}
+                <Icon name="ink_eraser" size={20} color={markTool === 'erase' ? theme.accent : theme.muted} />
               </Pressable>
-            ))}
-            <Pressable
-              onPress={() => chooseTool('erase')}
-              accessibilityRole="button"
-              accessibilityLabel={t('eraser')}
-              accessibilityState={{ selected: markTool === 'erase' }}
-              hitSlop={4}
-              style={[
-                styles.markSwatch,
-                { borderColor: markTool === 'erase' ? theme.accent : theme.border, backgroundColor: markTool === 'erase' ? theme.accentSoft : 'transparent' },
-                markTool === 'erase' && styles.markSwatchChosen,
-              ]}
-            >
-              <Icon name="ink_eraser" size={20} color={markTool === 'erase' ? theme.accent : theme.muted} />
+            </View>
+            <Pressable onPress={stopMarking} accessibilityRole="button" style={({ pressed }) => [styles.markDone, { backgroundColor: theme.accent, opacity: pressed ? 0.7 : 1 }]}>
+              <Text style={[styles.markDoneText, { color: theme.onAccent }]}>{t('markDone')}</Text>
             </Pressable>
           </View>
-          <Pressable onPress={stopMarking} accessibilityRole="button" style={({ pressed }) => [styles.markDone, { backgroundColor: theme.accent, opacity: pressed ? 0.7 : 1 }]}>
-            <Text style={[styles.markDoneText, { color: theme.onAccent }]}>{t('markDone')}</Text>
-          </Pressable>
         </View>
       ) : (
       <View style={[styles.footer, { paddingBottom: insets.bottom + 8, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
@@ -1294,6 +1295,9 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   nav: { fontSize: 16, fontWeight: '600' },
+  markBar: { paddingHorizontal: 18, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth, gap: 8 },
+  markHint: { fontSize: 13, lineHeight: 18 },
+  markRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   markTools: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   markSwatch: { width: 34, height: 34, borderRadius: 17, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   markSwatchChosen: { borderWidth: 2 },
