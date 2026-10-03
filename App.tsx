@@ -218,6 +218,8 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
   const closeSheet = useCallback(() => setPicks([]), []);
   const followLink = useCallback((p: WordPick) => setPicks((prev) => [...prev, p]), []);
   const backEntry = useCallback(() => setPicks((prev) => prev.slice(0, -1)), []);
+  // Another part of the same compound word: replaces the entry rather than stacking on it.
+  const switchEntry = useCallback((p: WordPick) => setPicks((prev) => [...prev.slice(0, -1), p]), []);
   const showOccurrences = useCallback((strongs: string, rendering?: string) => {
     setPicks([]);
     if (navigationRef.isReady()) navigationRef.dispatch(StackActions.push('Concordance', { strongs, rendering }));
@@ -271,6 +273,7 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
         onClose={closeSheet}
         onBack={picks.length > 1 ? backEntry : undefined}
         onPick={followLink}
+        onSwitch={switchEntry}
         onShowOccurrences={showOccurrences}
         onOpenRef={openRefFromSheet}
         rootPick={picks[0] ?? null}

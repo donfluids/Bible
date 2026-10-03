@@ -209,13 +209,13 @@ export function VerseText({
         const start = offset;
         offset += seg.text.length;
         if (!seg.strongs) return <Text key={i}>{pieces(seg.text, start, i === 0)}</Text>;
-        const strong = emphasize === seg.strongs;
+        const strong = !!emphasize && (emphasize === seg.strongs || !!seg.choices?.includes(emphasize));
         return (
           <Text
             key={i}
             onPress={
               onWord
-                ? () => onWord({ strongs: seg.strongs!, word: seg.text, at: { book: verse.book, chapter: verse.chapter, verse: verse.verse, start } })
+                ? () => onWord({ strongs: seg.strongs!, word: seg.text, choices: seg.choices, at: { book: verse.book, chapter: verse.chapter, verse: verse.verse, start } })
                 : undefined
             }
             onLongPress={onLongPress}

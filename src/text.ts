@@ -20,11 +20,15 @@ export function parseSegments(verse: Pick<VerseRow, 'book' | 'text' | 'tags'>): 
   const out: Segment[] = [];
   let pos = 0;
   for (const triple of tags.split(' ')) {
-    const [gap, len, num] = triple.split(',').map(Number);
-    if (Number.isNaN(gap) || Number.isNaN(len) || Number.isNaN(num)) continue;
+    // gap,length,number — or number+number… for a Malayalam compound, the chief word first.
+    const [gapText, lenText, nums = ''] = triple.split(',');
+    const gap = Number(gapText);
+    const len = Number(lenText);
+    const ids = nums.split('+').filter((n) => /^\d+$/.test(n)).map((n) => prefix + n);
+    if (Number.isNaN(gap) || Number.isNaN(len) || ids.length === 0) continue;
     if (gap > 0) out.push({ text: text.slice(pos, pos + gap) });
     pos += gap;
-    out.push({ text: text.slice(pos, pos + len), strongs: prefix + num });
+    out.push({ text: text.slice(pos, pos + len), strongs: ids[0], ...(ids.length > 1 ? { choices: ids } : {}) });
     pos += len;
   }
   if (pos < text.length) out.push({ text: text.slice(pos) });

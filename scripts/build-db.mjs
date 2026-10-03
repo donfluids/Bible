@@ -514,7 +514,13 @@ function loadAlignments() {
   let files = [];
   try { files = readdirSync(dir).filter((f) => f.endsWith('.json')).sort(); } catch { return map; }
   for (const f of files) {
-    const doc = JSON.parse(readFileSync(join(dir, f), 'utf8'));
+    let doc;
+    try {
+      doc = JSON.parse(readFileSync(join(dir, f), 'utf8'));
+    } catch {
+      console.error(`skipping ${f}: not readable (still being written?)`);
+      continue;
+    }
     for (const v of doc.verses) {
       const key = `${v.book}:${v.chapter}:${v.v}`;
       if (!map.has(key)) map.set(key, []);
@@ -524,10 +530,32 @@ function loadAlignments() {
   return map;
 }
 
+/** The alignment of a verse's current text: a hand-checked one, else the newest. */
 function alignmentFor(alignments, key, text) {
   const hash = textHash(text);
   const matching = (alignments.get(key) ?? []).filter((a) => a.hash === hash);
-  return matching.sort((a, b) => (a.created < b.created ? 1 : -1))[0];
+  return matching.sort((a, b) => (!!b.hand - !!a.hand) || (a.created < b.created ? 1 : -1))[0];
+}
+
+/**
+ * A verse's tags from its links. A Malayalam compound links to more than one word
+ * (നിത്യജീവൻ to "eternal" and "life"); its links share the word's place and the tag lists
+ * the numbers with "+": gap,length,number[+number…], the chief word first.
+ */
+function tagsFrom(entries) {
+  const parts = [];
+  let prevEnd = 0;
+  for (let i = 0; i < entries.length; ) {
+    const { s, e } = entries[i];
+    const ids = [];
+    for (; i < entries.length && entries[i].s === s && entries[i].e === e; i++) {
+      const n = entries[i].id.slice(1);
+      if (!ids.includes(n)) ids.push(n);
+    }
+    parts.push(`${s - prevEnd},${e - s},${ids.join('+')}`);
+    prevEnd = e;
+  }
+  return parts.join(' ');
 }
 
 // Links the aligner makes systematically wrong. Hebrew writes "your", "our", "him" as a
@@ -551,12 +579,11 @@ let misLinks = 0;
 // In "നിങ്ങളുടെ ദൈവമായ യഹോവ" the aligner followed the Hebrew order (YHWH Elohim) and
 // linked യഹോവ to God and ദൈവം to the LORD. യഹോവ always renders the divine name, so a
 // യഹോവ linked to H430 is set to H3068, and a ദൈവ… word in the same verse linked to H3068
-// is set to H430. `entries` and the tag `parts` are index-aligned.
+// is set to H430.
 let lordGodFixes = 0;
-function fixLordGod(entries, parts) {
+function fixLordGod(entries) {
   const setId = (i, id) => {
     entries[i].id = id;
-    parts[i] = parts[i].replace(/,\d+$/, ',' + id.slice(1));
     lordGodFixes++;
   };
   const crossedLord = entries.findIndex((e) => e.id === 'H430' && e.word.startsWith('യഹോവ'));
@@ -610,7 +637,7 @@ function relinkShifted(pending, verseMap) {
   }
   const containsUsual = (word, id) => (usual.get(id) ?? []).some((st) => word.includes(st));
   for (const p of pending) {
-    if (!p.parts || p.hand) continue;
+    if (!p.aligned || p.hand) continue;
     const key = `${p.book}:${p.chapter}:${p.verse}`;
     const ids = new Set([key, verseMap[key] ?? []].flat().flatMap((k) => [...(originals.get(k) ?? [])]));
     let changed = false;
@@ -621,11 +648,10 @@ function relinkShifted(pending, verseMap) {
       for (const id of ids) if (id !== e.id && count(e.word, id) >= 10 && !claimed(id) && (!best || count(e.word, id) > count(e.word, best))) best = id;
       if (!best) return;
       e.id = best;
-      p.parts[i] = p.parts[i].replace(/,\d+$/, ',' + best.slice(1));
       changed = true;
       shiftFixes++;
     });
-    if (changed) p.tags = p.parts.join(' ');
+    if (changed) p.tags = tagsFrom(p.entries);
   }
 }
 
@@ -796,7 +822,7 @@ function buildEdition(edition) {
           let tags = UNTAGGED.has(t.id) ? '' : split.tags;
           // Tagged words: the source's own tags, or for Malayalam the aligned links.
           let entries = UNTAGGED.has(t.id) ? [] : [...tagged.matchAll(/⟨([^|⟩]*)\|([HG]\d+)⟩/g)].map((m) => ({ word: m[1].trim(), id: m[2] }));
-          let parts = null;
+          let aligned = false;
           let hand = false;
           if (t.id === 'MAL') {
             const al = alignmentFor(alignments, `${book.id}:${chapter}:${verse}`, text);
@@ -805,22 +831,23 @@ function buildEdition(edition) {
               const spans = al.spans
                 .filter((x) => x.c >= 2 && x.n.startsWith(prefix) && !misLinked(x, text))
                 .sort((a, b) => a.s - b.s);
-              parts = [];
+              aligned = true;
               hand = !!al.hand;
-              let prevEnd = 0;
+              let prev = null;
               entries = [];
               for (const sp of spans) {
-                if (sp.s < prevEnd || sp.e > text.length) continue; // overlapping or out of range
-                parts.push(`${sp.s - prevEnd},${sp.e - sp.s},${sp.n.slice(1)}`);
-                entries.push({ word: text.slice(sp.s, sp.e), id: sp.n });
-                prevEnd = sp.e;
+                // A second link on the same word is a compound's; any other overlap is dropped.
+                const sameWord = prev && sp.s === prev.s && sp.e === prev.e;
+                if ((prev && sp.s < prev.e && !sameWord) || sp.e > text.length) continue;
+                entries.push({ word: text.slice(sp.s, sp.e), id: sp.n, s: sp.s, e: sp.e });
+                prev = sp;
               }
-              fixLordGod(entries, parts);
-              tags = parts.join(' ');
+              fixLordGod(entries);
+              tags = tagsFrom(entries);
               alignedVerses++;
             }
           }
-          pending.push({ book: book.id, chapter, verse, text, tags, parts, hand, entries, markers, notes, para: paras.get(`${chapter}:${verse}`) || '' });
+          pending.push({ book: book.id, chapter, verse, text, tags, aligned, hand, entries, markers, notes, para: paras.get(`${chapter}:${verse}`) || '' });
         }
       }
     }

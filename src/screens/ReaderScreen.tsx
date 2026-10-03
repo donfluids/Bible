@@ -848,13 +848,13 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                   key={i}
                   onPress={() => {
                     setWordsFor(null);
-                    handleWord({ strongs: seg.strongs!, word: seg.text });
+                    handleWord({ strongs: seg.strongs!, word: seg.text, choices: seg.choices });
                   }}
                   accessibilityRole="button"
                   style={({ pressed }) => [styles.wordRow, { borderBottomColor: theme.border, opacity: pressed ? 0.6 : 1 }]}
                 >
                   <Text style={[styles.wordRowText, { color: theme.text }]}>{seg.text}</Text>
-                  <Text style={[styles.wordRowId, { color: theme.muted }]}>{seg.strongs}</Text>
+                  <Text style={[styles.wordRowId, { color: theme.muted }]}>{(seg.choices ?? [seg.strongs]).join(' + ')}</Text>
                 </Pressable>
               ))
           : null}

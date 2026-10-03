@@ -26,6 +26,8 @@ interface Props {
   onBack?: () => void;
   /** Open another entry (a related word, or one named in the derivation). */
   onPick: (pick: WordPick) => void;
+  /** Show another part of the same compound word in place of this entry. */
+  onSwitch: (pick: WordPick) => void;
   /** Every verse with this word, optionally only those rendering it one way. */
   onShowOccurrences: (strongs: string, rendering?: string) => void;
   onOpenRef: (ref: Ref) => void;
@@ -38,6 +40,8 @@ interface Loaded {
   count: number;
   /** Verses the word is in, in the Hebrew or Greek text. */
   original: number;
+  /** For a compound word, each word it joins: the chooser at the top of the sheet. */
+  parts: { id: string; lemma: string | null; gloss: string | null }[];
   /** For a tapped translation word, the Hebrew or Greek words of its verse with this number. */
   inVerse: OriginalWord[];
   /** Verses the KJV and the Malayalam tag with it, for hiding their chips when few are. */
@@ -53,7 +57,7 @@ interface Loaded {
   failed?: boolean;
 }
 
-const EMPTY: Omit<Loaded, 'entry'> = { count: 0, original: 0, inVerse: [], kjvCount: 0, malayalamCount: 0, renderings: [], malayalam: [], kjv: [], examples: [], related: [] };
+const EMPTY: Omit<Loaded, 'entry'> = { count: 0, original: 0, parts: [], inVerse: [], kjvCount: 0, malayalamCount: 0, renderings: [], malayalam: [], kjv: [], examples: [], related: [] };
 
 /**
  * Which printed texts have an original word, when that is worth saying: a Hebrew word
@@ -116,7 +120,7 @@ function headlineWords(list: Rendering[]): string[] {
  * pronunciation and how this Bible translates it; dragging the top up (or the button
  * above "See all") shows examples, related words and Strong's dictionary entry.
  */
-export function WordSheet({ pick, rootPick, translation, books, onClose, onBack, onPick, onShowOccurrences, onOpenRef }: Props) {
+export function WordSheet({ pick, rootPick, translation, books, onClose, onBack, onPick, onSwitch, onShowOccurrences, onOpenRef }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const t = useT();
@@ -230,7 +234,14 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
           return true;
         });
       }
-      return { entry, count, original, inVerse, kjvCount, malayalamCount, renderings, malayalam, kjv, examples, related };
+      const choices = pick.choices && pick.choices.length > 1 ? pick.choices : [];
+      const parts = await Promise.all(
+        choices.map(async (id) => {
+          const e = id === strongs ? entry : await getStrongs(db, id);
+          return { id, lemma: e?.lemma ?? null, gloss: e?.gloss ?? null };
+        }),
+      );
+      return { entry, count, original, parts, inVerse, kjvCount, malayalamCount, renderings, malayalam, kjv, examples, related };
     })()
       .then((loaded) => {
         if (!cancelled) setData(loaded);
@@ -290,6 +301,30 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
           <ActivityIndicator style={styles.spinner} color={theme.accent} accessibilityLabel={t('loading')} />
         ) : (
           <ScrollView style={styles.scroll} contentContainerStyle={[styles.scrollContent, { paddingBottom: (entry ? footerH : 0) + 16 }]}>
+            {data.parts.length > 1 ? (
+              <View style={styles.compound}>
+                <Text style={[styles.inTextLabel, { color: theme.muted }]}>{t('compoundWord', { n: data.parts.length })}</Text>
+                <View style={styles.compoundRow}>
+                  {data.parts.map((part) => {
+                    const active = part.id === pick.strongs;
+                    return (
+                      <Pressable
+                        key={part.id}
+                        onPress={() => (active ? undefined : onSwitch({ ...pick, strongs: part.id, original: undefined }))}
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: active }}
+                        android_ripple={{ color: theme.accentSoft }}
+                        style={[styles.compoundChip, { borderColor: active ? theme.accent : theme.border, backgroundColor: active ? theme.accentSoft : 'transparent' }]}
+                      >
+                        <Text style={[styles.compoundLemma, { color: theme.text, fontFamily: isHebrew(part.id) ? HEBREW_FONT : theme.font }]}>{part.lemma ?? part.id}</Text>
+                        {part.gloss ? <Text style={[styles.compoundGloss, { color: active ? theme.accent : theme.muted }]} numberOfLines={1}>{part.gloss}</Text> : null}
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+            ) : null}
+
             {inVerse.length > 0 ? (
               <View style={[styles.inText, { backgroundColor: theme.accentSoft }]}>
                 <Text style={[styles.inTextLabel, { color: theme.muted }]}>{t('inThisVerse')}</Text>
@@ -590,6 +625,11 @@ const styles = StyleSheet.create({
   inTextLine: { fontSize: 15, lineHeight: 21, marginTop: 2 },
   note: { fontSize: 13, lineHeight: 18, marginTop: 8 },
   inTextMore: { marginTop: 12 },
+  compound: { marginBottom: 14 },
+  compoundRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 6 },
+  compoundChip: { minHeight: 48, paddingHorizontal: 14, paddingVertical: 6, borderRadius: 14, borderWidth: 1, justifyContent: 'center', overflow: 'hidden', maxWidth: '100%' },
+  compoundLemma: { fontSize: 20 },
+  compoundGloss: { fontSize: 13, marginTop: 1 },
   dictionaryLabel: { marginTop: 4 },
   wordRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', columnGap: 12 },
   tapped: { fontSize: 20, flexShrink: 1, maxWidth: '45%' },

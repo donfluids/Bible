@@ -113,6 +113,8 @@ export interface RelatedWord {
 export interface Segment {
   text: string;
   strongs?: string;
+  /** Every number a Malayalam compound links to, the chief first (നിത്യജീവൻ: life, eternal). */
+  choices?: string[];
 }
 
 /** One Hebrew or Greek word of a verse, as shown in the interlinear view. */
@@ -143,6 +145,8 @@ export interface WordPick {
   word?: string;
   /** The original-language word, when tapped in the interlinear view. */
   original?: OriginalWord;
+  /** For a compound word, every number it links to; the sheet offers each. */
+  choices?: string[];
   /**
    * Where the tapped word is: its verse, its start offset in the verse text and, when it
    * was tapped in the reader, the translation (so the reader marks it only there).
