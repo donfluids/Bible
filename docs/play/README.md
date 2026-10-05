@@ -13,6 +13,7 @@ own listing.
 | `graphics/vedapusthakam-feature-*.png` | Feature graphics for the Malayalam app, Malayalam and English |
 | `screenshots/ml/*.png` | Seven framed phone screenshots for the Malayalam listing |
 | `screenshots/en/*.png` | The same seven with the interface in English and English captions, for the English translation |
+| `website-privacy-page.md` | Brief for the riversresearch.org website project: where to publish the privacy policy and its exact text |
 
 The Malayalam wording in the listing and in the app's interface still needs a
 Malayalam speaker to read it.
