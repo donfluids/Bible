@@ -22,10 +22,11 @@ const svg = (art, scale, background) => `<svg xmlns="http://www.w3.org/2000/svg"
 
 const files = {
   'icon.png': svg(book(c), 0.92, c.bg),
-  // Adaptive icons show the middle 72 of 108 dp and may cut to a 66 dp circle; the book fits inside it.
-  'android-icon-foreground.png': svg(book(c), 0.62, null),
+  // Adaptive icons show the middle 72 of 108 dp and may cut to a 66 dp circle (radius 313 of
+  // 1024); the cover's lower corners, 522 from the centre, set the scale.
+  'android-icon-foreground.png': svg(book(c), 0.59, null),
   'android-icon-background.png': `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"><rect width="1024" height="1024" fill="${c.bg}"/></svg>`,
-  'android-icon-monochrome.png': svg(monochrome(), 0.62, null),
+  'android-icon-monochrome.png': svg(monochrome(), 0.59, null),
   'splash-icon.png': svg(book(c), 0.84, null),
   'splash-icon-dark.png': svg(book(c), 0.84, null),
 };

@@ -1,6 +1,7 @@
 // The book artwork shared by the app icons (make-icons.mjs) and the Play feature graphic
 // (make-feature-graphic.mjs): an open book with the Hebrew aleph and the Greek alpha at the
-// head of its pages, lines of text below them and a red ribbon down the middle. SVG,
+// head of its pages, lines of text below them, a red ribbon down the middle, and a gold
+// dove, the Holy Spirit, coming down onto the pages. SVG,
 // rendered with Chromium through playwright-core. Chromium comes from
 // PLAYWRIGHT_BROWSERS_PATH (or set CHROMIUM_PATH to a chrome binary). The aleph is set in
 // Noto Serif Hebrew from node_modules; the alpha in FreeSerif Bold (ICON_FONT overrides it).
@@ -40,8 +41,14 @@ const RIGHT_PAGE = 'M 0,-190 C 90,-230 230,-240 400,-200 L 400,230 C 230,190 90,
 const LEFT_COVER = 'M 0,-165 C -90,-200 -240,-212 -428,-172 L -428,262 C -240,222 -90,234 0,280 Z';
 const RIGHT_COVER = 'M 0,-165 C 90,-200 240,-212 428,-172 L 428,262 C 240,222 90,234 0,280 Z';
 const RIBBON = 'M 6,-150 L 46,-150 L 46,330 L 26,305 L 6,330 Z';
-// The book runs from -212 (top of the cover) to 330 (tip of the ribbon); this centres it.
-export const MIDDLE = 59;
+const GOLD = '#C9A24A';
+// A dove in flight seen from the side, facing left, wing raised, tilted down as it descends,
+// placed over the top of the gutter.
+const DOVE_BODY = 'M -168,16 L -136,4 C -130,-30 -90,-42 -62,-22 C -30,-2 24,2 76,-8 L 150,-30 C 172,-24 182,-2 176,14 C 172,26 160,32 146,32 L 76,36 C 26,72 -60,66 -102,40 C -116,30 -128,22 -134,20 Z';
+const DOVE_WING = 'M -42,-16 C -54,-84 -14,-156 72,-198 C 94,-186 98,-162 86,-146 C 108,-144 120,-128 110,-110 C 130,-106 138,-90 128,-74 C 124,-50 108,-26 58,-10 Z';
+const DOVE_PLACE = 'translate(10,-250) scale(0.72) rotate(-22)';
+// The artwork runs from -402 (the dove's wing tip) to 330 (tip of the ribbon); this centres it.
+export const MIDDLE = -36;
 
 // Lines of text that follow the curve of the pages, on both sides of the gutter.
 function textLines() {
@@ -65,15 +72,21 @@ export const book = (c) => `
   <rect x="-3" y="-195" width="6" height="447" fill="${c.edge}"/>
   ${letters(c.ink)}
   <g fill="none" stroke="${c.line}" stroke-width="13" stroke-linecap="round">${textLines()}</g>
-  <path d="${RIBBON}" fill="${c.ribbon}"/>`;
+  <path d="${RIBBON}" fill="${c.ribbon}"/>
+  <g transform="${DOVE_PLACE}"><path d="${DOVE_BODY}" fill="${GOLD}"/><path d="${DOVE_WING}" fill="${GOLD}"/><circle cx="-108" cy="-12" r="7" fill="${c.page}"/></g>`;
 
 // One colour for Android's themed icons: the pages solid, with the letters, the lines and
-// the gutter and ribbon cut out of them.
+// the gutter and ribbon cut out of them, and the dove solid with a gap around it.
 export const monochrome = () => `
-  <defs><mask id="cut" maskUnits="userSpaceOnUse" x="-500" y="-300" width="1000" height="700">
+  <defs><mask id="cut" maskUnits="userSpaceOnUse" x="-500" y="-460" width="1000" height="860">
     <path d="${LEFT_PAGE}" fill="#fff"/><path d="${RIGHT_PAGE}" fill="#fff"/>
     ${letters('#000')}
     <g fill="none" stroke="#000" stroke-width="15" stroke-linecap="round">${textLines()}</g>
     <rect x="-14" y="-260" width="28" height="560" fill="#000"/>
+    <g transform="${DOVE_PLACE}">
+      <g fill="#000" stroke="#000" stroke-width="26" stroke-linejoin="round"><path d="${DOVE_BODY}"/><path d="${DOVE_WING}"/></g>
+      <g fill="#fff"><path d="${DOVE_BODY}"/><path d="${DOVE_WING}"/></g>
+      <circle cx="-108" cy="-12" r="8" fill="#000"/>
+    </g>
   </mask></defs>
-  <rect x="-500" y="-300" width="1000" height="700" fill="#fff" mask="url(#cut)"/>`;
+  <rect x="-500" y="-460" width="1000" height="860" fill="#fff" mask="url(#cut)"/>`;
