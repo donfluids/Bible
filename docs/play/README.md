@@ -20,7 +20,7 @@ Malayalam speaker to read it.
 - [ ] Fill in `[ORGANISATION NAME]` and `[CONTACT EMAIL]` in `privacy-policy.html` and
       upload it to riversresearch.org (for example `https://riversresearch.org/bible/privacy`).
       Play needs the address to be public and stable.
-- [ ] Install the 0.3.5 APK from the `apk-builds` branch and use it for a while: it is
+- [ ] Install the 0.3.6 APK from the `apk-builds` branch and use it for a while: it is
       the first build without the internet, storage and overlay permissions.
 - [ ] Keep `credentials/bible-release.jks` and `credentials/signing.env` safe and backed
       up outside this machine. They are not in the repo. With Play App Signing this key
@@ -39,7 +39,7 @@ Malayalam speaker to read it.
 - [ ] When asked about app signing, choose **Use Google-generated key**. The bundle
       you upload is signed with your current release key, which Play records as the
       upload key.
-- [ ] Upload `Vedapusthakam-0.3.5-b17.aab` from the `apk-builds` branch.
+- [ ] Upload `Vedapusthakam-0.3.6-b18.aab` from the `apk-builds` branch.
 - [ ] Add yourself (and anyone helping) as internal testers, install from the test
       link, and check the app installed from Play works.
 
