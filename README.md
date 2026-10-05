@@ -4,10 +4,21 @@ Installable Android packages for the two apps built from this repository. This
 branch holds only builds so the code history stays small. Builds also come from
 the Android APK workflow on every push.
 
+## Google Play bundles
+
+App bundles (.aab) for uploading to Google Play, signed with the release key, which
+Play records as the upload key. Phones install the APKs below, not these.
+
+| File | Version | Code | Signing | Built from | Size | SHA-256 |
+| --- | --- | --- | --- | --- | --- | --- |
+| [Vedapusthakam-0.3.5-b17.aab](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.3.5-b17.aab) | 0.3.5 | 17 | release key | 53e908b | 37.6 MiB | `ff071d8ee43b2da4f4448ff174bc403be800d03fa524673c8829fe9caca67635` |
+| [Bible-0.3.5-b17.aab](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.3.5-b17.aab) | 0.3.5 | 17 | release key | 53e908b | 34.6 MiB | `f440c7780ed76fa68c477f49105a22916c535c3584f5d4c4f994369507335e22` |
+
 ## Bible (English: KJV, WEB, Hebrew and Greek)
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Bible-0.3.5-b17.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.3.5-b17.apk) | 0.3.5 | 17 | release key | 53e908b | 40.8 MiB | `77503fb262822cec76889b4e42f73f6e17ba2f34a780121f28e3ce3f9b4fb49a` |
 | [Bible-0.3.4-b16.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.3.4-b16.apk) | 0.3.4 | 16 | release key | cd3308f | 40.8 MiB | `7ea917bcf5c975186ee1f9babda655a6f5c3f666f75e3a972aebf722f9c3dbe6` |
 | [Bible-0.3.3-b15.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.3.3-b15.apk) | 0.3.3 | 15 | release key | 816b634 | 40.8 MiB | `197ac8019ebb56658135c2bc280815ff65e8a7364195bb860736c9498fac409c` |
 | [Bible-0.3.2-b14.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.3.2-b14.apk) | 0.3.2 | 14 | release key | 36a1ef1 | 40.8 MiB | `416f42ad6ee87277b77184d0647d396c708622bb5305116af91fce577fc19c51` |
@@ -26,6 +37,7 @@ the Android APK workflow on every push.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Vedapusthakam-0.3.5-b17.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.3.5-b17.apk) | 0.3.5 | 17 | release key | 53e908b | 43.6 MiB | `703fcb0d1c0cd12bf69764b8f22ec91ab293d09a9d4946569deb782e446c3c9d` |
 | [Vedapusthakam-0.3.4-b16.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.3.4-b16.apk) | 0.3.4 | 16 | release key | cd3308f | 43.6 MiB | `4cfc1069816ef5c0a31958d277ce72cbf7802dc30f3e63a3e084dfd65f91287d` |
 | [Vedapusthakam-0.3.3-b15.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.3.3-b15.apk) | 0.3.3 | 15 | release key | 816b634 | 43.6 MiB | `2c80b4cf531cf1e10d326777c73492c2317a5272c7afdacc5a19afedefa144aa` |
 | [Vedapusthakam-0.3.2-b14.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.3.2-b14.apk) | 0.3.2 | 14 | release key | 36a1ef1 | 43.5 MiB | `0cbaeb624dfdbef1e20d180690fe9fbe851b6a11540a122659233e3ad5b4c478` |
