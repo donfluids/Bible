@@ -1,6 +1,6 @@
 # Play listing: വേദപുസ്തകം (Malayalam app)
 
-Package: `org.donfluids.bible.malayalam`. Default listing language: Malayalam (ml-IN),
+Package: `org.riversresearch.bible.malayalam`. Default listing language: Malayalam (ml-IN),
 with an English (en-US) translation. Category: Books & Reference.
 
 The Malayalam text below was written for this listing and should be read by a

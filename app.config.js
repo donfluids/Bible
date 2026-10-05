@@ -9,7 +9,7 @@ const EDITIONS = {
   en: {
     name: 'Bible',
     slug: 'bible',
-    package: 'org.donfluids.bible',
+    package: 'org.riversresearch.bible',
     icons: './assets/icons/en',
     // Splash colours are the app's own backgrounds, so opening does not flash.
     splashBackground: '#FBF8F1',
@@ -19,7 +19,7 @@ const EDITIONS = {
   ml: {
     name: 'വേദപുസ്തകം',
     slug: 'bible-malayalam',
-    package: 'org.donfluids.bible.malayalam',
+    package: 'org.riversresearch.bible.malayalam',
     icons: './assets/icons/ml',
     splashBackground: '#F7F9F2',
     splashBackgroundDark: '#111511',

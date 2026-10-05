@@ -1,6 +1,6 @@
 # Play listing: Bible (English app)
 
-Package: `org.donfluids.bible`. Listing language: English (en-US).
+Package: `org.riversresearch.bible`. Listing language: English (en-US).
 Category: Books & Reference.
 
 **App name** (30 of 30 characters)
