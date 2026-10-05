@@ -11,6 +11,7 @@ own listing.
 | `privacy-policy.html` | Privacy policy page for both apps, to upload to riversresearch.org |
 | `graphics/*-icon-512.png` | The 512 × 512 icons Play asks for |
 | `graphics/vedapusthakam-feature-*.png` | Feature graphics for the Malayalam app, Malayalam and English |
+| `screenshots/ml/*.png` | Seven framed phone screenshots for the Malayalam listing |
 
 The Malayalam wording in the listing and in the app's interface still needs a
 Malayalam speaker to read it.
@@ -73,9 +74,11 @@ Uninstalling removes the bookmarks and notes on that phone.
 - [ ] Feature graphic: `graphics/vedapusthakam-feature-ml.png` for the Malayalam listing and
       `graphics/vedapusthakam-feature-en.png` for its English translation (1024 × 500, redrawn
       by `node scripts/make-feature-graphic.mjs`).
-- [ ] Phone screenshots, at least 2 (up to 8), 9:16 or 16:9, 320 to 3840 pixels a side.
-      Take them on your phone: the reader, a word sheet, the Hebrew or Greek words,
-      search, and marker mode make a good set.
+- [ ] Phone screenshots: the seven in `screenshots/ml/` (1080 × 1920, Malayalam captions),
+      in this order: reader with highlights, word sheet, Hebrew/Greek words, compare,
+      marker, search, dark theme. They are the app's own screens rendered in Chromium from
+      a web build at phone size (no Android emulator was available), so the system status
+      bar is missing; the captions need a Malayalam speaker's read.
 - [ ] Category: Books & Reference. Contact email; website optional.
 
 ## 6. Countries and release
