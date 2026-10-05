@@ -860,23 +860,66 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
             flashing && { backgroundColor: theme.highlight },
           ]}
         >
-          <VerseText
-            verse={v}
-            fontSize={fontSize}
-            onWord={handleWord}
-            onLongPress={() => openActions(v)}
-            hasNote={bookmarkKey(v) in userNotes}
-            onNotePress={() => openNote(v)}
-            // The verse number opens the verse's actions, or in tap mode shows its words.
-            onNumberPress={tapMode ? () => toggleExpanded(v.verse) : () => openActions(v)}
-            numberLabel={tapMode ? t('tapVerseNumber', { lang: originalLanguage(v) }) : t('verseActions', { n: v.verse })}
-            underlineNumber={tapMode}
-            notes={notes.get(v.verse)}
-            onNote={(n) => setNote({ verse: v, note: n })}
-            underline={underlineWords}
-            marks={verseMarks.get(v.verse)}
-            selectionTranslation={translation}
-          />
+          {tapMode ? (
+            // In tap mode the number stands in a column the height of the verse, and the
+            // whole column shows or hides the verse's words: an easy target at any text size.
+            <View style={styles.tapRow}>
+              <Pressable
+                onPress={() => toggleExpanded(v.verse)}
+                onLongPress={() => openActions(v)}
+                android_ripple={{ color: theme.accentSoft }}
+                accessibilityRole="button"
+                accessibilityLabel={`${v.verse}, ${t('tapVerseNumber', { lang: originalLanguage(v) })}`}
+                accessibilityState={{ expanded: expanded.has(v.verse) }}
+                style={[styles.tapColumn, { width: Math.max(40, Math.round(fontSize * 2)) }]}
+              >
+                {v.verse > 0 ? (
+                  <Text
+                    style={[
+                      styles.tapNumber,
+                      { color: theme.accent, fontSize: Math.max(14, fontSize - 4), lineHeight: Math.round(fontSize * translationInfo(translation).lineHeight) },
+                    ]}
+                  >
+                    {v.verse}
+                  </Text>
+                ) : null}
+                <Icon name={expanded.has(v.verse) ? 'expand_less' : 'expand_more'} size={Math.max(18, fontSize - 2)} color={theme.accent} />
+              </Pressable>
+              <View style={styles.tapText}>
+                <VerseText
+                  verse={v}
+                  fontSize={fontSize}
+                  onWord={handleWord}
+                  onLongPress={() => openActions(v)}
+                  hasNote={bookmarkKey(v) in userNotes}
+                  onNotePress={() => openNote(v)}
+                  showNumber={false}
+                  notes={notes.get(v.verse)}
+                  onNote={(n) => setNote({ verse: v, note: n })}
+                  underline={underlineWords}
+                  marks={verseMarks.get(v.verse)}
+                  selectionTranslation={translation}
+                />
+              </View>
+            </View>
+          ) : (
+            <VerseText
+              verse={v}
+              fontSize={fontSize}
+              onWord={handleWord}
+              onLongPress={() => openActions(v)}
+              hasNote={bookmarkKey(v) in userNotes}
+              onNotePress={() => openNote(v)}
+              // The verse number opens the verse's actions.
+              onNumberPress={() => openActions(v)}
+              numberLabel={t('verseActions', { n: v.verse })}
+              notes={notes.get(v.verse)}
+              onNote={(n) => setNote({ verse: v, note: n })}
+              underline={underlineWords}
+              marks={verseMarks.get(v.verse)}
+              selectionTranslation={translation}
+            />
+          )}
           {words && words.length > 0 ? (
             <InterlinearVerse
               words={words}
@@ -1276,6 +1319,10 @@ const styles = StyleSheet.create({
   list: { paddingHorizontal: 18, paddingTop: 12, alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
   verse: { paddingVertical: 5, borderRadius: 6 },
   verseInterlinear: { paddingBottom: 10, marginBottom: 6, borderBottomWidth: StyleSheet.hairlineWidth },
+  tapRow: { flexDirection: 'row', alignItems: 'stretch' },
+  tapColumn: { alignItems: 'center', marginLeft: -8, marginRight: 4, borderRadius: 8, overflow: 'hidden' },
+  tapNumber: { fontWeight: '700' },
+  tapText: { flex: 1 },
   verseBookmarked: { borderLeftWidth: 3, paddingLeft: 8, marginLeft: -11 },
   tip: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, padding: 14, marginBottom: 10 },
   tipText: { fontSize: 15, lineHeight: 21 },

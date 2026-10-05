@@ -21,8 +21,6 @@ interface Props {
   onNumberPress?: () => void;
   /** What tapping the number does, for screen readers. */
   numberLabel?: string;
-  /** Underline the number, when tapping it shows the verse's original words. */
-  underlineNumber?: boolean;
   /** Footnotes and cross references of this verse, shown as lettered markers. */
   notes?: Note[];
   onNote?: (note: Note) => void;
@@ -81,7 +79,6 @@ export function VerseText({
   onLongPress,
   onNumberPress,
   numberLabel,
-  underlineNumber,
   notes,
   onNote,
   underline = true,
@@ -212,7 +209,7 @@ export function VerseText({
           onLongPress={onLongPress}
           accessibilityRole={onNumberPress ? 'button' : undefined}
           accessibilityLabel={onNumberPress ? numberLabel : undefined}
-          style={[styles.number, { color: theme.accent, fontSize: small }, underlineNumber && { textDecorationLine: 'underline' }]}
+          style={[styles.number, { color: theme.accent, fontSize: small }]}
         >
           {verse.verse}{' '}
         </Text>
