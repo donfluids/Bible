@@ -12,6 +12,7 @@ own listing.
 | `graphics/*-icon-512.png` | The 512 × 512 icons Play asks for |
 | `graphics/vedapusthakam-feature-*.png` | Feature graphics for the Malayalam app, Malayalam and English |
 | `screenshots/ml/*.png` | Seven framed phone screenshots for the Malayalam listing |
+| `screenshots/en/*.png` | The same seven with the interface in English and English captions, for the English translation |
 
 The Malayalam wording in the listing and in the app's interface still needs a
 Malayalam speaker to read it.
@@ -79,6 +80,8 @@ Uninstalling removes the bookmarks and notes on that phone.
       marker, search, dark theme. They are the app's own screens rendered in Chromium from
       a web build at phone size (no Android emulator was available), so the system status
       bar is missing; the captions need a Malayalam speaker's read.
+- [ ] English translation of the listing: the seven in `screenshots/en/` (interface set to
+      English, English captions, same order).
 - [ ] Category: Books & Reference. Contact email; website optional.
 
 ## 6. Countries and release
