@@ -32,7 +32,7 @@ Malayalam speaker to read it.
 ## 2. Create the app in Play Console
 
 - [ ] Create app: app name `വേദപുസ്തകം – മലയാളം ഇംഗ്ലീഷ്`, default language
-      Malayalam (ml-IN), type App, Free or Paid. A free app cannot later become paid.
+      Malayalam (ml-IN), type App, **Free** (a free app cannot later become paid).
 - [ ] Accept the declarations (Developer Program Policies, US export laws).
 
 ## 3. App signing and the first build
@@ -57,8 +57,16 @@ Uninstalling removes the bookmarks and notes on that phone.
 - [ ] **Content rating**: fill in the questionnaire (category for reference or
       educational apps); the app has no violence, user-generated content shared
       with others, purchases or location.
-- [ ] **Target audience and content**: choose the age groups. Including under-13s
-      brings in the Families policy and its extra review; that is your decision.
+- [ ] **Target audience and content**: tick every age group (all ages, children
+      included). That puts the app under Play's
+      [Families policy](https://support.google.com/googleplay/android-developer/answer/9893335);
+      it complies: no ads, no data collected from anyone, no third-party SDKs, content
+      suitable for children, and a privacy policy that covers children. With no ads, no
+      neutral age screen is needed. The Share button hands a verse to the app the user
+      picks in Android's share menu; Play defines a social feature as one that lets users
+      "share freeform content or communicate with large groups of people", which this is
+      not. If a reviewer reads it otherwise, the fix is a one-line safe-online reminder
+      before sharing. Review of an app for children can take longer than usual.
 - [ ] **Data safety**: the app collects and shares no data: no network access, no
       accounts, no analytics. Bookmarks and notes can reach the user's Google account
       only through Android's own system backup, which the user controls. Declaring
