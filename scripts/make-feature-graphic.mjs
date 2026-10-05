@@ -35,7 +35,7 @@ const page = (v) => `<!doctype html><meta charset="utf-8"><style>
   .line { font: 30px/1.5 LineFace, serif; color: #E6EFE0; white-space: nowrap; }
 </style>
 <div id="g">${GRAIN}<div class="vignette"></div><div class="glow"></div>
-  <svg class="book" width="380" height="309" viewBox="-450 -420 900 770">${book(c)}</svg>
+  <svg class="book" width="380" height="355" viewBox="-450 -490 900 840">${book(c)}</svg>
   <div class="text"><div class="name">${v.name}</div><div class="rule"></div><div class="line">${v.lines.join('<br>')}</div></div>
 </div>`;
 

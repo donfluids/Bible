@@ -46,9 +46,9 @@ const GOLD = '#C9A24A';
 // placed over the top of the gutter.
 const DOVE_BODY = 'M -168,16 L -136,4 C -130,-30 -90,-42 -62,-22 C -30,-2 24,2 76,-8 L 150,-30 C 172,-24 182,-2 176,14 C 172,26 160,32 146,32 L 76,36 C 26,72 -60,66 -102,40 C -116,30 -128,22 -134,20 Z';
 const DOVE_WING = 'M -42,-16 C -54,-84 -14,-156 72,-198 C 94,-186 98,-162 86,-146 C 108,-144 120,-128 110,-110 C 130,-106 138,-90 128,-74 C 124,-50 108,-26 58,-10 Z';
-const DOVE_PLACE = 'translate(10,-250) scale(0.72) rotate(-22)';
-// The artwork runs from -402 (the dove's wing tip) to 330 (tip of the ribbon); this centres it.
-export const MIDDLE = -36;
+const DOVE_PLACE = 'translate(12,-272) scale(0.95) rotate(-22)';
+// The artwork runs from -472 (the dove's wing tip) to 330 (tip of the ribbon); this centres it.
+export const MIDDLE = -71;
 
 // Lines of text that follow the curve of the pages, on both sides of the gutter.
 function textLines() {
@@ -78,7 +78,7 @@ export const book = (c) => `
 // One colour for Android's themed icons: the pages solid, with the letters, the lines and
 // the gutter and ribbon cut out of them, and the dove solid with a gap around it.
 export const monochrome = () => `
-  <defs><mask id="cut" maskUnits="userSpaceOnUse" x="-500" y="-460" width="1000" height="860">
+  <defs><mask id="cut" maskUnits="userSpaceOnUse" x="-500" y="-520" width="1000" height="920">
     <path d="${LEFT_PAGE}" fill="#fff"/><path d="${RIGHT_PAGE}" fill="#fff"/>
     ${letters('#000')}
     <g fill="none" stroke="#000" stroke-width="15" stroke-linecap="round">${textLines()}</g>
@@ -89,4 +89,4 @@ export const monochrome = () => `
       <circle cx="-108" cy="-12" r="8" fill="#000"/>
     </g>
   </mask></defs>
-  <rect x="-500" y="-460" width="1000" height="860" fill="#fff" mask="url(#cut)"/>`;
+  <rect x="-500" y="-520" width="1000" height="920" fill="#fff" mask="url(#cut)"/>`;
