@@ -30,6 +30,7 @@
   "devDependencies": {
     "@types/react": "~19.2.2",
     "material-symbols": "^0.47.6",
+    "playwright-core": "^1.56.1",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -42,7 +43,7 @@
     "build-db": "node --no-warnings scripts/build-db.mjs",
     "doctor": "npx expo-doctor",
     "start:ml": "BIBLE_EDITION=ml expo start",
-    "icons": "bash scripts/make-icons.sh en && bash scripts/make-icons.sh ml",
+    "icons": "node scripts/make-icons.mjs en && node scripts/make-icons.mjs ml",
     "align-ml": "node --no-warnings scripts/align-malayalam.mjs"
   },
   "private": true

@@ -167,7 +167,7 @@ src/components/          Header, Icon, SectionLabel, VerseText, InterlinearVerse
 src/screens/             Reader, Books, Chapters, Saved, Search, Concordance, Settings, Licences
 scripts/fetch-data.sh    Downloads the source texts into data/raw/ (not committed)
 scripts/build-db.mjs     Builds assets/db/bible-<edition>.db from data/raw/
-scripts/make-icons.sh    Draws the icon, adaptive icon layers and splash images with ImageMagick
+scripts/make-icons.mjs   Draws the icon, adaptive icon layers and splash images (SVG, rendered with Chromium)
 scripts/make-icon-font.py  Cuts the interface icons out of Material Symbols Rounded
 assets/db/               bible-en.db (32 MB) and bible-ml.db (47 MB), one per edition
 assets/icons/            Icon, adaptive icon layers and splash images per edition
@@ -184,7 +184,7 @@ rebuild it from the sources:
 ```bash
 npm run fetch-data   # downloads KJV, WEB, the Strong's dictionaries and the STEPBible texts
 npm run build-db     # writes assets/db/bible-en.db and bible-ml.db (needs Node 22+)
-npm run icons        # redraws both editions' icons with ImageMagick
+npm run icons        # redraws both editions' icons (needs Chromium; see scripts/make-icons.mjs)
 ```
 
 Then bump the suffix in `DATABASE_NAME` in `src/db.ts` (for example `bible-v2.db`)
