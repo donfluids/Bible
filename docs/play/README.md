@@ -31,7 +31,7 @@ Malayalam speaker to read it.
 
 ## 2. Create the app in Play Console
 
-- [ ] Create app: app name `വേദപുസ്തകം: മലയാളം ബൈബിൾ`, default language
+- [ ] Create app: app name `വേദപുസ്തകം – മലയാളം ഇംഗ്ലീഷ്`, default language
       Malayalam (ml-IN), type App, Free or Paid. A free app cannot later become paid.
 - [ ] Accept the declarations (Developer Program Policies, US export laws).
 
