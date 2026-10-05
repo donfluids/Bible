@@ -12,8 +12,8 @@ const malayalam = (weight) =>
   path.join(ROOT, `node_modules/@expo-google-fonts/noto-serif-malayalam/${weight}/NotoSerifMalayalam_${weight}.ttf`);
 
 const VERSIONS = {
-  ml: { name: 'വേദപുസ്തകം', lines: ['മലയാളം–ഇംഗ്ലീഷ് ബൈബിൾ', 'പഴയനിയമം എബ്രായ പദങ്ങളോടൊപ്പം', 'പുതിയനിയമം ഗ്രീക്ക് പദങ്ങളോടൊപ്പം'] },
-  en: { name: 'Vedapusthakam', lines: ['Malayalam–English Bible', 'Old Testament with the Hebrew words', 'New Testament with the Greek words'] },
+  ml: { name: 'വേദപുസ്തകം', lines: ['മലയാളം–ഇംഗ്ലീഷ് ബൈബിൾ', 'പഴയനിയമം എബ്രായ മൂലപദങ്ങളോടൊപ്പം', 'പുതിയനിയമം ഗ്രീക്ക് മൂലപദങ്ങളോടൊപ്പം'] },
+  en: { name: 'Vedapusthakam', lines: ['Malayalam–English Bible', 'Old Testament with Hebrew root words', 'New Testament with Greek root words'] },
 };
 
 const c = { ...COLOURS.ml, cover: '#143521' };
