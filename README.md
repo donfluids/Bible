@@ -168,6 +168,7 @@ src/screens/             Reader, Books, Chapters, Saved, Search, Concordance, Se
 scripts/fetch-data.sh    Downloads the source texts into data/raw/ (not committed)
 scripts/build-db.mjs     Builds assets/db/bible-<edition>.db from data/raw/
 scripts/make-icons.mjs   Draws the icon, adaptive icon layers and splash images (SVG, rendered with Chromium)
+scripts/make-feature-graphic.mjs  Draws the Play feature graphics from the same book (scripts/icon-art.mjs)
 scripts/make-icon-font.py  Cuts the interface icons out of Material Symbols Rounded
 assets/db/               bible-en.db (32 MB) and bible-ml.db (47 MB), one per edition
 assets/icons/            Icon, adaptive icon layers and splash images per edition
