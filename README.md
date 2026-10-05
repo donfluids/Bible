@@ -131,10 +131,16 @@ To build locally:
 
 ```bash
 BIBLE_EDITION=ml npx expo prebuild --platform android --no-install --clean
-cd android && ./gradlew assembleRelease
+cd android
+./gradlew assembleRelease   # APK, for installing directly
+./gradlew bundleRelease     # app bundle (.aab), for Google Play
 ```
 
-Built APKs are published on the `apk-builds` branch.
+Release builds leave out the internet permission (the app never goes online; see
+`plugins/withAndroidRelease.js`), and `app.json` blocks the storage and overlay
+permissions that libraries would otherwise add. Built APKs and bundles are published
+on the `apk-builds` branch. `docs/play/` has the Play listing text, the privacy
+policy page and a release checklist.
 
 ## Project layout
 

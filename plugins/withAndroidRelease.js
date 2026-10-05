@@ -5,7 +5,18 @@
 //   BIBLE_KEYSTORE_PATH, BIBLE_KEYSTORE_PASSWORD, BIBLE_KEY_ALIAS, BIBLE_KEY_PASSWORD
 // When BIBLE_KEYSTORE_PATH is unset the build falls back to the debug key, so a
 // developer build still works without the release key.
-const { withAppBuildGradle, withGradleProperties } = require('expo/config-plugins');
+//
+// The release build also drops the internet permission: the app reads everything from
+// its own database and never goes online (links open in the browser, which needs no
+// permission of the app's). Debug builds keep it to load code from the development server.
+const fs = require('fs');
+const path = require('path');
+const { withAppBuildGradle, withDangerousMod, withGradleProperties } = require('expo/config-plugins');
+
+const RELEASE_MANIFEST = `<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+  <uses-permission android:name="android.permission.INTERNET" tools:node="remove"/>
+</manifest>
+`;
 
 const GRADLE_PROPERTIES = {
   // Code shrinking (R8) and resource shrinking for release builds.
@@ -53,6 +64,15 @@ function withAndroidRelease(config) {
     c.modResults.contents = patchBuildGradle(c.modResults.contents);
     return c;
   });
+  config = withDangerousMod(config, [
+    'android',
+    async (c) => {
+      const dir = path.join(c.modRequest.platformProjectRoot, 'app', 'src', 'release');
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, 'AndroidManifest.xml'), RELEASE_MANIFEST);
+      return c;
+    },
+  ]);
   return config;
 }
 
