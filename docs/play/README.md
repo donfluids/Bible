@@ -19,8 +19,8 @@ Malayalam speaker to read it.
 
 ## 1. Before the first upload
 
-- [ ] Fill in `[ORGANISATION NAME]` and `[CONTACT EMAIL]` in `privacy-policy.html` and
-      upload it to riversresearch.org (for example `https://riversresearch.org/bible/privacy`).
+- [ ] Upload `privacy-policy.html` (Rivers Research LLC, dond@riversresearch.org) to
+      riversresearch.org, for example `https://riversresearch.org/bible/privacy`.
       Play needs the address to be public and stable.
 - [ ] Install the 0.3.7 APK from the `apk-builds` branch and use it for a while: it is
       the first build without the internet, storage and overlay permissions.
