@@ -37,7 +37,7 @@ rendering counts all work in Malayalam.
   72 of its 3,133 verses); chips narrow the list to one rendering. The sheet hides a
   translation's chips when it tags the word in under half its verses, and the full view
   shows Strong's own list of KJV renderings in plain words.
-- Tap the Hebrew words or Greek words button (മൂലപാഠം in the Malayalam app) to see
+- Tap the Hebrew words or Greek words button (എബ്രായ or ഗ്രീക്ക് in the Malayalam app) to see
   the Hebrew (Leningrad Codex) or Greek text of every verse, word by word, each with
   its transliteration and a short gloss. (The code and this README call this view the
   interlinear.)
