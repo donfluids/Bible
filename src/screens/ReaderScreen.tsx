@@ -850,6 +850,9 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
       const tapMode = interlinear && interlinearMode === 'tap';
       const showOriginal = interlinear && (interlinearMode === 'all' || expanded.has(v.verse));
       const words = showOriginal ? originalWords?.get(v.verse) : undefined;
+      // While a verse shows its Hebrew or Greek words, those are what is tapped: the verse's
+      // own words lose their underlines and do not open the word sheet.
+      const showingWords = !!words && words.length > 0;
       return (
         <View
           style={[
@@ -889,14 +892,14 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                 <VerseText
                   verse={v}
                   fontSize={fontSize}
-                  onWord={handleWord}
+                  onWord={showingWords ? undefined : handleWord}
                   onLongPress={() => openActions(v)}
                   hasNote={bookmarkKey(v) in userNotes}
                   onNotePress={() => openNote(v)}
                   showNumber={false}
                   notes={notes.get(v.verse)}
                   onNote={(n) => setNote({ verse: v, note: n })}
-                  underline={underlineWords}
+                  underline={underlineWords && !showingWords}
                   marks={verseMarks.get(v.verse)}
                   selectionTranslation={translation}
                 />
@@ -906,7 +909,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
             <VerseText
               verse={v}
               fontSize={fontSize}
-              onWord={handleWord}
+              onWord={showingWords ? undefined : handleWord}
               onLongPress={() => openActions(v)}
               hasNote={bookmarkKey(v) in userNotes}
               onNotePress={() => openNote(v)}
@@ -915,7 +918,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
               numberLabel={t('verseActions', { n: v.verse })}
               notes={notes.get(v.verse)}
               onNote={(n) => setNote({ verse: v, note: n })}
-              underline={underlineWords}
+              underline={underlineWords && !showingWords}
               marks={verseMarks.get(v.verse)}
               selectionTranslation={translation}
             />
