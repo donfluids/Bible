@@ -15,6 +15,8 @@ phones treat them as different apps. Upload only 0.3.8 or later to Play.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Vedapusthakam-0.4.0-b26.aab](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.0-b26.aab) | 0.4.0 | 26 | release key | 47e1279 | 37.8 MiB | `059acc06a614d251caa1c6c9fe22e8e4cad6ac57f2b1f847ceaefd886a3ceae4` |
+| [Bible-0.4.0-b26.aab](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.4.0-b26.aab) | 0.4.0 | 26 | release key | 47e1279 | 34.8 MiB | `e11108214fec0e13ba11292e30d1e3e8ae9b45cf5eae271e59ff39c0111558ca` |
 | [Vedapusthakam-0.3.13-b25.aab](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.3.13-b25.aab) | 0.3.13 | 25 | release key | 7c5c1ab | 37.8 MiB | `459e1c853056d8e287a589debc575dd70f6f1eb45494b58a07eeef1ae1a0c86b` |
 | [Bible-0.3.13-b25.aab](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.3.13-b25.aab) | 0.3.13 | 25 | release key | 7c5c1ab | 34.8 MiB | `87be4e993d0237ec3e80f873c0b8f3463038f939ff8d59ee822ae034f71b09cf` |
 | [Vedapusthakam-0.3.12-b24.aab](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.3.12-b24.aab) | 0.3.12 | 24 | release key | 4888fe6 | 37.8 MiB | `f6c5f13c8a10efe0c50186fb8d16a118c374da8cc0e62a8f01f3c497efb54d3d` |
@@ -38,6 +40,7 @@ phones treat them as different apps. Upload only 0.3.8 or later to Play.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Bible-0.4.0-b26.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.4.0-b26.apk) | 0.4.0 | 26 | release key | 47e1279 | 41.0 MiB | `e58a976a109e7040e743b52ca9405b335ffcc57284a4ddcebfe236a3ac344fb4` |
 | [Bible-0.3.13-b25.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.3.13-b25.apk) | 0.3.13 | 25 | release key | 7c5c1ab | 40.9 MiB | `e233ab3064e1c50410e627e0c6588a428d956c916cc88febfdec66176915609f` |
 | [Bible-0.3.12-b24.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.3.12-b24.apk) | 0.3.12 | 24 | release key | 4888fe6 | 40.9 MiB | `067e695ed0a32ba27b6fa77560f1d608773f442ab9dd5a0082dc27a136193569` |
 | [Bible-0.3.11-b23.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.3.11-b23.apk) | 0.3.11 | 23 | release key | d26724c | 40.9 MiB | `b913c1d3049d9ec2ba1cc2d99d784684657019f74c895fef527babc748cc3de5` |
@@ -65,6 +68,7 @@ phones treat them as different apps. Upload only 0.3.8 or later to Play.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Vedapusthakam-0.4.0-b26.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.0-b26.apk) | 0.4.0 | 26 | release key | 47e1279 | 43.8 MiB | `0be4e576f21225a048c60cb15b0bf661749871b405054a436370e5b0c3e67b39` |
 | [Vedapusthakam-0.3.13-b25.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.3.13-b25.apk) | 0.3.13 | 25 | release key | 7c5c1ab | 43.8 MiB | `8e70428bcff3b7861d8689c2e84648dd5af095c3e61b7b8fa520e10a4b2b07d3` |
 | [Vedapusthakam-0.3.12-b24.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.3.12-b24.apk) | 0.3.12 | 24 | release key | 4888fe6 | 43.8 MiB | `804679880eaef1a033a79e719fe673256f72cee91e723c5307a0e8bb4aae9e5f` |
 | [Vedapusthakam-0.3.11-b23.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.3.11-b23.apk) | 0.3.11 | 23 | release key | d26724c | 43.8 MiB | `41b7d8e53a62d7fdb72bc71460045e969e62c1fb824e6feb9d93dfa413e89971` |
