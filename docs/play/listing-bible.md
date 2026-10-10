@@ -28,6 +28,7 @@ Read the King James Version and the World English Bible, and study the Hebrew an
 • Search the text, the dictionary ("love", "logos", or a Hebrew or Greek word), a Strong's number such as G26, or type a reference such as John 3:16 or Ps 23 to go straight there.
 • Compare a verse in the KJV and the WEB side by side with the Hebrew or Greek.
 • Highlight a whole verse, a few words, or a passage running over several verses, in four colours. Keep bookmarks and notes.
+• Notebook: write sermon notes or a study. A reference such as John 3:16 becomes a link to the verse, with its text shown beneath. Add a verse to a page straight from the reader, and share a page with its verses.
 • Light, sepia and dark themes. Pinch to change the text size. Read verse by verse or in paragraphs.
 
 No internet needed: the whole text is inside the app. No ads, no account, and no data collected. Your highlights and notes stay on your phone.

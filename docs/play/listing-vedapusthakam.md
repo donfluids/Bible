@@ -31,7 +31,8 @@ Malayalam speaker before it goes live.
 • എബ്രായ / ഗ്രീക്ക് വാക്കുകൾ: പഴയനിയമത്തിലെ ഓരോ വാക്യത്തിന്റെയും എബ്രായ പാഠവും പുതിയനിയമത്തിലേതിന്റെ ഗ്രീക്ക് പാഠവും വാക്കുവാക്കായി, ഉച്ചാരണവും അർത്ഥവും സഹിതം.
 • മലയാളത്തിലും ഇംഗ്ലീഷിലും തിരയാം; അക്ഷരരീതിയിലെ ചെറിയ വ്യത്യാസങ്ങൾ (ആത്മാവ്/ആത്മാവു, കൽപിച്ചു/കല്പിച്ചു) പ്രശ്നമല്ല. സങ്കീർത്തനം 23, യോഹന്നാൻ 3:16 പോലെ ടൈപ്പ് ചെയ്ത് നേരെ പോകാം.
 • ഒരു വാക്യം മലയാളത്തിലും KJV-യിലും എബ്രായ അല്ലെങ്കിൽ ഗ്രീക്ക് പാഠത്തോടൊപ്പം താരതമ്യം ചെയ്യാം.
-• വാക്യം മുഴുവനായോ ചില വാക്കുകൾ മാത്രമായോ, പല വാക്യങ്ങൾ കടന്നുപോകുന്ന ഒരു ഭാഗമായോ നാല് നിറങ്ങളിൽ ഹൈലൈറ്റ് ചെയ്യാം. അടയാളങ്ങളും കുറിപ്പുകളും സൂക്ഷിക്കാം.
+• വാക്യം മുഴുവനായോ ചില വാക്കുകൾ മാത്രമായോ, പല വാക്യങ്ങൾ കടന്നുപോകുന്ന ഒരു ഭാഗമായോ നാല് നിറങ്ങളിൽ ഹൈലൈറ്റ് ചെയ്യാം. അടയാളങ്ങളും വാക്യക്കുറിപ്പുകളും സൂക്ഷിക്കാം.
+• കുറിപ്പുകൾ: പ്രസംഗക്കുറിപ്പുകളോ പഠനമോ എഴുതാം. യോഹന്നാൻ 3:16 പോലെ എഴുതുന്ന വാക്യസൂചിക ആ വാക്യത്തിലേക്കുള്ള കണ്ണിയാകും, വാക്യവും താഴെ കാണിക്കും. ഒരു വാക്യം നേരിട്ട് കുറിപ്പിൽ ചേർക്കാം; കുറിപ്പ് വാക്യങ്ങളോടൊപ്പം പങ്കിടാം.
 • വെളിച്ചം, സെപിയ, ഇരുണ്ട നിറക്രമങ്ങൾ. രണ്ടു വിരൽ കൊണ്ട് അക്ഷരവലിപ്പം മാറ്റാം. വാക്യം തോറുമോ ഖണ്ഡികകളായോ വായിക്കാം.
 • മെനുകളും ബട്ടണുകളും മലയാളത്തിൽ; വേണമെങ്കിൽ ഇംഗ്ലീഷിലേക്ക് മാറ്റാം.
 
@@ -68,6 +69,7 @@ A Malayalam-English Bible: read the Sathyavedapusthakam (1910) and the King Jame
 • Search in Malayalam or English; small spelling differences (ആത്മാവ്/ആത്മാവു, കൽപിച്ചു/കല്പിച്ചു) don't matter. Type a reference such as സങ്കീർത്തനം 23 or John 3:16 to go straight there.
 • Compare a verse in Malayalam and the KJV side by side with the Hebrew (Old Testament) or Greek (New Testament).
 • Highlight a whole verse, a few words, or a passage running over several verses, in four colours. Keep bookmarks and notes.
+• Notebook: write sermon notes or a study. A reference such as John 3:16 becomes a link to the verse, with its text shown beneath. Add a verse to a page straight from the reader, and share a page with its verses.
 • Light, sepia and dark themes. Pinch to change the text size. Read verse by verse or in paragraphs.
 • Menus and buttons in Malayalam, or in English if you prefer.
 
