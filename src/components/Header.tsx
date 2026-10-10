@@ -16,6 +16,13 @@ interface Props {
   right?: React.ReactNode;
 }
 
+/**
+ * The most the phone's font-size setting may enlarge text in the top bar. Past this the
+ * title and the buttons beside it no longer fit on a narrow phone; the Bible text itself
+ * still follows the phone's setting in full.
+ */
+export const HEADER_MAX_FONT_SCALE = 1.2;
+
 /** The Android top bar: back arrow, title on the left, icon buttons on the right. */
 export function Header({ title, onBack, backLabel, center, right }: Props) {
   const theme = useTheme();
@@ -26,7 +33,7 @@ export function Header({ title, onBack, backLabel, center, right }: Props) {
       {onBack ? <IconButton name="arrow_back" onPress={onBack} accessibilityLabel={backLabel ?? t('back')} color={theme.text} /> : null}
       <View style={[styles.center, onBack && styles.centerAfterBack]}>
         {center ?? (
-          <Text numberOfLines={1} style={[styles.title, { color: theme.text }]} accessibilityRole="header">
+          <Text numberOfLines={1} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={[styles.title, { color: theme.text }]} accessibilityRole="header">
             {title}
           </Text>
         )}
@@ -54,7 +61,7 @@ export function HeaderChip({ icon, label, onPress, accessibilityLabel }: { icon:
       style={({ pressed }) => [styles.chip, { backgroundColor: theme.accentSoft, opacity: pressed ? 0.8 : 1 }]}
     >
       <Icon name={icon} size={18} color={theme.accent} />
-      <Text style={[styles.chipText, { color: theme.accent }]}>{label}</Text>
+      <Text maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={[styles.chipText, { color: theme.accent }]}>{label}</Text>
     </Pressable>
   );
 }

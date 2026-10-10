@@ -9,7 +9,7 @@ import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
 import { CompareSheet } from '../components/CompareSheet';
-import { Header, HeaderChip, HeaderIconButton } from '../components/Header';
+import { HEADER_MAX_FONT_SCALE, Header, HeaderChip, HeaderIconButton } from '../components/Header';
 import { Icon } from '../components/Icon';
 import type { IconName } from '../components/Icon';
 import { useEdition } from '../edition';
@@ -1265,32 +1265,54 @@ function NavButton({ label, onPress, disabled }: { label: string; onPress: () =>
  * The reader's title: book name and chapter, opening the book list. The full name is used
  * when it fits beside the buttons, else the short one (2. തിമൊഥെയൊസ് → 2 തിമൊ), and the
  * chapter number is its own text, so it is never cut off even when the name has to be.
+ * When even the short name does not fit (a narrow phone, or large system text), the
+ * letters shrink to fit, down to MIN_TITLE_SCALE of their size, and on the narrowest
+ * screens the drop-down arrow is left out.
  */
 function ReaderTitle({ name, short, chapter, malayalam, onPress, accessibilityLabel }: { name: string; short: string; chapter: number; malayalam: boolean; onPress: () => void; accessibilityLabel: string }) {
   const theme = useTheme();
   const [room, setRoom] = useState(0);
   const [fullWidth, setFullWidth] = useState(0);
-  const useShort = !!short && room > 0 && fullWidth > 0 && fullWidth + ARROW_WIDTH > room;
+  const [shortWidth, setShortWidth] = useState(0);
+  const measured = room > 0 && fullWidth > 0;
+  const useShort = !!short && measured && fullWidth > room - ARROW_WIDTH;
+  const needed = useShort ? shortWidth : fullWidth;
+  // On the narrowest screens the drop-down arrow gives up its room before the name is cut.
+  const showArrow = !measured || needed * MIN_TITLE_SCALE <= room - ARROW_WIDTH - 2;
+  const avail = showArrow ? room - ARROW_WIDTH : room;
+  // A couple of pixels' margin, so rounding never leaves the name a hair too wide.
+  const scale = measured && needed > avail && needed > 0 ? Math.max(MIN_TITLE_SCALE, Math.floor(((avail - 2) / needed) * 100) / 100) : 1;
+  const baseSize = malayalam ? 20 : 22;
   const fontStyle = [styles.title, { color: theme.text }, malayalam && { fontFamily: scriptureFont(true, false, true), fontWeight: 'normal' as const, fontSize: 20 }];
+  // Both pieces get the same line height, so a shrunk name stays level with its number.
+  const shownStyle = [fontStyle, scale < 1 && { fontSize: baseSize * scale, lineHeight: Math.round(baseSize * 1.5) }];
   return (
     <View style={styles.titleRoom} onLayout={(e) => setRoom(e.nativeEvent.layout.width)}>
-      {/* The full title laid out off screen, to see whether it fits. */}
+      {/* The full and short titles laid out off screen, to see which fits. */}
       <View style={styles.titleMeasure} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        <Text style={fontStyle} onLayout={(e) => setFullWidth(e.nativeEvent.layout.width)}>
+        <Text style={fontStyle} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} onLayout={(e) => setFullWidth(e.nativeEvent.layout.width)}>
           {`${name} ${chapter}`}
         </Text>
       </View>
+      {short ? (
+        <View style={styles.titleMeasure} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+          <Text style={fontStyle} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} onLayout={(e) => setShortWidth(e.nativeEvent.layout.width)}>
+            {`${short} ${chapter}`}
+          </Text>
+        </View>
+      ) : null}
       <Pressable onPress={onPress} hitSlop={8} accessibilityRole="button" accessibilityLabel={accessibilityLabel} style={styles.titleButton}>
-        <Text numberOfLines={1} style={[fontStyle, styles.titleName]}>
+        <Text numberOfLines={1} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={[shownStyle, styles.titleName]}>
           {useShort ? short : name}
         </Text>
-        <Text style={fontStyle}>{` ${chapter}`}</Text>
-        <Icon name="arrow_drop_down" color={theme.accent} />
+        <Text maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={shownStyle}>{` ${chapter}`}</Text>
+        {showArrow ? <Icon name="arrow_drop_down" color={theme.accent} /> : null}
       </Pressable>
     </View>
   );
 }
 
+const MIN_TITLE_SCALE = 0.6;
 const ARROW_WIDTH = 28;
 
 const NO_MARKS: [number, number, HighlightColor][] = [];
