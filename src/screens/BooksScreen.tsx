@@ -17,6 +17,8 @@ interface Props {
   onPick: (book: Book) => void;
   onOpenBookmarks: () => void;
   bookmarkCount: number;
+  onOpenNotebook: () => void;
+  pageCount: number;
   /** Go back to a recently read chapter. */
   onOpenRecent: (place: { book: number; chapter: number }) => void;
   onBack: () => void;
@@ -28,7 +30,7 @@ const HEADER_H = 44;
 const ROW_H = 50;
 
 /** Book list that opens scrolled to the book being read. */
-export function BooksScreen({ books, current, onPick, onOpenBookmarks, bookmarkCount, onOpenRecent, onBack }: Props) {
+export function BooksScreen({ books, current, onPick, onOpenBookmarks, bookmarkCount, onOpenNotebook, pageCount, onOpenRecent, onBack }: Props) {
   const theme = useTheme();
   // Lists run under the system navigation bar; the last row must clear it.
   const insets = useSafeAreaInsets();
@@ -78,6 +80,21 @@ export function BooksScreen({ books, current, onPick, onOpenBookmarks, bookmarkC
         {bookmarkCount > 0 ? (
           <View style={[styles.badge, { backgroundColor: theme.accentSoft }]}>
             <Text style={[styles.badgeText, { color: theme.accent }]}>{bookmarkCount}</Text>
+          </View>
+        ) : null}
+        <Icon name="chevron_right" color={theme.muted} />
+      </Pressable>
+      <Pressable
+        onPress={onOpenNotebook}
+        android_ripple={{ color: theme.accentSoft }}
+        style={({ pressed }) => [styles.bookmarks, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
+        accessibilityRole="button"
+      >
+        <Icon name="note_stack" color={theme.accent} />
+        <Text style={[styles.name, styles.savedName, { color: theme.accent }]} numberOfLines={1}>{t('notebookRow')}</Text>
+        {pageCount > 0 ? (
+          <View style={[styles.badge, { backgroundColor: theme.accentSoft }]}>
+            <Text style={[styles.badgeText, { color: theme.accent }]}>{pageCount}</Text>
           </View>
         ) : null}
         <Icon name="chevron_right" color={theme.muted} />

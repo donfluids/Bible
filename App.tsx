@@ -18,6 +18,7 @@ import { CONFIGURED_EDITION, EDITIONS, EditionContext, isEditionId } from './src
 import type { Edition, Language } from './src/edition';
 import { getBooks, getMeta } from './src/queries';
 import { SettingsProvider, useSettings } from './src/settings';
+import { NotebookProvider, useNotebook } from './src/notebook';
 import { useTheme } from './src/theme';
 import type { Book, Ref, WordPick } from './src/types';
 import { WordSheet } from './src/components/WordSheet';
@@ -29,6 +30,8 @@ import { ReaderScreen } from './src/screens/ReaderScreen';
 import { SearchScreen } from './src/screens/SearchScreen';
 import { LicencesScreen } from './src/screens/LicencesScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
+import { NotebookScreen } from './src/screens/NotebookScreen';
+import { NotePageScreen } from './src/screens/NotePageScreen';
 
 export default function App() {
   return (
@@ -167,7 +170,9 @@ function EditionGate() {
   return (
     <EditionContext.Provider value={edition}>
       <SettingsProvider edition={edition}>
-        <Shell initialBooks={books} />
+        <NotebookProvider edition={edition}>
+          <Shell initialBooks={books} />
+        </NotebookProvider>
       </SettingsProvider>
     </EditionContext.Provider>
   );
@@ -265,6 +270,8 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
           <Stack.Screen name="Concordance" component={ConcordanceRoute} />
           <Stack.Screen name="Settings" component={SettingsRoute} />
           <Stack.Screen name="Licences" component={LicencesRoute} />
+          <Stack.Screen name="Notebook" component={NotebookRoute} />
+          <Stack.Screen name="NotePage" component={NotePageRoute} />
         </Stack.Navigator>
       </NavigationContainer>
       <WordSheet
@@ -310,6 +317,7 @@ function ReaderRoute({ navigation, route }: Props<'Reader'>) {
       onOpenBooks={() => navigation.navigate('Books')}
       onOpenSearch={() => navigation.navigate('Search')}
       onOpenSettings={() => navigation.navigate('Settings')}
+      onOpenNotePage={(id, isNew) => navigation.push('NotePage', { id, isNew })}
       onWord={onWord}
     />
   );
@@ -319,12 +327,15 @@ function BooksRoute({ navigation }: Props<'Books'>) {
   const { books } = useApp();
   const { settings } = useSettings();
   const current = usePlace(selectBook);
+  const { pages } = useNotebook();
   return (
     <BooksScreen
       books={books}
       current={current}
       onPick={(book) => navigation.navigate('Chapters', { bookId: book.id })}
       onOpenBookmarks={() => navigation.navigate('Bookmarks')}
+      onOpenNotebook={() => navigation.navigate('Notebook')}
+      pageCount={pages.length}
       onOpenRecent={(place) => {
         moveMainReader({ book: place.book, chapter: place.chapter });
         navigation.popToTop();
@@ -376,6 +387,17 @@ function ConcordanceRoute({ navigation, route }: Props<'Concordance'>) {
 
 function SettingsRoute({ navigation }: Props<'Settings'>) {
   return <SettingsScreen onBack={() => navigation.goBack()} onOpenLicences={() => navigation.navigate('Licences')} />;
+}
+
+function NotebookRoute({ navigation }: Props<'Notebook'>) {
+  return <NotebookScreen onOpenPage={(id, isNew) => navigation.push('NotePage', { id, isNew })} onBack={() => navigation.goBack()} />;
+}
+
+function NotePageRoute({ navigation, route }: Props<'NotePage'>) {
+  const { books } = useApp();
+  const t = useT();
+  const openRef = useOpenRef(navigation, t('notebook'));
+  return <NotePageScreen id={route.params.id} isNew={route.params.isNew} books={books} onOpenRef={openRef} onBack={() => navigation.goBack()} />;
 }
 
 function LicencesRoute({ navigation }: Props<'Licences'>) {

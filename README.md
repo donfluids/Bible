@@ -56,6 +56,13 @@ rendering counts all work in Malayalam.
   off, and Done. Scrolling still works as usual, and dragging to the top or bottom edge
   scrolls on. Marks belong to the Bible they were made in and are listed under Saved as
   Marked text.
+- The Notebook (കുറിപ്പുകൾ in the Malayalam app), under the Books screen, holds pages
+  of free writing: sermon notes, a study, a list of verses. A reference typed on a page
+  ("യോഹന്നാൻ 3:16", "1 കൊരി 13:4-7", "Ps 23:1", "Romans 8") becomes a link to the verse,
+  and the verse text (up to eight verses of a range) shows under the line, in the Bible
+  being read. Hold a verse and choose Add to notebook to put it on a page, or start a
+  new page with it. A page shares as plain text with its verses quoted. The note on a
+  single verse is called വാക്യക്കുറിപ്പ് in Malayalam, to tell it apart.
 - A verse opened from search, Saved or a word's verse list opens in a reader of its own;
   Back returns to the list and then to the chapter you were reading.
 - The search box also searches the dictionary: an English meaning ("love"), a
@@ -156,15 +163,16 @@ plugins/withAndroidRelease.js  Android release signing and shrinking
 plugins/withBackupRules.js     Keeps the 47 MB database out of Android backup, so notes are backed up
 app.config.js            Per-edition and per-build values layered over app.json
 src/navigation.ts        Screen names and parameters for the native stack
-src/refs.ts              Parses typed references like "1 Cor 13:4"
+src/refs.ts              Parses typed references like "1 Cor 13:4" and finds them in written text
 src/theme.ts             Light, sepia and dark palettes and the serif face
 src/queries.ts           All SQL, typed
 src/text.ts              Expands offset-encoded Strong's tags into text runs
 src/morph.ts             Turns Hebrew and Greek grammar codes into plain words
 src/malayalamSearch.ts   Matches modern Malayalam spelling against the 1910 text
 src/settings.tsx         Persisted settings (translation, text size, bookmarks, notes)
+src/notebook.tsx         Notebook pages, kept in their own storage entry
 src/components/          Header, Icon, SectionLabel, VerseText, InterlinearVerse, WordSheet, CompareSheet, SimpleSheet, VerseListItem
-src/screens/             Reader, Books, Chapters, Saved, Search, Concordance, Settings, Licences
+src/screens/             Reader, Books, Chapters, Saved, Notebook, NotePage, Search, Concordance, Settings, Licences
 scripts/fetch-data.sh    Downloads the source texts into data/raw/ (not committed)
 scripts/build-db.mjs     Builds assets/db/bible-<edition>.db from data/raw/
 scripts/make-icons.mjs   Draws the icon, adaptive icon layers and splash images (SVG, rendered with Chromium)

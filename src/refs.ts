@@ -139,3 +139,54 @@ function withChapter(books: Book[], id: number, m: RegExpExecArray): ParsedRef |
   const verse = m[3] ? Number(m[3]) : 1;
   return { book: id, chapter, verse, chapterOnly: !m[3] };
 }
+
+/** A reference found in written text: the verse it points to and, for "13:4-7", the last verse. */
+export interface FoundRef extends ParsedRef {
+  toVerse: number;
+}
+
+/** A run of written text, with the reference it spells if it is one. */
+export interface TextPiece {
+  text: string;
+  ref?: FoundRef;
+}
+
+/**
+ * Splits written text into plain runs and references, for the notebook: "യോഹന്നാൻ 3:16",
+ * "1 കൊരി 13:4-7", "Ps 23:1" or "Romans 8". The book name is the one to four words
+ * before the numbers, longest first, so "1. ദിനവൃത്താന്തം 7:14" and "Song of Songs 2:1"
+ * are whole. A chapter without a verse counts only after a name of four letters or more,
+ * so ordinary words with a number ("is 5", "am 3") stay plain text.
+ */
+export function findReferences(text: string, books: Book[], translation?: TranslationId): TextPiece[] {
+  const pieces: TextPiece[] = [];
+  const numbers = /(\d{1,3})(?:\s*[:.]\s*(\d{1,3})(?:\s*[-–]\s*(\d{1,3}))?)?(?![\d:])/g;
+  let done = 0;
+  let m: RegExpExecArray | null;
+  while ((m = numbers.exec(text))) {
+    // The words before the numbers, back to a line break or a mark that cannot be in a name.
+    const before = text.slice(done, m.index);
+    const cut = Math.max(before.lastIndexOf('\n'), ...[',', ';', '(', ')', '"', '“', '”', '‘', '’', '—', '–', '!', '?'].map((c) => before.lastIndexOf(c)));
+    const words = before.slice(cut + 1).split(' ');
+    if (words.length && words[words.length - 1] === '') words.pop();
+    // The name must end right before the numbers, with at most one space.
+    if (!words.length || /\s\s$/.test(before)) continue;
+    let found: { ref: FoundRef; start: number } | null = null;
+    for (let k = Math.min(4, words.length); k >= 1 && !found; k--) {
+      const name = words.slice(words.length - k).join(' ');
+      if (name !== name.trimStart() || !/[A-Za-zഀ-ൿ]/.test(name)) continue;
+      if (!m[2] && name.replace(/^[1-3]\.?\s*/, '').replace(/[^A-Za-zഀ-ൿ]/g, '').length < 4) continue;
+      const ref = parseReference(`${name} ${m[1]}${m[2] ? `:${m[2]}` : ''}`, books, translation);
+      if (!ref) continue;
+      const toVerse = m[3] && Number(m[3]) > ref.verse ? Number(m[3]) : ref.verse;
+      found = { ref: { ...ref, toVerse }, start: done + before.length - name.length - (before.endsWith(' ') ? 1 : 0) };
+    }
+    if (!found) continue;
+    if (found.start > done) pieces.push({ text: text.slice(done, found.start) });
+    const end = m.index + m[0].length;
+    pieces.push({ text: text.slice(found.start, end), ref: found.ref });
+    done = end;
+  }
+  if (done < text.length) pieces.push({ text: text.slice(done) });
+  return pieces;
+}

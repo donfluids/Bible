@@ -20,6 +20,7 @@ import { InterlinearVerse } from '../components/InterlinearVerse';
 import { MarkableVerse } from '../components/MarkableVerse';
 import type { WordSlot } from '../components/MarkableVerse';
 import { addMark, comparePoints, eraseMarks, markRanges } from '../marks';
+import { pageName, useNotebook } from '../notebook';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
 import { noteLetter, VerseText } from '../components/VerseText';
 import { getChapter, getInterlinear, getNotes, mapRef } from '../queries';
@@ -46,6 +47,8 @@ interface Props {
   onOpenBooks: () => void;
   onOpenSearch: () => void;
   onOpenSettings: () => void;
+  /** Open a notebook page; `isNew` for one just made from a verse. */
+  onOpenNotePage: (id: string, isNew?: boolean) => void;
   onWord: (pick: WordPick) => void;
 }
 
@@ -167,7 +170,7 @@ function KeepAwake() {
   return null;
 }
 
-export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onWord }: Props) {
+export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onOpenNotePage, onWord }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const t = useT();
@@ -223,6 +226,9 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
   const [wordsFor, setWordsFor] = useState<VerseRow | null>(null);
   const [compare, setCompare] = useState<Ref | null>(null);
   const [noteEditor, setNoteEditor] = useState<{ verse: VerseRow; text: string } | null>(null);
+  // The verse being added to the notebook, while its page is chosen.
+  const [toNotebook, setToNotebook] = useState<VerseRow | null>(null);
+  const notebook = useNotebook();
   const [toast, setToast] = useState<string | null>(null);
   const listRef = useRef<FlatList<Item>>(null);
 
@@ -720,6 +726,18 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
     await Clipboard.setStringAsync(verseForClipboard(v));
     setToast(t('copied'));
   };
+  // A verse goes on a page as its reference, which the page shows with the verse text.
+  const addToPage = (v: VerseRow, pageId: string | null) => {
+    setToNotebook(null);
+    const line = formatRef(books, v, translation);
+    if (pageId) {
+      notebook.append(pageId, line);
+      const p = notebook.pages.find((x) => x.id === pageId);
+      setToast(t('addedToPage', { title: p ? pageName(p, t('untitled')) : t('notebook') }));
+    } else {
+      onOpenNotePage(notebook.create(`${line}\n`), true);
+    }
+  };
   const shareVerse = async (v: VerseRow) => {
     setActions(null);
     await Share.share({ message: verseForClipboard(v) });
@@ -1172,6 +1190,15 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
               </Pressable>
             </View>
             <View style={[styles.actionsDivider, { backgroundColor: theme.border }]} />
+            <SheetAction
+              icon="note_add"
+              label={t('addToNotebook')}
+              detail={t('addToNotebookDetail')}
+              onPress={() => {
+                setActions(null);
+                setToNotebook(actions);
+              }}
+            />
             <SheetAction icon="ink_highlighter" label={t('markText')} detail={t('markTextDetail')} onPress={() => startMarking(actions)} />
             <SheetAction
               icon="compare_arrows"
@@ -1193,6 +1220,17 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                 }}
               />
             ) : null}
+          </>
+        ) : null}
+      </SimpleSheet>
+
+      <SimpleSheet visible={!!toNotebook} title={toNotebook ? `${t('choosePage')} · ${formatRef(books, toNotebook, translation)}` : ''} onClose={() => setToNotebook(null)}>
+        {toNotebook ? (
+          <>
+            <SheetAction icon="add" label={t('newPage')} onPress={() => addToPage(toNotebook, null)} />
+            {notebook.pages.map((p) => (
+              <SheetAction key={p.id} icon="note_stack" label={pageName(p, t('untitled'))} onPress={() => addToPage(toNotebook, p.id)} />
+            ))}
           </>
         ) : null}
       </SimpleSheet>

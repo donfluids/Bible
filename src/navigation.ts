@@ -15,6 +15,9 @@ export type RootStackParamList = {
   Concordance: { strongs: string; rendering?: string };
   Settings: undefined;
   Licences: undefined;
+  Notebook: undefined;
+  /** `isNew` opens a page just made, ready for writing. */
+  NotePage: { id: string; isNew?: boolean };
 };
 
 /** Lets the word sheet, which sits outside the navigator, open the concordance. */
