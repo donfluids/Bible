@@ -1,6 +1,32 @@
 import type { Book, Ref, TranslationId } from './types';
 
 /**
+ * Short book names for the reader's top bar, used when the full name and the chapter
+ * number do not fit beside the buttons ("2. തിമൊഥെയൊസ്" becomes "2 തിമൊ"). Indexed by
+ * book id - 1. The Malayalam follow the 1910 spellings of the names; the English are the
+ * usual abbreviations.
+ */
+export const MALAYALAM_SHORT_NAMES = [
+  'ഉല്പ', 'പുറ', 'ലേവ്യ', 'സംഖ്യ', 'ആവ', 'യോശു', 'ന്യായ', 'രൂത്ത്', '1 ശമൂ', '2 ശമൂ',
+  '1 രാജ', '2 രാജ', '1 ദിന', '2 ദിന', 'എസ്രാ', 'നെഹെ', 'എസ്ഥേ', 'ഇയ്യോ', 'സങ്കീ', 'സദൃ',
+  'സഭാ', 'ഉത്ത', 'യെശ', 'യിരെ', 'വിലാ', 'യെഹെ', 'ദാനീ', 'ഹോശേ', 'യോവേ', 'ആമോ',
+  'ഓബ', 'യോനാ', 'മീഖാ', 'നഹൂം', 'ഹബ', 'സെഫ', 'ഹഗ്ഗാ', 'സെഖ', 'മലാ', 'മത്താ',
+  'മർക്കൊ', 'ലൂക്കൊ', 'യോഹ', 'പ്രവൃ', 'റോമ', '1 കൊരി', '2 കൊരി', 'ഗലാ', 'എഫെ', 'ഫിലി',
+  'കൊലൊ', '1 തെസ്സ', '2 തെസ്സ', '1 തിമൊ', '2 തിമൊ', 'തീത്തൊ', 'ഫിലേ', 'എബ്രാ', 'യാക്കോ', '1 പത്രൊ',
+  '2 പത്രൊ', '1 യോഹ', '2 യോഹ', '3 യോഹ', 'യൂദാ', 'വെളി',
+];
+
+export const ENGLISH_SHORT_NAMES = [
+  'Gen', 'Exod', 'Lev', 'Num', 'Deut', 'Josh', 'Judg', 'Ruth', '1 Sam', '2 Sam',
+  '1 Kgs', '2 Kgs', '1 Chr', '2 Chr', 'Ezra', 'Neh', 'Esth', 'Job', 'Ps', 'Prov',
+  'Eccl', 'Song', 'Isa', 'Jer', 'Lam', 'Ezek', 'Dan', 'Hos', 'Joel', 'Amos',
+  'Obad', 'Jonah', 'Mic', 'Nah', 'Hab', 'Zeph', 'Hag', 'Zech', 'Mal', 'Matt',
+  'Mark', 'Luke', 'John', 'Acts', 'Rom', '1 Cor', '2 Cor', 'Gal', 'Eph', 'Phil',
+  'Col', '1 Thess', '2 Thess', '1 Tim', '2 Tim', 'Titus', 'Phlm', 'Heb', 'Jas', '1 Pet',
+  '2 Pet', '1 John', '2 John', '3 John', 'Jude', 'Rev',
+];
+
+/**
  * Common ways people type book names, mapped to book ids. Full names and any
  * unambiguous prefix of a full name are also accepted by parseReference.
  */
@@ -46,6 +72,11 @@ const MALAYALAM_NAMES: Record<number, string[]> = {
   55: ['തിമോത്തേയോസ്', 'തിമോത്തിയോസ്'], 58: ['ഹെബ്രായർ'], 65: ['യൂദാസ്'], 66: ['വെളിപാട്'],
 };
 
+/** Spellings people often write that the reduction below does not already meet. */
+const MALAYALAM_VARIANTS: Record<number, string[]> = {
+  3: ['ലേവ്യാ'], 20: ['സദൃശ്യവാക്യങ്ങൾ'], 24: ['യിരമ്യാവ്'], 26: ['യെഹസ്കേൽ'], 41: ['മാർക്കോസ്'], 50: ['ഫിലിപ്പ്യർ'],
+};
+
 /**
  * A Malayalam book name reduced so that spellings people type meet the 1910 ones:
  * no spaces, dots or joiners; chillus as consonant + ്; long and short vowels alike
@@ -70,7 +101,7 @@ function malayalamNames(books: Book[]) {
   const names: { id: number; number: number; key: string }[] = [];
   for (const b of books) {
     const number = Number(/^([1-3])/.exec(b.name)?.[1] ?? 0);
-    const all = [...Object.values(b.names), ...(MALAYALAM_NAMES[b.id] ?? [])].filter((n) => /[\u0d00-\u0d7f]/.test(n));
+    const all = [...Object.values(b.names), ...(MALAYALAM_NAMES[b.id] ?? []), ...(MALAYALAM_VARIANTS[b.id] ?? [])].filter((n) => /[\u0d00-\u0d7f]/.test(n));
     for (const n of all) names.push({ id: b.id, number, key: malayalamKey(n.replace(/^[1-3]\.?\s*/, '')) });
   }
   malayalamIndex = { books, names };
@@ -97,51 +128,54 @@ export interface ParsedRef extends Ref {
 
 /**
  * Parse references such as "John 3:16", "jn 3.16", "1 Cor 13", "Psalm 23",
- * "Song of Songs 2:1" or "Rev 22 21". Returns null when nothing matches or the
- * chapter is out of range for the book.
+ * "Song of Songs 2:1", "Rev 22 21" or "Ps 23:1-6" (a range opens at its first verse).
+ * Returns null when nothing matches or the chapter is out of range for the book.
  */
 export function parseReference(input: string, books: Book[], translation?: TranslationId): ParsedRef | null {
-  const m = /^\s*([1-3]?\.?\s*[^\d:,]+?)\s*(\d{1,3})(?:\s*[:.,\s]\s*(\d{1,3}))?\s*$/i.exec(input.replace(/\s+/g, ' '));
+  const m = /^\s*([1-3]?\.?\s*[^\d:,]+?)\s*(\d{1,3})(?:\s*[:.,\s]\s*(\d{1,3}))?(?:\s*[-–]\s*\d{1,3}(?:\s*[:.]\s*\d{1,3})?)?\s*$/i.exec(input.replace(/\s+/g, ' '));
   if (!m) return null;
-  const typed = m[1].trim();
+  const id = bookFromName(m[1], books, translation);
+  return id ? withChapter(books, id, Number(m[2]), m[3] ? Number(m[3]) : undefined) : null;
+}
+
+/** The book a typed name stands for: Malayalam or English, a full name, a usual abbreviation or a clear prefix. */
+export function bookFromName(name: string, books: Book[], translation?: TranslationId): number | undefined {
+  const typed = name.trim();
+  // Malayalam names, from any translation, e.g. "യോഹന്നാൻ" or "1 ശമൂവേൽ".
+  if (/[\u0d00-\u0d7f]/.test(typed)) return malayalamBook(typed, books);
   const rawName = typed.toLowerCase().replace(/[^a-z0-9]/g, '');
-  // Malayalam names, from any translation, e.g. "യോഹന്നാൻ 3:16" or "1 ശമൂവേൽ 3".
-  if (/[\u0d00-\u0d7f]/.test(typed)) {
-    const id = malayalamBook(typed, books);
-    return id ? withChapter(books, id, m) : null;
-  }
-  let id = rawName ? ABBREVIATIONS[rawName] : undefined;
-  if (!id && translation) {
+  if (!rawName) return undefined;
+  const id = ABBREVIATIONS[rawName];
+  if (id) return id;
+  if (translation) {
     // Book names in the translation's own language.
     const local = books.filter((b) => (b.names[translation] ?? '').replace(/\s+/g, '').startsWith(typed.replace(/\s+/g, '')));
-    if (local.length === 1) id = local[0].id;
+    if (local.length === 1) return local[0].id;
   }
-  if (!id && !rawName) return null;
-  if (!id) {
-    const matches = books.filter((b) => b.name.toLowerCase().replace(/[^a-z0-9]/g, '').startsWith(rawName));
-    if (matches.length === 1) id = matches[0].id;
-    else if (matches.length > 1) {
-      // "Jo" could be Job, Joel, John, Jonah, Joshua: prefer the exact-ish Gospel of John.
-      const exact = matches.find((b) => b.name.toLowerCase().replace(/[^a-z0-9]/g, '') === rawName);
-      if (!exact) return null;
-      id = exact.id;
-    }
-  }
-  if (!id) return null;
-  return withChapter(books, id, m);
+  const matches = books.filter((b) => b.name.toLowerCase().replace(/[^a-z0-9]/g, '').startsWith(rawName));
+  if (matches.length === 1) return matches[0].id;
+  // "Jo" could be Job, Joel, John, Jonah, Joshua: prefer the exact-ish Gospel of John.
+  return matches.find((b) => b.name.toLowerCase().replace(/[^a-z0-9]/g, '') === rawName)?.id;
 }
 
-function withChapter(books: Book[], id: number, m: RegExpExecArray): ParsedRef | null {
+/**
+ * A chapter and verse in a book, or null when the chapter is out of range. In a book of
+ * one chapter a lone number is the verse ("Jude 3", "യൂദാ 24"), as people write them.
+ */
+function withChapter(books: Book[], id: number, chapter: number, verse?: number): ParsedRef | null {
   const book = books.find((b) => b.id === id);
   if (!book) return null;
-  const chapter = Number(m[2]);
+  if (verse === undefined && book.chapters === 1 && chapter >= 1) return { book: id, chapter: 1, verse: chapter, chapterOnly: false };
   if (chapter < 1 || chapter > book.chapters) return null;
-  const verse = m[3] ? Number(m[3]) : 1;
-  return { book: id, chapter, verse, chapterOnly: !m[3] };
+  return { book: id, chapter, verse: verse ?? 1, chapterOnly: verse === undefined };
 }
 
-/** A reference found in written text: the verse it points to and, for "13:4-7", the last verse. */
+/**
+ * A reference found in written text: the verse it points to and, for "13:4-7" or
+ * "5:1-7:29", where it ends.
+ */
 export interface FoundRef extends ParsedRef {
+  toChapter: number;
   toVerse: number;
 }
 
@@ -151,19 +185,77 @@ export interface TextPiece {
   ref?: FoundRef;
 }
 
+/** The number of verses in a chapter of the Bible being read, when known. */
+export type VerseCount = (book: number, chapter: number) => number | undefined;
+
+// Ordinal book numbers written before a Malayalam name: ഒന്നാം കൊരിന്ത്യർ, 1-ാം കൊരി.
+const ORDINALS: [RegExp, string][] = [
+  [/^(ഒന്നാം|1-ാം)\s*/, '1 '],
+  [/^(രണ്ടാം|2-ാം)\s*/, '2 '],
+  [/^(മൂന്നാം|3-ാം)\s*/, '3 '],
+];
+
+// Malayalam words that are also a book's short name; a chapter alone after them is a number, not a reference.
+const ML_WORDS = new Set(['സംഖ്യ']);
+
+// Book abbreviations that are also English words: written in lower case, they are words ("is 5", "he 1:3").
+const EN_WORDS = new Set(['is', 'he', 'am', 'so', 'ex', 'ac', 'co', 'la', 'ho', 'ne', 'mi', 'ru', 'de', 'ge', 'ob', 'jo', 'na', 're', 'ti', 'ep', 'es', 'le', 'nu', 'job', 'mark', 'acts']);
+
+/** True when a name may stand before a chapter number alone, so "Romans 8" links but "യേശു 12" does not. */
+function nameForChapter(name: string, id: number, books: Book[], translation?: TranslationId): boolean {
+  const bare = name.replace(/^[1-3]\.?\s*/, '');
+  if (/[\u0d00-\u0d7f]/.test(name)) {
+    if (/\.$/.test(name)) return true; // an abbreviation with its dot: സങ്കീ. 23
+    const plain = bare.replace(/[\s.]/g, '');
+    if (MALAYALAM_SHORT_NAMES[id - 1]?.replace(/^[1-3]\s*/, '') === plain) return !ML_WORDS.has(plain);
+    const key = malayalamKey(bare);
+    const book = books.find((b) => b.id === id);
+    const names = [...Object.values(book?.names ?? {}), ...(MALAYALAM_NAMES[id] ?? []), ...(MALAYALAM_VARIANTS[id] ?? [])];
+    return names.some((n) => malayalamKey(n.replace(/^[1-3]\.?\s*/, '')) === key);
+  }
+  // English: a capital letter, and a whole name or a usual abbreviation (Ps, Gen, Rom).
+  if (!/^[A-Z]/.test(bare)) return false;
+  const raw = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (ABBREVIATIONS[raw]) return true;
+  const book = books.find((b) => b.id === id);
+  const whole = [book?.name, translation ? book?.names[translation] : undefined].filter((n): n is string => !!n);
+  return whole.some((n) => n.toLowerCase().replace(/[^a-z0-9]/g, '') === raw);
+}
+
 /**
  * Splits written text into plain runs and references, for the notebook: "യോഹന്നാൻ 3:16",
- * "1 കൊരി 13:4-7", "Ps 23:1" or "Romans 8". The book name is the one to four words
- * before the numbers, longest first, so "1. ദിനവൃത്താന്തം 7:14" and "Song of Songs 2:1"
- * are whole. A chapter without a verse counts only after a name of four letters or more,
- * so ordinary words with a number ("is 5", "am 3") stay plain text.
+ * "1 കൊരി 13:4-7", "Ps 23:1", "Romans 8", "Jude 3", "മത്താ. 5:1-7:29", and lists that
+ * carry the book on ("റോമ. 8:28, 29", "യോഹ. 3:16; 4:24").
+ * - The book name is the one to four words before the numbers, longest first, so
+ *   "1. ദിനവൃത്താന്തം 7:14" and "Song of Songs 2:1" are whole. The first name that names
+ *   a book decides it: "3 John 4" is never read as John 4.
+ * - A chapter without a verse needs a whole name or a usual abbreviation (see
+ *   nameForChapter), so ordinary words with a number ("യേശു 12", "is 5") stay plain.
+ * - With `verseCount`, a verse past the end of its chapter is not a reference, which keeps
+ *   "is 7:30" and "Daniel 1260" plain.
  */
-export function findReferences(text: string, books: Book[], translation?: TranslationId): TextPiece[] {
+export function findReferences(text: string, books: Book[], translation?: TranslationId, verseCount?: VerseCount): TextPiece[] {
   const pieces: TextPiece[] = [];
-  const numbers = /(\d{1,3})(?:\s*[:.]\s*(\d{1,3})(?:\s*[-–]\s*(\d{1,3}))?)?(?![\d:])/g;
+  const numbers = /(\d{1,3})(?:\s*[:.]\s*(\d{1,3})(?:\s*[-–]\s*(\d{1,3})(?:\s*[:.]\s*(\d{1,3}))?)?)?(?![\d:])/g;
+  const exists = (ref: ParsedRef) => {
+    if (ref.verse < 1 || !verseCount) return true;
+    const n = verseCount(ref.book, ref.chapter);
+    return n === undefined || ref.verse <= n;
+  };
+  // The end of a range: "4-7" (same chapter) or "1-7:29" (another chapter).
+  const rangeEnd = (ref: ParsedRef, a?: string, b?: string): [number, number] => {
+    if (a && b && Number(a) > ref.chapter) return [Number(a), Number(b)];
+    if (a && !b && Number(a) > ref.verse) {
+      const n = verseCount?.(ref.book, ref.chapter);
+      return [ref.chapter, n === undefined ? Number(a) : Math.min(Number(a), n)];
+    }
+    return [ref.chapter, ref.verse];
+  };
   let done = 0;
   let m: RegExpExecArray | null;
   while ((m = numbers.exec(text))) {
+    // Never start inside a longer number ("1260", "2024").
+    if (m.index > 0 && /\d/.test(text[m.index - 1])) continue;
     // The words before the numbers, back to a line break or a mark that cannot be in a name.
     const before = text.slice(done, m.index);
     const cut = Math.max(before.lastIndexOf('\n'), ...[',', ';', '(', ')', '"', '“', '”', '‘', '’', '—', '–', '!', '?'].map((c) => before.lastIndexOf(c)));
@@ -172,20 +264,52 @@ export function findReferences(text: string, books: Book[], translation?: Transl
     // The name must end right before the numbers, with at most one space.
     if (!words.length || /\s\s$/.test(before)) continue;
     let found: { ref: FoundRef; start: number } | null = null;
-    for (let k = Math.min(4, words.length); k >= 1 && !found; k--) {
+    for (let k = Math.min(4, words.length); k >= 1; k--) {
       const name = words.slice(words.length - k).join(' ');
-      if (name !== name.trimStart() || !/[A-Za-zഀ-ൿ]/.test(name)) continue;
-      if (!m[2] && name.replace(/^[1-3]\.?\s*/, '').replace(/[^A-Za-zഀ-ൿ]/g, '').length < 4) continue;
-      const ref = parseReference(`${name} ${m[1]}${m[2] ? `:${m[2]}` : ''}`, books, translation);
-      if (!ref) continue;
-      const toVerse = m[3] && Number(m[3]) > ref.verse ? Number(m[3]) : ref.verse;
-      found = { ref: { ...ref, toVerse }, start: done + before.length - name.length - (before.endsWith(' ') ? 1 : 0) };
+      if (name !== name.trimStart() || !/[A-Za-z\u0d00-\u0d7f]/.test(name)) continue;
+      let typed = name;
+      for (const [re, n] of ORDINALS) typed = typed.replace(re, n);
+      const raw = typed.replace(/^[1-3]\.?\s*/, '').toLowerCase().replace(/[^a-z]/g, '');
+      if (EN_WORDS.has(raw) && /^[a-z]/.test(typed.replace(/^[1-3]\.?\s*/, ''))) continue;
+      const id = bookFromName(typed, books, translation);
+      if (!id) continue;
+      // This name names a book; shorter names are not tried.
+      const ref = withChapter(books, id, Number(m[1]), m[2] ? Number(m[2]) : undefined);
+      if (ref && exists(ref) && (!ref.chapterOnly || nameForChapter(typed, id, books, translation))) {
+        const [toChapter, toVerse] = rangeEnd(ref, m[3], m[4]);
+        found = { ref: { ...ref, toChapter, toVerse }, start: done + before.length - name.length - (before.endsWith(' ') ? 1 : 0) };
+      }
+      break;
     }
     if (!found) continue;
     if (found.start > done) pieces.push({ text: text.slice(done, found.start) });
-    const end = m.index + m[0].length;
+    let end = m.index + m[0].length;
+    // A psalm's title, as "Add to notebook" writes it: "സങ്കീർത്തനങ്ങൾ 3 (ശീർഷകം)".
+    const title = found.ref.chapterOnly ? /^\s*\((?:title|ശീർഷകം)\)/.exec(text.slice(end)) : null;
+    if (title) {
+      found.ref = { ...found.ref, verse: 0, toVerse: 0, chapterOnly: false };
+      end += title[0].length;
+    }
     pieces.push({ text: text.slice(found.start, end), ref: found.ref });
+    // More verses or chapters of the same book: "8:28, 29", "3:16; 4:24".
+    let last = found.ref;
+    for (;;) {
+      const more = /^(\s*[,;]\s*)(\d{1,3})(?:\s*[:.]\s*(\d{1,3}))?(?:\s*[-–]\s*(\d{1,3}))?(?![\d:])/.exec(text.slice(end));
+      if (!more) break;
+      let ref: ParsedRef | null;
+      if (more[3]) ref = withChapter(books, last.book, Number(more[2]), Number(more[3]));
+      else if (more[1].includes(',') && !last.chapterOnly) ref = { book: last.book, chapter: last.toChapter, verse: Number(more[2]), chapterOnly: false };
+      else ref = withChapter(books, last.book, Number(more[2]));
+      if (!ref || !exists(ref) || ref.verse === 0) break;
+      const [toChapter, toVerse] = rangeEnd(ref, more[4]);
+      const next: FoundRef = { ...ref, toChapter, toVerse };
+      pieces.push({ text: more[1] });
+      pieces.push({ text: more[0].slice(more[1].length), ref: next });
+      end += more[0].length;
+      last = next;
+    }
     done = end;
+    numbers.lastIndex = end;
   }
   if (done < text.length) pieces.push({ text: text.slice(done) });
   return pieces;

@@ -70,7 +70,8 @@ const styles = StyleSheet.create({
   bar: { flexDirection: 'row', alignItems: 'center', minHeight: 64, paddingRight: 4 },
   center: { flex: 1, justifyContent: 'center', minHeight: 48 },
   centerAfterBack: { marginLeft: 4 },
-  title: { fontSize: 22, fontWeight: '500' },
+  // Room above and below for Malayalam's stacked letters (ഞായറാഴ്ച), which a tight line clips.
+  title: { fontSize: 22, lineHeight: 30, paddingVertical: 2, fontWeight: '500' },
   right: { flexDirection: 'row', alignItems: 'center' },
   chip: {
     height: 32,

@@ -1,6 +1,8 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { AppState } from 'react-native';
-import Storage from 'expo-sqlite/kv-store';
+import { Alert } from 'react-native';
+import { translate } from './i18n';
+import { loadEntry, useAutosave } from './persist';
+import type { Loaded } from './persist';
 import type { Edition, Language } from './edition';
 import type { Bookmark, HighlightColor, TextMark, TranslationId } from './types';
 
@@ -62,21 +64,22 @@ function defaultsFor(edition: Edition): Settings {
   return { ...BASE_DEFAULTS, translation: edition.defaultTranslation, language: edition.languages[0] };
 }
 
-function load(edition: Edition): Settings {
+function load(edition: Edition): Loaded<Settings> {
   const defaults = defaultsFor(edition);
-  try {
-    const raw = Storage.getItemSync(`settings.v1.${edition.id}`);
-    if (!raw) return defaults;
-    const parsed = JSON.parse(raw) as Partial<Settings>;
-    const merged = { ...defaults, ...parsed };
-    // Fields of older versions that moved to src/place.ts.
-    for (const old of ['position', 'recent', 'lastChapters']) delete (merged as Record<string, unknown>)[old];
-    if (!edition.translations.includes(merged.translation)) merged.translation = edition.defaultTranslation;
-    if (!edition.languages.includes(merged.language)) merged.language = edition.languages[0];
-    return merged;
-  } catch {
-    return defaults;
-  }
+  return loadEntry(
+    `settings.v1.${edition.id}`,
+    (raw) => {
+      const parsed = JSON.parse(raw) as Partial<Settings>;
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('not settings');
+      const merged = { ...defaults, ...parsed };
+      // Fields of older versions that moved to src/place.ts.
+      for (const old of ['position', 'recent', 'lastChapters']) delete (merged as Record<string, unknown>)[old];
+      if (!edition.translations.includes(merged.translation)) merged.translation = edition.defaultTranslation;
+      if (!edition.languages.includes(merged.language)) merged.language = edition.languages[0];
+      return merged;
+    },
+    defaults,
+  );
 }
 
 interface SettingsContextValue {
@@ -86,39 +89,31 @@ interface SettingsContextValue {
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
 
+// A failed save or an unreadable store is told once per session, not on every change.
+let toldSaveFailed = false;
+export function tellSaveFailed(language: Language): void {
+  if (toldSaveFailed) return;
+  toldSaveFailed = true;
+  Alert.alert(translate(language, 'saveFailedTitle'), translate(language, 'saveFailed'));
+}
+const toldLoad = new Set<string>();
+/** Tells the reader, once per session, that saved data could not be read or came from a backup. */
+export function tellLoadProblem(language: Language, source: Loaded<unknown>['source']): void {
+  if ((source !== 'unreadable' && source !== 'backup') || toldLoad.has(source)) return;
+  toldLoad.add(source);
+  if (source === 'unreadable') Alert.alert(translate(language, 'readFailedTitle'), translate(language, 'readFailed'));
+  else Alert.alert(translate(language, 'restoredBackupTitle'), translate(language, 'restoredBackup'));
+}
+
 export function SettingsProvider({ edition, children }: { edition: Edition; children: React.ReactNode }) {
-  const [settings, setSettings] = useState<Settings>(() => load(edition));
+  const [loaded] = useState(() => load(edition));
+  const [settings, setSettings] = useState<Settings>(loaded.value);
   const update = useCallback((patch: Partial<Settings>) => setSettings((prev) => ({ ...prev, ...patch })), []);
-  // Written in the background a moment after a change, and at once when the app is left.
-  const key = `settings.v1.${edition.id}`;
-  const latest = useRef(settings);
-  latest.current = settings;
-  const pending = useRef(false);
-  const first = useRef(true);
-  useEffect(() => {
-    if (first.current) {
-      first.current = false;
-      return;
-    }
-    pending.current = true;
-    const timer = setTimeout(() => {
-      pending.current = false;
-      Storage.setItem(key, JSON.stringify(settings)).catch(() => undefined);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [settings, key]);
-  useEffect(() => {
-    const sub = AppState.addEventListener('change', (state) => {
-      if (state === 'active' || !pending.current) return;
-      pending.current = false;
-      try {
-        Storage.setItemSync(key, JSON.stringify(latest.current));
-      } catch {
-        // Best effort; the in-memory value still applies.
-      }
-    });
-    return () => sub.remove();
-  }, [key]);
+  useEffect(() => tellLoadProblem(loaded.value.language, loaded.source), [loaded]);
+  const language = useRef(settings.language);
+  language.current = settings.language;
+  // Saved a moment after a change, and at once when the app is left.
+  useAutosave(`settings.v1.${edition.id}`, settings, loaded.writable, 300, () => tellSaveFailed(language.current));
   const value = useMemo(() => ({ settings, update }), [settings, update]);
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }

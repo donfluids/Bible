@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Animated, Modal, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, KeyboardAvoidingView, Modal, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useT } from '../i18n';
 import { useTheme } from '../theme';
@@ -54,22 +54,25 @@ function SheetBody({ title, onClose, children }: Omit<Props, 'visible'>) {
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={t('close')} />
-      <Animated.View style={[styles.sheet, { backgroundColor: theme.card, borderColor: theme.border, paddingBottom: insets.bottom + 12, transform: [{ translateY }] }]}>
-        <View {...pan.panHandlers}>
-          <View style={styles.gripHit}>
-            <View style={[styles.grip, { backgroundColor: theme.border }]} />
+      {/* Lifted above the keyboard while a note is typed: the app draws edge to edge, so Android does not resize it. */}
+      <KeyboardAvoidingView behavior="padding" style={styles.lift} pointerEvents="box-none">
+        <Animated.View style={[styles.sheet, { backgroundColor: theme.card, borderColor: theme.border, paddingBottom: insets.bottom + 12, transform: [{ translateY }] }]}>
+          <View {...pan.panHandlers}>
+            <View style={styles.gripHit}>
+              <View style={[styles.grip, { backgroundColor: theme.border }]} />
+            </View>
+            <View style={styles.head}>
+              <Text style={[styles.title, { color: theme.text }]} numberOfLines={2} accessibilityRole="header">
+                {title}
+              </Text>
+              <IconButton name="close" onPress={onClose} accessibilityLabel={t('close')} style={styles.close} />
+            </View>
           </View>
-          <View style={styles.head}>
-            <Text style={[styles.title, { color: theme.text }]} numberOfLines={2} accessibilityRole="header">
-              {title}
-            </Text>
-            <IconButton name="close" onPress={onClose} accessibilityLabel={t('close')} style={styles.close} />
-          </View>
-        </View>
-        <ScrollView style={{ flexGrow: 0 }} keyboardShouldPersistTaps="handled">
-          {children}
-        </ScrollView>
-      </Animated.View>
+          <ScrollView style={{ flexGrow: 0 }} keyboardShouldPersistTaps="handled">
+            {children}
+          </ScrollView>
+        </Animated.View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -107,10 +110,9 @@ export function SheetAction({ label, detail, icon, onPress, destructive }: Actio
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(20,17,13,0.32)' },
+  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(20,17,13,0.32)' },
+  lift: { flex: 1, justifyContent: 'flex-end' },
   sheet: {
-    position: 'absolute',
-    bottom: 0,
     maxHeight: '80%',
     width: '100%',
     maxWidth: 720,

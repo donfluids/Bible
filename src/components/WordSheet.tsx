@@ -487,7 +487,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
             >
               <Text style={[styles.ctaText, { color: theme.onAccent }]}>
                 {listCount === 0
-                  ? t('notTagged', { translation: name })
+                  ? t('notTagged', { translation: name, in: renderingsLabel(settings.language, tagged) })
                   : listCount === 1
                     ? t('seeOneVerse')
                     : t('seeAllVerses', { n: formatCount(listCount) })}

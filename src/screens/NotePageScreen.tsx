@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, AppState, KeyboardAvoidingView, ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header, HeaderIconButton } from '../components/Header';
 import { isMalayalam, scriptureFont } from '../fonts';
 import { translationName, useT } from '../i18n';
 import { pageName, useNotebook } from '../notebook';
-import { getVerses } from '../queries';
+import { getVerseCounts, getVerses } from '../queries';
 import { findReferences } from '../refs';
-import type { FoundRef, TextPiece } from '../refs';
+import type { FoundRef, TextPiece, VerseCount } from '../refs';
 import { useSettings } from '../settings';
 import { MAX_CONTENT_WIDTH, flattenVerse } from '../text';
 import { useTheme } from '../theme';
@@ -29,12 +29,26 @@ const MAX_SHOWN = 8;
 
 const verseKey = (book: number, chapter: number, verse: number) => `${book}:${chapter}:${verse}`;
 
-/** The verses a reference shows: the range it names, up to MAX_SHOWN. A whole chapter shows none. */
-function shownVerses(ref: FoundRef): Ref[] {
-  if (ref.chapterOnly || ref.verse < 1) return [];
-  const out: Ref[] = [];
-  for (let v = ref.verse; v <= ref.toVerse && out.length < MAX_SHOWN; v++) out.push({ book: ref.book, chapter: ref.chapter, verse: v });
-  return out;
+/** A quoted verse's number; with the chapter when the quote runs across chapters. */
+const verseLabel = (v: Ref, shown: Ref[]) => (shown[0].chapter !== shown[shown.length - 1].chapter ? `${v.chapter}:${v.verse}` : `${v.verse}`);
+
+/**
+ * The verses a reference shows (the range it names, up to MAX_SHOWN, across chapters when
+ * it runs on) and how many the range holds. A whole chapter shows none.
+ */
+function rangeOf(ref: FoundRef, count: VerseCount): { shown: Ref[]; total: number } {
+  const shown: Ref[] = [];
+  let total = 0;
+  if (ref.chapterOnly) return { shown, total };
+  for (let c = ref.chapter; c <= ref.toChapter; c++) {
+    const first = c === ref.chapter ? ref.verse : 1;
+    const inChapter = count(ref.book, c);
+    const last = c === ref.toChapter ? Math.min(ref.toVerse, inChapter ?? ref.toVerse) : inChapter;
+    if (last === undefined) break;
+    total += Math.max(0, last - first + 1);
+    for (let v = first; v <= last && shown.length < MAX_SHOWN; v++) shown.push({ book: ref.book, chapter: c, verse: v });
+  }
+  return { shown, total };
 }
 
 /**
@@ -48,7 +62,7 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
   const db = useSQLiteContext();
   const insets = useSafeAreaInsets();
   const { settings } = useSettings();
-  const { pages, edit, remove } = useNotebook();
+  const { pages, edit, remove, commit } = useNotebook();
   const page = pages.find((p) => p.id === id);
   const [editing, setEditing] = useState(!!isNew || (!!page && !page.title.trim() && !page.body.trim()));
   const translation = settings.translation;
@@ -64,6 +78,7 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
     loaded.current = true;
     setDraft({ title: page.title, body: page.body });
   }, [editing, page?.title, page?.body]);
+  const bodyRef = useRef<TextInput>(null);
   const latest = useRef({ page, draft, editing });
   latest.current = { page, draft, editing };
   const flush = useCallback(() => {
@@ -75,7 +90,17 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
     const timer = setTimeout(flush, 400);
     return () => clearTimeout(timer);
   }, [draft, editing, flush]);
-  // Leaving keeps what was typed; a page left with nothing written on it is not kept.
+  // Leaving the app keeps what was typed, written at once: Android may close the app
+  // without another word, and timers do not run in the background.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') return;
+      const { page: p, draft: d, editing: e } = latest.current;
+      if (p && e && (d.title !== p.title || d.body !== p.body)) commit(p.id, d);
+    });
+    return () => sub.remove();
+  }, [commit]);
+  // Leaving the page keeps what was typed; a page left with nothing written on it is not kept.
   useEffect(
     () => () => {
       flush();
@@ -87,12 +112,37 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
     [flush, remove],
   );
 
-  const lines = useMemo(() => (page ? page.body.split('\n').map((line) => findReferences(line, books, translation)) : []), [page?.body, books, translation]);
+  // Verse counts let "John 2024" stay a year and ranges run on across chapters. Links
+  // appear once they are read (once per translation, a few milliseconds).
+  const [counts, setCounts] = useState<{ translation: string; map: Map<string, number> } | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    getVerseCounts(db, translation)
+      .then((map) => !cancelled && setCounts({ translation, map }))
+      .catch(() => !cancelled && setCounts({ translation, map: new Map() }));
+    return () => {
+      cancelled = true;
+    };
+  }, [db, translation]);
+  const verseCount = useMemo<VerseCount | null>(
+    () => (counts && counts.translation === translation ? (book, chapter) => counts.map.get(`${book}:${chapter}`) : null),
+    [counts, translation],
+  );
+
+  // Read only; while writing the page is a plain text box.
+  const lines = useMemo(
+    () =>
+      page && !editing
+        ? page.body.split('\n').map((line): TextPiece[] => (verseCount ? findReferences(line, books, translation, verseCount) : [{ text: line }]))
+        : [],
+    [page?.body, editing, books, translation, verseCount],
+  );
 
   // The text of every verse the page shows, in the Bible being read.
   const [verses, setVerses] = useState<Map<string, VerseRow>>(new Map());
   useEffect(() => {
-    const wanted = lines.flatMap((pieces) => pieces.flatMap((p) => (p.ref ? shownVerses(p.ref) : [])));
+    if (!verseCount) return;
+    const wanted = lines.flatMap((pieces) => pieces.flatMap((p) => (p.ref ? rangeOf(p.ref, verseCount).shown : [])));
     if (wanted.length === 0) return;
     let cancelled = false;
     getVerses(db, translation, wanted)
@@ -103,9 +153,18 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [db, lines, translation]);
+  }, [db, lines, translation, verseCount]);
 
   if (!page) return <View style={[styles.screen, { backgroundColor: theme.bg }]}><Header title={t('notebook')} onBack={onBack} /></View>;
+
+  // The verses quoted under a reference, without any the translation leaves out, and how
+  // many more the range holds.
+  const quoted = (ref: FoundRef) => {
+    if (!verseCount) return { rows: [] as VerseRow[], more: 0 };
+    const { shown, total } = rangeOf(ref, verseCount);
+    const rows = shown.map((r) => verses.get(verseKey(r.book, r.chapter, r.verse))).filter((v): v is VerseRow => !!v && !v.omitted);
+    return { rows, more: total - shown.length };
+  };
 
   const fontSize = Math.min(settings.fontSize, 22);
   const lineHeight = Math.round(fontSize * 1.55);
@@ -132,22 +191,19 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
   const sharePage = async () => {
     const out: string[] = [];
     if (page.title.trim()) out.push(page.title.trim(), '');
-    let quoted = false;
+    let anyQuoted = false;
     for (const pieces of lines) {
       out.push(pieces.map((p) => p.text).join(''));
       for (const p of pieces) {
         if (!p.ref) continue;
-        const shown = shownVerses(p.ref)
-          .map((r) => verses.get(verseKey(r.book, r.chapter, r.verse)))
-          .filter((v): v is VerseRow => !!v);
+        const { rows: shown, more } = quoted(p.ref);
         if (shown.length === 0) continue;
-        quoted = true;
-        const text = shown.map((v) => (shown.length > 1 ? `${v.verse} ${flattenVerse(v.text)}` : flattenVerse(v.text))).join(' ');
-        const more = p.ref.toVerse - p.ref.verse + 1 - shown.length;
+        anyQuoted = true;
+        const text = shown.map((v) => (shown.length > 1 ? `${verseLabel(v, shown)} ${flattenVerse(v.text)}` : flattenVerse(v.text))).join(' ');
         out.push(`“${text}${more > 0 ? ' …' : ''}”`);
       }
     }
-    if (quoted) out.push('', `— ${translationName(settings.language, translation)}`);
+    if (anyQuoted) out.push('', `— ${translationName(settings.language, translation)}`);
     await Share.share({ message: out.join('\n').replace(/\n{3,}/g, '\n\n').trim() });
   };
 
@@ -174,17 +230,14 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
           )}
         </Text>
         {refs.map((ref, j) => {
-          const shown = shownVerses(ref)
-            .map((r) => verses.get(verseKey(r.book, r.chapter, r.verse)))
-            .filter((v): v is VerseRow => !!v);
+          const { rows: shown, more } = quoted(ref);
           if (shown.length === 0) return null;
-          const more = ref.toVerse - ref.verse + 1 - shown.length;
           return (
             <View key={j} style={[styles.quote, { borderLeftColor: theme.accent, backgroundColor: theme.accentSoft }]}>
               <Text style={{ fontSize: verseSize, lineHeight: Math.round(verseSize * translationInfo(translation).lineHeight), color: theme.text, fontFamily: scriptFont }}>
                 {shown.map((v, k) => (
                   <Text key={k}>
-                    {shown.length > 1 ? <Text style={{ color: theme.accent, fontSize: verseSize - 4 }}>{`${v.verse} `}</Text> : null}
+                    {shown.length > 1 ? <Text style={{ color: theme.accent, fontSize: verseSize - 4 }}>{`${verseLabel(v, shown)} `}</Text> : null}
                     {flattenVerse(v.text)}
                     {k < shown.length - 1 ? ' ' : ''}
                   </Text>
@@ -201,7 +254,7 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
   const titleText = page.title.trim();
   const draftTitle = draft.title.trim();
   return (
-    <KeyboardAvoidingView style={[styles.screen, { backgroundColor: theme.bg }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={[styles.screen, { backgroundColor: theme.bg }]} behavior="padding">
       <Header
         title={editing ? draftTitle || t('newPage') : pageName(page, t('untitled'))}
         onBack={onBack}
@@ -233,8 +286,11 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
             placeholderTextColor={theme.muted}
             style={[styles.titleInput, { color: theme.text, borderBottomColor: theme.border, fontFamily: scriptureFont(malayalamUi || isMalayalam(draft.title), settings.serif, true), fontWeight: malayalamUi ? 'normal' : '600' }]}
             returnKeyType="next"
+            submitBehavior="submit"
+            onSubmitEditing={() => bodyRef.current?.focus()}
           />
           <TextInput
+            ref={bodyRef}
             value={draft.body}
             onChangeText={(body) => setDraft((d) => ({ ...d, body }))}
             placeholder={t('pageBody')}

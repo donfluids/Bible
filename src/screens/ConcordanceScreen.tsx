@@ -3,7 +3,7 @@ import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, V
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
-import { translationName, useT } from '../i18n';
+import { renderingsLabel, translationName, useT } from '../i18n';
 import { VerseListItem } from '../components/VerseListItem';
 import { getConcordance, getOriginalRefs, getRenderingRefs, getRenderings, getStrongs, getVerses, inTranslation } from '../queries';
 import { useSettings } from '../settings';
@@ -129,13 +129,15 @@ export function ConcordanceScreen({ strongs, rendering, books, onOpenRef, onWord
             : refs && filter === null && fromOriginal
             ? t(
                 total === 1 ? (isHebrew(strongs) ? 'originalVerseHebrew' : 'originalVerseGreek') : isHebrew(strongs) ? 'originalVersesHebrew' : 'originalVersesGreek',
-                { n: formatCount(total), translation: translationName(settings.language, translation) },
+                { n: formatCount(total), translation: translationName(settings.language, translation), in: renderingsLabel(settings.language, translation) },
               )
             : refs
-            ? (refs.length === 1
-                ? t('oneVerseIn', { translation: translationName(settings.language, translation) })
-                : t('versesIn', { n: formatCount(refs.length), translation: translationName(settings.language, translation) })) +
-              (filter ? t('asWord', { word: filter }) : '')
+            ? t(refs.length === 1 ? (filter ? 'oneVerseInAs' : 'oneVerseIn') : filter ? 'versesInAs' : 'versesIn', {
+                n: formatCount(refs.length),
+                word: filter ?? '',
+                translation: translationName(settings.language, translation),
+                in: renderingsLabel(settings.language, translation),
+              })
             : t('loading')}
         </Text>
       </View>

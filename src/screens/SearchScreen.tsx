@@ -5,7 +5,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
 import { Icon, IconButton } from '../components/Icon';
 import { SectionLabel } from '../components/SectionLabel';
-import { useT } from '../i18n';
+import { renderingsLabel, useT } from '../i18n';
 import { VerseListItem } from '../components/VerseListItem';
 import { searchLexicon, searchText } from '../queries';
 import { parseReference } from '../refs';
@@ -82,7 +82,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
-      <Header title={t('searchTitle', { translation })} onBack={onBack} />
+      <Header title={t('searchTitle', { translation, in: renderingsLabel(settings.language, translation) })} onBack={onBack} />
       <View style={[styles.inputBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
         <Icon name="search" color={theme.muted} />
         <TextInput
@@ -136,7 +136,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
           <Text style={[styles.strongsText, { color: theme.accent }]}>
             {t('goTo', { ref: `${bookName(books, goTo.book, translation)} ${goTo.chapter}${goTo.chapterOnly ? '' : `:${goTo.verse}`}` })}
           </Text>
-          <Text style={[styles.strongsSub, { color: theme.muted }]}>{t('openIn', { translation })}</Text>
+          <Text style={[styles.strongsSub, { color: theme.muted }]}>{t('openIn', { translation, in: renderingsLabel(settings.language, translation) })}</Text>
         </Pressable>
       ) : null}
       {strongsId ? (

@@ -195,7 +195,11 @@ export async function inTranslation(db: SQLiteDatabase, translation: Translation
   return out;
 }
 
-/** Fetch the text of specific verses. Keeps the order of `refs`. */
+/**
+ * Fetch the text of specific verses. Keeps the order of `refs`. The verses are looked up
+ * by key as a list of (book, chapter, verse) values; written as ORs of ANDs, SQLite scans
+ * the whole translation once there are three or more.
+ */
 export async function getVerses(
   db: SQLiteDatabase,
   translation: TranslationId,
@@ -203,19 +207,34 @@ export async function getVerses(
 ): Promise<VerseRow[]> {
   if (refs.length === 0) return [];
   const found = new Map<string, VerseRow>();
-  const batch = 40;
+  const batch = 200;
   for (let i = 0; i < refs.length; i += batch) {
     const slice = refs.slice(i, i + batch);
-    const where = slice.map(() => '(book = ? AND chapter = ? AND verse = ?)').join(' OR ');
+    const values = slice.map(() => '(?, ?, ?)').join(', ');
     const params: (string | number)[] = [translation];
     for (const r of slice) params.push(r.book, r.chapter, r.verse);
     const rows = await db.getAllAsync<VerseRow>(
-      `SELECT book, chapter, verse, text, tags, omitted, para FROM verses WHERE translation = ? AND (${where})`,
+      `SELECT book, chapter, verse, text, tags, omitted, para FROM verses WHERE translation = ? AND (book, chapter, verse) IN (VALUES ${values})`,
       params,
     );
     for (const row of rows) found.set(`${row.book}:${row.chapter}:${row.verse}`, row);
   }
   return refs.map((r) => found.get(`${r.book}:${r.chapter}:${r.verse}`)).filter((v): v is VerseRow => !!v);
+}
+
+const verseCounts = new Map<string, Promise<Map<string, number>>>();
+
+/** The last verse number of every chapter in a translation ("book:chapter" to number), read once. */
+export function getVerseCounts(db: SQLiteDatabase, translation: TranslationId): Promise<Map<string, number>> {
+  let counts = verseCounts.get(translation);
+  if (!counts) {
+    counts = db
+      .getAllAsync<{ book: number; chapter: number; n: number }>('SELECT book, chapter, MAX(verse) AS n FROM verses WHERE translation = ? GROUP BY book, chapter', translation)
+      .then((rows) => new Map(rows.map((r) => [`${r.book}:${r.chapter}`, r.n])));
+    counts.catch(() => verseCounts.delete(translation));
+    verseCounts.set(translation, counts);
+  }
+  return counts;
 }
 
 /**

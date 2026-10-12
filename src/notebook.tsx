@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { AppState } from 'react-native';
-import Storage from 'expo-sqlite/kv-store';
 import type { Edition } from './edition';
+import { loadEntry, useAutosave } from './persist';
+import { tellLoadProblem, tellSaveFailed, useOptionalSettings } from './settings';
 
 /**
  * The notebook (കുറിപ്പുകൾ): pages the reader writes, each with a title and free text in
@@ -27,56 +27,45 @@ interface NotebookContextValue {
   remove: (id: string) => void;
   /** Adds a line to the end of a page. */
   append: (id: string, line: string) => void;
+  /** Like edit, and written to the phone at once: for typed text when the app is left. */
+  commit: (id: string, patch: Partial<Pick<NotePage, 'title' | 'body'>>) => void;
 }
 
 const NotebookContext = createContext<NotebookContextValue | null>(null);
 
-function load(key: string): NotePage[] {
-  try {
-    const raw = Storage.getItemSync(key);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as NotePage[];
-    return Array.isArray(parsed) ? parsed.filter((p) => p && typeof p.id === 'string') : [];
-  } catch {
-    return [];
-  }
+const isBlank = (p: NotePage) => !p.title.trim() && !p.body.trim();
+
+/** Stored pages, checked; a page left with nothing on it (the app closed on a new page) is dropped. */
+function parse(raw: string): NotePage[] {
+  const parsed: unknown = JSON.parse(raw);
+  if (!Array.isArray(parsed)) throw new Error('notebook is not a list');
+  return parsed
+    .filter((p): p is NotePage => !!p && typeof p.id === 'string')
+    .map((p) => ({ ...p, title: typeof p.title === 'string' ? p.title : '', body: typeof p.body === 'string' ? p.body : '' }))
+    .filter((p) => !isBlank(p));
+}
+
+function applyEdit(pages: NotePage[], id: string, patch: Partial<Pick<NotePage, 'title' | 'body'>>): NotePage[] {
+  const found = pages.find((p) => p.id === id);
+  if (!found) return pages;
+  const next = { ...found, ...patch, updated: Date.now() };
+  return [next, ...pages.filter((p) => p.id !== id)];
 }
 
 const newId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
 export function NotebookProvider({ edition, children }: { edition: Edition; children: React.ReactNode }) {
   const key = `notebook.v1.${edition.id}`;
-  const [pages, setPages] = useState<NotePage[]>(() => load(key));
-
-  // Written a moment after a change, and at once when the app is left (as in settings.tsx).
+  const [loaded] = useState(() => loadEntry(key, parse, [] as NotePage[]));
+  const [pages, setPages] = useState<NotePage[]>(loaded.value);
   const latest = useRef(pages);
   latest.current = pages;
-  const pending = useRef(false);
-  const first = useRef(true);
-  useEffect(() => {
-    if (first.current) {
-      first.current = false;
-      return;
-    }
-    pending.current = true;
-    const timer = setTimeout(() => {
-      pending.current = false;
-      Storage.setItem(key, JSON.stringify(pages)).catch(() => undefined);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [pages, key]);
-  useEffect(() => {
-    const sub = AppState.addEventListener('change', (state) => {
-      if (state === 'active' || !pending.current) return;
-      pending.current = false;
-      try {
-        Storage.setItemSync(key, JSON.stringify(latest.current));
-      } catch {
-        // Best effort; the pages in memory still apply.
-      }
-    });
-    return () => sub.remove();
-  }, [key]);
+  const language = useOptionalSettings()?.language ?? edition.languages[0];
+  const languageRef = useRef(language);
+  languageRef.current = language;
+  useEffect(() => tellLoadProblem(languageRef.current, loaded.source), [loaded]);
+  // Written a moment after a change, and at once when the app is left (as the settings are).
+  const saveValue = useAutosave(key, pages, loaded.writable, 500, () => tellSaveFailed(languageRef.current));
 
   const create = useCallback((body = '') => {
     const now = Date.now();
@@ -84,14 +73,17 @@ export function NotebookProvider({ edition, children }: { edition: Edition; chil
     setPages((prev) => [{ id, title: '', body, created: now, updated: now }, ...prev]);
     return id;
   }, []);
-  const edit = useCallback((id: string, patch: Partial<Pick<NotePage, 'title' | 'body'>>) => {
-    setPages((prev) => {
-      const found = prev.find((p) => p.id === id);
-      if (!found) return prev;
-      const next = { ...found, ...patch, updated: Date.now() };
-      return [next, ...prev.filter((p) => p.id !== id)];
-    });
-  }, []);
+  const edit = useCallback((id: string, patch: Partial<Pick<NotePage, 'title' | 'body'>>) => setPages((prev) => applyEdit(prev, id, patch)), []);
+  const commit = useCallback(
+    (id: string, patch: Partial<Pick<NotePage, 'title' | 'body'>>) => {
+      const next = applyEdit(latest.current, id, patch);
+      if (next === latest.current) return;
+      latest.current = next;
+      saveValue(next);
+      setPages((prev) => applyEdit(prev, id, patch));
+    },
+    [saveValue],
+  );
   const remove = useCallback((id: string) => setPages((prev) => prev.filter((p) => p.id !== id)), []);
   const append = useCallback((id: string, line: string) => {
     setPages((prev) => {
@@ -103,7 +95,7 @@ export function NotebookProvider({ edition, children }: { edition: Edition; chil
   }, []);
   const page = useCallback((id: string) => latest.current.find((p) => p.id === id), []);
 
-  const value = useMemo(() => ({ pages, page, create, edit, remove, append }), [pages, page, create, edit, remove, append]);
+  const value = useMemo(() => ({ pages, page, create, edit, remove, append, commit }), [pages, page, create, edit, remove, append, commit]);
   return <NotebookContext.Provider value={value}>{children}</NotebookContext.Provider>;
 }
 

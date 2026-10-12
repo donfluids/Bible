@@ -45,21 +45,21 @@ Policy → App content → Privacy policy, for both apps.
 
 # Privacy policy
 
-Bible (org.riversresearch.bible) and വേദപുസ്തകം (org.riversresearch.bible.malayalam), published by Rivers Research LLC. Effective 5 October 2026.
+Bible (org.riversresearch.bible) and വേദപുസ്തകം (org.riversresearch.bible.malayalam), published by Rivers Research LLC. Effective 12 October 2026.
 
 > The apps collect no personal data and send nothing anywhere. They do not connect to the internet. Everything you save in them stays on your phone.
 
 ## What the apps keep, and where
 
-The apps store your settings, your reading place, and the bookmarks, highlights, marked text and notes you make. These are kept only in the app's own storage on your phone. We never receive them and have no way to see them.
+The apps store your settings, your reading place, and the bookmarks, highlights, marked text, notes and notebook pages you make. These are kept only in the app's own storage on your phone. We never receive them and have no way to see them.
 
 ## Android backup
 
-If backup is switched on in your phone's settings, Android can include the apps' settings, bookmarks, highlights, marked text and notes in your phone's backup to your Google account, so they come back when you reinstall the app or move to a new phone. Android does this under your Google account's terms; we cannot see the backup. You can switch backup off in your phone's settings. The Bible text itself is not included in the backup.
+If backup is switched on in your phone's settings, Android can include the apps' settings, bookmarks, highlights, marked text, notes and notebook pages in your phone's backup to your Google account, so they come back when you reinstall the app or move to a new phone. Android does this under your Google account's terms; we cannot see the backup. You can switch backup off in your phone's settings. The Bible text itself is not included in the backup.
 
 ## Copying and sharing
 
-When you copy or share a verse, the text goes to the clipboard or to the app you choose, and only when you ask for it.
+When you copy or share a verse or a notebook page, the text goes to the clipboard or to the app you choose, and only when you ask for it.
 
 ## Links
 

@@ -117,7 +117,9 @@ tag such as `v0.2.1` is pushed. Each build's Android version code is the workflo
 run number, so every build can be installed over the previous one.
 
 Release signing is configured by `plugins/withAndroidRelease.js`, which also turns
-on code and resource shrinking and limits the APK to 64-bit ARM. It reads the key
+on code and resource shrinking and builds for 32- and 64-bit ARM (the Play bundle
+carries both; the workflow's APK is built for 64-bit ARM only with
+`-PreactNativeArchitectures=arm64-v8a`). It reads the key
 from these environment variables, and falls back to the debug key when they are
 unset:
 

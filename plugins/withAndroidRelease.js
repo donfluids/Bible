@@ -22,8 +22,10 @@ const GRADLE_PROPERTIES = {
   // Code shrinking (R8) and resource shrinking for release builds.
   'android.enableMinifyInReleaseBuilds': 'true',
   'android.enableShrinkResourcesInReleaseBuilds': 'true',
-  // 64-bit ARM only: every phone sold since 2016. Add armeabi-v7a for older ones.
-  reactNativeArchitectures: 'arm64-v8a',
+  // 32- and 64-bit ARM. Play hands each phone only its own, so the bundle can carry both
+  // and still reach older and low-cost phones that run 32-bit Android. A sideloaded APK
+  // can be built for one: ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a
+  reactNativeArchitectures: 'armeabi-v7a,arm64-v8a',
 };
 
 const SIGNING_BLOCK = `        release {

@@ -1374,7 +1374,7 @@ function ActionButton({ icon, label, onPress, accessibilityLabel }: { icon: Icon
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   titleButton: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', minHeight: 48, maxWidth: '100%' },
-  title: { fontSize: 22, fontWeight: '500' },
+  title: { fontSize: 22, lineHeight: 30, fontWeight: '500' },
   titleName: { flexShrink: 1 },
   titleRoom: { flex: 1, justifyContent: 'center' },
   titleMeasure: { position: 'absolute', left: 0, top: 0, width: 2000, flexDirection: 'row', opacity: 0 },

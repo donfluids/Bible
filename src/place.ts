@@ -58,15 +58,37 @@ export function initPlace(edition: Edition): void {
   };
 }
 
-function write(): void {
+let retryWait = 0;
+
+/** Writes the place: at once when the app is left, else in the background. A failed write is tried again later. */
+function write(now = false): void {
   if (timer) clearTimeout(timer);
   timer = null;
   if (!key) return;
-  Storage.setItem(key, JSON.stringify(place)).catch(() => undefined);
+  const json = JSON.stringify(place);
+  const failed = () => {
+    if (timer) return; // A newer change has its own write coming.
+    retryWait = Math.min(Math.max(retryWait * 2, 5000), 60000);
+    timer = setTimeout(write, retryWait);
+  };
+  if (now) {
+    try {
+      Storage.setItemSync(key, json);
+      retryWait = 0;
+    } catch {
+      failed();
+    }
+  } else
+    Storage.setItem(key, json).then(
+      () => {
+        retryWait = 0;
+      },
+      failed,
+    );
 }
 
 AppState.addEventListener('change', (state) => {
-  if (state !== 'active' && timer) write();
+  if (state !== 'active' && timer) write(true);
 });
 
 export function getPlace(): Place {
@@ -78,6 +100,7 @@ export function updatePlace(patch: Partial<Place>): void {
   for (const l of listeners) l();
   if (timer) clearTimeout(timer);
   timer = setTimeout(write, 500);
+  retryWait = 0;
 }
 
 /** Move the main reader to a chapter, remembering it as the last one read in its book. */
