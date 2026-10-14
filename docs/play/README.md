@@ -44,7 +44,7 @@ Malayalam speaker to read it.
 - [ ] When asked about app signing, choose **Use Google-generated key**. The bundle
       you upload is signed with your current release key, which Play records as the
       upload key.
-- [ ] Upload `Vedapusthakam-0.4.2-b28.aab` from the `apk-builds` branch.
+- [ ] Upload `Vedapusthakam-0.4.2-b29.aab` from the `apk-builds` branch.
 - [ ] Add yourself (and anyone helping) as internal testers, install from the test
       link, and check the app installed from Play works.
 
