@@ -105,7 +105,7 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
           {EDITION.translations.map((id, i) => {
             const active = settings.translation === id;
             return (
-              <Pressable key={id} onPress={() => update({ translation: id })} android_ripple={{ color: theme.accentSoft }} accessibilityRole="radio" accessibilityState={{ checked: active }} style={[styles.row, i > 0 && divider]}>
+              <Pressable key={id} onPress={() => update({ translation: id })} android_ripple={{ color: theme.accentSoft }} accessibilityRole="radio" accessibilityState={{ checked: active }} style={({ pressed }) => [styles.row, i > 0 && divider, pressed && { backgroundColor: theme.accentSoft }]}>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.rowTitle, { color: theme.text }]}>{translationName(settings.language, id)}</Text>
                   {/* The short label the reader's chip shows, and the version's code. */}
@@ -140,7 +140,7 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
               ['tap', t('tappedVerses'), t('tappedVersesDetail')],
             ] as const
           ).map(([mode, title, sub]) => (
-            <Pressable key={mode} onPress={() => update({ interlinearMode: mode })} android_ripple={{ color: theme.accentSoft }} accessibilityRole="radio" accessibilityState={{ checked: settings.interlinearMode === mode }} style={[styles.row, divider]}>
+            <Pressable key={mode} onPress={() => update({ interlinearMode: mode })} android_ripple={{ color: theme.accentSoft }} accessibilityRole="radio" accessibilityState={{ checked: settings.interlinearMode === mode }} style={({ pressed }) => [styles.row, divider, pressed && { backgroundColor: theme.accentSoft }]}>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.rowTitle, { color: theme.text }]}>{title}</Text>
                 <Text style={[styles.rowSub, { color: theme.muted }]}>{sub}</Text>
@@ -180,7 +180,7 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
           <Text style={[styles.about, { color: theme.text, marginTop: 10 }]}>{t('aboutInterlinear')}</Text>
           {EDITION.translations.includes('WEB') ? <Text style={[styles.about, { color: theme.muted, marginTop: 10 }]}>{t('aboutWeb')}</Text> : null}
           {meta.built ? <Text style={[styles.rowSub, { color: theme.muted, marginTop: 10 }]}>{t('databaseBuilt', { date: meta.built })}</Text> : null}
-          <Pressable onPress={onOpenLicences} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>
+          <Pressable onPress={onOpenLicences} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={({ pressed }) => [styles.licencesRow, pressed && { backgroundColor: theme.accentSoft }]}>
             <Text style={[styles.rowTitle, { color: theme.accent, flex: 1 }]}>{t('sourcesLicences')}</Text>
             <Icon name="chevron_right" color={theme.accent} />
           </Pressable>
@@ -207,7 +207,7 @@ function Segmented<T extends string>({ options, value, onChange }: { options: [T
             accessibilityRole="radio"
             accessibilityState={{ checked: active }}
             android_ripple={{ color: theme.accentSoft }}
-            style={[styles.segment, i > 0 && { borderLeftWidth: 1, borderLeftColor: theme.muted }, active && { backgroundColor: theme.accentSoft }]}
+            style={({ pressed }) => [styles.segment, i > 0 && { borderLeftWidth: 1, borderLeftColor: theme.muted }, (active || pressed) && { backgroundColor: theme.accentSoft }, active && pressed && { opacity: 0.7 }]}
           >
             {active && options.length <= 3 ? <Icon name="check" size={18} color={theme.accent} /> : null}
             <Text numberOfLines={1} style={[styles.segmentText, { color: active ? theme.accent : theme.text }]}>

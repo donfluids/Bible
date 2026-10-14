@@ -1,5 +1,6 @@
 import { defaultDatabaseDirectory } from 'expo-sqlite';
 import { Directory, File, Paths } from 'expo-file-system';
+import { Platform } from 'react-native';
 import DATABASE_SIZES from './dbSizes.json';
 import { CONFIGURED_EDITION_ID } from './edition';
 
@@ -13,12 +14,24 @@ export const DATABASE_NAME = 'bible-v14.db';
 export const DATABASE_ASSET = require('../assets/db/bible.db');
 
 /**
- * The copy lives in a folder of its own, files/SQLite/bible, which Android leaves out of
- * its backup (plugins/withBackupRules.js): at about 47 MB it would push the app over the
- * 25 MB backup limit, and then settings, bookmarks and notes would not be backed up
- * either. expo-sqlite takes the folder as a plain path; the file API wants a file:// URI.
+ * The copy lives in a folder of its own, kept out of the phone's backup because the app
+ * can always make it again.
+ *
+ * Android: files/SQLite/bible, which plugins/withBackupRules.js leaves out of the backup.
+ * At about 47 MB it would push the app over the 25 MB backup limit, and then settings,
+ * bookmarks and notes would not be backed up either.
+ *
+ * iOS: Library/Caches/bible. expo-sqlite's default folder is inside Documents, which iOS
+ * backs up to iCloud; Caches is never backed up, and it is where Apple asks apps to keep
+ * files they can recreate. iOS may empty Caches when the phone is short of space. The
+ * next launch then finds no complete copy and copies the database again (App.tsx).
+ * Settings, bookmarks and notes stay in the default folder, so iCloud backs them up.
+ *
+ * expo-sqlite takes the folder as a plain path; the file API wants a file:// URI.
  */
-export const DATABASE_DIRECTORY = `${defaultDatabaseDirectory}/bible`;
+const toPath = (uri: string) => decodeURIComponent(uri.replace(/^file:\/\//, '')).replace(/\/+$/, '');
+export const DATABASE_DIRECTORY =
+  Platform.OS === 'ios' ? `${toPath(Paths.cache.uri)}/bible` : `${defaultDatabaseDirectory}/bible`;
 const toUri = (path: string) => (path.startsWith('file:') ? path : `file://${path}`);
 const BASE_DIR = toUri(defaultDatabaseDirectory);
 const DATABASE_DIR = toUri(DATABASE_DIRECTORY);

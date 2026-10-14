@@ -1,0 +1,28 @@
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "preview-en": {
+      "distribution": "internal",
+      "env": { "BIBLE_EDITION": "en" }
+    },
+    "preview-ml": {
+      "distribution": "internal",
+      "env": { "BIBLE_EDITION": "ml" }
+    },
+    "production-en": {
+      "autoIncrement": true,
+      "env": { "BIBLE_EDITION": "en" }
+    },
+    "production-ml": {
+      "autoIncrement": true,
+      "env": { "BIBLE_EDITION": "ml" }
+    }
+  },
+  "submit": {
+    "production-en": {},
+    "production-ml": {}
+  }
+}

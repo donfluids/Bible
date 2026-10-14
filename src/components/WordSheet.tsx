@@ -316,7 +316,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                         accessibilityRole="radio"
                         accessibilityState={{ checked: active }}
                         android_ripple={{ color: theme.accentSoft }}
-                        style={[styles.compoundChip, { borderColor: active ? theme.accent : theme.border, backgroundColor: active ? theme.accentSoft : 'transparent' }]}
+                        style={({ pressed }) => [styles.compoundChip, { borderColor: active ? theme.accent : theme.border, backgroundColor: active || pressed ? theme.accentSoft : 'transparent' }]}
                       >
                         <Text style={[styles.compoundLemma, { color: theme.text, fontFamily: isHebrew(part.id) ? HEBREW_FONT : theme.font }]}>{part.lemma ?? part.id}</Text>
                         {part.gloss ? <Text style={[styles.compoundGloss, { color: active ? theme.accent : theme.muted }]} numberOfLines={1}>{part.gloss}</Text> : null}
@@ -475,7 +475,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
             ]}
           >
             {!expanded ? (
-              <Pressable onPress={() => snap('full')} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.more}>
+              <Pressable onPress={() => snap('full')} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={({ pressed }) => [styles.more, { opacity: pressed ? 0.6 : 1 }]}>
                 <Icon name="expand_less" size={22} color={theme.accent} />
                 <Text style={[styles.moreText, { color: theme.accent }]}>{t('moreAboutWord')}</Text>
               </Pressable>

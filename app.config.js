@@ -3,13 +3,16 @@
 // BIBLE_EDITION: "en" (default) is the English app with the KJV and WEB; "ml" is the
 // Malayalam app (വേദപുസ്തകം) with the Sathyavedapusthakam and the KJV. The edition
 // picks the name, identifiers, icon, splash and, through metro.config.js, the database.
-// BIBLE_VERSION_CODE: the Android version code; the release workflow passes its run
-// number so every build can be installed over the previous one.
+// BIBLE_VERSION_CODE: the Android version code, and the iOS build number for builds made
+// outside EAS; the release workflow passes its run number so every build can be
+// installed over the previous one. EAS keeps its own iOS build number (eas.json).
 const EDITIONS = {
   en: {
     name: 'Bible',
     slug: 'bible',
     package: 'org.riversresearch.bible',
+    // EAS project for iOS builds; `eas init` prints it (docs/ios.md).
+    easProjectId: null,
     icons: './assets/icons/en',
     // Splash colours are the app's own backgrounds, so opening does not flash.
     splashBackground: '#FBF8F1',
@@ -20,6 +23,7 @@ const EDITIONS = {
     name: 'വേദപുസ്തകം',
     slug: 'bible-malayalam',
     package: 'org.riversresearch.bible.malayalam',
+    easProjectId: null,
     icons: './assets/icons/ml',
     splashBackground: '#F7F9F2',
     splashBackgroundDark: '#111511',
@@ -75,13 +79,21 @@ module.exports = ({ config }) => {
     return plugin;
   });
   plugins.push(['expo-font', { fonts: FONTS[edition] }]);
+  plugins.push(['./plugins/withIosEdition', { edition }]);
   return {
     ...config,
     name: e.name,
     slug: e.slug,
     icon: `${e.icons}/icon.png`,
     plugins,
-    ios: { ...config.ios, bundleIdentifier: e.package },
+    ios: {
+      ...config.ios,
+      bundleIdentifier: e.package,
+      buildNumber: String(Number(process.env.BIBLE_VERSION_CODE) || 1),
+      // The app uses no encryption beyond what iOS itself provides, so App Store Connect
+      // need not ask about export compliance on every upload.
+      config: { ...config.ios?.config, usesNonExemptEncryption: false },
+    },
     android: {
       ...config.android,
       package: e.package,
@@ -94,6 +106,6 @@ module.exports = ({ config }) => {
       },
     },
     web: { ...config.web, favicon: `${e.icons}/favicon.png` },
-    extra: { ...config.extra, edition },
+    extra: { ...config.extra, edition, ...(e.easProjectId ? { eas: { projectId: e.easProjectId } } : {}) },
   };
 };

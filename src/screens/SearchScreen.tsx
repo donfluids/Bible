@@ -125,7 +125,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
                 onPress={() => setQuery(example)}
                 accessibilityRole="button"
                 android_ripple={{ color: theme.accentSoft }}
-                style={[styles.example, { borderColor: theme.border }]}
+                style={({ pressed }) => [styles.example, { borderColor: theme.border }, pressed && { backgroundColor: theme.accentSoft }]}
               >
                 <Text style={[styles.exampleText, { color: theme.text }]}>{example}</Text>
               </Pressable>

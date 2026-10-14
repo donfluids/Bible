@@ -151,6 +151,14 @@ permissions that libraries would otherwise add. Built APKs and bundles are publi
 on the `apk-builds` branch. `docs/play/` has the Play listing text, the privacy
 policy page and a release checklist.
 
+## iOS builds
+
+Both editions also build for iPhone and iPad, on Expo's build service (EAS), so no Mac
+is needed. `eas.json` has a test and an App Store profile for each edition, for example
+`eas build --platform ios --profile preview-en`. `docs/ios.md` covers the one-time setup,
+testing on a phone, releasing, and what differs from Android: on iOS the database copy
+lives in Library/Caches, which iCloud does not back up.
+
 ## Project layout
 
 ```
@@ -163,6 +171,8 @@ src/fonts.ts             Hebrew and Malayalam typefaces built into the app
 src/licences.ts          Sources, licences and changes shown under Sources and licences
 plugins/withAndroidRelease.js  Android release signing and shrinking
 plugins/withBackupRules.js     Keeps the 47 MB database out of Android backup, so notes are backed up
+plugins/withIosEdition.js      Records the edition in the generated iOS project for Xcode's build steps
+eas.json                 iOS build profiles for each edition (docs/ios.md)
 app.config.js            Per-edition and per-build values layered over app.json
 src/navigation.ts        Screen names and parameters for the native stack
 src/refs.ts              Parses typed references like "1 Cor 13:4" and finds them in written text

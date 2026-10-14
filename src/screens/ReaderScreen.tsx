@@ -1587,7 +1587,7 @@ const ReaderVerse = memo(function ReaderVerse({
             accessibilityRole="button"
             accessibilityLabel={tapLabel}
             accessibilityState={{ expanded }}
-            style={[styles.tapColumn, { width: Math.max(40, Math.round(fontSize * 2)) }]}
+            style={({ pressed }) => [styles.tapColumn, { width: Math.max(40, Math.round(fontSize * 2)) }, pressed && { backgroundColor: theme.accentSoft }]}
           >
             {v.verse > 0 ? (
               <Text style={[styles.tapNumber, { color: theme.accent, fontSize: Math.max(14, fontSize - 4), lineHeight }]}>{v.verse}</Text>
@@ -1641,7 +1641,7 @@ function ActionButton({ icon, label, onPress, accessibilityLabel }: { icon: Icon
   const theme = useTheme();
   const malayalam = isMalayalam(label);
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label} android_ripple={{ color: theme.accentSoft }} style={styles.actionButton}>
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label} android_ripple={{ color: theme.accentSoft }} style={({ pressed }) => [styles.actionButton, { opacity: pressed ? 0.6 : 1 }]}>
       <View style={[styles.actionIcon, { backgroundColor: theme.accentSoft }]}>
         <Icon name={icon} color={theme.accent} />
       </View>
