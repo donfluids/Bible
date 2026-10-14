@@ -199,7 +199,8 @@ function useApp(): AppContextValue {
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
-const TAB_SCREEN = { animation: 'none' } as const;
+// Tabs switch in place: no slide, and on iPhone no swipe back from one tab to the reading.
+const TAB_SCREEN = { animation: 'none', gestureEnabled: false } as const;
 
 function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
   const db = useSQLiteContext();

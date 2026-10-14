@@ -116,6 +116,10 @@ every push to the development branch and on manual runs, and attaches it to a Gi
 tag such as `v0.2.1` is pushed. Each build's Android version code is the workflow
 run number, so every build can be installed over the previous one.
 
+The iPhone apps build from the same code in Expo's cloud (EAS Build, profiles `ios-en` and
+`ios-ml` in `eas.json`); `docs/ios/README.md` has the steps from Apple enrolment to the App
+Store, with the listing text and screenshots beside it.
+
 Release signing is configured by `plugins/withAndroidRelease.js`, which also turns
 on code and resource shrinking and builds for 32- and 64-bit ARM (the Play bundle
 carries both; the workflow's APK is built for 64-bit ARM only with

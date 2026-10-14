@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { Pressable } from './Pressable';
 import { useSettings } from '../settings';
 import { formatRef } from '../text';
 import { useTheme } from '../theme';

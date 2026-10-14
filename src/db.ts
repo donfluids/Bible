@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { defaultDatabaseDirectory } from 'expo-sqlite';
 import { Directory, File, Paths } from 'expo-file-system';
 import DATABASE_SIZES from './dbSizes.json';
@@ -16,9 +17,14 @@ export const DATABASE_ASSET = require('../assets/db/bible.db');
  * The copy lives in a folder of its own, files/SQLite/bible, which Android leaves out of
  * its backup (plugins/withBackupRules.js): at about 47 MB it would push the app over the
  * 25 MB backup limit, and then settings, bookmarks and notes would not be backed up
- * either. expo-sqlite takes the folder as a plain path; the file API wants a file:// URI.
+ * either. On iOS everything under Documents goes into iCloud backup, and Apple asks that
+ * data an app can make again live in Library/Caches instead, so the copy goes there; if
+ * iOS clears it to free space, the next launch copies it again. The reader's own data
+ * (expo-sqlite/kv-store, in Documents) is still backed up on both.
+ * expo-sqlite takes the folder as a plain path; the file API wants a file:// URI.
  */
-export const DATABASE_DIRECTORY = `${defaultDatabaseDirectory}/bible`;
+const cachePath = () => decodeURI(Paths.cache.uri.replace(/^file:\/\//, '')).replace(/\/$/, '');
+export const DATABASE_DIRECTORY = Platform.OS === 'ios' ? `${cachePath()}/bible` : `${defaultDatabaseDirectory}/bible`;
 const toUri = (path: string) => (path.startsWith('file:') ? path : `file://${path}`);
 const BASE_DIR = toUri(defaultDatabaseDirectory);
 const DATABASE_DIR = toUri(DATABASE_DIRECTORY);

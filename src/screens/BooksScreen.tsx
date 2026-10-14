@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { Pressable } from '../components/Pressable';
 import { Header } from '../components/Header';
 import { Icon } from '../components/Icon';
 import { TabBar } from '../components/TabBar';

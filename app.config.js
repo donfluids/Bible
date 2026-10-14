@@ -4,13 +4,17 @@
 // Malayalam app (വേദപുസ്തകം) with the Sathyavedapusthakam and the KJV. The edition
 // picks the name, identifiers, icon, splash and, through metro.config.js, the database.
 // BIBLE_VERSION_CODE: the Android version code; the release workflow passes its run
-// number so every build can be installed over the previous one.
+// number so every build can be installed over the previous one. iOS build numbers are
+// kept by EAS (eas.json, appVersionSource "remote").
 const EDITIONS = {
   en: {
     name: 'Bible',
     slug: 'bible',
     package: 'org.riversresearch.bible',
     icons: './assets/icons/en',
+    languages: ['en'],
+    // From `eas init` for this edition (docs/ios/README.md); empty until then.
+    easProjectId: '',
     // Splash colours are the app's own backgrounds, so opening does not flash.
     splashBackground: '#FBF8F1',
     splashBackgroundDark: '#15130F',
@@ -21,6 +25,8 @@ const EDITIONS = {
     slug: 'bible-malayalam',
     package: 'org.riversresearch.bible.malayalam',
     icons: './assets/icons/ml',
+    languages: ['ml', 'en'],
+    easProjectId: '',
     splashBackground: '#F7F9F2',
     splashBackgroundDark: '#111511',
     adaptiveBackground: '#EEF3E6',
@@ -81,7 +87,34 @@ module.exports = ({ config }) => {
     slug: e.slug,
     icon: `${e.icons}/icon.png`,
     plugins,
-    ios: { ...config.ios, bundleIdentifier: e.package },
+    ios: {
+      ...config.ios,
+      bundleIdentifier: e.package,
+      // iPhone only, as the Android app is offered for phones.
+      supportsTablet: false,
+      infoPlist: {
+        // No encryption beyond what iOS itself does: no export compliance papers needed.
+        ITSAppUsesNonExemptEncryption: false,
+        // The interface languages, so iOS (and the App Store) lists them.
+        CFBundleDevelopmentRegion: e.languages[0],
+        CFBundleLocalizations: e.languages,
+        CFBundleAllowMixedLocalizations: true,
+      },
+      // Apple's privacy manifest: no tracking, nothing collected; the system APIs React
+      // Native and Expo read (settings storage, file dates, uptime, free space) with the
+      // reasons Apple lists for reading them on the device only.
+      privacyManifests: {
+        NSPrivacyTracking: false,
+        NSPrivacyTrackingDomains: [],
+        NSPrivacyCollectedDataTypes: [],
+        NSPrivacyAccessedAPITypes: [
+          { NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryUserDefaults', NSPrivacyAccessedAPITypeReasons: ['CA92.1'] },
+          { NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryFileTimestamp', NSPrivacyAccessedAPITypeReasons: ['C617.1'] },
+          { NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategorySystemBootTime', NSPrivacyAccessedAPITypeReasons: ['35F9.1'] },
+          { NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryDiskSpace', NSPrivacyAccessedAPITypeReasons: ['E174.1'] },
+        ],
+      },
+    },
     android: {
       ...config.android,
       package: e.package,
@@ -94,6 +127,6 @@ module.exports = ({ config }) => {
       },
     },
     web: { ...config.web, favicon: `${e.icons}/favicon.png` },
-    extra: { ...config.extra, edition },
+    extra: { ...config.extra, edition, ...(e.easProjectId ? { eas: { projectId: e.easProjectId } } : {}) },
   };
 };

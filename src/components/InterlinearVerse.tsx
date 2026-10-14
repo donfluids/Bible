@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { Pressable } from './Pressable';
 import { HEBREW_FONT } from '../fonts';
 import { stripCantillation } from '../text';
 import { useTheme } from '../theme';

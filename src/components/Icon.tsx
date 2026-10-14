@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
+import { Pressable } from './Pressable';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import ICON_CODES from '../iconCodes.json';
 import { useTheme } from '../theme';

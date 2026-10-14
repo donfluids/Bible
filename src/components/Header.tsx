@@ -1,7 +1,9 @@
-import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { Pressable } from './Pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useT } from '../i18n';
+import { IPHONE_LOOK } from '../platform';
 import { useTheme } from '../theme';
 import { Icon, IconButton } from './Icon';
 import type { IconName } from './Icon';
@@ -23,22 +25,46 @@ interface Props {
  */
 export const HEADER_MAX_FONT_SCALE = 1.2;
 
-/** The Android top bar: back arrow, title on the left, icon buttons on the right. */
+const IOS = IPHONE_LOOK;
+
+/**
+ * The top bar: back arrow, title, icon buttons on the right. On Android the title stands
+ * on the left; on iPhone a plain title is centred, as iPhone apps have it, and the back
+ * arrow is the iPhone chevron.
+ */
 export function Header({ title, onBack, backLabel, center, right }: Props) {
   const theme = useTheme();
   const t = useT();
   const insets = useSafeAreaInsets();
+  // To centre the title between buttons of different widths, the narrower side is padded
+  // to the width of the wider one.
+  const centred = IOS && !center;
+  const [sides, setSides] = useState({ left: 0, right: 0 });
+  const pad = sides.right - sides.left;
   return (
     <View style={[styles.bar, { paddingTop: insets.top, backgroundColor: theme.bg, paddingLeft: onBack ? 4 : 16 }]}>
-      {onBack ? <IconButton name="arrow_back" onPress={onBack} accessibilityLabel={backLabel ?? t('back')} color={theme.text} /> : null}
-      <View style={[styles.center, onBack && styles.centerAfterBack]}>
+      {onBack ? (
+        <View onLayout={centred ? (e) => setSides((s) => ({ ...s, left: e.nativeEvent.layout.width + 4 })) : undefined}>
+          <IconButton name={IOS ? 'arrow_back_ios_new' : 'arrow_back'} onPress={onBack} accessibilityLabel={backLabel ?? t('back')} color={theme.text} />
+        </View>
+      ) : null}
+      <View style={[styles.center, onBack && styles.centerAfterBack, centred && { paddingLeft: Math.max(0, pad), paddingRight: Math.max(0, -pad) }]}>
         {center ?? (
-          <Text numberOfLines={1} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={[styles.title, { color: theme.text }]} accessibilityRole="header">
+          <Text
+            numberOfLines={1}
+            maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE}
+            style={[styles.title, { color: theme.text }, centred && styles.titleCentred]}
+            accessibilityRole="header"
+          >
             {title}
           </Text>
         )}
       </View>
-      {right ? <View style={styles.right}>{right}</View> : null}
+      {right ? (
+        <View style={styles.right} onLayout={centred ? (e) => setSides((s) => ({ ...s, right: e.nativeEvent.layout.width })) : undefined}>
+          {right}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -72,6 +98,7 @@ const styles = StyleSheet.create({
   centerAfterBack: { marginLeft: 4 },
   // Room above and below for Malayalam's stacked letters (ഞായറാഴ്ച), which a tight line clips.
   title: { fontSize: 22, lineHeight: 30, paddingVertical: 2, fontWeight: '500' },
+  titleCentred: { textAlign: 'center', fontWeight: '600' },
   right: { flexDirection: 'row', alignItems: 'center' },
   chip: {
     height: 32,
