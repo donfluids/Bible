@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
-import type { ViewToken } from 'react-native';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, AppState, FlatList, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, ViewToken } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -28,10 +28,11 @@ import { getChapter, getInterlinear, getNotes, mapRef } from '../queries';
 import type { ChapterData } from '../queries';
 import { FONT_SIZES, useSettings } from '../settings';
 import type { Settings } from '../settings';
-import { getPlace, moveMainReader, selectBook, selectChapter, updatePlace, usePlace } from '../place';
+import { getPlace, moveMainReader, savePlaceNow, selectBook, selectChapter, updatePlace, usePlace } from '../place';
 import type { Position } from '../place';
 import { MAX_CONTENT_WIDTH, bookName, flattenVerse, formatRef, parseSegments, shareText } from '../text';
 import { useTheme } from '../theme';
+import type { Theme } from '../theme';
 import { HIGHLIGHT_COLORS, translationInfo } from '../types';
 import type { Book, HighlightColor, Note, OriginalWord, Ref, TextPoint, TranslationId, VerseRow, WordPick } from '../types';
 
@@ -116,6 +117,11 @@ function loadChapter(db: SQLiteDatabase, translation: TranslationId, book: numbe
   load.catch(() => chapterCache.delete(key));
   while (chapterCache.size > 8) chapterCache.delete(chapterCache.keys().next().value as string);
   return load;
+}
+
+/** Starts loading a chapter, so the reader finds it ready. */
+export function preloadChapter(db: SQLiteDatabase, translation: TranslationId, book: number, chapter: number): void {
+  loadChapter(db, translation, book, chapter).catch(() => undefined);
 }
 
 /** The chapter before or after, crossing into the neighbouring book. */
@@ -251,6 +257,16 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
   // The scroll the list is asked for, kept for its retry when the row is not laid out yet.
   const pendingScroll = useRef<{ index: number; viewPosition: number } | null>(null);
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // A scroll made a moment later must still fit the rows then on screen: scrollToIndex
+  // past the end throws, and thrown from a timer it closes the app. One meant for a
+  // chapter no longer shown is dropped.
+  const itemsRef = useRef<Item[] | null>(null);
+  itemsRef.current = items;
+  const scrollToRow = useCallback((row: { index: number; viewPosition: number }, forChapter: string | null) => {
+    const rows = itemsRef.current;
+    if (!rows || row.index < 0 || row.index >= rows.length || shownKey.current !== forChapter) return;
+    listRef.current?.scrollToIndex({ ...row, animated: false });
+  }, []);
   // The first verse on screen, for keeping the place across a translation switch and a relaunch.
   const firstVisible = useRef<{ key: string; verse: number } | null>(null);
 
@@ -307,23 +323,45 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
       return;
     }
     let cancelled = false;
+    let prefetch: ReturnType<typeof setTimeout> | null = null;
     getInterlinear(db, position.book, position.chapter, translation)
       .then((words) => {
-        if (!cancelled) setOriginal({ key: originalKey, words });
+        if (cancelled) return;
+        setOriginal({ key: originalKey, words });
+        // Decode the chapters either side a moment later, so turning the page shows the words at once.
+        prefetch = setTimeout(() => {
+          for (const delta of [1, -1] as const) {
+            const n = neighbour(books, position.book, position.chapter, delta);
+            if (n) getInterlinear(db, n.book, n.chapter, translation).catch(() => undefined);
+          }
+        }, 400);
       })
       .catch(() => {
         if (!cancelled) setOriginal({ key: originalKey, words: new Map() });
       });
     return () => {
       cancelled = true;
+      if (prefetch) clearTimeout(prefetch);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [db, interlinear, position.book, position.chapter, translation]);
 
-  // Scroll once the verses a scroll was waiting for are on screen.
+  // Scroll once the verses a scroll was waiting for are on screen. With every verse's
+  // Hebrew or Greek words shown, a scroll to a verse also waits for the words: they make
+  // the rows above it taller, and scrolling first would land on an earlier verse.
+  const wordsReady = !(interlinear && interlinearMode === 'all' && !marking) || !!originalWords;
+  const jumpTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (jumpTimer.current) clearTimeout(jumpTimer.current);
+      if (retryTimer.current) clearTimeout(retryTimer.current);
+    },
+    [],
+  );
   useEffect(() => {
     const target = scrollTarget.current;
     if (!items || !target) return;
+    if (target.verse !== undefined && !wordsReady) return;
     scrollTarget.current = null;
     const index =
       target.verse === undefined
@@ -338,15 +376,15 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
     // A jump shows the verse a little below the top; a restored place puts it at the top,
     // so the verse saved next time is the same one.
     pendingScroll.current = { index, viewPosition: target.flash ? 0.15 : 0 };
-    const timer = setTimeout(() => {
-      listRef.current?.scrollToIndex({ ...pendingScroll.current!, animated: false });
+    const forChapter = shownKey.current;
+    if (jumpTimer.current) clearTimeout(jumpTimer.current);
+    jumpTimer.current = setTimeout(() => {
+      jumpTimer.current = null;
+      if (pendingScroll.current) scrollToRow(pendingScroll.current, forChapter);
       if (target.flash) setFlash(target.verse ?? null);
     }, 60);
-    return () => {
-      clearTimeout(timer);
-      if (retryTimer.current) clearTimeout(retryTimer.current);
-    };
-  }, [items]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, wordsReady]);
 
   // Keep the place when the Hebrew or Greek words or marker mode are switched on or off.
   // The rows change height once the words arrive, and in paragraph layout the list is
@@ -373,16 +411,34 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
     const index = items.findIndex((it) => (it.kind === 'verse' && it.verse.verse === verse) || (it.kind === 'para' && it.verses.some((v) => v.verse === verse)));
     if (index < 0) return;
     pendingScroll.current = { index, viewPosition };
-    setTimeout(() => listRef.current?.scrollToIndex({ index, viewPosition, animated: false }), 80);
+    const forChapter = shownKey.current;
+    setTimeout(() => scrollToRow({ index, viewPosition }, forChapter), 80);
   }, [items, originalWords, interlinear, marking, paragraphs]);
 
   // Remember the first verse on screen, so the main reader reopens there.
   const placeRef = useRef({ pushed, chapterKey, position });
   placeRef.current = { pushed, chapterKey, position };
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveSeenVerse = useCallback(() => {
+    saveTimer.current = null;
+    const now = placeRef.current;
+    const seen = firstVisible.current;
+    if (!seen || seen.key !== now.chapterKey || getPlace().position.verse === seen.verse) return;
+    updatePlace({ position: { book: now.position.book, chapter: now.position.chapter, verse: seen.verse } });
+  }, []);
   useEffect(() => () => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
   }, []);
+  // Timers stop when Android puts the app away, so a place still waiting is saved now.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active' || !saveTimer.current) return;
+      clearTimeout(saveTimer.current);
+      saveSeenVerse();
+      savePlaceNow();
+    });
+    return () => sub.remove();
+  }, [saveSeenVerse]);
   const viewability = useRef({ itemVisiblePercentThreshold: 10 }).current;
   const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken<Item>[] }) => {
     const verse = viewableItems.map((v) => (v.item ? firstVerseOf(v.item) : null)).find((v): v is number => v !== null);
@@ -392,12 +448,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
     firstVisible.current = { key: place.chapterKey, verse };
     if (place.pushed) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => {
-      const now = placeRef.current;
-      const seen = firstVisible.current;
-      if (!seen || seen.key !== now.chapterKey || getPlace().position.verse === seen.verse) return;
-      updatePlace({ position: { book: now.position.book, chapter: now.position.chapter, verse: seen.verse } });
-    }, 1000);
+    saveTimer.current = setTimeout(() => saveSeenVerse(), 1000);
   }).current;
 
   useEffect(() => {
@@ -483,22 +534,30 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
           const index = list.findIndex((it) => (it.kind === 'verse' && it.verse.verse === seen.verse) || (it.kind === 'para' && it.verses.some((v) => v.verse === seen.verse)));
           if (index < 0) return;
           pendingScroll.current = { index, viewPosition: 0 };
-          setTimeout(() => listRef.current?.scrollToIndex({ index, viewPosition: 0, animated: false }), 80);
+          const forChapter = shownKey.current;
+          setTimeout(() => scrollToRow({ index, viewPosition: 0 }, forChapter), 80);
         }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [t],
   );
 
-  // The marked parts of each verse on screen, kept per verse so a verse redraws only when its own marks change.
+  // The marked parts of each verse on screen, kept per verse so a verse redraws only when its own marks change:
+  // a verse whose ranges are as before keeps the same array.
+  const lastVerseMarks = useRef(new Map<number, [number, number, HighlightColor][]>());
   const verseMarks = useMemo(() => {
     const out = new Map<number, [number, number, HighlightColor][]>();
-    if (!items || marks.length === 0) return out;
-    for (const it of items) {
-      for (const v of it.kind === 'verse' ? [it.verse] : it.kind === 'para' ? it.verses : []) {
-        const ranges = markRanges(marks, translation, v.book, v.chapter, v.verse, v.text.length);
-        if (ranges.length > 0) out.set(v.verse, ranges);
+    if (items && marks.length > 0) {
+      const before = lastVerseMarks.current;
+      for (const it of items) {
+        for (const v of it.kind === 'verse' ? [it.verse] : it.kind === 'para' ? it.verses : []) {
+          const ranges = markRanges(marks, translation, v.book, v.chapter, v.verse, v.text.length);
+          if (ranges.length === 0) continue;
+          const old = before.get(v.verse);
+          out.set(v.verse, old && sameRanges(old, ranges) ? old : ranges);
+        }
       }
     }
+    lastVerseMarks.current = out;
     return out;
   }, [items, marks, translation]);
 
@@ -823,6 +882,18 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
     });
   }, []);
 
+  // Rows call back into the reader through this ref, so their callbacks never change and
+  // a memoised row redraws only when its own verse's state does.
+  const rowActions = useRef<RowActions>(null as unknown as RowActions);
+  rowActions.current = {
+    word: handleWord,
+    actions: (v) => openActions(v),
+    note: (v, n) => setNote({ verse: v, note: n }),
+    userNote: (v) => openNote(v),
+    toggle: toggleExpanded,
+  };
+  const onRowWord = useCallback((pick: WordPick) => rowActions.current.word(pick), []);
+
   const renderItem = useCallback(
     ({ item }: { item: Item }) => {
       if (item.kind === 'heading') {
@@ -838,29 +909,29 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
       if (item.kind === 'para') {
         return (
           <Text style={[styles.para, { fontSize, lineHeight: Math.round(fontSize * translationInfo(translation).lineHeight), color: theme.text, fontFamily: scriptFont }]}>
-            {item.verses.map((v, i) => (
-              <React.Fragment key={v.verse}>
-                {i > 0 ? ' ' : null}
-                <VerseText
-                  verse={v}
-                  fontSize={fontSize}
-                  onWord={handleWord}
-                  onLongPress={() => openActions(v)}
-                  onNumberPress={() => openActions(v)}
-                  numberLabel={t('verseActions', { n: v.verse })}
-                  notes={notes.get(v.verse)}
-                  onNote={(n) => setNote({ verse: v, note: n })}
-                  underline={underlineWords}
-                  flash={flash === v.verse}
-                  bookmarked={bookmarked.has(bookmarkKey(v))}
-                  highlightColor={highlights[bookmarkKey(v)] ? theme.marks[highlights[bookmarkKey(v)]] : undefined}
-                  marks={verseMarks.get(v.verse)}
-                  hasNote={bookmarkKey(v) in userNotes}
-                  onNotePress={() => openNote(v)}
-                  selectionTranslation={translation}
-                />
-              </React.Fragment>
-            ))}
+            {item.verses.map((v, i) => {
+              const color = highlights[bookmarkKey(v)];
+              return (
+                <React.Fragment key={v.verse}>
+                  {i > 0 ? ' ' : null}
+                  <ParaVerse
+                    verse={v}
+                    fontSize={fontSize}
+                    onWord={onRowWord}
+                    actions={rowActions}
+                    numberLabel={t('verseActions', { n: v.verse })}
+                    notes={notes.get(v.verse)}
+                    underline={underlineWords}
+                    flash={flash === v.verse}
+                    bookmarked={bookmarked.has(bookmarkKey(v))}
+                    highlightColor={color ? theme.marks[color] : undefined}
+                    marks={verseMarks.get(v.verse)}
+                    hasNote={bookmarkKey(v) in userNotes}
+                    translation={translation}
+                  />
+                </React.Fragment>
+              );
+            })}
           </Text>
         );
       }
@@ -890,100 +961,76 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
           </View>
         );
       }
-      const tapMode = interlinear && interlinearMode === 'tap';
-      const showOriginal = interlinear && (interlinearMode === 'all' || expanded.has(v.verse));
-      const words = showOriginal ? originalWords?.get(v.verse) : undefined;
-      // While a verse shows its Hebrew or Greek words, those are what is tapped: the verse's
-      // own words do not open the word sheet. With the Hebrew/Greek words on, no verse
-      // underlines its words.
-      const showingWords = !!words && words.length > 0;
-      const underlined = underlineWords && !interlinear;
+      const isExpanded = expanded.has(v.verse);
+      const showOriginal = interlinear && (interlinearMode === 'all' || isExpanded);
       return (
-        <View
-          style={[
-            styles.verse,
-            interlinear && [styles.verseInterlinear, { borderBottomColor: theme.border }],
-            marked && [styles.verseBookmarked, { borderLeftColor: theme.accent }],
-            mark ? { backgroundColor: theme.marks[mark] } : null,
-            flashing && { backgroundColor: theme.highlight },
-          ]}
-        >
-          {tapMode ? (
-            // In tap mode the number stands in a column the height of the verse, and the
-            // whole column shows or hides the verse's words: an easy target at any text size.
-            <View style={styles.tapRow}>
-              <Pressable
-                onPress={() => toggleExpanded(v.verse)}
-                onLongPress={() => openActions(v)}
-                android_ripple={{ color: theme.accentSoft }}
-                accessibilityRole="button"
-                accessibilityLabel={`${v.verse}, ${t('tapVerseNumber', { lang: originalLanguage(v) })}`}
-                accessibilityState={{ expanded: expanded.has(v.verse) }}
-                style={[styles.tapColumn, { width: Math.max(40, Math.round(fontSize * 2)) }]}
-              >
-                {v.verse > 0 ? (
-                  <Text
-                    style={[
-                      styles.tapNumber,
-                      { color: theme.accent, fontSize: Math.max(14, fontSize - 4), lineHeight: Math.round(fontSize * translationInfo(translation).lineHeight) },
-                    ]}
-                  >
-                    {v.verse}
-                  </Text>
-                ) : null}
-                <Icon name={expanded.has(v.verse) ? 'expand_less' : 'expand_more'} size={Math.max(12, Math.round(fontSize * 0.6))} color={theme.muted} />
-              </Pressable>
-              <View style={styles.tapText}>
-                <VerseText
-                  verse={v}
-                  fontSize={fontSize}
-                  onWord={showingWords ? undefined : handleWord}
-                  onLongPress={() => openActions(v)}
-                  hasNote={bookmarkKey(v) in userNotes}
-                  onNotePress={() => openNote(v)}
-                  showNumber={false}
-                  notes={notes.get(v.verse)}
-                  onNote={(n) => setNote({ verse: v, note: n })}
-                  underline={underlined}
-                  marks={verseMarks.get(v.verse)}
-                  selectionTranslation={translation}
-                />
-              </View>
-            </View>
-          ) : (
-            <VerseText
-              verse={v}
-              fontSize={fontSize}
-              onWord={showingWords ? undefined : handleWord}
-              onLongPress={() => openActions(v)}
-              hasNote={bookmarkKey(v) in userNotes}
-              onNotePress={() => openNote(v)}
-              // The verse number opens the verse's actions.
-              onNumberPress={() => openActions(v)}
-              numberLabel={t('verseActions', { n: v.verse })}
-              notes={notes.get(v.verse)}
-              onNote={(n) => setNote({ verse: v, note: n })}
-              underline={underlined}
-              marks={verseMarks.get(v.verse)}
-              selectionTranslation={translation}
-            />
-          )}
-          {words && words.length > 0 ? (
-            <InterlinearVerse
-              words={words}
-              hebrew={v.book <= 39}
-              fontSize={fontSize}
-              onWord={handleWord}
-              showTranslit={showTranslit}
-              hideCantillation={hideCantillation}
-            />
-          ) : null}
-        </View>
+        <ReaderVerse
+          verse={v}
+          fontSize={fontSize}
+          lineHeight={Math.round(fontSize * translationInfo(translation).lineHeight)}
+          theme={theme}
+          translation={translation}
+          interlinear={interlinear}
+          tapMode={interlinear && interlinearMode === 'tap'}
+          expanded={isExpanded}
+          words={showOriginal ? originalWords?.get(v.verse) : undefined}
+          flashing={flashing}
+          marked={marked}
+          markColor={mark ? theme.marks[mark] : undefined}
+          hasNote={bookmarkKey(v) in userNotes}
+          notes={notes.get(v.verse)}
+          underlineWords={underlineWords}
+          marks={verseMarks.get(v.verse)}
+          showTranslit={showTranslit}
+          hideCantillation={hideCantillation}
+          numberLabel={t('verseActions', { n: v.verse })}
+          tapLabel={`${v.verse}, ${t('tapVerseNumber', { lang: originalLanguage(v) })}`}
+          onWord={onRowWord}
+          actions={rowActions}
+        />
       );
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [theme, fontSize, handleWord, underlineWords, flash, interlinear, interlinearMode, expanded, originalWords, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, toggleExpanded, translation, t, scriptFont, verseMarks, marking, markTool, selection, registerWord],
+    [theme, fontSize, onRowWord, underlineWords, flash, interlinear, interlinearMode, expanded, originalWords, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, translation, t, scriptFont, verseMarks, marking, markTool, selection, registerWord],
   );
+
+  // The list's own props stay the same objects between renders, so a change elsewhere on
+  // the screen (the tab bar, a toast, a sheet) does not redraw the rows.
+  const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => onListScroll(e.nativeEvent.contentOffset.y), [onListScroll]);
+  const onListLayout = useCallback((e: LayoutChangeEvent) => {
+    listHeight.current = e.nativeEvent.layout.height;
+  }, []);
+  const onContentSizeChange = useCallback((_w: number, h: number) => {
+    contentHeight.current = h;
+  }, []);
+  const listHeader = useMemo(
+    () => (
+      <>
+        {tipSeen ? null : (
+          <View style={[styles.tip, { backgroundColor: theme.accentSoft, borderColor: theme.border }]}>
+            <Text style={[styles.tipText, { color: theme.text }]}>{translationInfo(translation).tagged ? t('tip') : t('tipNoTags')}</Text>
+            <Pressable onPress={() => update({ tipSeen: true })} hitSlop={8} accessibilityRole="button">
+              <Text style={[styles.tipDismiss, { color: theme.accent }]}>{t('gotIt')}</Text>
+            </Pressable>
+          </View>
+        )}
+        {!marking && interlinear && interlinearMode === 'tap' ? (
+          <Text style={[styles.modeHint, { color: theme.muted }]}>{t('tapVerseNumber', { lang: book?.testament === 'OT' ? t('hebrew') : t('greek') })}</Text>
+        ) : null}
+      </>
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [tipSeen, theme, translation, t, update, marking, interlinear, interlinearMode, book?.testament],
+  );
+  const onScrollToIndexFailed = useCallback((info: { index: number; averageItemLength: number }) => {
+    // The row is not measured yet: get near it, then retry with the same placement.
+    const pending = pendingScroll.current;
+    if (!pending || pending.index !== info.index) return;
+    listRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: false });
+    if (retryTimer.current) clearTimeout(retryTimer.current);
+    const forChapter = shownKey.current;
+    retryTimer.current = setTimeout(() => scrollToRow(pending, forChapter), 120);
+  }, [scrollToRow]);
 
   const title = useMemo(() => `${bookName(books, position.book, translation)} ${position.chapter}`, [books, position, translation]);
   // With the tab bar, it keeps the space for the phone's navigation bar.
@@ -1043,45 +1090,20 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         <FlatList
           ref={listRef}
           data={items}
-          keyExtractor={(it) => it.key}
+          keyExtractor={itemKey}
           renderItem={renderItem}
           contentContainerStyle={styles.list}
           scrollEnabled={!dragging}
-          onScroll={(e) => onListScroll(e.nativeEvent.contentOffset.y)}
-          onLayout={(e) => {
-            listHeight.current = e.nativeEvent.layout.height;
-          }}
+          onScroll={onScroll}
+          onLayout={onListLayout}
           scrollEventThrottle={16}
-          onContentSizeChange={(_w, h) => {
-            contentHeight.current = h;
-          }}
+          onContentSizeChange={onContentSizeChange}
           initialNumToRender={20}
           viewabilityConfig={viewability}
           onViewableItemsChanged={onViewableItemsChanged}
-          ListHeaderComponent={
-            <>
-              {tipSeen ? null : (
-                <View style={[styles.tip, { backgroundColor: theme.accentSoft, borderColor: theme.border }]}>
-                  <Text style={[styles.tipText, { color: theme.text }]}>{translationInfo(translation).tagged ? t('tip') : t('tipNoTags')}</Text>
-                  <Pressable onPress={() => update({ tipSeen: true })} hitSlop={8} accessibilityRole="button">
-                    <Text style={[styles.tipDismiss, { color: theme.accent }]}>{t('gotIt')}</Text>
-                  </Pressable>
-                </View>
-              )}
-              {!marking && interlinear && interlinearMode === 'tap' ? (
-                <Text style={[styles.modeHint, { color: theme.muted }]}>{t('tapVerseNumber', { lang: book?.testament === 'OT' ? t('hebrew') : t('greek') })}</Text>
-              ) : null}
-            </>
-          }
-          onScrollToIndexFailed={(info) => {
-            // The row is not measured yet: get near it, then retry with the same placement.
-            const pending = pendingScroll.current;
-            if (!pending || pending.index !== info.index) return;
-            listRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: false });
-            if (retryTimer.current) clearTimeout(retryTimer.current);
-            retryTimer.current = setTimeout(() => listRef.current?.scrollToIndex({ ...pending, animated: false }), 120);
-          }}
-          ListFooterComponent={<View style={{ height: 24 }} />}
+          ListHeaderComponent={listHeader}
+          onScrollToIndexFailed={onScrollToIndexFailed}
+          ListFooterComponent={LIST_FOOTER}
         />
       )}
         </View>
@@ -1384,6 +1406,211 @@ const MIN_TITLE_SCALE = 0.6;
 const ARROW_WIDTH = 28;
 
 const NO_MARKS: [number, number, HighlightColor][] = [];
+const itemKey = (it: Item) => it.key;
+const LIST_FOOTER = <View style={{ height: 24 }} />;
+
+function sameRanges(a: [number, number, HighlightColor][], b: [number, number, HighlightColor][]): boolean {
+  return a.length === b.length && a.every((r, i) => r[0] === b[i][0] && r[1] === b[i][1] && r[2] === b[i][2]);
+}
+
+/** What a verse row calls back into the reader. */
+interface RowActions {
+  word: (pick: WordPick) => void;
+  actions: (v: VerseRow) => void;
+  note: (v: VerseRow, n: Note) => void;
+  userNote: (v: VerseRow) => void;
+  toggle: (verse: number) => void;
+}
+
+/** One verse's callbacks, the same while the verse is. */
+function useVerseCallbacks(v: VerseRow, actions: React.RefObject<RowActions>) {
+  return useMemo(
+    () => ({
+      openActions: () => actions.current.actions(v),
+      openNote: (n: Note) => actions.current.note(v, n),
+      openUserNote: () => actions.current.userNote(v),
+      toggle: () => actions.current.toggle(v.verse),
+    }),
+    [v, actions],
+  );
+}
+
+/** A verse inside a paragraph. */
+const ParaVerse = memo(function ParaVerse({
+  verse: v,
+  fontSize,
+  onWord,
+  actions,
+  numberLabel,
+  notes,
+  underline,
+  flash,
+  bookmarked,
+  highlightColor,
+  marks,
+  hasNote,
+  translation,
+}: {
+  verse: VerseRow;
+  fontSize: number;
+  onWord: (pick: WordPick) => void;
+  actions: React.RefObject<RowActions>;
+  numberLabel: string;
+  notes: Note[] | undefined;
+  underline: boolean;
+  flash: boolean;
+  bookmarked: boolean;
+  highlightColor: string | undefined;
+  marks: [number, number, HighlightColor][] | undefined;
+  hasNote: boolean;
+  translation: TranslationId;
+}) {
+  const cb = useVerseCallbacks(v, actions);
+  return (
+    <VerseText
+      verse={v}
+      fontSize={fontSize}
+      onWord={onWord}
+      onLongPress={cb.openActions}
+      onNumberPress={cb.openActions}
+      numberLabel={numberLabel}
+      notes={notes}
+      onNote={cb.openNote}
+      underline={underline}
+      flash={flash}
+      bookmarked={bookmarked}
+      highlightColor={highlightColor}
+      marks={marks}
+      hasNote={hasNote}
+      onNotePress={cb.openUserNote}
+      selectionTranslation={translation}
+    />
+  );
+});
+
+/** A verse on its own row, with its Hebrew or Greek words when they are shown. */
+const ReaderVerse = memo(function ReaderVerse({
+  verse: v,
+  fontSize,
+  lineHeight,
+  theme,
+  translation,
+  interlinear,
+  tapMode,
+  expanded,
+  words,
+  flashing,
+  marked,
+  markColor,
+  hasNote,
+  notes,
+  underlineWords,
+  marks,
+  showTranslit,
+  hideCantillation,
+  numberLabel,
+  tapLabel,
+  onWord,
+  actions,
+}: {
+  verse: VerseRow;
+  fontSize: number;
+  lineHeight: number;
+  theme: Theme;
+  translation: TranslationId;
+  interlinear: boolean;
+  tapMode: boolean;
+  expanded: boolean;
+  words: OriginalWord[] | undefined;
+  flashing: boolean;
+  marked: boolean;
+  markColor: string | undefined;
+  hasNote: boolean;
+  notes: Note[] | undefined;
+  underlineWords: boolean;
+  marks: [number, number, HighlightColor][] | undefined;
+  showTranslit: boolean;
+  hideCantillation: boolean;
+  numberLabel: string;
+  tapLabel: string;
+  onWord: (pick: WordPick) => void;
+  actions: React.RefObject<RowActions>;
+}) {
+  const cb = useVerseCallbacks(v, actions);
+  // While a verse shows its Hebrew or Greek words, those are what is tapped: the verse's
+  // own words do not open the word sheet. With the Hebrew/Greek words on, no verse
+  // underlines its words.
+  const showingWords = !!words && words.length > 0;
+  const underlined = underlineWords && !interlinear;
+  return (
+    <View
+      style={[
+        styles.verse,
+        interlinear && [styles.verseInterlinear, { borderBottomColor: theme.border }],
+        marked && [styles.verseBookmarked, { borderLeftColor: theme.accent }],
+        markColor ? { backgroundColor: markColor } : null,
+        flashing && { backgroundColor: theme.highlight },
+      ]}
+    >
+      {tapMode ? (
+        // In tap mode the number stands in a column the height of the verse, and the
+        // whole column shows or hides the verse's words: an easy target at any text size.
+        <View style={styles.tapRow}>
+          <Pressable
+            onPress={cb.toggle}
+            onLongPress={cb.openActions}
+            android_ripple={{ color: theme.accentSoft }}
+            accessibilityRole="button"
+            accessibilityLabel={tapLabel}
+            accessibilityState={{ expanded }}
+            style={[styles.tapColumn, { width: Math.max(40, Math.round(fontSize * 2)) }]}
+          >
+            {v.verse > 0 ? (
+              <Text style={[styles.tapNumber, { color: theme.accent, fontSize: Math.max(14, fontSize - 4), lineHeight }]}>{v.verse}</Text>
+            ) : null}
+            <Icon name={expanded ? 'expand_less' : 'expand_more'} size={Math.max(12, Math.round(fontSize * 0.6))} color={theme.muted} />
+          </Pressable>
+          <View style={styles.tapText}>
+            <VerseText
+              verse={v}
+              fontSize={fontSize}
+              onWord={showingWords ? undefined : onWord}
+              onLongPress={cb.openActions}
+              hasNote={hasNote}
+              onNotePress={cb.openUserNote}
+              showNumber={false}
+              notes={notes}
+              onNote={cb.openNote}
+              underline={underlined}
+              marks={marks}
+              selectionTranslation={translation}
+            />
+          </View>
+        </View>
+      ) : (
+        <VerseText
+          verse={v}
+          fontSize={fontSize}
+          onWord={showingWords ? undefined : onWord}
+          onLongPress={cb.openActions}
+          hasNote={hasNote}
+          onNotePress={cb.openUserNote}
+          // The verse number opens the verse's actions.
+          onNumberPress={cb.openActions}
+          numberLabel={numberLabel}
+          notes={notes}
+          onNote={cb.openNote}
+          underline={underlined}
+          marks={marks}
+          selectionTranslation={translation}
+        />
+      )}
+      {words && words.length > 0 ? (
+        <InterlinearVerse words={words} hebrew={v.book <= 39} fontSize={fontSize} onWord={onWord} showTranslit={showTranslit} hideCantillation={hideCantillation} />
+      ) : null}
+    </View>
+  );
+});
 
 /** One of the four round buttons at the top of the verse sheet: an icon over a short label. */
 function ActionButton({ icon, label, onPress, accessibilityLabel }: { icon: IconName; label: string; onPress: () => void; accessibilityLabel?: string }) {

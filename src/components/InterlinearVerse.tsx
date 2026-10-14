@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { HEBREW_FONT } from '../fonts';
 import { stripCantillation } from '../text';
@@ -26,7 +26,7 @@ function objectMarkerGloss(gloss: string): string {
 }
 
 /** The Hebrew or Greek words of one verse as a wrapping row of cells. */
-export function InterlinearVerse({ words, hebrew, fontSize, onWord, showTranslit = true, hideCantillation = false }: Props) {
+export const InterlinearVerse = memo(function InterlinearVerse({ words, hebrew, fontSize, onWord, showTranslit = true, hideCantillation = false }: Props) {
   const theme = useTheme();
   const small = Math.max(11, Math.round(fontSize * 0.68));
   return (
@@ -58,7 +58,7 @@ export function InterlinearVerse({ words, hebrew, fontSize, onWord, showTranslit
       })}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start', marginTop: 6, marginBottom: 4 },

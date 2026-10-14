@@ -53,16 +53,20 @@ export function loadEntry<T>(key: string, parse: (raw: string) => T, fallback: T
   }
 }
 
-/** Refresh "<key>.bak" from a good entry, at most once a day. */
+/**
+ * Refresh "<key>.bak" from a good entry, at most once a day. Written in the background so
+ * it does not hold up the first page; the time is recorded only once the copy is in.
+ */
 function keepBackup(key: string, raw: string): void {
   try {
     const at = Number(Storage.getItemSync(`${key}.bak.time`) ?? 0);
     if (Date.now() - at < DAY) return;
-    Storage.setItemSync(`${key}.bak`, raw);
-    Storage.setItemSync(`${key}.bak.time`, String(Date.now()));
   } catch {
-    // A missed backup is not worth stopping for.
+    return;
   }
+  Storage.setItem(`${key}.bak`, raw)
+    .then(() => Storage.setItem(`${key}.bak.time`, String(Date.now())))
+    .catch(() => undefined); // A missed backup is not worth stopping for.
 }
 
 /** Write an entry now. Returns false when the write failed. */
@@ -153,6 +157,12 @@ export function useAutosave<T>(key: string, value: T, writable: boolean, delay: 
     });
     return () => sub.remove();
   }, [saveNow]);
+
+  // A change still waiting when the provider goes (the error screen's "Try again"
+  // remounts everything) is written before it is lost.
+  const saveNowRef = useRef(saveNow);
+  saveNowRef.current = saveNow;
+  useEffect(() => () => saveNowRef.current(), []);
 
   const saveValue = useCallback(
     (next: T) => {

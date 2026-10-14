@@ -9,7 +9,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import { DATABASE_ASSET, DATABASE_DIRECTORY, DATABASE_NAME, databaseCopyComplete, removeIncompleteCopy, removeStaleDatabases } from './src/db';
 import { navigationRef } from './src/navigation';
-import { initPlace, moveMainReader, selectBook, selectLastChapters, selectPosition, usePlace } from './src/place';
+import { getPlace, initPlace, moveMainReader, selectBook, selectLastChapters, selectPosition, usePlace } from './src/place';
 import { setSelection } from './src/selection';
 import type { RootStackParamList } from './src/navigation';
 import { translate, useT } from './src/i18n';
@@ -26,7 +26,7 @@ import { SavedScreen } from './src/screens/SavedScreen';
 import { BooksScreen } from './src/screens/BooksScreen';
 import { ChaptersScreen } from './src/screens/ChaptersScreen';
 import { ConcordanceScreen } from './src/screens/ConcordanceScreen';
-import { ReaderScreen } from './src/screens/ReaderScreen';
+import { ReaderScreen, preloadChapter } from './src/screens/ReaderScreen';
 import { SearchScreen } from './src/screens/SearchScreen';
 import { LicencesScreen } from './src/screens/LicencesScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
@@ -67,6 +67,9 @@ function Database() {
   const firstCopy = useMemo(() => {
     if (databaseCopyComplete()) return false;
     removeIncompleteCopy();
+    // A copy from an earlier version is never opened again; removing it first leaves room
+    // for the new one on a nearly full phone.
+    removeStaleDatabases(false);
     copiedThisLaunch = true;
     return true;
   }, [attempt]);
@@ -155,18 +158,19 @@ function Failure({
  */
 function EditionGate() {
   const db = useSQLiteContext();
-  const [edition, setEdition] = useState<Edition | null>(null);
-  const [books, setBooks] = useState<Book[] | null>(null);
+  const [ready, setReady] = useState<{ edition: Edition; books: Book[] | null } | null>(null);
   useEffect(() => {
-    // The book list is read in the same round as the edition; if it fails, Shell retries.
-    getBooks(db)
-      .then(setBooks)
-      .catch(() => undefined);
-    getMeta(db)
-      .then((meta) => setEdition(isEditionId(meta.edition) ? EDITIONS[meta.edition] : CONFIGURED_EDITION))
-      .catch(() => setEdition(CONFIGURED_EDITION));
+    // The book list is read in the same round as the edition, and both are waited for, so
+    // the shell does not read the books a second time; if the list fails, Shell retries.
+    Promise.all([
+      getMeta(db)
+        .then((meta) => (isEditionId(meta.edition) ? EDITIONS[meta.edition] : CONFIGURED_EDITION))
+        .catch(() => CONFIGURED_EDITION),
+      getBooks(db).catch(() => null),
+    ]).then(([edition, books]) => setReady({ edition, books }));
   }, [db]);
-  if (!edition) return <Loading message={translate(CONFIGURED_EDITION.languages[0], 'loading')} />;
+  if (!ready) return <Loading message={translate(CONFIGURED_EDITION.languages[0], 'loading')} />;
+  const { edition, books } = ready;
   initPlace(edition);
   return (
     <EditionContext.Provider value={edition}>
@@ -219,6 +223,12 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
 
   // The current database is open by now, so older copies can go.
   useEffect(() => removeStaleDatabases(!copiedThisLaunch), []);
+
+  // Start reading the chapter the reader opens at while the screens are being built.
+  useState(() => {
+    const at = getPlace().position;
+    preloadChapter(db, settings.translation, at.book, at.chapter);
+  });
 
 
   const onWord = useCallback((p: WordPick) => setPicks([p]), []);

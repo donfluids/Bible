@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useSettings } from './settings';
+import { useDisplaySettings } from './settings';
 import type { Language } from './edition';
 
 /**
@@ -443,8 +443,9 @@ export function translate(language: Language, key: StringKey, params?: Record<st
 
 /** Returns t(key, params) for the interface language in settings. */
 export function useT(): (key: StringKey, params?: Record<string, string | number>) => string {
-  const { settings } = useSettings();
-  const lang = settings.language;
+  const display = useDisplaySettings();
+  if (!display) throw new Error('useT must be used inside SettingsProvider');
+  const lang = display.language;
   return useCallback((key: StringKey, params?: Record<string, string | number>) => translate(lang, key, params), [lang]);
 }
 

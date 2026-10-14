@@ -33,8 +33,32 @@ const escapeLike = (s: string) => s.replace(/[\\%_]/g, (c) => '\\' + c);
 export interface MalayalamPattern {
   /** A LIKE pattern (escape character \) that every match satisfies; it finds candidates. */
   like: string;
+  /**
+   * Tighter LIKE patterns, one of which every match satisfies: each place where the text
+   * may differ is spelled out both ways instead of left open. Empty when there are too many
+   * combinations or nothing to gain; then `like` alone is used.
+   */
+  alternatives: string[];
   /** The exact match, as a regular expression source. */
   source: string;
+}
+
+/** At most this many alternative patterns; past it, the open pattern alone is used. */
+const MAX_ALTERNATIVES = 8;
+
+/** Joins runs of the LIKE wildcard %, leaving an escaped \% alone. */
+function collapseWildcards(pattern: string): string {
+  let out = '';
+  for (let i = 0; i < pattern.length; i++) {
+    const c = pattern[i];
+    if (c === '\\') {
+      out += c + (pattern[i + 1] ?? '');
+      i++;
+    } else if (c !== '%' || !out.endsWith('%') || out.endsWith('\\%')) {
+      out += c;
+    }
+  }
+  return out;
 }
 
 /** The pattern for a query, or null when the query has no Malayalam letters. */
@@ -44,6 +68,14 @@ export function malayalamPattern(query: string): MalayalamPattern | null {
   const chars = [...q];
   let re = '';
   let like = '%';
+  let alternatives: string[] | null = ['%'];
+  // Each alternative goes on with each of the given continuations.
+  const branch = (options: string[]) => {
+    if (!alternatives) return;
+    const next: string[] = [];
+    for (const a of alternatives) for (const o of options) next.push(a + o);
+    alternatives = next.length > MAX_ALTERNATIVES ? null : next;
+  };
   // A place where the text can differ from the query becomes % in the LIKE pattern.
   const loose = () => {
     if (!like.endsWith('%')) like += '%';
@@ -55,26 +87,34 @@ export function malayalamPattern(query: string): MalayalamPattern | null {
     if (CHILLU_BASE[c]) {
       re += `(?:${c}|${CHILLU_BASE[c]}${VIRAMA}(?!${notChillu(CHILLU_BASE[c])}))${ZWNJ}?`;
       loose();
+      branch([`${c}%`, `${CHILLU_BASE[c]}${VIRAMA}%`]);
     } else if (BASE_CHILLU[c] && next === VIRAMA && chillu(c, chars[i + 2])) {
       const end = !isMalayalamLetter(chars[i + 2]);
       re += `(?:${c}${end ? `[${VIRAMA}${U_SIGN}]` : VIRAMA}${ZWNJ}?|${BASE_CHILLU[c]})`;
       loose();
+      branch([`${c}${end ? '_' : VIRAMA}%`, `${BASE_CHILLU[c]}%`]);
       i++;
     } else if ((c === VIRAMA || c === U_SIGN) && wordEnd) {
       re += `[${VIRAMA}${U_SIGN}]`;
       like += '_';
+      branch(['_']);
     } else if (c === VIRAMA) {
       re += `${VIRAMA}${ZWNJ}?`;
       like += VIRAMA;
       loose();
+      branch([`${VIRAMA}%`]);
     } else if (c === '\u0d4c' || c === '\u0d57') {
       re += '(?:\u0d4c|\u0d46?\u0d57)';
       loose();
+      branch(['\u0d4c%', '%\u0d57%']);
     } else {
       re += escapeRegex(c);
       like += escapeLike(c);
+      branch([escapeLike(c)]);
     }
   }
   loose();
-  return { like, source: re };
+  const alts: string[] = alternatives ?? [];
+  // One alternative is no tighter than the open pattern.
+  return { like, alternatives: alts.length > 1 ? alts.map((a) => collapseWildcards(a + '%')) : [], source: re };
 }

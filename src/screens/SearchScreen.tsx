@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -62,7 +62,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
     setFailed(false);
     const timer = setTimeout(async () => {
       try {
-        const [rows, hits] = await Promise.all([searchText(db, translation, q, LIMIT), searchLexicon(db, q, 8)]);
+        const [rows, hits] = await Promise.all([searchText(db, translation, q, LIMIT, () => latest.current !== id), searchLexicon(db, q, 8)]);
         if (latest.current !== id) return;
         setResults(rows);
         setEntries(hits);
@@ -79,6 +79,13 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
   }, [db, translation, query, strongsId, goTo?.book, goTo?.chapter, goTo?.verse]);
 
   const listFont = Math.min(settings.fontSize, 18);
+  // Stable list props: the rows redraw for a new query (its words are highlighted), not
+  // when the spinner or the dictionary matches change.
+  const renderResult = useCallback(
+    ({ item }: { item: VerseRow }) => <VerseListItem verse={item} books={books} fontSize={listFont} onOpen={onOpenRef} onWord={onWord} highlightText={query} />,
+    [books, listFont, onOpenRef, onWord, query],
+  );
+  const listStyle = useMemo(() => [styles.list, { paddingBottom: insets.bottom + 24 }], [insets.bottom]);
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
@@ -189,17 +196,18 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
       ) : null}
       <FlatList
         data={results ?? []}
-        keyExtractor={(v) => `${v.book}:${v.chapter}:${v.verse}`}
+        keyExtractor={verseKey}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
-        renderItem={({ item }) => (
-          <VerseListItem verse={item} books={books} fontSize={listFont} onOpen={onOpenRef} onWord={onWord} highlightText={query} />
-        )}
-        ListFooterComponent={<View style={{ height: 40 }} />}
+        contentContainerStyle={listStyle}
+        renderItem={renderResult}
+        ListFooterComponent={LIST_FOOTER}
       />
     </View>
   );
 }
+
+const verseKey = (v: VerseRow) => `${v.book}:${v.chapter}:${v.verse}`;
+const LIST_FOOTER = <View style={{ height: 40 }} />;
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },

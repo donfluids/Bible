@@ -102,11 +102,13 @@ export async function getStrongs(db: SQLiteDatabase, id: string): Promise<Strong
  */
 export async function getRelated(db: SQLiteDatabase, entry: StrongsEntry, limit = 6): Promise<RelatedWord[]> {
   const parents = [...new Set((entry.derivation ?? '').match(/\b[HG]\d{1,4}\b/g) ?? [])].filter((id) => id !== entry.id);
-  const out: RelatedWord[] = [];
-  for (const id of parents.slice(0, limit)) {
-    const row = await db.getFirstAsync<RelatedWord>('SELECT id, lemma, gloss FROM strongs WHERE id = ?', id);
-    if (row) out.push(row);
-  }
+  const wanted = parents.slice(0, limit);
+  // One query for all of them, kept in the order the derivation names them.
+  const rows = wanted.length
+    ? await db.getAllAsync<RelatedWord>(`SELECT id, lemma, gloss FROM strongs WHERE id IN (${wanted.map(() => '?').join(', ')})`, ...wanted)
+    : [];
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  const out: RelatedWord[] = wanted.map((id) => byId.get(id)).filter((r): r is RelatedWord => !!r);
   if (out.length < limit) {
     // "H430 (" so that H4300 does not match; the derivations always name a word this way.
     const children = await db.getAllAsync<RelatedWord>(
@@ -183,8 +185,17 @@ export async function inTranslation(db: SQLiteDatabase, translation: Translation
   const seen = new Set<string>();
   for (const ref of refs) {
     const key = `${ref.book}:${ref.chapter}:${ref.verse}`;
+    const moved = fromKjv.get(key);
+    if (!moved) {
+      // Most verses: numbered alike, nothing to merge or sort.
+      if (!mapped.has(key) && !seen.has(key)) {
+        seen.add(key);
+        out.push(ref);
+      }
+      continue;
+    }
     const same = mapped.has(key) ? [] : [ref];
-    const all = [...same, ...(fromKjv.get(key) ?? [])].sort((a, b) => a.book - b.book || a.chapter - b.chapter || a.verse - b.verse);
+    const all = [...same, ...moved].sort((a, b) => a.book - b.book || a.chapter - b.chapter || a.verse - b.verse);
     for (const r of all) {
       const k = `${r.book}:${r.chapter}:${r.verse}`;
       if (seen.has(k)) continue;
@@ -246,11 +257,13 @@ export async function searchText(
   translation: TranslationId,
   query: string,
   limit: number,
+  /** True once the result is no longer wanted (more has been typed); a long search then stops early. */
+  stale?: () => boolean,
 ): Promise<VerseRow[]> {
   const cleaned = query.trim().replace(/\s+/g, ' ');
   if (!cleaned) return [];
   const malayalam = malayalamPattern(cleaned);
-  if (malayalam) return searchMalayalam(db, translation, malayalam, limit);
+  if (malayalam) return searchMalayalam(db, translation, malayalam, limit, stale);
   const pattern = '%' + cleaned.replace(/[\\%_]/g, (c) => '\\' + c).replace(/'/g, '_') + '%';
   return db.getAllAsync<VerseRow>(
     "SELECT book, chapter, verse, text, tags, omitted, para FROM verses WHERE translation = ? AND omitted = 0 AND text LIKE ? ESCAPE '\\' ORDER BY book, chapter, verse LIMIT ?",
@@ -264,16 +277,27 @@ export async function searchText(
  * Malayalam search: LIKE finds the verses that could match, a page at a time in book
  * order, and the exact pattern keeps the ones that do (src/malayalamSearch.ts).
  */
-async function searchMalayalam(db: SQLiteDatabase, translation: TranslationId, pattern: MalayalamPattern, limit: number): Promise<VerseRow[]> {
+async function searchMalayalam(
+  db: SQLiteDatabase,
+  translation: TranslationId,
+  pattern: MalayalamPattern,
+  limit: number,
+  stale?: () => boolean,
+): Promise<VerseRow[]> {
   const exact = new RegExp(pattern.source);
   const out: VerseRow[] = [];
   const PAGE = 500;
   let after = [0, 0, 0];
+  // The spelled-out alternatives keep most non-matching verses in the database (ശൗൽ reads
+  // a few hundred rows instead of 15,000); the exact match below decides as before.
+  const tighter = pattern.alternatives.length > 0 ? ` AND (${pattern.alternatives.map(() => "text LIKE ? ESCAPE '\\'").join(' OR ')})` : '';
   for (;;) {
+    if (stale?.()) return out;
     const rows = await db.getAllAsync<VerseRow>(
-      "SELECT book, chapter, verse, text, tags, omitted, para FROM verses WHERE translation = ? AND omitted = 0 AND text LIKE ? ESCAPE '\\' AND (book, chapter, verse) > (?, ?, ?) ORDER BY book, chapter, verse LIMIT ?",
+      `SELECT book, chapter, verse, text, tags, omitted, para FROM verses WHERE translation = ? AND omitted = 0 AND text LIKE ? ESCAPE '\\'${tighter} AND (book, chapter, verse) > (?, ?, ?) ORDER BY book, chapter, verse LIMIT ?`,
       translation,
       pattern.like,
+      ...pattern.alternatives,
       ...after,
       PAGE,
     );
@@ -378,8 +402,31 @@ export async function mapRef(db: SQLiteDatabase, from: TranslationId, to: Transl
   return all.find((r) => r.book === ref.book && r.chapter === ref.chapter) ?? all[0] ?? null;
 }
 
+// Decoding a chapter's words takes a few to tens of milliseconds on a phone, and the same
+// chapter is wanted again and again (each word tapped, each page turn back), so the last
+// few decoded chapters are kept. The maps are shared: callers only read them.
+const decodedWords = new Map<string, Promise<Map<number, OriginalWord[]>>>();
+const WORDS_KEPT = 12;
+
 /** Words of one chapter, keyed by KJV verse number. */
-async function chapterWords(db: SQLiteDatabase, book: number, chapter: number): Promise<Map<number, OriginalWord[]>> {
+function chapterWords(db: SQLiteDatabase, book: number, chapter: number): Promise<Map<number, OriginalWord[]>> {
+  const key = `${book}:${chapter}`;
+  const hit = decodedWords.get(key);
+  if (hit) {
+    decodedWords.delete(key);
+    decodedWords.set(key, hit);
+    return hit;
+  }
+  const load = decodeChapterWords(db, book, chapter);
+  decodedWords.set(key, load);
+  load.catch(() => {
+    if (decodedWords.get(key) === load) decodedWords.delete(key);
+  });
+  while (decodedWords.size > WORDS_KEPT) decodedWords.delete(decodedWords.keys().next().value as string);
+  return load;
+}
+
+async function decodeChapterWords(db: SQLiteDatabase, book: number, chapter: number): Promise<Map<number, OriginalWord[]>> {
   const row = await db.getFirstAsync<{ data: Uint8Array | ArrayBuffer }>(
     'SELECT data FROM interlinear WHERE book = ? AND chapter = ?',
     book,
@@ -412,16 +459,18 @@ export function unpackWords(packed: string): OriginalWord[] {
 export async function searchLexicon(db: SQLiteDatabase, query: string, limit: number): Promise<LexiconHit[]> {
   const q = plainText(query.replace(/\s+/g, ' '));
   if (q.length < 2) return [];
+  // The dictionary has no Malayalam in it, so a Malayalam query cannot match; it is not run.
+  if (/[\u0d00-\u0d7f]/.test(q)) return [];
   const escaped = q.replace(/[\\%_]/g, (c) => '\\' + c);
   const prefix = escaped + '%';
   const word = '%' + escaped + '%';
   return db.getAllAsync<LexiconHit>(
     `SELECT id, lemma, translit, pron, derivation, definition, kjv_usage,
             CASE WHEN translit_plain LIKE ? ESCAPE '\\' OR lemma_plain LIKE ? ESCAPE '\\' THEN 0
-                 WHEN lower(kjv_usage) LIKE ? ESCAPE '\\' THEN 1 ELSE 2 END AS rank
+                 WHEN kjv_usage LIKE ? ESCAPE '\\' THEN 1 ELSE 2 END AS rank
      FROM strongs
      WHERE translit_plain LIKE ? ESCAPE '\\' OR lemma_plain LIKE ? ESCAPE '\\'
-        OR lower(kjv_usage) LIKE ? ESCAPE '\\' OR lower(definition) LIKE ? ESCAPE '\\'
+        OR kjv_usage LIKE ? ESCAPE '\\' OR definition LIKE ? ESCAPE '\\'
      ORDER BY rank, length(translit_plain), id
      LIMIT ?`,
     prefix,

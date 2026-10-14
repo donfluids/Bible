@@ -115,12 +115,33 @@ export function SettingsProvider({ edition, children }: { edition: Edition; chil
   // Saved a moment after a change, and at once when the app is left.
   useAutosave(`settings.v1.${edition.id}`, settings, loaded.writable, 300, () => tellSaveFailed(language.current));
   const value = useMemo(() => ({ settings, update }), [settings, update]);
-  return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
+  const display = useMemo(() => ({ theme: settings.theme, serif: settings.serif, language: settings.language }), [settings.theme, settings.serif, settings.language]);
+  return (
+    <SettingsContext.Provider value={value}>
+      <DisplayContext.Provider value={display}>{children}</DisplayContext.Provider>
+    </SettingsContext.Provider>
+  );
 }
 
 /** Settings when inside the provider, null otherwise (used by the loading screen). */
 export function useOptionalSettings(): Settings | null {
   return useContext(SettingsContext)?.settings ?? null;
+}
+
+/**
+ * The few settings that decide how text looks. Verses, the theme and the interface
+ * strings read these instead of the whole settings, so a bookmark, a highlight or a
+ * marker stroke does not redraw every verse on screen. Null outside the provider.
+ */
+export interface DisplaySettings {
+  theme: Settings['theme'];
+  serif: boolean;
+  language: Language;
+}
+const DisplayContext = createContext<DisplaySettings | null>(null);
+
+export function useDisplaySettings(): DisplaySettings | null {
+  return useContext(DisplayContext);
 }
 
 export function useSettings(): SettingsContextValue {

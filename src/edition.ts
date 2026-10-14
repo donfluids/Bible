@@ -32,6 +32,9 @@ const configured = (Constants.expoConfig?.extra as { edition?: string } | undefi
  */
 export const CONFIGURED_EDITION: Edition = EDITIONS[isEditionId(configured) ? configured : 'en'];
 
+/** The edition named in the build configuration, if it names one. */
+export const CONFIGURED_EDITION_ID: EditionId | undefined = isEditionId(configured) ? configured : undefined;
+
 export const EditionContext = createContext<Edition>(CONFIGURED_EDITION);
 
 export function useEdition(): Edition {

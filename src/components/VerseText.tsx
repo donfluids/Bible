@@ -1,10 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { isMalayalam, scriptureFont } from '../fonts';
 import { useT } from '../i18n';
 import { useSelectedStart } from '../selection';
 import { ICON_FONT_FAMILY, iconChar } from './Icon';
-import { useSettings } from '../settings';
+import { useDisplaySettings } from '../settings';
 import { parseSegments } from '../text';
 import { malayalamPattern } from '../malayalamSearch';
 import { useTheme } from '../theme';
@@ -72,7 +72,8 @@ export function noteLetter(n: number): string {
   return String.fromCharCode(97 + (n % 26));
 }
 
-export function VerseText({
+/** One verse's text. Memoised: a list redraws only the verses whose props changed. */
+export const VerseText = memo(function VerseText({
   verse,
   fontSize,
   onWord,
@@ -96,15 +97,15 @@ export function VerseText({
 }: Props) {
   const theme = useTheme();
   const t = useT();
-  const { settings } = useSettings();
+  const serif = useDisplaySettings()?.serif ?? false;
   const segments = useMemo(() => parseSegments(verse), [verse]);
   const selectedStart = useSelectedStart(selectionTranslation, verse.book, verse.chapter, verse.verse);
   const ranges = useMemo(() => (highlightText ? matchRanges(verse.text, highlightText) : []), [verse.text, highlightText]);
   const isTitle = verse.verse === 0;
   // The verse's own script decides its face and spacing (Compare shows two at once).
   const ml = isMalayalam(verse.text);
-  const font = scriptureFont(ml, settings.serif) ?? theme.font;
-  const bold = ml ? { fontFamily: scriptureFont(true, settings.serif, true) } : { fontWeight: '700' as const };
+  const font = scriptureFont(ml, serif) ?? theme.font;
+  const bold = ml ? { fontFamily: scriptureFont(true, serif, true) } : { fontWeight: '700' as const };
   const lineHeight = Math.round(fontSize * translationInfo(ml ? 'MAL' : 'KJV').lineHeight);
   const small = Math.max(11, fontSize - 6);
 
@@ -217,7 +218,8 @@ export function VerseText({
       {segments.map((seg, i) => {
         const start = offset;
         offset += seg.text.length;
-        if (!seg.strongs) return <Text key={i}>{pieces(seg.text, start, i === 0)}</Text>;
+        // Plain text needs no element of its own; it takes the verse's style as before.
+        if (!seg.strongs) return <React.Fragment key={i}>{pieces(seg.text, start, i === 0)}</React.Fragment>;
         const strong = !!emphasize && (emphasize === seg.strongs || !!seg.choices?.includes(emphasize));
         return (
           <Text
@@ -243,7 +245,7 @@ export function VerseText({
       })}
     </Text>
   );
-}
+});
 
 const styles = StyleSheet.create({
   text: { fontFamily: undefined },

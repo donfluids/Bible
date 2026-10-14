@@ -1,6 +1,7 @@
 import { defaultDatabaseDirectory } from 'expo-sqlite';
 import { Directory, File, Paths } from 'expo-file-system';
 import DATABASE_SIZES from './dbSizes.json';
+import { CONFIGURED_EDITION_ID } from './edition';
 
 /**
  * Name of the on-device copy of the bundled database. The bundled file is copied
@@ -35,7 +36,11 @@ function copyFile(): File {
 export function databaseCopyComplete(): boolean {
   try {
     const file = copyFile();
-    return file.exists && Object.values(DATABASE_SIZES as Record<string, number>).includes(file.size ?? -1);
+    // This edition's size only: a copy cut short at exactly the other edition's size
+    // must not pass. A build that does not name its edition accepts either.
+    const sizes = DATABASE_SIZES as Record<string, number>;
+    const expected = CONFIGURED_EDITION_ID ? [sizes[CONFIGURED_EDITION_ID]] : Object.values(sizes);
+    return file.exists && expected.includes(file.size ?? -1);
   } catch {
     return false;
   }

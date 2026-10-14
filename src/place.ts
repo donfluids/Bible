@@ -87,8 +87,13 @@ function write(now = false): void {
     );
 }
 
+/** Writes a pending change at once (the app is being left). */
+export function savePlaceNow(): void {
+  if (timer) write(true);
+}
+
 AppState.addEventListener('change', (state) => {
-  if (state !== 'active' && timer) write(true);
+  if (state !== 'active') savePlaceNow();
 });
 
 export function getPlace(): Place {

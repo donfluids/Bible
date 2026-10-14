@@ -103,13 +103,15 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
   // Leaving the page keeps what was typed; a page left with nothing written on it is not kept.
   useEffect(
     () => () => {
-      flush();
+      // Written at once: if the whole app is being remounted after an error, the
+      // notebook's own state goes with it.
       const { page: p, draft: d, editing: e } = latest.current;
+      if (p && e && (d.title !== p.title || d.body !== p.body)) commit(p.id, d);
       const title = e ? d.title : p?.title ?? '';
       const body = e ? d.body : p?.body ?? '';
       if (p && !title.trim() && !body.trim()) remove(p.id);
     },
-    [flush, remove],
+    [commit, remove],
   );
 
   // Verse counts let "John 2024" stay a year and ranges run on across chapters. Links

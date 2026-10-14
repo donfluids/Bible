@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Platform, useColorScheme } from 'react-native';
 import { useEdition } from './edition';
 import type { EditionId } from './edition';
-import { useOptionalSettings } from './settings';
+import { useDisplaySettings } from './settings';
 import type { HighlightColor } from './types';
 
 export type ThemeName = 'light' | 'sepia' | 'dark';
@@ -131,7 +131,7 @@ export const SERIF_FONT = Platform.select({ ios: 'Georgia', android: 'serif', de
 
 export function useTheme(): Theme {
   const system = useColorScheme();
-  const settings = useOptionalSettings();
+  const settings = useDisplaySettings();
   const palette = PALETTES[useEdition().id];
   const choice = settings?.theme ?? 'system';
   const base = choice === 'system' ? (system === 'dark' ? palette.dark : palette.light) : palette[choice === 'sepia' ? 'sepia' : choice === 'dark' ? 'dark' : 'light'];

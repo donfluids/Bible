@@ -207,40 +207,42 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
     const strongs = pick.strongs;
     (async () => {
       const otherMalayalam = malayalamFirst && tagged !== 'MAL';
-      const [entry, count, original, renderings, malayalamOther, malayalamOtherCount, kjv, kjvCount, refs] = await Promise.all([
-        getStrongs(db, strongs),
-        getConcordanceCount(db, strongs, tagged),
-        getOriginalCount(db, strongs),
-        getRenderings(db, strongs, tagged),
-        otherMalayalam ? getRenderings(db, strongs, 'MAL') : Promise.resolve([] as Rendering[]),
-        otherMalayalam ? getConcordanceCount(db, strongs, 'MAL') : Promise.resolve(0),
-        withKjv ? getRenderings(db, strongs, 'KJV') : Promise.resolve([] as Rendering[]),
-        withKjv ? getConcordanceCount(db, strongs, 'KJV') : Promise.resolve(0),
-        getConcordance(db, strongs, tagged),
+      const at = pick.at;
+      const choices = pick.choices && pick.choices.length > 1 ? pick.choices : [];
+      // Everything that does not wait on another answer is asked for at once.
+      const [[entry, count, original, renderings, malayalamOther, malayalamOtherCount, kjv, kjvCount, refs], verseWords, partEntries] = await Promise.all([
+        Promise.all([
+          getStrongs(db, strongs),
+          getConcordanceCount(db, strongs, tagged),
+          getOriginalCount(db, strongs),
+          getRenderings(db, strongs, tagged),
+          otherMalayalam ? getRenderings(db, strongs, 'MAL') : Promise.resolve([] as Rendering[]),
+          otherMalayalam ? getConcordanceCount(db, strongs, 'MAL') : Promise.resolve(0),
+          withKjv ? getRenderings(db, strongs, 'KJV') : Promise.resolve([] as Rendering[]),
+          withKjv ? getConcordanceCount(db, strongs, 'KJV') : Promise.resolve(0),
+          getConcordance(db, strongs, tagged),
+        ]),
+        // A word tapped in a translation: the Hebrew or Greek words of its verse.
+        !pick.original && at
+          ? getInterlinear(db, at.book, at.chapter, at.translation ?? tagged).then((words) => words.get(at.verse) ?? [])
+          : Promise.resolve([] as OriginalWord[]),
+        Promise.all(choices.map((id) => (id === strongs ? Promise.resolve(null) : getStrongs(db, id)))),
       ]);
       const [examples, related] = await Promise.all([getVerses(db, tagged, refs.slice(0, 2)), entry ? getRelated(db, entry) : Promise.resolve([])]);
       const malayalam = !malayalamFirst ? [] : tagged === 'MAL' ? renderings : malayalamOther;
       const malayalamCount = tagged === 'MAL' ? count : malayalamOtherCount;
       // A word tapped in a translation: the form the Hebrew or Greek has in that verse.
-      let inVerse: OriginalWord[] = [];
-      const at = pick.at;
-      if (!pick.original && at) {
-        const words = (await getInterlinear(db, at.book, at.chapter, at.translation ?? tagged)).get(at.verse) ?? [];
-        const seen = new Set<string>();
-        inVerse = words.filter((w) => {
-          const key = `${w.text}|${w.morph}`;
-          if (w.strongs !== strongs || seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        });
-      }
-      const choices = pick.choices && pick.choices.length > 1 ? pick.choices : [];
-      const parts = await Promise.all(
-        choices.map(async (id) => {
-          const e = id === strongs ? entry : await getStrongs(db, id);
-          return { id, lemma: e?.lemma ?? null, gloss: e?.gloss ?? null };
-        }),
-      );
+      const seen = new Set<string>();
+      const inVerse = verseWords.filter((w) => {
+        const key = `${w.text}|${w.morph}`;
+        if (w.strongs !== strongs || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      const parts = choices.map((id, i) => {
+        const e = id === strongs ? entry : partEntries[i];
+        return { id, lemma: e?.lemma ?? null, gloss: e?.gloss ?? null };
+      });
       return { entry, count, original, parts, inVerse, kjvCount, malayalamCount, renderings, malayalam, kjv, examples, related };
     })()
       .then((loaded) => {

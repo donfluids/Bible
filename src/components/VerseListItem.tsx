@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSettings } from '../settings';
 import { formatRef } from '../text';
@@ -17,8 +17,11 @@ interface Props {
   highlightText?: string;
 }
 
-/** A verse in a results list: the reference opens the chapter, words open the word sheet. */
-export function VerseListItem({ verse, books, fontSize, onOpen, onWord, emphasize, highlightText }: Props) {
+/**
+ * A verse in a results list: the reference opens the chapter, words open the word sheet.
+ * Memoised, so a list redraws only the rows whose props changed.
+ */
+export const VerseListItem = memo(function VerseListItem({ verse, books, fontSize, onOpen, onWord, emphasize, highlightText }: Props) {
   const theme = useTheme();
   const { settings } = useSettings();
   return (
@@ -34,7 +37,7 @@ export function VerseListItem({ verse, books, fontSize, onOpen, onWord, emphasiz
       <VerseText verse={verse} fontSize={fontSize} onWord={onWord} underline={false} emphasize={emphasize} highlightText={highlightText} showNumber={false} />
     </Pressable>
   );
-}
+});
 
 const styles = StyleSheet.create({
   row: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },

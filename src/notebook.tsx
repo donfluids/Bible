@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { Edition } from './edition';
 import { loadEntry, useAutosave } from './persist';
-import { tellLoadProblem, tellSaveFailed, useOptionalSettings } from './settings';
+import { tellLoadProblem, tellSaveFailed, useDisplaySettings } from './settings';
 
 /**
  * The notebook (കുറിപ്പുകൾ): pages the reader writes, each with a title and free text in
@@ -60,7 +60,7 @@ export function NotebookProvider({ edition, children }: { edition: Edition; chil
   const [pages, setPages] = useState<NotePage[]>(loaded.value);
   const latest = useRef(pages);
   latest.current = pages;
-  const language = useOptionalSettings()?.language ?? edition.languages[0];
+  const language = useDisplaySettings()?.language ?? edition.languages[0];
   const languageRef = useRef(language);
   languageRef.current = language;
   useEffect(() => tellLoadProblem(languageRef.current, loaded.source), [loaded]);

@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
@@ -40,6 +40,8 @@ export function ConcordanceScreen({ strongs, rendering, books, onOpenRef, onWord
   const translation = taggedTranslation(settings.translation);
   const [entry, setEntry] = useState<StrongsEntry | null>(null);
   const [renderings, setRenderings] = useState<Rendering[]>([]);
+  // The chip row: All, then each rendering.
+  const chips = useMemo<ChipItem[]>(() => [{ word: null, count: 0 }, ...renderings], [renderings]);
   const [total, setTotal] = useState(0);
   /** Whether the full list comes from the Hebrew or Greek text (else from the tags). */
   const [fromOriginal, setFromOriginal] = useState(false);
@@ -142,12 +144,25 @@ export function ConcordanceScreen({ strongs, rendering, books, onOpenRef, onWord
         </Text>
       </View>
       {renderings.length > 0 ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={[styles.chips, { borderBottomColor: theme.border }]} contentContainerStyle={styles.chipsContent}>
-          <Chip label={t('all')} count={total} active={filter === null} onPress={() => setFilter(null)} />
-          {renderings.map((r) => (
-            <Chip key={r.word} label={r.word} count={r.count} active={filter === r.word} onPress={() => setFilter(filter === r.word ? null : r.word)} />
-          ))}
-        </ScrollView>
+        // A list rather than a plain row: a common word has up to 271 renderings, and only
+        // the chips in view need building.
+        <FlatList
+          horizontal
+          data={chips}
+          keyExtractor={chipKey}
+          extraData={filter}
+          initialNumToRender={12}
+          showsHorizontalScrollIndicator={false}
+          style={[styles.chips, { borderBottomColor: theme.border }]}
+          contentContainerStyle={styles.chipsContent}
+          renderItem={({ item }) =>
+            item.word === null ? (
+              <Chip label={t('all')} count={total} active={filter === null} onPress={() => setFilter(null)} />
+            ) : (
+              <Chip label={item.word} count={item.count} active={filter === item.word} onPress={() => setFilter(filter === item.word ? null : item.word)} />
+            )
+          }
+        />
       ) : null}
       {!refs ? (
         <ActivityIndicator style={styles.loading} color={theme.accent} />
@@ -169,6 +184,9 @@ export function ConcordanceScreen({ strongs, rendering, books, onOpenRef, onWord
     </View>
   );
 }
+
+type ChipItem = { word: string | null; count: number };
+const chipKey = (c: ChipItem) => c.word ?? '\u0000all';
 
 function Chip({ label, count, active, onPress }: { label: string; count: number; active: boolean; onPress: () => void }) {
   const theme = useTheme();
