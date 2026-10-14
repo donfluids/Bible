@@ -1,23 +1,33 @@
-# Task: publish the Bible apps' privacy policy on riversresearch.org
+# Task: update the Bible apps' privacy policy on riversresearch.org
 
-Rivers Research LLC is putting two Android apps on Google Play: **Bible**
+Rivers Research LLC publishes two Android apps on Google Play: **Bible**
 (`org.riversresearch.bible`) and **വേദപുസ്തകം** (`org.riversresearch.bible.malayalam`).
-Google Play requires a privacy policy at a public web address, entered in Play Console.
-This task adds that page to the riversresearch.org website.
+Their privacy policy is on riversresearch.org (at `https://riversresearch.org/bible/privacy`,
+or the address chosen when it was first published). The apps gained a notebook, so the
+policy now names notebook pages. This task replaces the page's policy text with the new
+version below.
+
+## What changed in the policy
+
+- Effective date: 5 October 2026 → **12 October 2026**.
+- "What the apps keep, and where" and "Android backup": the list now ends
+  "marked text, notes **and notebook pages**".
+- "Copying and sharing": "When you copy or share a verse **or a notebook page**, …".
+
+Nothing else changed.
 
 ## What to do
 
-1. Add one page at **`https://riversresearch.org/bible/privacy`**. If the site's structure
-   makes that path awkward, use the nearest path that fits the site's own conventions
-   (for example `/privacy/bible-apps`) and report the address you chose.
-2. Put the policy text from the section below on that page, **word for word**. Headings,
-   lists and the contact link may take the site's own styling, but do not reword,
-   shorten or add to the policy: it describes exactly what the apps do, and Google
-   compares it with the apps' declarations.
-3. Use the site's normal page layout (header, footer, fonts), so it looks like part of
-   riversresearch.org. Keep the Malayalam app name (വേദപുസ്തകം) as Unicode text, not an
-   image.
-4. Optionally, link the page from the site's footer or from a page about the apps.
+1. Find the existing privacy policy page for the Bible apps. Keep its address exactly as
+   it is: Play Console already points to it.
+2. Replace the policy text on that page with the text in the section below, **word for
+   word**. Headings, lists and the contact link may take the site's own styling, but do
+   not reword, shorten or add to the policy: it describes exactly what the apps do, and
+   Google compares it with the apps' declarations.
+3. Keep the site's normal page layout, and keep the Malayalam app name (വേദപുസ്തകം) as
+   Unicode text, not an image.
+4. If no such page exists yet, create it at `https://riversresearch.org/bible/privacy`
+   (or the nearest path that fits the site's conventions) and report the address.
 
 ## Requirements Google Play checks
 
@@ -29,15 +39,15 @@ This task adds that page to the riversresearch.org website.
 
 ## Done when
 
-- `curl -sI https://riversresearch.org/bible/privacy` (or the chosen address) returns
+- `curl -sI https://riversresearch.org/bible/privacy` (or the page's address) returns
   status 200 with `Content-Type: text/html`.
-- The page shows "Rivers Research LLC", both package names and dond@riversresearch.org.
+- The page shows "Effective 12 October 2026", "notebook pages" (twice) and "or a notebook
+  page", plus "Rivers Research LLC", both package names and dond@riversresearch.org.
 - It opens on a phone without signing in.
 
 ## Report back
 
-The final address of the page. It goes into Play Console under
-Policy → App content → Privacy policy, for both apps.
+The page's address, and that the text now reads as below.
 
 ---
 
