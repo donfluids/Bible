@@ -508,12 +508,12 @@ function loadCorrections() {
   }
 }
 
-// Word-level links from Malayalam words to Strong's numbers, made by
-// scripts/align-malayalam.mjs. Only confident links (c = 2) are used.
+// Word-level links from Malayalam or Tamil words to Strong's numbers, made by
+// scripts/align.mjs (data/align/mal, data/align/tam). Only confident links (c = 2) are used.
 // A verse can appear in several files when it was aligned again after its text changed;
 // the newest alignment made for the verse's current text is the one used.
-function loadAlignments() {
-  const dir = join(ROOT, 'data', 'align', 'mal');
+function loadAlignments(folder) {
+  const dir = join(ROOT, 'data', 'align', folder);
   const map = new Map(); // "book:chapter:verse" -> [{ ...verse, created }]
   let files = [];
   try { files = readdirSync(dir).filter((f) => f.endsWith('.json')).sort(); } catch { return map; }
@@ -579,26 +579,32 @@ const GREEK_PRONOUNS = new Set(['G1473', 'G3165', 'G3427', 'G3450', 'G1698', 'G1
   'G1565', 'G5124', 'G5023', 'G3739']);
 const HEBREW_PRONOUNS = new Set(['H589', 'H595', 'H587', 'H5168', 'H859', 'H1931', 'H1992', 'H1993', 'H2004', 'H2007', 'H1158',
   'H2088', 'H2063', 'H428']);
+// The same for Tamil: possessive, object, dative and plain pronouns.
+const TA_PRONOUN_WORDS = new Set(('என் என்னுடைய உன் உன்னுடைய உம்முடைய அவனுடைய அவளுடைய அவருடைய அதின் அதனுடைய ' +
+  'நம்முடைய எங்கள் எங்களுடைய உங்கள் உங்களுடைய அவர்களுடைய தன் தன்னுடைய தங்கள் தங்களுடைய ' +
+  'என்னை உன்னை உம்மை அவனை அவளை அவரை அதை நம்மை எங்களை உங்களை அவர்களை ' +
+  'நான் நீ நீர் அவன் அவள் அவர் அவர்கள் நாம் நாங்கள் நீங்கள் அது அவை அவைகள் ' +
+  'எனக்கு உனக்கு உமக்கு அவனுக்கு அவளுக்கு அவருக்கு அவர்களுக்கு நமக்கு எங்களுக்கு உங்களுக்கு').split(' '));
 let misLinks = 0;
 // In "നിങ്ങളുടെ ദൈവമായ യഹോവ" the aligner followed the Hebrew order (YHWH Elohim) and
 // linked യഹോവ to God and ദൈവം to the LORD. യഹോവ always renders the divine name, so a
 // യഹോവ linked to H430 is set to H3068, and a ദൈവ… word in the same verse linked to H3068
-// is set to H430.
+// is set to H430. The Tamil the same with யெகோவா and தேவ….
 let lordGodFixes = 0;
-function fixLordGod(entries) {
+function fixLordGod(entries, lang) {
   const setId = (i, id) => {
     entries[i].id = id;
     lordGodFixes++;
   };
-  const crossedLord = entries.findIndex((e) => e.id === 'H430' && e.word.startsWith('യഹോവ'));
+  const crossedLord = entries.findIndex((e) => e.id === 'H430' && e.word.startsWith(lang.lord));
   if (crossedLord < 0) return;
   setId(crossedLord, 'H3068');
-  const crossedGod = entries.findIndex((e) => e.id === 'H3068' && e.word.startsWith('ദൈവ'));
+  const crossedGod = entries.findIndex((e) => e.id === 'H3068' && e.word.startsWith(lang.god));
   if (crossedGod >= 0) setId(crossedGod, 'H430');
 }
-function misLinked(span, text) {
+function misLinked(span, text, lang) {
   const word = text.slice(span.s, span.e);
-  const wrong = span.n === 'H853' || (ML_PRONOUN_WORDS.has(word) && !HEBREW_PRONOUNS.has(span.n) && !GREEK_PRONOUNS.has(span.n));
+  const wrong = span.n === 'H853' || (lang.pronouns.has(word) && !HEBREW_PRONOUNS.has(span.n) && !GREEK_PRONOUNS.has(span.n));
   if (wrong) misLinks++;
   return wrong;
 }
@@ -678,7 +684,11 @@ function sharedStart(a, b) {
   while (i < a.length && i < b.length && a[i] === b[i]) i++;
   return i;
 }
-function groupForms(entries) {
+// Tamil forms: the stem is the head less a final ம் (ராஜ்யம்: ராஜ்யத்தை), ் (தேவன்: தேவனை)
+// or ு; a base form is one without a case ending or the attached "and" (உம்).
+const taStem = (w) => w.replace(/ம்$/u, '').replace(/[்ு]$/u, '');
+const isTaBaseForm = (w) => !/(ை|க்கு|த்தில்|யில்|ில்|ிலே|ால்|ுடைய|ும்|ிடம்|ோடு|ிடத்தில்|ாக)$/u.test(w) || /[^ு]ம்$/u.test(w) && !/ும்$/u.test(w);
+function groupForms(entries, stemOf = mlStem, isBase = isBaseForm) {
   const groups = [];
   const sorted = [...entries].sort((a, b) => a.display.length - b.display.length || b.refs.length - a.refs.length);
   for (const e of sorted) {
@@ -688,12 +698,12 @@ function groupForms(entries) {
       return n >= 5 && n >= 0.6 * x.head.length;
     });
     if (g) g.members.push(e);
-    else groups.push({ stem: mlStem(e.display), head: e.display, members: [e] });
+    else groups.push({ stem: stemOf(e.display), head: e.display, members: [e] });
   }
   return groups.map((g) => {
     const commonest = (list) => list.reduce((a, b) => (b.refs.length > a.refs.length ? b : a));
     const top = commonest(g.members);
-    const bases = g.members.filter((m) => isBaseForm(m.display));
+    const bases = g.members.filter((m) => isBase(m.display));
     const base = bases.length ? commonest(bases) : null;
     // Else the shortest form that is still common in the group.
     const shortCommon = [...g.members].sort((a, b) => a.display.length - b.display.length).find((m) => m.refs.length >= top.refs.length * 0.3);
@@ -771,13 +781,23 @@ function buildEdition(edition) {
 
   const chapterCounts = new Map();
   const stats = {};
-  const alignments = loadAlignments();
+  // The Bibles whose words are linked by scripts/align.mjs, and how each language's links
+  // are checked and grouped.
+  const LINKED = {
+    MAL: { folder: 'mal', pronouns: ML_PRONOUN_WORDS, lord: 'യഹോവ', god: 'ദൈവ', stem: mlStem, isBase: isBaseForm },
+    TAM: { folder: 'tam', pronouns: TA_PRONOUN_WORDS, lord: 'யெகோவா', god: 'தேவ', stem: taStem, isBase: isTaBaseForm },
+  };
   const corrections = loadCorrections();
   for (const t of TRANSLATIONS) {
     const files = readdirSync(join(RAW, t.dir));
     const conc = new Map(); // strongs -> array of [b,c,v]
     const rend = new Map(); // strongs -> Map(lowercased word -> { forms: Map(display -> n), refs: [], lastKey })
     let verses = 0, tagCount = 0, omitted = 0, noteCount = 0, alignedVerses = 0;
+    const linked = LINKED[t.id];
+    const alignments = linked ? loadAlignments(linked.folder) : new Map();
+    misLinks = 0;
+    lordGodFixes = 0;
+    shiftFixes = 0;
     const pending = []; // verses read, written once the whole translation is read
     db.exec('BEGIN');
     for (const book of BOOKS) {
@@ -825,16 +845,16 @@ function buildEdition(edition) {
           const split = splitTags(tagged);
           const { text, notes: markers } = split;
           let tags = UNTAGGED.has(t.id) ? '' : split.tags;
-          // Tagged words: the source's own tags, or for Malayalam the aligned links.
+          // Tagged words: the source's own tags, or for Malayalam and Tamil the aligned links.
           let entries = UNTAGGED.has(t.id) ? [] : [...tagged.matchAll(/⟨([^|⟩]*)\|([HG]\d+)⟩/g)].map((m) => ({ word: m[1].trim(), id: m[2] }));
           let aligned = false;
           let hand = false;
-          if (t.id === 'MAL') {
+          if (linked) {
             const al = alignmentFor(alignments, `${book.id}:${chapter}:${verse}`, text);
             if (al) {
               const prefix = book.id <= 39 ? 'H' : 'G';
               const spans = al.spans
-                .filter((x) => x.c >= 2 && x.n.startsWith(prefix) && !misLinked(x, text))
+                .filter((x) => x.c >= 2 && x.n.startsWith(prefix) && !misLinked(x, text, linked))
                 .sort((a, b) => a.s - b.s);
               aligned = true;
               hand = !!al.hand;
@@ -847,7 +867,7 @@ function buildEdition(edition) {
                 entries.push({ word: text.slice(sp.s, sp.e), id: sp.n, s: sp.s, e: sp.e });
                 prev = sp;
               }
-              fixLordGod(entries);
+              fixLordGod(entries, linked);
               tags = tagsFrom(entries);
               alignedVerses++;
             }
@@ -856,9 +876,9 @@ function buildEdition(edition) {
         }
       }
     }
-    // Every verse is read before any is written, so the Malayalam links can be checked
-    // against the whole Bible.
-    if (t.id === 'MAL') relinkShifted(pending, loadVerseMap().MAL ?? {});
+    // Every verse is read before any is written, so the links can be checked against the
+    // whole Bible.
+    if (linked && alignedVerses) relinkShifted(pending, loadVerseMap()[t.id] ?? {});
     for (const { book: bookId, chapter, verse, text, tags, entries, markers, notes, para } of pending) {
       insVerse.run(t.id, bookId, chapter, verse, text, tags, 0, para);
       verses++;
@@ -873,7 +893,7 @@ function buildEdition(edition) {
         tagCount++;
         const word = m.word;
         const lower = word.toLowerCase();
-        const strayPronoun = t.id === 'MAL' && ML_PRONOUN_WORDS.has(word) && !HEBREW_PRONOUNS.has(m.id) && !GREEK_PRONOUNS.has(m.id);
+        const strayPronoun = !!linked && linked.pronouns.has(word) && !HEBREW_PRONOUNS.has(m.id) && !GREEK_PRONOUNS.has(m.id);
         if (strayPronoun) {
           if (!seen.has(m.id)) { seen.add(m.id); if (!conc.has(m.id)) conc.set(m.id, []); conc.get(m.id).push(bookId, chapter, verse); }
           continue;
@@ -900,14 +920,14 @@ function buildEdition(edition) {
         display: [...entry.forms.entries()].sort((a, b) => b[1] - a[1])[0][0],
         refs: entry.refs,
       }));
-      if (t.id === 'MAL') entries = groupForms(entries);
+      if (linked) entries = groupForms(entries, linked.stem, linked.isBase);
       for (const entry of entries) {
         insRendering.run(strongs, t.id, entry.display, entry.refs.length / 3, new Uint8Array(entry.refs));
         renderingRows++;
       }
     }
     db.exec('COMMIT');
-    stats[t.id] = { verses, omittedVerses: omitted, ...(t.id === 'MAL' ? { alignedVerses, misLinksDropped: misLinks, lordGodFixes, shiftFixes } : {}), tags: tagCount, strongsNumbers: conc.size, notes: noteCount, renderings: renderingRows };
+    stats[t.id] = { verses, omittedVerses: omitted, ...(linked ? { alignedVerses, misLinksDropped: misLinks, lordGodFixes, shiftFixes } : {}), tags: tagCount, strongsNumbers: conc.size, notes: noteCount, renderings: renderingRows };
   }
 
   db.exec('BEGIN');

@@ -308,7 +308,7 @@ License and Apache License texts).
 ## Malayalam word links
 
 The Malayalam text carries no Strong's tags, so each Malayalam word is linked to the
-Hebrew or Greek word it renders by `scripts/align-malayalam.mjs`. It calls the Claude
+Hebrew or Greek word it renders by `scripts/align.mjs`. It calls the Claude
 CLI headlessly (`claude -p`, no API key: it uses the CLI's own login) with the
 Malayalam words and the original words of each verse, asks for one link per Malayalam
 word with a confidence, validates the answer against a JSON schema, and caches each

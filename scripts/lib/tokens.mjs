@@ -1,4 +1,4 @@
-// Shared by scripts/align-malayalam.mjs and scripts/build-db.mjs so both slice a
+// Shared by scripts/align.mjs and scripts/build-db.mjs so both slice a
 // verse into the same tokens and agree on character offsets.
 import { createHash } from 'node:crypto';
 

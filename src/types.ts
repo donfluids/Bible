@@ -15,7 +15,7 @@ export const TRANSLATIONS: Translation[] = [
   { id: 'KJV', name: 'King James Version', tagged: true, lineHeight: 1.55 },
   // The WEB source's Strong's tags are unreliable, so they are not built (scripts/build-db.mjs).
   { id: 'WEB', name: 'World English Bible', tagged: false, lineHeight: 1.55 },
-  // Tagged by scripts/align-malayalam.mjs (machine alignment, confident links only).
+  // Tagged by scripts/align.mjs (machine alignment, confident links only).
   { id: 'MAL', name: 'സത്യവേദപുസ്തകം 1910 (Malayalam)', tagged: true, lineHeight: 1.75, script: 'ml' },
   // Untagged until its words are aligned like the Malayalam's.
   { id: 'TAM', name: 'இண்டியன் ரிவைஸ்டு வெர்ஸன் (Tamil IRV)', tagged: false, lineHeight: 1.75, script: 'ta' },

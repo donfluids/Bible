@@ -1,12 +1,14 @@
-// Links each word of the Malayalam Bible to the Hebrew or Greek word it renders,
+// Links each word of the Malayalam or Tamil Bible to the Hebrew or Greek word it renders,
 // using the Claude CLI in headless mode (no API key: it uses the CLI's own login).
 //
-//   node scripts/align-malayalam.mjs --chapters 1:1,19:23,23:53,43:3,45:8   # book:chapter
-//   node scripts/align-malayalam.mjs --all                                  # every chapter
-//   node scripts/align-malayalam.mjs --report 43:3                          # readable result
+//   node scripts/align.mjs --chapters 1:1,19:23,23:53,43:3,45:8   # book:chapter
+//   node scripts/align.mjs --all                                  # every chapter
+//   node scripts/align.mjs --report 43:3                          # readable result
+//   node scripts/align.mjs --lang ta --compound --all             # the Tamil
 //
-// Options: --model claude-sonnet-5-5  --effort medium  --concurrency 3
-//          --chunk 20 (verses per call)  --dry-run  --redo  --out data/align/mal
+// Options: --lang ml|ta (default ml: the Malayalam)
+//          --model claude-sonnet-5-5  --effort medium  --concurrency 3
+//          --chunk 20 (verses per call)  --dry-run  --redo  --out data/align/mal (tam for Tamil)
 //          --nt-first (with --all: New Testament before Old)
 //          --commit-every 10 (git commit and push the output folder after every N chunks;
 //          0 turns it off; only when the output folder is inside this repository)
@@ -15,16 +17,16 @@
 //          was corrected after it was aligned)
 //          --save-to data/align/mal (with --out elsewhere: copy new chunks into this repo
 //          folder only when saving, so the working tree stays clean between saves)
-//          --compound (a Malayalam compound word may link to each content word it
-//          renders: നിത്യജീവൻ to "eternal" and "life"; chunk files are marked c)
+//          --compound (a compound word may link to each content word it renders:
+//          നിത്യജീവൻ, நித்தியஜீவன் to "eternal" and "life"; chunk files are marked c)
 //          --verses file.json (only these verses, a JSON list of "book:chapter:verse")
 //
 // When the CLI reports a usage or rate limit, every worker pauses (until the reset
 // time the CLI gives, else 5 to 30 minutes) and carries on; those waits do not count
 // as failed attempts. Re-running the same command skips chunks already cached.
 //
-// Needs assets/db/bible-ml.db (npm run build-db first). Each chunk is cached as one
-// JSON file under data/align/mal/, so an interrupted run resumes where it stopped.
+// Needs assets/db/bible-ml.db or bible-ta.db (npm run build-db first). Each chunk is cached
+// as one JSON file under data/align/mal/ or tam/, so an interrupted run resumes where it stopped.
 // scripts/build-db.mjs reads those files and writes the tags into the database.
 import { DatabaseSync } from 'node:sqlite';
 import { inflateRawSync } from 'node:zlib';
@@ -40,38 +42,53 @@ const opt = (name, fallback) => {
   const i = args.indexOf('--' + name);
   return i >= 0 ? (args[i + 1] && !args[i + 1].startsWith('--') ? args[i + 1] : true) : fallback;
 };
+// What differs between the languages: the Bible, where it is, and what the model is told.
+const LANGS = {
+  ml: {
+    translation: 'MAL', name: 'Malayalam', db: 'bible-ml.db', out: 'data/align/mal',
+    grammar: '- Malayalam is agglutinative: case endings, postpositions and the attached "and" (ഉം) are part of the token. Judge by the word stem.',
+    compounds: 'നിത്യജീവൻ links to "eternal" and to "life"; സകലവൃക്ഷങ്ങളുടെയും to "tree" and to "all"; പച്ചസസ്യം to "green" and to "plant"',
+  },
+  ta: {
+    translation: 'TAM', name: 'Tamil', db: 'bible-ta.db', out: 'data/align/tam',
+    grammar: '- Tamil is agglutinative: case suffixes, postpositions and clitics such as the attached "and" (உம்) or emphasis (ஏ) are part of the token. Judge by the word stem. Verbs often carry the subject in their ending; link the verb to the verb.',
+    compounds: 'நித்தியஜீவனை links to "eternal" and to "life"; பரலோகராஜ்யம் to "kingdom" and to "heaven"; பழமரங்களையும் to "fruit" and to "tree"',
+  },
+};
+const LANG = LANGS[opt('lang', 'ml')];
+if (!LANG) throw new Error('--lang is ml or ta');
 const MODEL = opt('model', 'claude-sonnet-5-5');
 const COMPOUND = !!opt('compound', false);
 const EFFORT = opt('effort', 'medium');
 const CONCURRENCY = Number(opt('concurrency', 3));
 const CHUNK = Number(opt('chunk', 20));
 const MAX_WORDS = 650; // original-language words per call, to bound the output
-const OUT = resolvePath(ROOT, opt('out', 'data/align/mal'));
-const DB_PATH = join(ROOT, 'assets', 'db', 'bible-ml.db');
+const OUT = resolvePath(ROOT, opt('out', LANG.out));
+const DB_PATH = join(ROOT, 'assets', 'db', LANG.db);
 
 const BOOK_NAMES = ('Genesis Exodus Leviticus Numbers Deuteronomy Joshua Judges Ruth 1Samuel 2Samuel 1Kings 2Kings 1Chronicles 2Chronicles Ezra Nehemiah Esther Job Psalms Proverbs Ecclesiastes SongOfSongs Isaiah Jeremiah Lamentations Ezekiel Daniel Hosea Joel Amos Obadiah Jonah Micah Nahum Habakkuk Zephaniah Haggai Zechariah Malachi Matthew Mark Luke John Acts Romans 1Corinthians 2Corinthians Galatians Ephesians Philippians Colossians 1Thessalonians 2Thessalonians 1Timothy 2Timothy Titus Philemon Hebrews James 1Peter 2Peter 1John 2John 3John Jude Revelation').split(' ');
 
-const SYSTEM = `You align a Malayalam Bible translation with the Hebrew or Greek text it translates.
+const SYSTEM = `You align a ${LANG.name} Bible translation with the Hebrew or Greek text it translates.
 
-For each verse you get the Malayalam as numbered tokens and the original-language words as numbered words, each with transliteration, an English gloss and a Strong's number. For every Malayalam token that renders an original word, output [token, word, confidence].
+For each verse you get the ${LANG.name} as numbered tokens and the original-language words as numbered words, each with transliteration, an English gloss and a Strong's number. For every ${LANG.name} token that renders an original word, output [token, word, confidence].
 
 Rules:
 - A token links to the ONE original word it chiefly renders. When a token also carries a prefix, article, preposition or conjunction of that word, still link the content word.
-- Malayalam is agglutinative: case endings, postpositions and the attached "and" (ഉം) are part of the token. Judge by the word stem.
+${LANG.grammar}
 - Several tokens may point to the same original word (a phrase rendering one word). A token never points to two words.
 - Omit tokens that have no counterpart in the original: words added for sense, auxiliary or linking words, punctuation. Omit original words nothing renders.
 - Names link to the name's word.
 - Confidence 2 means you are sure. Confidence 1 means plausible but uncertain. If you would be guessing, leave the token out entirely (never write confidence 0). A wrong link is worse than a missing one.
-- Never link by position alone. If a verse's original words clearly do not correspond to its Malayalam (verse numbering sometimes differs), return no links for that verse.
+- Never link by position alone. If a verse's original words clearly do not correspond to its ${LANG.name} (verse numbering sometimes differs), return no links for that verse.
 
 Return only the JSON requested.`;
 
-// In compound mode one token may name several original words: Malayalam writes compounds
-// as one word (നിത്യജീവൻ "eternal life", സകലവൃക്ഷങ്ങളുടെയും "of all the trees").
+// In compound mode one token may name several original words: Malayalam and Tamil write
+// compounds as one word (നിത്യജീവൻ, நித்தியஜீவன் "eternal life").
 const SYSTEM_COMPOUND = SYSTEM.replace(
   `${'- A token links to the ONE original word it chiefly renders. When a token also carries a prefix, article, preposition or conjunction of that word, still link the content word.'}`,
   '- A token links to the original word it chiefly renders. When it also carries an article, preposition, conjunction, particle or case ending, link only the content word.\n' +
-    '- A token that is a compound of two or more content words (nouns, verbs, adjectives, numerals, "all", "every"), each rendering its own original word, links to each of them, one triple per word, the chief word first: നിത്യജീവൻ links to "eternal" and to "life"; സകലവൃക്ഷങ്ങളുടെയും to "tree" and to "all"; പച്ചസസ്യം to "green" and to "plant". Do not add a second link for a preposition, conjunction, article, pronoun or negation.',
+    '- A token that is a compound of two or more content words (nouns, verbs, adjectives, numerals, "all", "every"), each rendering its own original word, links to each of them, one triple per word, the chief word first: ${LANG.compounds}. Do not add a second link for a preposition, conjunction, article, pronoun or negation.',
 ).replace(
   '- Several tokens may point to the same original word (a phrase rendering one word). A token never points to two words.',
   '- Several tokens may point to the same original word (a phrase rendering one word).',
@@ -101,10 +118,10 @@ const SCHEMA = {
 const FS = '\x1c', GS = '\x1d', RS = '\x1e', US = '\x1f';
 const stripCantillation = (s) => s.replace(/[֑-֯]/g, '');
 
-// Malayalam verses numbered differently from the original-language data.
+// Verses numbered differently from the original-language data.
 const VERSE_MAP = (() => {
   try {
-    return JSON.parse(readFileSync(join(ROOT, 'data', 'overrides', 'versification.json'), 'utf8')).MAL ?? {};
+    return JSON.parse(readFileSync(join(ROOT, 'data', 'overrides', 'versification.json'), 'utf8'))[LANG.translation] ?? {};
   } catch {
     return {};
   }
@@ -130,10 +147,10 @@ function chapterWords(db, book, chapter) {
 }
 
 function loadChapter(db, book, chapter) {
-  const verses = db.prepare("SELECT verse, text FROM verses WHERE translation = 'MAL' AND book = ? AND chapter = ? AND omitted = 0 ORDER BY verse").all(book, chapter);
+  const verses = db.prepare('SELECT verse, text FROM verses WHERE translation = ? AND book = ? AND chapter = ? AND omitted = 0 ORDER BY verse').all(LANG.translation, book, chapter);
   return verses
     .map((v) => {
-      // A Malayalam verse that holds two KJV verses is paired with the words of both.
+      // A verse that holds two KJV verses is paired with the words of both.
       const refs = [VERSE_MAP[`${book}:${chapter}:${v.verse}`] ?? `${book}:${chapter}:${v.verse}`].flat();
       const words = refs.flatMap((ref) => {
         const [b, c, n] = ref.split(':').map(Number);
@@ -160,7 +177,7 @@ function buildPrompt(book, chapter, verses) {
   const parts = [`${BOOK_NAMES[book - 1]} ${chapter}. Original language: ${lang}.`];
   for (const v of verses) {
     parts.push(`\n### Verse ${v.v}`);
-    parts.push('Malayalam tokens: ' + v.tokens.map((t, i) => `${i + 1} ${t.text}`).join(' | '));
+    parts.push(`${LANG.name} tokens: ` + v.tokens.map((t, i) => `${i + 1} ${t.text}`).join(' | '));
     parts.push(`${lang} words:\n` + v.words.map((w, i) => `${i + 1}. ${w.text} (${w.translit}) "${w.gloss}" ${w.strongs || '-'}`).join('\n'));
   }
   return parts.join('\n');
@@ -276,7 +293,7 @@ function saveProgress(stats, final = false) {
       const staged = execFileSync('git', ['diff', '--cached', '--name-only', '--', rel], { cwd: ROOT }).toString().trim();
       if (!staged) return;
       const n = readdirSync(SAVE_DIR).filter((f) => f.endsWith('.json')).length;
-      const msg = `Malayalam alignment: ${n} of ${stats.total} chunks${final ? ' (run finished)' : ''}\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Kt8QQgS1XLBE3LTVGzDsDj`;
+      const msg = `${LANG.name} alignment: ${n} of ${stats.total} chunks${final ? ' (run finished)' : ''}\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Kt8QQgS1XLBE3LTVGzDsDj`;
       execFileSync('git', ['commit', '-q', '-m', msg, '--', rel], { cwd: ROOT, stdio: 'ignore' });
       for (let i = 0; i < 4; i++) {
         try {
@@ -342,7 +359,7 @@ async function alignChunk(job, stats) {
 }
 
 function report(db, book, chapter) {
-  const lines = [`# ${BOOK_NAMES[book - 1]} ${chapter}: Malayalam to ${book <= 39 ? 'Hebrew' : 'Greek'}\n`];
+  const lines = [`# ${BOOK_NAMES[book - 1]} ${chapter}: ${LANG.name} to ${book <= 39 ? 'Hebrew' : 'Greek'}\n`];
   const verses = loadChapter(db, book, chapter);
   const files = existsSync(OUT) ? readdirSync(OUT).filter((f) => f.startsWith(`${book}-${chapter}-`)) : [];
   const spans = new Map();

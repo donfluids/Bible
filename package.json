@@ -47,7 +47,8 @@
     "start:ml": "BIBLE_EDITION=ml expo start",
     "start:ta": "BIBLE_EDITION=ta expo start",
     "icons": "node scripts/make-icons.mjs en && node scripts/make-icons.mjs ml && node scripts/make-icons.mjs ta",
-    "align-ml": "node --no-warnings scripts/align-malayalam.mjs"
+    "align-ml": "node --no-warnings scripts/align.mjs --lang ml",
+    "align-ta": "node --no-warnings scripts/align.mjs --lang ta --compound"
   },
   "private": true
 }
