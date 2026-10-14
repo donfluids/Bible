@@ -13,11 +13,13 @@ From 0.3.8 the package names are `org.riversresearch.bible` and
 `org.riversresearch.bible.malayalam`; earlier builds used `org.donfluids.bible...`, so
 phones treat them as different apps. Upload only 0.3.8 or later to Play.
 
-0.4.0 (build 26), 0.4.1 (build 27) and 0.4.2 build 28 were replaced by 0.4.2 build 29 before going to Play; upload build 29.
+0.4.0 (build 26), 0.4.1 (build 27) and 0.4.2 build 28 never went to Play; 0.4.2 build 29 did. 0.4.3 (build 30) is the next upload.
 From 0.4.1 the bundles carry 32- and 64-bit ARM; the APKs are 64-bit only.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Vedapusthakam-0.4.3-b30.aab](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.3-b30.aab) | 0.4.3 | 30 | release key | 90a82c8 | 47.8 MiB | `e7a012d648dca1cc8383162ff944536935b55f158f5a55de0f0408454d7fd788` |
+| [Bible-0.4.3-b30.aab](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.4.3-b30.aab) | 0.4.3 | 30 | release key | 90a82c8 | 44.8 MiB | `a9ca082b3213586f0f90ab749685a79a16ec2d8b04b2dccff9336a32fffa2f94` |
 | [Vedapusthakam-0.4.2-b29.aab](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.2-b29.aab) | 0.4.2 | 29 | release key | 49fecd1 | 47.8 MiB | `e2c59b47f9d2c415ec7dca1d8edac659fb3e66da6d7ec3b90167fb014e04155f` |
 | [Bible-0.4.2-b29.aab](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.4.2-b29.aab) | 0.4.2 | 29 | release key | 49fecd1 | 44.8 MiB | `67de8afd90193d2ca1558874c3052ab0441d65af22e22ef64023383331fdfc27` |
 | [Vedapusthakam-0.4.2-b28.aab](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.2-b28.aab) | 0.4.2 | 28 | release key | 5902856 | 47.7 MiB | `55490366034fb07841b8ef795cd9c927f43e1a8d3edf3e6a4c84814d09e351a3` |
@@ -49,6 +51,7 @@ From 0.4.1 the bundles carry 32- and 64-bit ARM; the APKs are 64-bit only.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Bible-0.4.3-b30.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.4.3-b30.apk) | 0.4.3 | 30 | release key | 90a82c8 | 41.0 MiB | `e38551fa45f82002fcd323d5ca02f59ae039aa9f52229426a51755ac7bdaf20a` |
 | [Bible-0.4.2-b29.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.4.2-b29.apk) | 0.4.2 | 29 | release key | 49fecd1 | 41.0 MiB | `7268b949066738b07d99a2026a202e7a151cdb41ed212afa18059fe7db0bdd93` |
 | [Bible-0.4.2-b28.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.4.2-b28.apk) | 0.4.2 | 28 | release key | 5902856 | 41.0 MiB | `9bbd6f4a9ecb9dd0ddb9d0f6ed4e183cf16f55ea56626c087f27874850d87aff` |
 | [Bible-0.4.1-b27.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.4.1-b27.apk) | 0.4.1 | 27 | release key | abf7e02 | 41.0 MiB | `3081a9e99369131009aed8d9e86b1fbdb738f5384b0ae6ba0247f5d6b3af0e4f` |
@@ -80,6 +83,7 @@ From 0.4.1 the bundles carry 32- and 64-bit ARM; the APKs are 64-bit only.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Vedapusthakam-0.4.3-b30.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.3-b30.apk) | 0.4.3 | 30 | release key | 90a82c8 | 43.9 MiB | `80f3ad5cdb38f5f51531b0336dc9a9f6123b47121616d3012836eefd38517f09` |
 | [Vedapusthakam-0.4.2-b29.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.2-b29.apk) | 0.4.2 | 29 | release key | 49fecd1 | 43.9 MiB | `c0fea8694b08b213b1b1baa7ce819d4ef60e863cb4a403833b152b7825307d32` |
 | [Vedapusthakam-0.4.2-b28.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.2-b28.apk) | 0.4.2 | 28 | release key | 5902856 | 43.8 MiB | `ce72e3f7122e5cd94fa8e2783fac577b8b3d0e6f79620b9ca82a1f4d77fadc5e` |
 | [Vedapusthakam-0.4.1-b27.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.1-b27.apk) | 0.4.1 | 27 | release key | abf7e02 | 43.8 MiB | `d8c0d399dfeb2818454c3f45ebfd11117f06e0e88d434aa66eae39f412e379c3` |
