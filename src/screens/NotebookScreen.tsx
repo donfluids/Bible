@@ -1,8 +1,8 @@
 import React from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header, HeaderIconButton } from '../components/Header';
 import { Icon } from '../components/Icon';
+import { TabBar } from '../components/TabBar';
 import { isMalayalam, scriptureFont } from '../fonts';
 import { useT } from '../i18n';
 import { pageName, useNotebook } from '../notebook';
@@ -12,14 +12,12 @@ import { useTheme } from '../theme';
 
 interface Props {
   onOpenPage: (id: string, isNew?: boolean) => void;
-  onBack: () => void;
 }
 
 /** The notebook's pages, the most recently edited first. */
-export function NotebookScreen({ onOpenPage, onBack }: Props) {
+export function NotebookScreen({ onOpenPage }: Props) {
   const theme = useTheme();
   const t = useT();
-  const insets = useSafeAreaInsets();
   const { settings } = useSettings();
   const { pages, create } = useNotebook();
   const newPage = () => onOpenPage(create(), true);
@@ -27,7 +25,7 @@ export function NotebookScreen({ onOpenPage, onBack }: Props) {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
-      <Header title={t('notebook')} onBack={onBack} right={<HeaderIconButton icon="note_add" onPress={newPage} accessibilityLabel={t('newPage')} />} />
+      <Header title={t('notebook')} right={<HeaderIconButton icon="note_add" onPress={newPage} accessibilityLabel={t('newPage')} />} />
       {pages.length === 0 ? (
         <View style={styles.emptyBox}>
           <View style={[styles.emptyIcon, { backgroundColor: theme.accentSoft }]}>
@@ -44,7 +42,7 @@ export function NotebookScreen({ onOpenPage, onBack }: Props) {
         <FlatList
           data={pages}
           keyExtractor={(p) => p.id}
-          contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
+          contentContainerStyle={[styles.list, { paddingBottom: 24 }]}
           renderItem={({ item }) => {
             const name = pageName(item, t('untitled'));
             // The first lines after the one used as the name.
@@ -72,6 +70,7 @@ export function NotebookScreen({ onOpenPage, onBack }: Props) {
           }}
         />
       )}
+      <TabBar current="Notebook" />
     </View>
   );
 }

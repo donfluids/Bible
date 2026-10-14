@@ -18,7 +18,7 @@ import { CONFIGURED_EDITION, EDITIONS, EditionContext, isEditionId } from './src
 import type { Edition, Language } from './src/edition';
 import { getBooks, getMeta } from './src/queries';
 import { SettingsProvider, useSettings } from './src/settings';
-import { NotebookProvider, useNotebook } from './src/notebook';
+import { NotebookProvider } from './src/notebook';
 import { useTheme } from './src/theme';
 import type { Book, Ref, WordPick } from './src/types';
 import { WordSheet } from './src/components/WordSheet';
@@ -32,6 +32,7 @@ import { LicencesScreen } from './src/screens/LicencesScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { NotebookScreen } from './src/screens/NotebookScreen';
 import { NotePageScreen } from './src/screens/NotePageScreen';
+import { switchTab } from './src/components/TabBar';
 
 export default function App() {
   return (
@@ -194,6 +195,7 @@ function useApp(): AppContextValue {
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+const TAB_SCREEN = { animation: 'none' } as const;
 
 function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
   const db = useSQLiteContext();
@@ -263,14 +265,15 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
       <NavigationContainer ref={navigationRef} theme={navTheme}>
         <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.bg } }}>
           <Stack.Screen name="Reader" component={ReaderRoute} />
-          <Stack.Screen name="Books" component={BooksRoute} />
+          {/* The tabs of the bottom bar change without sliding, as tabs do. */}
+          <Stack.Screen name="Books" component={BooksRoute} options={TAB_SCREEN} />
           <Stack.Screen name="Chapters" component={ChaptersRoute} />
-          <Stack.Screen name="Bookmarks" component={BookmarksRoute} />
+          <Stack.Screen name="Bookmarks" component={BookmarksRoute} options={TAB_SCREEN} />
           <Stack.Screen name="Search" component={SearchRoute} />
           <Stack.Screen name="Concordance" component={ConcordanceRoute} />
           <Stack.Screen name="Settings" component={SettingsRoute} />
           <Stack.Screen name="Licences" component={LicencesRoute} />
-          <Stack.Screen name="Notebook" component={NotebookRoute} />
+          <Stack.Screen name="Notebook" component={NotebookRoute} options={TAB_SCREEN} />
           <Stack.Screen name="NotePage" component={NotePageRoute} />
         </Stack.Navigator>
       </NavigationContainer>
@@ -314,7 +317,8 @@ function ReaderRoute({ navigation, route }: Props<'Reader'>) {
       jumpTo={route.params?.ref}
       onBack={from ? () => navigation.goBack() : undefined}
       backLabel={from}
-      onOpenBooks={() => navigation.navigate('Books')}
+      onOpenBooks={() => switchTab('Books')}
+      tabs={!from}
       onOpenSearch={() => navigation.navigate('Search')}
       onOpenSettings={() => navigation.navigate('Settings')}
       onOpenNotePage={(id, isNew) => navigation.push('NotePage', { id, isNew })}
@@ -325,23 +329,16 @@ function ReaderRoute({ navigation, route }: Props<'Reader'>) {
 
 function BooksRoute({ navigation }: Props<'Books'>) {
   const { books } = useApp();
-  const { settings } = useSettings();
   const current = usePlace(selectBook);
-  const { pages } = useNotebook();
   return (
     <BooksScreen
       books={books}
       current={current}
       onPick={(book) => navigation.navigate('Chapters', { bookId: book.id })}
-      onOpenBookmarks={() => navigation.navigate('Bookmarks')}
-      onOpenNotebook={() => navigation.navigate('Notebook')}
-      pageCount={pages.length}
       onOpenRecent={(place) => {
         moveMainReader({ book: place.book, chapter: place.chapter });
         navigation.popToTop();
       }}
-      bookmarkCount={settings.bookmarks.length + Object.keys(settings.highlights).length + Object.keys(settings.notes).length}
-      onBack={() => navigation.goBack()}
     />
   );
 }
@@ -368,7 +365,7 @@ function BookmarksRoute({ navigation }: Props<'Bookmarks'>) {
   const { books, onWord } = useApp();
   const t = useT();
   const openRef = useOpenRef(navigation, t('saved'));
-  return <SavedScreen books={books} onOpenRef={openRef} onWord={onWord} onBack={() => navigation.goBack()} />;
+  return <SavedScreen books={books} onOpenRef={openRef} onWord={onWord} />;
 }
 
 function SearchRoute({ navigation }: Props<'Search'>) {
@@ -390,7 +387,7 @@ function SettingsRoute({ navigation }: Props<'Settings'>) {
 }
 
 function NotebookRoute({ navigation }: Props<'Notebook'>) {
-  return <NotebookScreen onOpenPage={(id, isNew) => navigation.push('NotePage', { id, isNew })} onBack={() => navigation.goBack()} />;
+  return <NotebookScreen onOpenPage={(id, isNew) => navigation.push('NotePage', { id, isNew })} />;
 }
 
 function NotePageRoute({ navigation, route }: Props<'NotePage'>) {

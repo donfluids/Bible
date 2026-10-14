@@ -33,5 +33,9 @@
  "ink_eraser": 57375,
  "edit": 57376,
  "note_stack": 57377,
- "note_add": 57378
+ "note_add": 57378,
+ "menu_book_fill": 57379,
+ "bookmarks_fill": 57380,
+ "note_stack_fill": 57381,
+ "format_list_bulleted": 57382
 }

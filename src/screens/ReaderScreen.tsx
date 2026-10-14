@@ -10,6 +10,7 @@ import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
 import { CompareSheet } from '../components/CompareSheet';
 import { HEADER_MAX_FONT_SCALE, Header, HeaderChip, HeaderIconButton } from '../components/Header';
+import { TAB_BAR_HEIGHT, TabBar } from '../components/TabBar';
 import { Icon } from '../components/Icon';
 import type { IconName } from '../components/Icon';
 import { useEdition } from '../edition';
@@ -50,6 +51,8 @@ interface Props {
   /** Open a notebook page; `isNew` for one just made from a verse. */
   onOpenNotePage: (id: string, isNew?: boolean) => void;
   onWord: (pick: WordPick) => void;
+  /** The main reader shows the bottom tab bar; a reader opened from a list does not. */
+  tabs?: boolean;
 }
 
 type Item =
@@ -164,13 +167,15 @@ let lastMarkColor: HighlightColor = 'yellow';
 
 // Height of the band at the top and bottom of the text where a marking finger scrolls it.
 const SCROLL_BAND = 56;
+/** How far the text scrolls one way before the tab bar folds away or comes back. */
+const BAR_SCROLL = 32;
 
 function KeepAwake() {
   useKeepAwake();
   return null;
 }
 
-export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onOpenNotePage, onWord }: Props) {
+export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onOpenNotePage, onWord, tabs = false }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const t = useT();
@@ -509,6 +514,26 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
   }, []);
   const scrollY = useRef(0);
   const contentHeight = useRef(0);
+  const listHeight = useRef(0);
+
+  // The tab bar folds away while the text is scrolled down, and comes back on scrolling
+  // up a little, near the top or end of the chapter, and on a new chapter.
+  const [barHidden, setBarHidden] = useState(false);
+  const scrollRun = useRef(0);
+  const onListScroll = useCallback(
+    (y: number) => {
+      const dy = y - scrollY.current;
+      scrollY.current = y;
+      if (!tabs || dy === 0) return;
+      if (Math.sign(dy) !== Math.sign(scrollRun.current)) scrollRun.current = 0;
+      scrollRun.current += dy;
+      const nearEnd = y + listHeight.current >= contentHeight.current - 48;
+      if (y < 48 || nearEnd || scrollRun.current < -BAR_SCROLL) setBarHidden(false);
+      else if (scrollRun.current > BAR_SCROLL) setBarHidden(true);
+    },
+    [tabs],
+  );
+  useEffect(() => setBarHidden(false), [position.book, position.chapter]);
   type DragState = {
     boxes: WordBox[] | null;
     body: { x: number; y: number; height: number } | null;
@@ -961,6 +986,8 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
   );
 
   const title = useMemo(() => `${bookName(books, position.book, translation)} ${position.chapter}`, [books, position, translation]);
+  // With the tab bar, it keeps the space for the phone's navigation bar.
+  const bottomInset = tabs ? 0 : insets.bottom;
   const atStart = position.book === books[0]?.id && position.chapter === 1;
   const atEnd = position.book === books[books.length - 1]?.id && position.chapter === book?.chapters;
 
@@ -1020,8 +1047,9 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
           renderItem={renderItem}
           contentContainerStyle={styles.list}
           scrollEnabled={!dragging}
-          onScroll={(e) => {
-            scrollY.current = e.nativeEvent.contentOffset.y;
+          onScroll={(e) => onListScroll(e.nativeEvent.contentOffset.y)}
+          onLayout={(e) => {
+            listHeight.current = e.nativeEvent.layout.height;
           }}
           scrollEventThrottle={16}
           onContentSizeChange={(_w, h) => {
@@ -1059,7 +1087,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         </View>
       </GestureDetector>
       {marking ? (
-        <View style={[styles.markBar, { paddingBottom: insets.bottom + 8, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
+        <View style={[styles.markBar, { paddingBottom: bottomInset + 8, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
           <Text style={[styles.markHint, { color: theme.muted }]}>{markTool === 'erase' ? t('eraseHint') : t('markHint')}</Text>
           <View style={styles.markRow}>
             <View style={styles.markTools}>
@@ -1101,7 +1129,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
           </View>
         </View>
       ) : (
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 8, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
+      <View style={[styles.footer, { paddingBottom: bottomInset + 8, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
         <NavButton label={t('previous')} onPress={() => go(-1)} disabled={atStart} />
         <Pressable
           android_ripple={{ color: theme.accentSoft }}
@@ -1122,8 +1150,10 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
       </View>
       )}
 
+      {tabs ? <TabBar current="Reader" hidden={barHidden || marking} /> : null}
+
       {toast ? (
-        <View style={[styles.toast, { backgroundColor: theme.text, bottom: insets.bottom + 70 }]} pointerEvents="none">
+        <View style={[styles.toast, { backgroundColor: theme.text, bottom: insets.bottom + 70 + (tabs && !barHidden && !marking ? TAB_BAR_HEIGHT : 0) }]} pointerEvents="none">
           <Text style={[styles.toastText, { color: theme.bg }]}>{toast}</Text>
         </View>
       ) : null}

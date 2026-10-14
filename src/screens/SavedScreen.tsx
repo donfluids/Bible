@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, SectionList, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
+import { TabBar } from '../components/TabBar';
 import { IconButton, Icon } from '../components/Icon';
 import { SectionLabel } from '../components/SectionLabel';
 import { scriptureFont } from '../fonts';
@@ -19,7 +19,6 @@ interface Props {
   books: Book[];
   onOpenRef: (ref: Ref) => void;
   onWord: (pick: WordPick) => void;
-  onBack: () => void;
 }
 
 type Saved = { kind: 'bookmark' | 'highlight' | 'note' | 'mark'; ref: Ref; key: string; color?: string; note?: string; mark?: TextMark; order: number };
@@ -44,11 +43,9 @@ function markedWords(mark: TextMark, verses: Map<string, VerseRow>): string | nu
 }
 
 /** Bookmarks, highlighted verses, marked text and notes, each in its own section, newest or latest first. */
-export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
+export function SavedScreen({ books, onOpenRef, onWord }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
-  // Lists run under the system navigation bar; the last row must clear it.
-  const insets = useSafeAreaInsets();
   const t = useT();
   const { settings, update } = useSettings();
   const [verses, setVerses] = useState<Map<string, VerseRow>>(new Map());
@@ -150,7 +147,7 @@ export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
-      <Header title={t('saved')} onBack={onBack} />
+      <Header title={t('saved')} />
       {empty ? (
         <View style={styles.emptyBox}>
           <View style={[styles.emptyIcon, { backgroundColor: theme.accentSoft }]}>
@@ -163,7 +160,7 @@ export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
         <SectionList
           sections={sections}
           keyExtractor={(item) => `${item.kind}:${item.key}`}
-          contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
+          contentContainerStyle={[styles.list, { paddingBottom: 24 }]}
           stickySectionHeadersEnabled
           renderSectionHeader={({ section }) => (
             <SectionLabel text={section.title} style={[styles.section, { backgroundColor: theme.bg }]} />
@@ -197,6 +194,7 @@ export function SavedScreen({ books, onOpenRef, onWord, onBack }: Props) {
           ListFooterComponent={<View style={{ height: 40 }} />}
         />
       )}
+      <TabBar current="Bookmarks" />
     </View>
   );
 }
