@@ -1,6 +1,6 @@
 import React, { memo, useMemo } from 'react';
 import { StyleSheet, Text } from 'react-native';
-import { isMalayalam, scriptureFont } from '../fonts';
+import { scriptOf, scriptureFont } from '../fonts';
 import { useT } from '../i18n';
 import { useSelectedStart } from '../selection';
 import { ICON_FONT_FAMILY, iconChar } from './Icon';
@@ -103,10 +103,10 @@ export const VerseText = memo(function VerseText({
   const ranges = useMemo(() => (highlightText ? matchRanges(verse.text, highlightText) : []), [verse.text, highlightText]);
   const isTitle = verse.verse === 0;
   // The verse's own script decides its face and spacing (Compare shows two at once).
-  const ml = isMalayalam(verse.text);
-  const font = scriptureFont(ml, serif) ?? theme.font;
-  const bold = ml ? { fontFamily: scriptureFont(true, serif, true) } : { fontWeight: '700' as const };
-  const lineHeight = Math.round(fontSize * translationInfo(ml ? 'MAL' : 'KJV').lineHeight);
+  const script = scriptOf(verse.text);
+  const font = scriptureFont(script, serif) ?? theme.font;
+  const bold = script ? { fontFamily: scriptureFont(script, serif, true) } : { fontWeight: '700' as const };
+  const lineHeight = Math.round(fontSize * translationInfo(script === 'ta' ? 'TAM' : script === 'ml' ? 'MAL' : 'KJV').lineHeight);
   const small = Math.max(11, fontSize - 6);
 
   if (verse.omitted) {

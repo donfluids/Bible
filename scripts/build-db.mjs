@@ -68,7 +68,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = join(ROOT, 'data', 'raw');
 const OUT_DIR = join(ROOT, 'assets', 'db');
-const EDITIONS = { en: ['KJV', 'WEB'], ml: ['MAL', 'KJV'] };
+const EDITIONS = { en: ['KJV', 'WEB'], ml: ['MAL', 'KJV'], ta: ['TAM', 'KJV'] };
 
 // USFM book code, display name, testament. Order is the Protestant canon.
 const BOOKS = [
@@ -173,6 +173,9 @@ const ALL_TRANSLATIONS = [
   { id: 'KJV', name: 'King James Version', dir: 'kjv', suffix: 'eng-kjv2006.usfm' },
   { id: 'WEB', name: 'World English Bible', dir: 'web', suffix: 'engwebp.usfm' },
   { id: 'MAL', name: 'സത്യവേദപുസ്തകം 1910', dir: 'mal2015', suffix: 'mal2015.usfm' },
+  // The IRV's \toc2 is an abbreviation (ஆதி); its \h is the book's name (ஆதியாகமம்).
+  // Tamil needs no zero-width non-joiner; the IRV has eight stray ones, one inside a word (1 John 5:3).
+  { id: 'TAM', name: 'இண்டியன் ரிவைஸ்டு வெர்ஸன் (IRV)', dir: 'tam2017', suffix: 'tam2017.usfm', nameFrom: 'h', dropZwnj: true },
 ];
 
 // Paragraph level markers whose content belongs to the current verse.
@@ -241,7 +244,7 @@ function splitTags(tagged) {
   return { text, tags: tags.join(' '), notes };
 }
 
-function parseBook(path) {
+function parseBook(path, nameFrom) {
   let src = readFileSync(path, 'utf8').replace(/^﻿/, '');
   // A verse whose only content is a footnote is one the translation omits. Keep the
   // note, marked with U+2205, so the app can show the gap honestly.
@@ -256,10 +259,11 @@ function parseBook(path) {
     notes.push({ kind, text });
     return `${NOTE}${notes.length - 1}${NOTE}`;
   });
-  // The book's name in this translation's language: \toc2 (short name), else \h.
+  // The book's name in this translation's language: \toc2 (short name), else \h; or \h
+  // first when the translation's \toc2 is only an abbreviation.
   const toc2 = /^\\toc2\s+(.+?)\s*$/m.exec(src);
   const h = /^\\h\s+(.+?)\s*$/m.exec(src);
-  const bookName = (toc2 ?? h)?.[1] ?? null;
+  const bookName = (nameFrom === 'h' ? h ?? toc2 : toc2 ?? h)?.[1] ?? null;
   const chapters = new Map(); // chapter -> Map(verse -> raw)
   const headings = []; // { chapter, beforeVerse, raw }
   let chapter = 0;
@@ -779,7 +783,7 @@ function buildEdition(edition) {
     for (const book of BOOKS) {
       const file = files.find((f) => f.endsWith(book.osis + t.suffix));
       if (!file) throw new Error(`${t.id}: no file for ${book.osis}`);
-      const { chapters, headings, notes, paras, bookName } = parseBook(join(RAW, t.dir, file));
+      const { chapters, headings, notes, paras, bookName } = parseBook(join(RAW, t.dir, file), t.nameFrom);
       // Replace chapters the source gets wrong, and strip stray text it contains.
       for (const [ch, versesById] of Object.entries(corrections[t.id]?.[book.id] ?? {})) {
         chapters.set(Number(ch), new Map(Object.entries(versesById).map(([v, text]) => [Number(v), text])));
@@ -801,6 +805,7 @@ function buildEdition(edition) {
         const raw = b === book.id ? chapters.get(ch)?.get(v) : undefined;
         if (raw !== undefined) chapters.get(ch).set(v, raw.replace(junk, ''));
       }
+      if (t.dropZwnj) for (const vmap of chapters.values()) for (const [v, raw] of vmap) vmap.set(v, raw.replace(/\u200c/g, ''));
       if (bookName) insBookName.run(t.id, book.id, bookName);
       for (const h of headings) {
         const text = splitTags(cleanVerse(h.raw)).text;
@@ -940,6 +945,7 @@ function buildEdition(edition) {
     KJV: 'eBible.org eng-kjv2006, public domain',
     WEB: 'eBible.org engwebp, public domain',
     MAL: 'eBible.org mal2015, Malayalam Sathyavedapusthakam 1910 in contemporary orthography, Free Bible Foundation 2015, CC BY-SA 4.0',
+    TAM: 'eBible.org tam2017, Tamil Indian Revised Version, Bridge Connectivity Solutions 2017, 2019, CC BY-SA 4.0',
   };
   insMeta.run('sources', JSON.stringify({
     ...Object.fromEntries(TRANSLATIONS.map((t) => [t.id, SOURCES[t.id]])),

@@ -260,7 +260,8 @@ export async function searchText(
   /** True once the result is no longer wanted (more has been typed); a long search then stops early. */
   stale?: () => boolean,
 ): Promise<VerseRow[]> {
-  const cleaned = query.trim().replace(/\s+/g, ' ');
+  // Joiners a keyboard may add are dropped: the Tamil text has none.
+  const cleaned = query.trim().replace(/\s+/g, ' ').replace(/[\u200c\u200d]/g, (c) => (/[\u0b80-\u0bff]/.test(query) ? '' : c));
   if (!cleaned) return [];
   const malayalam = malayalamPattern(cleaned);
   if (malayalam) return searchMalayalam(db, translation, malayalam, limit, stale);
@@ -459,8 +460,8 @@ export function unpackWords(packed: string): OriginalWord[] {
 export async function searchLexicon(db: SQLiteDatabase, query: string, limit: number): Promise<LexiconHit[]> {
   const q = plainText(query.replace(/\s+/g, ' '));
   if (q.length < 2) return [];
-  // The dictionary has no Malayalam in it, so a Malayalam query cannot match; it is not run.
-  if (/[\u0d00-\u0d7f]/.test(q)) return [];
+  // The dictionary has no Malayalam or Tamil in it, so such a query cannot match; it is not run.
+  if (/[\u0d00-\u0d7f\u0b80-\u0bff]/.test(q)) return [];
   const escaped = q.replace(/[\\%_]/g, (c) => '\\' + c);
   const prefix = escaped + '%';
   const word = '%' + escaped + '%';

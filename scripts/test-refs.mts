@@ -8,12 +8,12 @@ import { formatRef } from '../src/text.ts';
 
 type Expect = [string, string];
 
-function load(edition: 'ml' | 'en') {
+function load(edition: 'ml' | 'ta' | 'en') {
   const db = new DatabaseSync(new URL(`../assets/db/bible-${edition}.db`, import.meta.url).pathname, { readOnly: true });
   const rows = db.prepare('SELECT id, osis, name, testament, chapters FROM books ORDER BY id').all() as any[];
   const names = db.prepare('SELECT translation, book, name FROM book_names').all() as any[];
   const books = rows.map((b) => ({ ...b, names: Object.fromEntries(names.filter((n) => n.book === b.id).map((n) => [n.translation, n.name])) }));
-  const translation = edition === 'ml' ? 'MAL' : 'KJV';
+  const translation = edition === 'ml' ? 'MAL' : edition === 'ta' ? 'TAM' : 'KJV';
   const counts = new Map<string, number>();
   for (const r of db.prepare('SELECT book, chapter, MAX(verse) AS n FROM verses WHERE translation = ? GROUP BY book, chapter').all(translation) as any[]) counts.set(`${r.book}:${r.chapter}`, r.n);
   return { db, books, translation, count: (b: number, c: number) => counts.get(`${b}:${c}`) };
@@ -66,6 +66,29 @@ const ML: Expect[] = [
   ['ഞാൻ 12 പേരെ കണ്ടു, 2024-ൽ', ''],
 ];
 
+// Tamil: the IRV's names and abbreviations, other spellings, and words that stay plain.
+const TA: Expect[] = [
+  ['தேவன் உலகத்தில் அன்புகூர்ந்தார்: யோவான் 3:16', '43:3:16'],
+  ['1 கொரி 13:4-7', '46:13:4-7'],
+  ['யோவா. 3:16; 4:24', '43:3:16 43:4:24'],
+  ['ரோமர் 8:28, 29', '45:8:28 45:8:29'],
+  ['சங்கீதம் 23', '19:23'],
+  ['சங். 23', '19:23'],
+  ['சங்கீதங்கள் 3 (தலைப்பு)', '19:3:0'],
+  ['யூதா 24', '65:1:24'],
+  ['3 யோவான் 2', '64:1:2'],
+  ['முதலாம் கொரிந்தியர் 13', '46:13'],
+  ['2 ராஜாக்கள் 5:14', '12:5:14'],
+  ['அப்போஸ்தலர் 2:1-4', '44:2:1-4'],
+  ['வெளிப்படுத்தின விசேஷம் 22:21', '66:22:21'],
+  ['ரூத்து 1:16', '8:1:16'],
+  // Ordinary words and numbers: no link.
+  ['இயேசு 12 சீஷரைத் தெரிந்துகொண்டார்', ''],
+  ['எண் 7 பூரணத்தின் அடையாளம்', ''],
+  ['ஆதி 3 நாட்கள்', ''],
+  ['தானியேல் 1260 நாட்கள்', ''],
+];
+
 const EN: Expect[] = [
   ['Read John 3:16 and Ps 23:1-3 today.', '43:3:16 19:23:1-3'],
   ['Romans 8', '45:8'],
@@ -88,8 +111,11 @@ const EN: Expect[] = [
   ['Romans 8 is long; is 5 people; I am 3 years old.', '45:8'],
 ];
 
-// What the search box opens. Malayalam names exist only in the Malayalam edition.
-const SEARCH: [string, string, 'ml' | 'both'][] = [
+// What the search box opens. Malayalam and Tamil names exist only in their own edition.
+const SEARCH: [string, string, 'ml' | 'ta' | 'both'][] = [
+  ['சங். 23:1-6', '19:23:1', 'ta'],
+  ['1 கொரி 13:4-7', '46:13:4', 'ta'],
+  ['யோவான் 3:16', '43:3:16', 'ta'],
   ['സങ്കീ. 23:1-6', '19:23:1', 'ml'],
   ['1 കൊരി. 13:4-7', '46:13:4', 'ml'],
   ['യൂദാ 24', '65:1:24', 'ml'],
@@ -99,7 +125,7 @@ const SEARCH: [string, string, 'ml' | 'both'][] = [
 ];
 
 let failed = 0;
-for (const [edition, cases] of [['ml', ML], ['en', EN]] as const) {
+for (const [edition, cases] of [['ml', ML], ['ta', TA], ['en', EN]] as const) {
   const ctx = load(edition);
   for (const [text, want] of cases) {
     const got = links(text, ctx);
@@ -109,7 +135,7 @@ for (const [edition, cases] of [['ml', ML], ['en', EN]] as const) {
     }
   }
   for (const [text, want, where] of SEARCH) {
-    if (where === 'ml' && edition !== 'ml') continue;
+    if (where !== 'both' && where !== edition) continue;
     const r = parseReference(text, ctx.books as any, ctx.translation as any);
     const got = r ? `${r.book}:${r.chapter}:${r.verse}` : '';
     if (got !== want) {

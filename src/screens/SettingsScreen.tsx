@@ -6,13 +6,16 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
 import { Icon, IconButton } from '../components/Icon';
 import { SectionLabel } from '../components/SectionLabel';
-import { useEdition } from '../edition';
+import { nativeTranslation, useEdition } from '../edition';
 import type { Language } from '../edition';
 import { translationName, useT } from '../i18n';
 import { getMeta } from '../queries';
 import { FONT_SIZES, useSettings } from '../settings';
 import type { Layout, ThemeChoice } from '../settings';
 import { useTheme } from '../theme';
+
+/** Each interface language in its own script. */
+const LANGUAGE_NAMES: Record<Language, string> = { ml: 'മലയാളം', ta: 'தமிழ்', en: 'English' };
 
 interface Props {
   onBack: () => void;
@@ -52,10 +55,7 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
             <View style={styles.block}>
               <Text style={[styles.rowTitle, { color: theme.text }]}>{t('language')}</Text>
               <Segmented
-                options={[
-                  ['ml', 'മലയാളം'],
-                  ['en', 'English'],
-                ] as [Language, string][]}
+                options={EDITION.languages.map((id) => [id, LANGUAGE_NAMES[id]]) as [Language, string][]}
                 value={settings.language}
                 onChange={(language) => update({ language })}
               />
@@ -110,7 +110,7 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.rowTitle, { color: theme.text }]}>{translationName(settings.language, id)}</Text>
                   {/* The short label the reader's chip shows, and the version's code. */}
-                  <Text style={[styles.rowSub, { color: theme.muted }]}>{EDITION.translations.includes('MAL') && id !== 'MAL' ? `ENG · ${id}` : id}</Text>
+                  <Text style={[styles.rowSub, { color: theme.muted }]}>{nativeTranslation(EDITION) && id !== nativeTranslation(EDITION) ? `ENG · ${id}` : id}</Text>
                 </View>
                 <View style={styles.check}>{active ? <Icon name="check" color={theme.accent} /> : null}</View>
               </Pressable>
@@ -176,7 +176,7 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
 
         <Label text={t('aboutTexts')} />
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border, padding: 14 }]}>
-          <Text style={[styles.about, { color: theme.text }]}>{EDITION.id === 'ml' ? t('aboutMalayalam') : t('aboutEnglish')}</Text>
+          <Text style={[styles.about, { color: theme.text }]}>{t(EDITION.id === 'ml' ? 'aboutMalayalam' : EDITION.id === 'ta' ? 'aboutTamil' : 'aboutEnglish')}</Text>
           <Text style={[styles.about, { color: theme.text, marginTop: 10 }]}>{t('aboutStrongs')}</Text>
           <Text style={[styles.about, { color: theme.text, marginTop: 10 }]}>{t('aboutInterlinear')}</Text>
           {EDITION.translations.includes('WEB') ? <Text style={[styles.about, { color: theme.muted, marginTop: 10 }]}>{t('aboutWeb')}</Text> : null}

@@ -16,6 +16,17 @@ export const MALAYALAM_SHORT_NAMES = [
   '2 പത്രൊ', '1 യോഹ', '2 യോഹ', '3 യോഹ', 'യൂദാ', 'വെളി',
 ];
 
+/** The Tamil, from the IRV's own abbreviations (\toc3), with a space after the number. */
+export const TAMIL_SHORT_NAMES = [
+  'ஆதி', 'யாத்', 'லேவி', 'எண்', 'உபா', 'யோசு', 'நியா', 'ரூத்', '1 சாமு', '2 சாமு',
+  '1 இராஜா', '2 இராஜா', '1 நாளா', '2 நாளா', 'எஸ்றா', 'நெகே', 'எஸ்தர்', 'யோபு', 'சங்', 'நீதி',
+  'பிரச', 'உன்னத', 'ஏசா', 'எரே', 'புலம்', 'எசேக்', 'தானி', 'ஓசியா', 'யோவே', 'ஆமோ',
+  'ஒபதி', 'யோனா', 'மீகா', 'நாகூ', 'ஆப', 'செப்ப', 'ஆகாய்', 'சகரி', 'மல்கி', 'மத்',
+  'மாற்கு', 'லூக்', 'யோவா', 'அப்', 'ரோமர்', '1 கொரி', '2 கொரி', 'கலா', 'எபே', 'பிலி',
+  'கொலோ', '1 தெச', '2 தெச', '1 தீமோ', '2 தீமோ', 'தீத்', 'பிலே', 'எபி', 'யாக்', '1 பேது',
+  '2 பேது', '1 யோவா', '2 யோவா', '3 யோவா', 'யூதா', 'வெளி',
+];
+
 export const ENGLISH_SHORT_NAMES = [
   'Gen', 'Exod', 'Lev', 'Num', 'Deut', 'Josh', 'Judg', 'Ruth', '1 Sam', '2 Sam',
   '1 Kgs', '2 Kgs', '1 Chr', '2 Chr', 'Ezra', 'Neh', 'Esth', 'Job', 'Ps', 'Prov',
@@ -94,27 +105,70 @@ function malayalamKey(name: string): string {
     .replace(/[\u0d4d\u0d41\u0d02]+$/, '');
 }
 
-/** Each book's Malayalam names, reduced, with the number in front of the name (or 0). */
-let malayalamIndex: { books: Book[]; names: { id: number; number: number; key: string }[] } | null = null;
-function malayalamNames(books: Book[]) {
-  if (malayalamIndex?.books === books) return malayalamIndex.names;
+/**
+ * Other Tamil names for books, beside the names in the IRV: the singular and short forms
+ * people write, and the names of the Catholic Bible (திருவிவிலியம்). To be checked by a
+ * Tamil reader.
+ */
+const TAMIL_NAMES: Record<number, string[]> = {
+  1: ['தொடக்கநூல்'], 2: ['விடுதலைப்பயணம்'], 3: ['லேவியர்'], 4: ['எண்ணிக்கை'], 5: ['இணைச்சட்டம்'],
+  7: ['நீதித்தலைவர்கள்', 'நியாயாதிபதி'], 8: ['ரூத்து'], 11: ['அரசர்கள்'], 12: ['அரசர்கள்'], 13: ['குறிப்பேடு'], 14: ['குறிப்பேடு'],
+  15: ['எஸ்ரா'], 19: ['சங்கீதம்', 'திருப்பாடல்கள்'], 21: ['சபைஉரையாளர்'], 22: ['இனிமைமிகுபாடல்', 'உன்னதப்பாட்டு'],
+  23: ['எசாயா'], 25: ['புலம்பல்'], 28: ['ஓசேயா'], 33: ['மீக்கா'], 35: ['அபக்கூக்கு', 'ஆபகூக்'], 38: ['செக்கரியா'], 39: ['மலாக்கி'],
+  44: ['அப்போஸ்தலர்', 'அப்போஸ்தலர்நடபடிகள்', 'நடபடிகள்', 'திருத்தூதர்பணிகள்'], 45: ['உரோமையர்'], 51: ['கொலோசையர்'],
+  52: ['தெசலோனிக்கர்'], 53: ['தெசலோனிக்கர்'], 54: ['திமொத்தேயு'], 55: ['திமொத்தேயு'], 57: ['பிலமோன்'], 58: ['எபிரேயர்'],
+  66: ['வெளிப்படுத்தல்', 'திருவெளிப்பாடு'],
+};
+
+/**
+ * A Tamil book name reduced so that spellings people type meet the IRV's: no spaces, dots
+ * or joiners; long and short vowels alike (யோவான், யொவான்); the Grantha letters as the
+ * Tamil ones nearest them (இராஜா, இராசா); a doubled consonant as one; no இ before a
+ * leading ர (ராஜாக்கள்); and no final ் or ு (ரூத், ரூத்து).
+ */
+const TA_LONG_SHORT: Record<string, string> = { 'ீ': 'ி', 'ூ': 'ு', 'ே': 'ெ', 'ோ': 'ொ', 'ஈ': 'இ', 'ஊ': 'உ', 'ஏ': 'எ', 'ஓ': 'ஒ' };
+const GRANTHA: Record<string, string> = { 'ஜ': 'ச', 'ஸ': 'ச', 'ஷ': 'ச', 'ஹ': 'க' };
+function tamilKey(name: string): string {
+  return name
+    .replace(/[\s.\u200c\u200d]/g, '')
+    .replace(/[ீூேோஈஊஏஓ]/g, (c) => TA_LONG_SHORT[c])
+    .replace(/[ஜஸஷஹ]/g, (c) => GRANTHA[c])
+    .replace(/^இர/, 'ர')
+    .replace(/([\u0b95-\u0bb9])\u0bcd\1/g, '$1')
+    .replace(/[\u0bcd\u0bc1]+$/, '');
+}
+
+/** The scripts book names are typed in besides English, with how each is matched. */
+type NameScript = 'ml' | 'ta';
+const SCRIPTS: Record<NameScript, { letters: RegExp; key: (name: string) => string; other: (id: number) => string[] }> = {
+  ml: { letters: /[\u0d00-\u0d7f]/, key: malayalamKey, other: (id) => [...(MALAYALAM_NAMES[id] ?? []), ...(MALAYALAM_VARIANTS[id] ?? [])] },
+  ta: { letters: /[\u0b80-\u0bff]/, key: tamilKey, other: (id) => TAMIL_NAMES[id] ?? [] },
+};
+const nameScript = (text: string): NameScript | null => (SCRIPTS.ml.letters.test(text) ? 'ml' : SCRIPTS.ta.letters.test(text) ? 'ta' : null);
+
+/** Each book's names in a script, reduced, with the number in front of the name (or 0). */
+const nameIndex: Partial<Record<NameScript, { books: Book[]; names: { id: number; number: number; key: string }[] }>> = {};
+function scriptNames(script: NameScript, books: Book[]) {
+  const cached = nameIndex[script];
+  if (cached?.books === books) return cached.names;
+  const { letters, key, other } = SCRIPTS[script];
   const names: { id: number; number: number; key: string }[] = [];
   for (const b of books) {
     const number = Number(/^([1-3])/.exec(b.name)?.[1] ?? 0);
-    const all = [...Object.values(b.names), ...(MALAYALAM_NAMES[b.id] ?? []), ...(MALAYALAM_VARIANTS[b.id] ?? [])].filter((n) => /[\u0d00-\u0d7f]/.test(n));
-    for (const n of all) names.push({ id: b.id, number, key: malayalamKey(n.replace(/^[1-3]\.?\s*/, '')) });
+    const all = [...Object.values(b.names), ...other(b.id)].filter((n) => letters.test(n));
+    for (const n of all) names.push({ id: b.id, number, key: key(n.replace(/^[1-3]\.?\s*/, '')) });
   }
-  malayalamIndex = { books, names };
+  nameIndex[script] = { books, names };
   return names;
 }
 
-/** The book a typed Malayalam name points to: the start of one book's name, or a whole one. */
-function malayalamBook(typed: string, books: Book[]): number | undefined {
+/** The book a name typed in Malayalam or Tamil points to: the start of one book's name, or a whole one. */
+function scriptBook(script: NameScript, typed: string, books: Book[]): number | undefined {
   const m = /^([1-3])?\.?\s*(.*)$/.exec(typed.trim());
   const number = Number(m?.[1] ?? 0);
-  const key = malayalamKey(m?.[2] ?? '');
+  const key = SCRIPTS[script].key(m?.[2] ?? '');
   if (!key) return undefined;
-  const found = malayalamNames(books).filter((n) => n.number === number && n.key.startsWith(key));
+  const found = scriptNames(script, books).filter((n) => n.number === number && n.key.startsWith(key));
   const ids = new Set(found.map((n) => n.id));
   if (ids.size === 1) return found[0].id;
   const whole = new Set(found.filter((n) => n.key === key).map((n) => n.id));
@@ -138,11 +192,12 @@ export function parseReference(input: string, books: Book[], translation?: Trans
   return id ? withChapter(books, id, Number(m[2]), m[3] ? Number(m[3]) : undefined) : null;
 }
 
-/** The book a typed name stands for: Malayalam or English, a full name, a usual abbreviation or a clear prefix. */
+/** The book a typed name stands for: Malayalam, Tamil or English, a full name, a usual abbreviation or a clear prefix. */
 export function bookFromName(name: string, books: Book[], translation?: TranslationId): number | undefined {
   const typed = name.trim();
-  // Malayalam names, from any translation, e.g. "യോഹന്നാൻ" or "1 ശമൂവേൽ".
-  if (/[\u0d00-\u0d7f]/.test(typed)) return malayalamBook(typed, books);
+  // Malayalam or Tamil names, from any translation, e.g. "യോഹന്നാൻ", "1 ശമൂവേൽ", "யோவான்".
+  const script = nameScript(typed);
+  if (script) return scriptBook(script, typed, books);
   const rawName = typed.toLowerCase().replace(/[^a-z0-9]/g, '');
   if (!rawName) return undefined;
   const id = ABBREVIATIONS[rawName];
@@ -188,15 +243,18 @@ export interface TextPiece {
 /** The number of verses in a chapter of the Bible being read, when known. */
 export type VerseCount = (book: number, chapter: number) => number | undefined;
 
-// Ordinal book numbers written before a Malayalam name: ഒന്നാം കൊരിന്ത്യർ, 1-ാം കൊരി.
+// Ordinal book numbers written before a Malayalam or Tamil name: ഒന്നാം കൊരിന്ത്യർ, 1-ാം കൊരി, முதலாம் கொரிந்தியர்.
 const ORDINALS: [RegExp, string][] = [
-  [/^(ഒന്നാം|1-ാം)\s*/, '1 '],
-  [/^(രണ്ടാം|2-ാം)\s*/, '2 '],
-  [/^(മൂന്നാം|3-ാം)\s*/, '3 '],
+  [/^(ഒന്നാം|1-ാം|முதலாம்|1-ஆம்)\s*/, '1 '],
+  [/^(രണ്ടാം|2-ാം|இரண்டாம்|2-ஆம்)\s*/, '2 '],
+  [/^(മൂന്നാം|3-ാം|மூன்றாம்|3-ஆம்)\s*/, '3 '],
 ];
 
-// Malayalam words that are also a book's short name; a chapter alone after them is a number, not a reference.
-const ML_WORDS = new Set(['സംഖ്യ']);
+// Words that are also a book's short name; a chapter alone after them is a number, not a
+// reference. Malayalam: സംഖ്യ (number). Tamil: எண் (number), ஆதி (beginning), நீதி
+// (justice), புலம் (field), வெளி (outside).
+const SHORT_WORDS = new Set(['സംഖ്യ', 'எண்', 'ஆதி', 'நீதி', 'புலம்', 'வெளி']);
+const SHORT_NAMES: Record<NameScript, string[]> = { ml: MALAYALAM_SHORT_NAMES, ta: TAMIL_SHORT_NAMES };
 
 // Book abbreviations that are also English words: written in lower case, they are words ("is 5", "he 1:3").
 const EN_WORDS = new Set(['is', 'he', 'am', 'so', 'ex', 'ac', 'co', 'la', 'ho', 'ne', 'mi', 'ru', 'de', 'ge', 'ob', 'jo', 'na', 're', 'ti', 'ep', 'es', 'le', 'nu', 'job', 'mark', 'acts']);
@@ -204,14 +262,16 @@ const EN_WORDS = new Set(['is', 'he', 'am', 'so', 'ex', 'ac', 'co', 'la', 'ho', 
 /** True when a name may stand before a chapter number alone, so "Romans 8" links but "യേശു 12" does not. */
 function nameForChapter(name: string, id: number, books: Book[], translation?: TranslationId): boolean {
   const bare = name.replace(/^[1-3]\.?\s*/, '');
-  if (/[\u0d00-\u0d7f]/.test(name)) {
-    if (/\.$/.test(name)) return true; // an abbreviation with its dot: സങ്കീ. 23
+  const script = nameScript(name);
+  if (script) {
+    if (/\.$/.test(name)) return true; // an abbreviation with its dot: സങ്കീ. 23, சங். 23
     const plain = bare.replace(/[\s.]/g, '');
-    if (MALAYALAM_SHORT_NAMES[id - 1]?.replace(/^[1-3]\s*/, '') === plain) return !ML_WORDS.has(plain);
-    const key = malayalamKey(bare);
+    if (SHORT_NAMES[script][id - 1]?.replace(/^[1-3]\s*/, '') === plain) return !SHORT_WORDS.has(plain);
+    const { key, other } = SCRIPTS[script];
+    const typed = key(bare);
     const book = books.find((b) => b.id === id);
-    const names = [...Object.values(book?.names ?? {}), ...(MALAYALAM_NAMES[id] ?? []), ...(MALAYALAM_VARIANTS[id] ?? [])];
-    return names.some((n) => malayalamKey(n.replace(/^[1-3]\.?\s*/, '')) === key);
+    const names = [...Object.values(book?.names ?? {}), ...other(id)];
+    return names.some((n) => key(n.replace(/^[1-3]\.?\s*/, '')) === typed);
   }
   // English: a capital letter, and a whole name or a usual abbreviation (Ps, Gen, Rom).
   if (!/^[A-Z]/.test(bare)) return false;
@@ -266,7 +326,7 @@ export function findReferences(text: string, books: Book[], translation?: Transl
     let found: { ref: FoundRef; start: number } | null = null;
     for (let k = Math.min(4, words.length); k >= 1; k--) {
       const name = words.slice(words.length - k).join(' ');
-      if (name !== name.trimStart() || !/[A-Za-z\u0d00-\u0d7f]/.test(name)) continue;
+      if (name !== name.trimStart() || !/[A-Za-z\u0d00-\u0d7f\u0b80-\u0bff]/.test(name)) continue;
       let typed = name;
       for (const [re, n] of ORDINALS) typed = typed.replace(re, n);
       const raw = typed.replace(/^[1-3]\.?\s*/, '').toLowerCase().replace(/[^a-z]/g, '');
@@ -285,7 +345,7 @@ export function findReferences(text: string, books: Book[], translation?: Transl
     if (found.start > done) pieces.push({ text: text.slice(done, found.start) });
     let end = m.index + m[0].length;
     // A psalm's title, as "Add to notebook" writes it: "സങ്കീർത്തനങ്ങൾ 3 (ശീർഷകം)".
-    const title = found.ref.chapterOnly ? /^\s*\((?:title|ശീർഷകം)\)/.exec(text.slice(end)) : null;
+    const title = found.ref.chapterOnly ? /^\s*\((?:title|ശീർഷകം|தலைப்பு)\)/.exec(text.slice(end)) : null;
     if (title) {
       found.ref = { ...found.ref, verse: 0, toVerse: 0, chapterOnly: false };
       end += title[0].length;

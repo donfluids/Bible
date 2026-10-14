@@ -12,6 +12,7 @@ import { chromium } from 'playwright-core';
 export const COLOURS = {
   en: { bg: '#F4EFE4', ink: '#5A3A14', page: '#FFFBF2', edge: '#E8DCC4', line: '#CDBFA4', ribbon: '#A4302F' },
   ml: { bg: '#EEF3E6', ink: '#1F4D2E', page: '#FBF7EA', edge: '#E4DCC4', line: '#B9C3AE', ribbon: '#A4302F' },
+  ta: { bg: '#E9EFF7', ink: '#1C3F72', page: '#FBF8F0', edge: '#E2DCC8', line: '#B3C0D3', ribbon: '#A4302F' },
 };
 
 export const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');

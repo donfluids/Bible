@@ -31,11 +31,22 @@ const EDITIONS = {
     splashBackgroundDark: '#111511',
     adaptiveBackground: '#EEF3E6',
   },
+  ta: {
+    name: 'வேதாகமம்',
+    slug: 'bible-tamil',
+    package: 'org.riversresearch.bible.tamil',
+    icons: './assets/icons/ta',
+    languages: ['ta', 'en'],
+    easProjectId: '',
+    splashBackground: '#F4F7FB',
+    splashBackgroundDark: '#0F1319',
+    adaptiveBackground: '#E9EFF7',
+  },
 };
 
 // Typefaces built into the app (src/fonts.ts uses them by file name): the icons
-// (scripts/make-icon-font.py) and Hebrew in both editions, Malayalam only in the
-// Malayalam one.
+// (scripts/make-icon-font.py) and Hebrew in every edition, Malayalam only in the
+// Malayalam one, Tamil only in the Tamil one.
 const FONT = (pkg, file) => `./node_modules/@expo-google-fonts/${pkg}/${file.split('_')[1].replace('.ttf', '')}/${file}`;
 const ICONS = './assets/fonts/BibleIcons.ttf';
 const FONTS = {
@@ -47,6 +58,14 @@ const FONTS = {
     FONT('noto-sans-malayalam', 'NotoSansMalayalam_700Bold.ttf'),
     FONT('noto-serif-malayalam', 'NotoSerifMalayalam_400Regular.ttf'),
     FONT('noto-serif-malayalam', 'NotoSerifMalayalam_700Bold.ttf'),
+  ],
+  ta: [
+    ICONS,
+    FONT('noto-serif-hebrew', 'NotoSerifHebrew_500Medium.ttf'),
+    FONT('noto-sans-tamil', 'NotoSansTamil_400Regular.ttf'),
+    FONT('noto-sans-tamil', 'NotoSansTamil_700Bold.ttf'),
+    FONT('noto-serif-tamil', 'NotoSerifTamil_400Regular.ttf'),
+    FONT('noto-serif-tamil', 'NotoSerifTamil_700Bold.ttf'),
   ],
 };
 

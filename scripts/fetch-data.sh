@@ -23,6 +23,8 @@ fetch kjv.zip https://ebible.org/Scriptures/eng-kjv2006_usfm.zip
 fetch web.zip https://ebible.org/Scriptures/engwebp_usfm.zip
 # Malayalam Sathyavedapusthakam 1910, contemporary orthography, Free Bible Foundation 2015 (CC BY-SA 4.0)
 fetch mal2015.zip https://ebible.org/Scriptures/mal2015_usfm.zip
+# Tamil Indian Revised Version 2017/2019, Bridge Connectivity Solutions (CC BY-SA 4.0)
+fetch tam2017.zip https://ebible.org/Scriptures/tam2017_usfm.zip
 # Strong's dictionaries as JSON, Open Scriptures (CC BY-SA)
 fetch strongs-hebrew.js https://raw.githubusercontent.com/openscriptures/strongs/master/hebrew/strongs-hebrew-dictionary.js
 fetch strongs-greek.js  https://raw.githubusercontent.com/openscriptures/strongs/master/greek/strongs-greek-dictionary.js
@@ -42,9 +44,10 @@ for name in \
   fetch "step/$name" "$STEP/$encoded"
 done
 
-rm -rf kjv web mal2015
-mkdir -p kjv web mal2015
+rm -rf kjv web mal2015 tam2017
+mkdir -p kjv web mal2015 tam2017
 unzip -oq kjv.zip -d kjv
 unzip -oq web.zip -d web
 unzip -oq mal2015.zip -d mal2015
-echo "done: $(ls kjv/*.usfm | wc -l) KJV files, $(ls web/*.usfm | wc -l) WEB files, $(ls mal2015/*.usfm | wc -l) Malayalam files"
+unzip -oq tam2017.zip -d tam2017
+echo "done: $(ls kjv/*.usfm | wc -l) KJV files, $(ls web/*.usfm | wc -l) WEB files, $(ls mal2015/*.usfm | wc -l) Malayalam files, $(ls tam2017/*.usfm | wc -l) Tamil files"

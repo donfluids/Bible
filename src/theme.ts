@@ -121,9 +121,41 @@ const greenDark: Omit<Theme, 'font'> = {
   linked: '#2E3A2D',
 };
 
+/** The Tamil app is deep blue; its pairs are checked for 4.5:1 or better too. */
+const blueLight: Omit<Theme, 'font'> = {
+  ...light,
+  bg: '#F4F7FB',
+  text: '#151B26',
+  muted: '#566173',
+  border: '#D6DEEA',
+  accent: '#1F4E8C',
+  accentSoft: '#DDE7F4',
+  linked: '#CCD8E8',
+};
+
+const blueSepia: Omit<Theme, 'font'> = {
+  ...sepia,
+  accent: '#2E4C78',
+  accentSoft: '#DCD8C5',
+};
+
+const blueDark: Omit<Theme, 'font'> = {
+  ...dark,
+  bg: '#0F1319',
+  card: '#171D26',
+  text: '#E2E8F1',
+  muted: '#97A3B5',
+  border: '#2A3341',
+  accent: '#8DB4E8',
+  onAccent: '#0F1319',
+  accentSoft: '#1C2736',
+  linked: '#2B3646',
+};
+
 const PALETTES: Record<EditionId, Record<ThemeName, Omit<Theme, 'font'>>> = {
   en: { light, sepia, dark },
   ml: { light: greenLight, sepia: greenSepia, dark: greenDark },
+  ta: { light: blueLight, sepia: blueSepia, dark: blueDark },
 };
 
 /** A serif face available on every phone without bundling a font file. */

@@ -2,6 +2,7 @@
 // from the book in icon-art.mjs.
 //   node scripts/make-icons.mjs en     parchment and brown (English edition)
 //   node scripts/make-icons.mjs ml     cream and forest green (Malayalam edition)
+//   node scripts/make-icons.mjs ta     pale blue and deep blue (Tamil edition)
 import fs from 'node:fs';
 import path from 'node:path';
 import { COLOURS, MIDDLE, ROOT, book, fontFaces, launch, monochrome } from './icon-art.mjs';

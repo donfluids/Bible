@@ -1,4 +1,4 @@
-export type TranslationId = 'KJV' | 'WEB' | 'MAL';
+export type TranslationId = 'KJV' | 'WEB' | 'MAL' | 'TAM';
 
 export interface Translation {
   id: TranslationId;
@@ -7,6 +7,8 @@ export interface Translation {
   tagged: boolean;
   /** Line height multiplier; scripts with stacked marks need more room. */
   lineHeight: number;
+  /** The Indian script the text is in, which has a typeface of its own (src/fonts.ts). */
+  script?: 'ml' | 'ta';
 }
 
 export const TRANSLATIONS: Translation[] = [
@@ -14,7 +16,9 @@ export const TRANSLATIONS: Translation[] = [
   // The WEB source's Strong's tags are unreliable, so they are not built (scripts/build-db.mjs).
   { id: 'WEB', name: 'World English Bible', tagged: false, lineHeight: 1.55 },
   // Tagged by scripts/align-malayalam.mjs (machine alignment, confident links only).
-  { id: 'MAL', name: 'സത്യവേദപുസ്തകം 1910 (Malayalam)', tagged: true, lineHeight: 1.75 },
+  { id: 'MAL', name: 'സത്യവേദപുസ്തകം 1910 (Malayalam)', tagged: true, lineHeight: 1.75, script: 'ml' },
+  // Untagged until its words are aligned like the Malayalam's.
+  { id: 'TAM', name: 'இண்டியன் ரிவைஸ்டு வெர்ஸன் (Tamil IRV)', tagged: false, lineHeight: 1.75, script: 'ta' },
 ];
 
 export function translationInfo(id: TranslationId): Translation {

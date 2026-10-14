@@ -3,7 +3,7 @@ import { Alert, AppState, KeyboardAvoidingView, ScrollView, Share, StyleSheet, T
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header, HeaderIconButton } from '../components/Header';
-import { isMalayalam, scriptureFont } from '../fonts';
+import { languageScript, scriptOf, scriptureFont } from '../fonts';
 import { translationName, useT } from '../i18n';
 import { pageName, useNotebook } from '../notebook';
 import { getVerseCounts, getVerses } from '../queries';
@@ -66,7 +66,7 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
   const page = pages.find((p) => p.id === id);
   const [editing, setEditing] = useState(!!isNew || (!!page && !page.title.trim() && !page.body.trim()));
   const translation = settings.translation;
-  const malayalamUi = settings.language === 'ml';
+  const uiScript = languageScript(settings.language);
 
   // What is typed stays here and goes to the notebook a moment after typing stops, so
   // the reader underneath is not redrawn on every key. Read, the page shows the notebook.
@@ -171,8 +171,8 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
   const fontSize = Math.min(settings.fontSize, 22);
   const lineHeight = Math.round(fontSize * 1.55);
   const verseSize = Math.max(14, fontSize - 2);
-  const scriptFont = scriptureFont(translation === 'MAL', settings.serif);
-  const textFont = (text: string) => scriptureFont(isMalayalam(text) || (malayalamUi && !text.trim()), settings.serif);
+  const scriptFont = scriptureFont(translationInfo(translation).script, settings.serif);
+  const textFont = (text: string) => scriptureFont(scriptOf(text) ?? (text.trim() ? null : uiScript), settings.serif);
 
   const deletePage = () => {
     Alert.alert(t('deletePage'), t('deletePageConfirm'), [
@@ -222,7 +222,7 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
                 key={j}
                 onPress={() => onOpenRef({ book: p.ref!.book, chapter: p.ref!.chapter, verse: Math.max(1, p.ref!.verse) })}
                 accessibilityRole="link"
-                style={{ color: theme.accent, textDecorationLine: 'underline', fontWeight: isMalayalam(p.text) ? 'normal' : '600', fontFamily: scriptureFont(isMalayalam(p.text), settings.serif, true) }}
+                style={{ color: theme.accent, textDecorationLine: 'underline', fontWeight: scriptOf(p.text) ? 'normal' : '600', fontFamily: scriptureFont(scriptOf(p.text), settings.serif, true) }}
               >
                 {p.text}
               </Text>
@@ -286,7 +286,7 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
             onChangeText={(title) => setDraft((d) => ({ ...d, title }))}
             placeholder={t('pageTitle')}
             placeholderTextColor={theme.muted}
-            style={[styles.titleInput, { color: theme.text, borderBottomColor: theme.border, fontFamily: scriptureFont(malayalamUi || isMalayalam(draft.title), settings.serif, true), fontWeight: malayalamUi ? 'normal' : '600' }]}
+            style={[styles.titleInput, { color: theme.text, borderBottomColor: theme.border, fontFamily: scriptureFont(scriptOf(draft.title) ?? uiScript, settings.serif, true), fontWeight: uiScript ? 'normal' : '600' }]}
             returnKeyType="next"
             submitBehavior="submit"
             onSubmitEditing={() => bodyRef.current?.focus()}
@@ -306,7 +306,7 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
       ) : (
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 40 }]}>
           {titleText ? (
-            <Text selectable style={[styles.title, { color: theme.text, fontFamily: scriptureFont(isMalayalam(titleText), settings.serif, true), fontWeight: isMalayalam(titleText) ? 'normal' : '700' }]}>
+            <Text selectable style={[styles.title, { color: theme.text, fontFamily: scriptureFont(scriptOf(titleText), settings.serif, true), fontWeight: scriptOf(titleText) ? 'normal' : '700' }]}>
               {titleText}
             </Text>
           ) : null}

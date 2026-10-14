@@ -4,7 +4,7 @@ import { Pressable } from '../components/Pressable';
 import { Header, HeaderIconButton } from '../components/Header';
 import { Icon } from '../components/Icon';
 import { TabBar } from '../components/TabBar';
-import { isMalayalam, scriptureFont } from '../fonts';
+import { scriptOf, scriptureFont } from '../fonts';
 import { useT } from '../i18n';
 import { pageName, useNotebook } from '../notebook';
 import { useSettings } from '../settings';
@@ -22,7 +22,7 @@ export function NotebookScreen({ onOpenPage }: Props) {
   const { settings } = useSettings();
   const { pages, create } = useNotebook();
   const newPage = () => onOpenPage(create(), true);
-  const font = (text: string, bold = false) => scriptureFont(isMalayalam(text), false, bold);
+  const font = (text: string, bold = false) => scriptureFont(scriptOf(text), false, bold);
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
@@ -49,7 +49,7 @@ export function NotebookScreen({ onOpenPage }: Props) {
             // The first lines after the one used as the name.
             const rest = item.title.trim() ? item.body : item.body.split('\n').slice(1).join('\n');
             const preview = rest.replace(/\s+/g, ' ').trim();
-            const date = new Date(item.updated).toLocaleDateString(settings.language === 'ml' ? 'ml-IN' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            const date = new Date(item.updated).toLocaleDateString(settings.language === 'ml' ? 'ml-IN' : settings.language === 'ta' ? 'ta-IN' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
             return (
               <Pressable
                 onPress={() => onOpenPage(item.id)}
@@ -57,7 +57,7 @@ export function NotebookScreen({ onOpenPage }: Props) {
                 accessibilityRole="button"
                 style={({ pressed }) => [styles.row, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
               >
-                <Text style={[styles.name, { color: theme.text, fontFamily: font(name, true), fontWeight: isMalayalam(name) ? 'normal' : '600' }]} numberOfLines={1}>
+                <Text style={[styles.name, { color: theme.text, fontFamily: font(name, true), fontWeight: scriptOf(name) ? 'normal' : '600' }]} numberOfLines={1}>
                   {name}
                 </Text>
                 {preview ? (

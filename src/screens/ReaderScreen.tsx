@@ -14,8 +14,9 @@ import { HEADER_MAX_FONT_SCALE, Header, HeaderChip, HeaderIconButton } from '../
 import { TAB_BAR_HEIGHT, TabBar } from '../components/TabBar';
 import { Icon } from '../components/Icon';
 import type { IconName } from '../components/Icon';
-import { useEdition } from '../edition';
-import { isMalayalam, scriptureFont } from '../fonts';
+import { nativeTranslation, useEdition } from '../edition';
+import { scriptOf, scriptureFont } from '../fonts';
+import type { Script } from '../fonts';
 import { shortBookName } from '../shortNames';
 import { useT } from '../i18n';
 import { InterlinearVerse } from '../components/InterlinearVerse';
@@ -896,7 +897,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
     return () => sub.remove();
   }, []);
 
-  const scriptFont = scriptureFont(translation === 'MAL', settings.serif) ?? theme.font;
+  const scriptFont = scriptureFont(translationInfo(translation).script, settings.serif) ?? theme.font;
 
   const toggleExpanded = useCallback((verse: number) => {
     setExpanded((prev) => {
@@ -925,7 +926,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         return (
           <Text
             accessibilityRole="header"
-            style={[styles.heading, { color: theme.muted, fontSize: fontSize - 3, fontFamily: scriptFont }, translation === 'MAL' && styles.headingMalayalam]}
+            style={[styles.heading, { color: theme.muted, fontSize: fontSize - 3, fontFamily: scriptFont }, !!translationInfo(translation).script && styles.headingMalayalam]}
           >
             {item.text}
           </Text>
@@ -1073,19 +1074,19 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
             name={bookName(books, position.book, translation)}
             short={shortBookName(position.book, translation)}
             chapter={position.chapter}
-            malayalam={translation === 'MAL'}
+            script={translationInfo(translation).script ?? null}
             onPress={onOpenBooks}
             accessibilityLabel={t('choosePassage', { title })}
           />
         }
         right={
           <>
-            {/* The Malayalam app tells its two Bibles apart by language (MAL, ENG); the English
-                app has two English ones, so it uses their names (KJV, WEB). Settings lists each
-                version in full. */}
+            {/* The Malayalam and Tamil apps tell their two Bibles apart by language (MAL or
+                TAM, ENG); the English app has two English ones, so it uses their names (KJV,
+                WEB). Settings lists each version in full. */}
             <HeaderChip
               icon="swap_horiz"
-              label={edition.translations.includes('MAL') ? (translation === 'MAL' ? 'MAL' : 'ENG') : translation}
+              label={nativeTranslation(edition) ? (translation === nativeTranslation(edition) ? translation : 'ENG') : translation}
               onPress={toggleTranslation}
               accessibilityLabel={t('switchTranslation')}
             />
@@ -1384,7 +1385,7 @@ function NavButton({ label, onPress, disabled }: { label: string; onPress: () =>
  * letters shrink to fit, down to MIN_TITLE_SCALE of their size, and on the narrowest
  * screens the drop-down arrow is left out.
  */
-function ReaderTitle({ name, short, chapter, malayalam, onPress, accessibilityLabel }: { name: string; short: string; chapter: number; malayalam: boolean; onPress: () => void; accessibilityLabel: string }) {
+function ReaderTitle({ name, short, chapter, script, onPress, accessibilityLabel }: { name: string; short: string; chapter: number; script: Script | null; onPress: () => void; accessibilityLabel: string }) {
   const theme = useTheme();
   const [room, setRoom] = useState(0);
   const [fullWidth, setFullWidth] = useState(0);
@@ -1397,8 +1398,8 @@ function ReaderTitle({ name, short, chapter, malayalam, onPress, accessibilityLa
   const avail = showArrow ? room - ARROW_WIDTH : room;
   // A couple of pixels' margin, so rounding never leaves the name a hair too wide.
   const scale = measured && needed > avail && needed > 0 ? Math.max(MIN_TITLE_SCALE, Math.floor(((avail - 2) / needed) * 100) / 100) : 1;
-  const baseSize = malayalam ? 20 : 22;
-  const fontStyle = [styles.title, { color: theme.text }, malayalam && { fontFamily: scriptureFont(true, false, true), fontWeight: 'normal' as const, fontSize: 20 }];
+  const baseSize = script ? 20 : 22;
+  const fontStyle = [styles.title, { color: theme.text }, !!script && { fontFamily: scriptureFont(script, false, true), fontWeight: 'normal' as const, fontSize: 20 }];
   // Both pieces get the same line height, so a shrunk name stays level with its number.
   const shownStyle = [fontStyle, scale < 1 && { fontSize: baseSize * scale, lineHeight: Math.round(baseSize * 1.5) }];
   return (
@@ -1640,13 +1641,13 @@ const ReaderVerse = memo(function ReaderVerse({
 /** One of the four round buttons at the top of the verse sheet: an icon over a short label. */
 function ActionButton({ icon, label, onPress, accessibilityLabel }: { icon: IconName; label: string; onPress: () => void; accessibilityLabel?: string }) {
   const theme = useTheme();
-  const malayalam = isMalayalam(label);
+  const script = scriptOf(label);
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label} android_ripple={{ color: theme.accentSoft }} style={styles.actionButton}>
       <View style={[styles.actionIcon, { backgroundColor: theme.accentSoft }]}>
         <Icon name={icon} color={theme.accent} />
       </View>
-      <Text style={[styles.actionLabel, { color: theme.text }, malayalam && { fontFamily: scriptureFont(true, false), fontWeight: 'normal' }]} numberOfLines={1}>
+      <Text style={[styles.actionLabel, { color: theme.text }, !!script && { fontFamily: scriptureFont(script, false), fontWeight: 'normal' }]} numberOfLines={1}>
         {label}
       </Text>
     </Pressable>

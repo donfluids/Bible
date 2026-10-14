@@ -3,8 +3,8 @@ import { ActivityIndicator, Animated, Modal, PanResponder, ScrollView, StyleShee
 import { Pressable } from './Pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useEdition } from '../edition';
-import { HEBREW_FONT, isMalayalam, scriptureFont } from '../fonts';
+import { nativeTranslation, useEdition } from '../edition';
+import { HEBREW_FONT, languageScript, scriptOf, scriptureFont } from '../fonts';
 import { renderingsLabel, translationName, useT } from '../i18n';
 import type { StringKey } from '../i18n';
 import { describeMorph } from '../morph';
@@ -13,7 +13,7 @@ import { useSettings } from '../settings';
 import { formatCount, formatRef, isHebrew, plainKjvUsage } from '../text';
 import { useTheme } from '../theme';
 import type { Theme } from '../theme';
-import { FLAG_LXX, FLAG_NOT_IN_BYZ, FLAG_NOT_IN_NA, FLAG_NOT_IN_TR, FLAG_REPLACES_NA, FLAG_RESTORED, taggedTranslation } from '../types';
+import { FLAG_LXX, FLAG_NOT_IN_BYZ, FLAG_NOT_IN_NA, FLAG_NOT_IN_TR, FLAG_REPLACES_NA, FLAG_RESTORED, taggedTranslation, translationInfo } from '../types';
 import type { Book, OriginalWord, Ref, RelatedWord, Rendering, StrongsEntry, TranslationId, VerseRow, WordPick } from '../types';
 import { Icon, IconButton } from './Icon';
 import { VerseText } from './VerseText';
@@ -45,12 +45,12 @@ interface Loaded {
   parts: { id: string; lemma: string | null; gloss: string | null }[];
   /** For a tapped translation word, the Hebrew or Greek words of its verse with this number. */
   inVerse: OriginalWord[];
-  /** Verses the KJV and the Malayalam tag with it, for hiding their chips when few are. */
+  /** Verses the KJV and the Malayalam or Tamil tag with it, for hiding their chips when few are. */
   kjvCount: number;
-  malayalamCount: number;
+  nativeCount: number;
   renderings: Rendering[];
-  /** Malayalam renderings for the headline in the Malayalam interface, else empty. */
-  malayalam: Rendering[];
+  /** Malayalam or Tamil renderings for the headline in that interface, else empty. */
+  nativeWords: Rendering[];
   /** The KJV's renderings, beside another translation's. */
   kjv: Rendering[];
   examples: VerseRow[];
@@ -58,7 +58,7 @@ interface Loaded {
   failed?: boolean;
 }
 
-const EMPTY: Omit<Loaded, 'entry'> = { count: 0, original: 0, parts: [], inVerse: [], kjvCount: 0, malayalamCount: 0, renderings: [], malayalam: [], kjv: [], examples: [], related: [] };
+const EMPTY: Omit<Loaded, 'entry'> = { count: 0, original: 0, parts: [], inVerse: [], kjvCount: 0, nativeCount: 0, renderings: [], nativeWords: [], kjv: [], examples: [], related: [] };
 
 /**
  * Which printed texts have an original word, when that is worth saying: a Hebrew word
@@ -132,9 +132,11 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
   // Occurrence counts come from a tagged translation; an untagged one uses the KJV.
   const tagged = taggedTranslation(translation);
   const withKjv = tagged !== 'KJV' && edition.translations.includes('KJV');
-  // In the Malayalam interface the headline is the Malayalam rendering, whichever
-  // translation is open, and the English meaning goes under it.
-  const malayalamFirst = settings.language === 'ml' && edition.translations.includes('MAL');
+  // In the Malayalam or Tamil interface the headline is the rendering in that language's
+  // Bible, whichever translation is open, and the English meaning goes under it. A Bible
+  // whose words are not linked yet has no renderings to show.
+  const native = nativeTranslation(edition);
+  const nativeFirst = !!native && languageScript(settings.language) === translationInfo(native).script && translationInfo(native).tagged ? native : null;
   const [data, setData] = useState<Loaded | null>(null);
   const [showLegend, setShowLegend] = useState(false);
 
@@ -207,18 +209,18 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
     }
     const strongs = pick.strongs;
     (async () => {
-      const otherMalayalam = malayalamFirst && tagged !== 'MAL';
+      const otherNative = !!nativeFirst && tagged !== nativeFirst;
       const at = pick.at;
       const choices = pick.choices && pick.choices.length > 1 ? pick.choices : [];
       // Everything that does not wait on another answer is asked for at once.
-      const [[entry, count, original, renderings, malayalamOther, malayalamOtherCount, kjv, kjvCount, refs], verseWords, partEntries] = await Promise.all([
+      const [[entry, count, original, renderings, nativeOther, nativeOtherCount, kjv, kjvCount, refs], verseWords, partEntries] = await Promise.all([
         Promise.all([
           getStrongs(db, strongs),
           getConcordanceCount(db, strongs, tagged),
           getOriginalCount(db, strongs),
           getRenderings(db, strongs, tagged),
-          otherMalayalam ? getRenderings(db, strongs, 'MAL') : Promise.resolve([] as Rendering[]),
-          otherMalayalam ? getConcordanceCount(db, strongs, 'MAL') : Promise.resolve(0),
+          otherNative ? getRenderings(db, strongs, nativeFirst) : Promise.resolve([] as Rendering[]),
+          otherNative ? getConcordanceCount(db, strongs, nativeFirst) : Promise.resolve(0),
           withKjv ? getRenderings(db, strongs, 'KJV') : Promise.resolve([] as Rendering[]),
           withKjv ? getConcordanceCount(db, strongs, 'KJV') : Promise.resolve(0),
           getConcordance(db, strongs, tagged),
@@ -230,8 +232,8 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
         Promise.all(choices.map((id) => (id === strongs ? Promise.resolve(null) : getStrongs(db, id)))),
       ]);
       const [examples, related] = await Promise.all([getVerses(db, tagged, refs.slice(0, 2)), entry ? getRelated(db, entry) : Promise.resolve([])]);
-      const malayalam = !malayalamFirst ? [] : tagged === 'MAL' ? renderings : malayalamOther;
-      const malayalamCount = tagged === 'MAL' ? count : malayalamOtherCount;
+      const nativeWords = !nativeFirst ? [] : tagged === nativeFirst ? renderings : nativeOther;
+      const nativeCount = tagged === nativeFirst ? count : nativeOtherCount;
       // A word tapped in a translation: the form the Hebrew or Greek has in that verse.
       const seen = new Set<string>();
       const inVerse = verseWords.filter((w) => {
@@ -244,7 +246,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
         const e = id === strongs ? entry : partEntries[i];
         return { id, lemma: e?.lemma ?? null, gloss: e?.gloss ?? null };
       });
-      return { entry, count, original, parts, inVerse, kjvCount, malayalamCount, renderings, malayalam, kjv, examples, related };
+      return { entry, count, original, parts, inVerse, kjvCount, nativeCount, renderings, nativeWords, kjv, examples, related };
     })()
       .then((loaded) => {
         if (!cancelled) setData(loaded);
@@ -255,7 +257,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
     return () => {
       cancelled = true;
     };
-  }, [db, pick, tagged, withKjv, malayalamFirst]);
+  }, [db, pick, tagged, withKjv, nativeFirst]);
 
   if (!pick) return null;
   const original = pick.original;
@@ -265,12 +267,13 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
   // The Hebrew or Greek as it stands in the verse: the word tapped in the Hebrew or Greek
   // view, or for a translation word, every form with its number in that verse.
   const inVerse = original ? [original] : (data?.inVerse ?? []);
-  const tappedFont = pick.word && isMalayalam(pick.word) ? scriptureFont(true, settings.serif, true) : undefined;
+  const tappedScript = pick.word ? scriptOf(pick.word) : null;
+  const tappedFont = tappedScript ? scriptureFont(tappedScript, settings.serif, true) : undefined;
   const pron = syllables(entry?.pron ?? null);
   // A translation's renderings mislead when it tags the word in under half the verses
   // the word is in (the KJV gives ὁ, "the", as "which, that"), so they are left out then.
   const covers = (n: number) => !data || data.original === 0 || n >= data.original / 2;
-  const headline = data && covers(data.malayalamCount) ? headlineWords(data.malayalam) : [];
+  const headline = data && covers(data.nativeCount) ? headlineWords(data.nativeWords) : [];
   const kjvChips = withKjv && covers(data?.kjvCount ?? 0) ? <Renderings label={renderingsLabel(settings.language, 'KJV')} list={topRenderings(data?.kjv ?? [], 5)} theme={theme} /> : null;
   const listCount = data ? data.original || data.count : 0;
   const name = translationName(settings.language, tagged);
@@ -357,7 +360,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                 </View>
                 {headline.length > 0 ? (
                   <>
-                    <Text style={[styles.meaning, styles.meaningMalayalam, { color: theme.text, fontFamily: scriptureFont(true, settings.serif, true) }]}>
+                    <Text style={[styles.meaning, styles.meaningNative, { color: theme.text, fontFamily: scriptureFont(scriptOf(headline[0]), settings.serif, true) }]}>
                       {headline.join(' · ')}
                     </Text>
                     {entry.gloss ? <Text style={[styles.meaningSub, { color: theme.muted }]}>{entry.gloss}</Text> : null}
@@ -393,7 +396,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                     onPress={(word) => onShowOccurrences(entry.id, word)}
                   />
                 ) : null}
-                {malayalamFirst ? null : kjvChips}
+                {nativeFirst ? null : kjvChips}
 
                 {data.examples.length > 0 ? (
                   <Section label={t('examples')} theme={theme}>
@@ -412,8 +415,8 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                   </Section>
                 ) : null}
 
-                {/* In the Malayalam interface the KJV chips wait in the full view. */}
-                {malayalamFirst ? kjvChips : null}
+                {/* In the Malayalam or Tamil interface the KJV chips wait in the full view. */}
+                {nativeFirst ? kjvChips : null}
 
                 {data.related.length > 0 ? (
                   <Section label={t('relatedWords')} theme={theme}>
@@ -543,7 +546,7 @@ function Renderings({ label, list, theme, onPress }: { label: string; list: Rend
     <Section label={label} theme={theme}>
       <View style={styles.chips}>
         {list.map((r) => {
-          const font = isMalayalam(r.word) ? scriptureFont(true, false) : undefined;
+          const font = scriptureFont(scriptOf(r.word), false);
           const content = (
             <Text style={[styles.chipText, { color: theme.text, fontFamily: font }]}>
               {r.word} <Text style={{ color: theme.muted, fontFamily: undefined }}>{formatCount(r.count)}</Text>
@@ -638,7 +641,7 @@ const styles = StyleSheet.create({
   tapped: { fontSize: 20, flexShrink: 1, maxWidth: '45%' },
   lemma: { fontSize: 42, lineHeight: 58 },
   meaning: { fontSize: 26, fontWeight: '700', marginTop: 2 },
-  meaningMalayalam: { fontWeight: undefined, lineHeight: 40 },
+  meaningNative: { fontWeight: undefined, lineHeight: 40 },
   meaningSub: { fontSize: 17, marginTop: 2 },
   uses: { fontSize: 14, marginTop: 6 },
   usage: { fontSize: 15, lineHeight: 22, marginTop: 8 },

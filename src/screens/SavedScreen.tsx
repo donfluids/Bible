@@ -129,16 +129,16 @@ export function SavedScreen({ books, onOpenRef, onWord }: Props) {
   const markRef = (m: TextMark) => {
     const ref = formatRef(books, { book: m.book, chapter: m.chapter, verse: m.from.verse }, m.translation);
     const range = m.to.verse > m.from.verse ? `${ref}-${m.to.verse}` : ref;
-    return m.translation === settings.translation ? range : `${range} · ${m.translation === 'MAL' ? 'MAL' : m.translation}`;
+    return m.translation === settings.translation ? range : `${range} · ${m.translation}`;
   };
   const markText = (m: TextMark, color: string | undefined) => {
     const text = markedWords(m, markVerses);
     if (!text) return null;
-    const malayalam = m.translation === 'MAL';
+    const script = translationInfo(m.translation).script;
     return (
       <Text
         numberOfLines={3}
-        style={[{ fontSize: listFont, lineHeight: Math.round(listFont * translationInfo(m.translation).lineHeight), color: theme.text, fontFamily: scriptureFont(malayalam, settings.serif) ?? theme.font }]}
+        style={[{ fontSize: listFont, lineHeight: Math.round(listFont * translationInfo(m.translation).lineHeight), color: theme.text, fontFamily: scriptureFont(script, settings.serif) ?? theme.font }]}
       >
         <Text style={{ backgroundColor: color }}>{text}</Text>
       </Text>
