@@ -85,6 +85,8 @@ function load(edition: Edition): Loaded<Settings> {
 interface SettingsContextValue {
   settings: Settings;
   update: (patch: Partial<Settings>) => void;
+  /** Like update, and written to the phone at once: for typed text when the app is left. */
+  commit: (patch: Partial<Settings>) => void;
 }
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -113,8 +115,19 @@ export function SettingsProvider({ edition, children }: { edition: Edition; chil
   const language = useRef(settings.language);
   language.current = settings.language;
   // Saved a moment after a change, and at once when the app is left.
-  useAutosave(`settings.v1.${edition.id}`, settings, loaded.writable, 300, () => tellSaveFailed(language.current));
-  const value = useMemo(() => ({ settings, update }), [settings, update]);
+  const saveValue = useAutosave(`settings.v1.${edition.id}`, settings, loaded.writable, 300, () => tellSaveFailed(language.current));
+  const latest = useRef(settings);
+  latest.current = settings;
+  const commit = useCallback(
+    (patch: Partial<Settings>) => {
+      const next = { ...latest.current, ...patch };
+      latest.current = next;
+      saveValue(next);
+      setSettings((prev) => ({ ...prev, ...patch }));
+    },
+    [saveValue],
+  );
+  const value = useMemo(() => ({ settings, update, commit }), [settings, update, commit]);
   const display = useMemo(() => ({ theme: settings.theme, serif: settings.serif, language: settings.language }), [settings.theme, settings.serif, settings.language]);
   return (
     <SettingsContext.Provider value={value}>

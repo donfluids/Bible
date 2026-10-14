@@ -187,7 +187,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
   const t = useT();
   const edition = useEdition();
   const insets = useSafeAreaInsets();
-  const { settings, update } = useSettings();
+  const { settings, update, commit } = useSettings();
   const {
     translation,
     fontSize,
@@ -859,17 +859,41 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
     setActions(null);
     setNoteEditor({ verse: v, text: userNotes[bookmarkKey(v)] ?? '' });
   };
+  // The notes with the one being written put in (or taken out, when its text is cleared).
+  const notesWith = (editor: { verse: VerseRow; text: string }) => {
+    const next = { ...userNotes };
+    const text = editor.text.trim();
+    if (text) next[bookmarkKey(editor.verse)] = text;
+    else delete next[bookmarkKey(editor.verse)];
+    return next;
+  };
+  const noteChanged = (editor: { verse: VerseRow; text: string }) => editor.text.trim() !== (userNotes[bookmarkKey(editor.verse)] ?? '');
   const saveNote = () => {
     if (!noteEditor) return;
-    const next = { ...userNotes };
     const text = noteEditor.text.trim();
-    if (text) next[bookmarkKey(noteEditor.verse)] = text;
-    else delete next[bookmarkKey(noteEditor.verse)];
-    update({ notes: next });
+    update({ notes: notesWith(noteEditor) });
     setNoteEditor(null);
     confirmHaptic();
     setToast(text ? t('noteSaved') : t('noteRemoved'));
   };
+  // Closing the note any other way (outside, back, a swipe down) keeps what was typed, as
+  // Save does; a note left as it was just closes.
+  const closeNote = () => {
+    if (noteEditor && noteChanged(noteEditor)) saveNote();
+    else setNoteEditor(null);
+  };
+  // Leaving the app with a note open writes it at once (Android may close the app without
+  // another word); the note stays open for when the reader comes back.
+  const noteState = useRef({ noteEditor, noteChanged, notesWith, commit });
+  noteState.current = { noteEditor, noteChanged, notesWith, commit };
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      const { noteEditor: editor, noteChanged: changed, notesWith: withNote, commit: save } = noteState.current;
+      if (state === 'active' || !editor || !changed(editor)) return;
+      save({ notes: withNote(editor) });
+    });
+    return () => sub.remove();
+  }, []);
 
   const scriptFont = scriptureFont(translation === 'MAL', settings.serif) ?? theme.font;
 
@@ -1287,7 +1311,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         ) : null}
       </SimpleSheet>
 
-      <SimpleSheet visible={!!noteEditor} title={noteEditor ? `${t('note')} · ${formatRef(books, noteEditor.verse, translation)}` : ''} onClose={() => setNoteEditor(null)}>
+      <SimpleSheet visible={!!noteEditor} title={noteEditor ? `${t('note')} · ${formatRef(books, noteEditor.verse, translation)}` : ''} onClose={closeNote}>
         {noteEditor ? (
           <View>
             <TextInput

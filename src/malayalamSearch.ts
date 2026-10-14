@@ -8,7 +8,9 @@
  *   find അവന്നു or അവന്റെ);
  * - a ് with or without the zero-width non-joiner the text puts after some (ചെയ്വാൻ
  *   finds ചെയ്‌വാൻ), which keyboards do not type;
- * - the old and new signs for ൗ.
+ * - the old and new signs for ൗ;
+ * - a chillu typed with ് after it, as some keyboards type ന്റ (ൻ്റ): it counts as the
+ *   consonant with ്, so ദൈവത്തിൻ്റെ finds ദൈവത്തിന്റെ.
  *
  * A word is still matched as typed, not with its other forms: ആത്മാവ് does not find
  * ആത്മാവിനെ (type ആത്മാവ for that), as in English search.
@@ -63,7 +65,11 @@ function collapseWildcards(pattern: string): string {
 
 /** The pattern for a query, or null when the query has no Malayalam letters. */
 export function malayalamPattern(query: string): MalayalamPattern | null {
-  const q = query.replace(/[\u200c\u200d]/g, '').trim().replace(/\s+/g, ' ');
+  const q = query
+    .replace(/[\u200c\u200d]/g, '')
+    .replace(/([ൺൻർൽൾൿ])\u0d4d/g, (_, c: string) => CHILLU_BASE[c] + VIRAMA)
+    .trim()
+    .replace(/\s+/g, ' ');
   if (!/[\u0d00-\u0d7f]/.test(q)) return null;
   const chars = [...q];
   let re = '';
