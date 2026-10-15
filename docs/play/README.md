@@ -1,14 +1,15 @@
 # Releasing on Google Play
 
-Everything needed to put the two apps on Google Play from an organisation developer
-account, the Malayalam app first. The English app follows the same steps with its
-own listing.
+Everything needed to put the apps on Google Play from an organisation developer
+account, the Malayalam app first. The English and Tamil apps follow the same steps with
+their own listings.
 
 | File | What it is |
 | --- | --- |
 | `listing-vedapusthakam.md` | Name and descriptions for വേദപുസ്തകം, in Malayalam (default) and English |
 | `listing-bible.md` | Name and descriptions for Bible, in English |
-| `privacy-policy.html` | Privacy policy page for both apps, to upload to riversresearch.org |
+| `listing-vedagamam.md` | Name and descriptions for வேதாகமம், in Tamil (default) and English |
+| `privacy-policy.html` | Privacy policy page for all three apps, to upload to riversresearch.org |
 | `graphics/*-icon-512.png` | The 512 × 512 icons Play asks for |
 | `graphics/vedapusthakam-feature-*.png` | Feature graphics for the Malayalam app, Malayalam and English |
 | `screenshots/ml/*.png` | Eight framed phone screenshots for the Malayalam listing |
@@ -17,6 +18,10 @@ own listing.
 
 The Malayalam wording in the listing and in the app's interface still needs a
 Malayalam speaker to read it.
+
+The Tamil app (`org.riversresearch.bible.tamil`, `BIBLE_EDITION=ta`) is not ready for Play
+yet: its word links are still being made, and everything in `docs/tamil-review.md` needs a
+Tamil speaker first. Its icon, feature graphics and screenshots come after that.
 
 ## 1. Before the first upload
 

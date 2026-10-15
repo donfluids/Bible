@@ -15,6 +15,12 @@
       "distribution": "store",
       "autoIncrement": true,
       "ios": { "image": "latest" }
+    },
+    "ios-ta": {
+      "env": { "BIBLE_EDITION": "ta" },
+      "distribution": "store",
+      "autoIncrement": true,
+      "ios": { "image": "latest" }
     }
   },
   "submit": {
@@ -22,6 +28,9 @@
       "ios": { "ascAppId": "" }
     },
     "ios-ml": {
+      "ios": { "ascAppId": "" }
+    },
+    "ios-ta": {
       "ios": { "ascAppId": "" }
     }
   }

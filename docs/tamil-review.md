@@ -133,7 +133,14 @@ The Tamil texts in `src/licences.ts` (credit lines and "changes made" notes for 
 KJV, Strong's, STEPBible, the fonts, icons and software). Licence is written உரிமம்
 throughout.
 
-## 7. Interface strings
+## 7. Store listings
+
+All the Tamil in `docs/play/listing-vedagamam.md` (Play name, short and full description) and
+`docs/ios/listing-vedagamam.md` (App Store subtitle, promotional text, keywords). The store
+name is checked in section 1; the rest should read as natural Tamil to someone deciding
+whether to install the app.
+
+## 8. Interface strings
 
 Every Tamil string in the app (`src/i18n.ts`, table `ta`), beside the English it translates.
 {placeholders} such as {n}, {ref}, {title} are filled in by the app and must stay as they are.

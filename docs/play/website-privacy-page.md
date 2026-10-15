@@ -1,26 +1,19 @@
 # Task: update the Bible apps' privacy policy on riversresearch.org
 
-Rivers Research LLC publishes two Bible apps on Google Play, soon also on Apple's App Store: **Bible**
-(`org.riversresearch.bible`) and **വേദപുസ്തകം** (`org.riversresearch.bible.malayalam`).
+Rivers Research LLC publishes Bible apps on Google Play, soon also on Apple's App Store:
+**Bible** (`org.riversresearch.bible`), **വേദപുസ്തകം** (`org.riversresearch.bible.malayalam`)
+and a third, new one, **வேதாகமம்** (`org.riversresearch.bible.tamil`).
 Their privacy policy is on riversresearch.org (at `https://riversresearch.org/bible/privacy`,
 or the address chosen when it was first published). This task replaces the page's policy text with the new version below.
 
 ## What changed in the policy
 
-The apps are coming to iPhone, and the apps gained a notebook. Compared with the version
-dated 5 October 2026:
+A third app, the Tamil one, is added. Compared with the version dated 14 October 2026:
 
-- Opening line: names both platforms ("for Android and iPhone"); effective date
-  **14 October 2026**.
-- "What the apps keep, and where": the list now ends "marked text, notes **and notebook
-  pages**".
-- "Android backup" is now **"Backup"** and covers iCloud backup on iPhone as well as
-  Google backup on Android.
-- "Copying and sharing": "When you copy or share a verse **or a notebook page**, …".
-- "What the apps do not do": the permissions paragraph now covers iPhone (no permissions).
-- "Removing your data": covers deleting the app on iPhone and iCloud backups.
+- Opening line: names all three apps, adding "வேதாகமம் (org.riversresearch.bible.tamil)";
+  effective date **15 October 2026**.
 
-Nothing else changed.
+Nothing else changed: the Tamil app works exactly like the other two.
 
 ## What to do
 
@@ -30,8 +23,8 @@ Nothing else changed.
    word**. Headings, lists and the contact link may take the site's own styling, but do
    not reword, shorten or add to the policy: it describes exactly what the apps do, and
    Google compares it with the apps' declarations.
-3. Keep the site's normal page layout, and keep the Malayalam app name (വേദപുസ്തകം) as
-   Unicode text, not an image.
+3. Keep the site's normal page layout, and keep the Malayalam and Tamil app names
+   (വേദപുസ്തകം, வேதாகமம்) as Unicode text, not images.
 4. If no such page exists yet, create it at `https://riversresearch.org/bible/privacy`
    (or the nearest path that fits the site's conventions) and report the address.
 
@@ -47,8 +40,8 @@ Nothing else changed.
 
 - `curl -sI https://riversresearch.org/bible/privacy` (or the page's address) returns
   status 200 with `Content-Type: text/html`.
-- The page shows "Effective 14 October 2026", "for Android and iPhone", "iCloud" and "or a
-  notebook page", plus "Rivers Research LLC", both package names and dond@riversresearch.org.
+- The page shows "Effective 15 October 2026", "வேதாகமம்", "for Android and iPhone" and
+  "iCloud", plus "Rivers Research LLC", all three package names and dond@riversresearch.org.
 - It opens on a phone without signing in.
 
 ## Report back
@@ -61,7 +54,7 @@ The page's address, and that the text now reads as below.
 
 # Privacy policy
 
-Bible (org.riversresearch.bible) and വേദപുസ്തകം (org.riversresearch.bible.malayalam), for Android and iPhone, published by Rivers Research LLC. Effective 14 October 2026.
+Bible (org.riversresearch.bible), വേദപുസ്തകം (org.riversresearch.bible.malayalam) and வேதாகமம் (org.riversresearch.bible.tamil), for Android and iPhone, published by Rivers Research LLC. Effective 15 October 2026.
 
 > The apps collect no personal data and send nothing anywhere. They do not connect to the internet. Everything you save in them stays on your phone.
 
