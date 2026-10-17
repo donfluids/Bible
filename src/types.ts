@@ -17,8 +17,8 @@ export const TRANSLATIONS: Translation[] = [
   { id: 'WEB', name: 'World English Bible', tagged: false, lineHeight: 1.55 },
   // Tagged by scripts/align.mjs (machine alignment, confident links only).
   { id: 'MAL', name: 'സത്യവേദപുസ്തകം 1910 (Malayalam)', tagged: true, lineHeight: 1.75, script: 'ml' },
-  // Untagged until its words are aligned like the Malayalam's.
-  { id: 'TAM', name: 'இண்டியன் ரிவைஸ்டு வெர்ஸன் (Tamil IRV)', tagged: false, lineHeight: 1.75, script: 'ta' },
+  // Tagged by scripts/align.mjs --lang ta, like the Malayalam.
+  { id: 'TAM', name: 'இண்டியன் ரிவைஸ்டு வெர்ஸன் (Tamil IRV)', tagged: true, lineHeight: 1.75, script: 'ta' },
 ];
 
 export function translationInfo(id: TranslationId): Translation {

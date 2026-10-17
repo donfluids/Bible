@@ -687,7 +687,12 @@ function sharedStart(a, b) {
 // Tamil forms: the stem is the head less a final ம் (ராஜ்யம்: ராஜ்யத்தை), ் (தேவன்: தேவனை)
 // or ு; a base form is one without a case ending or the attached "and" (உம்).
 const taStem = (w) => w.replace(/ம்$/u, '').replace(/[்ு]$/u, '');
-const isTaBaseForm = (w) => !/(ை|க்கு|த்தில்|யில்|ில்|ிலே|ால்|ுடைய|ும்|ிடம்|ோடு|ிடத்தில்|ாக)$/u.test(w) || /[^ு]ம்$/u.test(w) && !/ும்$/u.test(w);
+// Tamil nouns end in a consonant (தேவன், விசுவாசம், ஜீவன்) or ு (அன்பு); forms with a case
+// ending, "and" (உம்), or an adjectival or adverbial ending (தேவனாகிய, …ஆக, …ஏ) are not base forms,
+const isTaBaseForm = (w) =>
+  /[்ு]$/u.test(w) && !/(க்கு|த்தில்|யில்|ில்|ால்|ும்|ிடம்|ிடத்தில்|த்து|ற்கு)$/u.test(w) &&
+  // nor one ending in the consonant a following word doubles (வார்த்தையைக் கேட்டு)
+  !/[ைாிீெேொோ][கசதப]்$/u.test(w);
 function groupForms(entries, stemOf = mlStem, isBase = isBaseForm) {
   const groups = [];
   const sorted = [...entries].sort((a, b) => a.display.length - b.display.length || b.refs.length - a.refs.length);

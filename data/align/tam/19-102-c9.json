@@ -1,0 +1,31 @@
+{
+ "model": "claude-sonnet-5-5",
+ "effort": "medium",
+ "created": "2026-10-17T11:21:47.472Z",
+ "cost": 0.011346499999999999,
+ "usage": {
+  "in": 2,
+  "cacheRead": 1138,
+  "cacheCreate": 2064,
+  "out": 277
+ },
+ "problems": [],
+ "verses": [
+  {
+   "book": 19,
+   "chapter": 102,
+   "v": 9,
+   "hash": "b647c92e8db0",
+   "tokens": 9,
+   "spans": []
+  },
+  {
+   "book": 19,
+   "chapter": 102,
+   "v": 10,
+   "hash": "e7d8bc5a443e",
+   "tokens": 9,
+   "spans": []
+  }
+ ]
+}

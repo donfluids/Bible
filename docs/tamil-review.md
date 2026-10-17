@@ -121,11 +121,11 @@ below in search and in the notebook (for example "சங். 23" or "திர�
   added.
 - Search examples on the empty search screen: யோவான் 3:16, சங்கீதம் 23, அன்பு, H430.
 
-## 5. Word links (after the alignment run)
+## 5. Word links
 
-Once the Tamil words are linked to the Hebrew and Greek, a reader should tap through the 33
+The Tamil words are now linked to the Hebrew and Greek (all but two psalm titles). A reader should tap through the 33
 verses checked by hand for Malayalam (Genesis 1:1, John 3:16, Psalm 23, Romans 8:28 …) and
-note wrong links. That list will come with the alignment results.
+note wrong links, and check the Tamil headline words the word sheet shows (for example அன்பு · செலுத்துவான் for ἀγαπάω, where செலுத்துவான் is only the helper verb of அன்பு செலுத்து).
 
 ## 6. Sources and licences screen
 
