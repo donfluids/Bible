@@ -1,0 +1,1331 @@
+{
+ "packages": [
+  {
+   "name": "@babel/runtime",
+   "version": "7.29.7",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2014-present Sebastian McKenzie and other contributors"
+   ]
+  },
+  {
+   "name": "@react-native/assets-registry",
+   "version": "0.86.3",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "@react-native/js-polyfills",
+   "version": "0.86.3",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "@react-native/normalize-colors",
+   "version": "0.86.3",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "@react-native/virtualized-lists",
+   "version": "0.86.3",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "@react-navigation/core",
+   "version": "7.23.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2017 React Navigation Contributors"
+   ]
+  },
+  {
+   "name": "@react-navigation/elements",
+   "version": "2.9.44",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2017 React Navigation Contributors"
+   ]
+  },
+  {
+   "name": "@react-navigation/native",
+   "version": "7.5.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2017 React Navigation Contributors"
+   ]
+  },
+  {
+   "name": "@react-navigation/native-stack",
+   "version": "7.20.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2017 React Navigation Contributors"
+   ]
+  },
+  {
+   "name": "@react-navigation/routers",
+   "version": "7.6.4",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2017 React Navigation Contributors"
+   ]
+  },
+  {
+   "name": "@ungap/structured-clone",
+   "version": "1.4.0",
+   "licence": "ISC",
+   "copyright": [
+    "Copyright (c) 2021, Andrea Giammarchi, @WebReflection"
+   ],
+   "text": "ISC License\n\nCopyright (c) 2021, Andrea Giammarchi, @WebReflection\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH\nREGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY\nAND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,\nINDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM\nLOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE\nOR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR\nPERFORMANCE OF THIS SOFTWARE."
+  },
+  {
+   "name": "abort-controller",
+   "version": "3.0.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2017 Toru Nagashima"
+   ]
+  },
+  {
+   "name": "await-lock",
+   "version": "2.2.2",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015-present James Ide"
+   ]
+  },
+  {
+   "name": "base64-js",
+   "version": "1.5.1",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2014 Jameson Little"
+   ]
+  },
+  {
+   "name": "color",
+   "version": "4.2.3",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2012 Heather Arthur"
+   ]
+  },
+  {
+   "name": "color-convert",
+   "version": "2.0.1",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2011-2016 Heather Arthur <fayearthur@gmail.com>"
+   ]
+  },
+  {
+   "name": "color-name",
+   "version": "1.1.4",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015 Dmitry Ivanov"
+   ]
+  },
+  {
+   "name": "color-string",
+   "version": "1.9.1",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2011 Heather Arthur <fayearthur@gmail.com>"
+   ]
+  },
+  {
+   "name": "escape-string-regexp",
+   "version": "4.0.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)"
+   ]
+  },
+  {
+   "name": "event-target-shim",
+   "version": "5.0.1",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015 Toru Nagashima"
+   ]
+  },
+  {
+   "name": "expo",
+   "version": "57.0.26",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"
+   ]
+  },
+  {
+   "name": "expo-asset",
+   "version": "57.0.18",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"
+   ]
+  },
+  {
+   "name": "expo-clipboard",
+   "version": "57.0.2",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"
+   ]
+  },
+  {
+   "name": "expo-constants",
+   "version": "57.0.20",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"
+   ]
+  },
+  {
+   "name": "expo-file-system",
+   "version": "57.0.7",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"
+   ]
+  },
+  {
+   "name": "expo-font",
+   "version": "57.0.4",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"
+   ]
+  },
+  {
+   "name": "expo-haptics",
+   "version": "57.0.3",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"
+   ]
+  },
+  {
+   "name": "expo-keep-awake",
+   "version": "57.0.2",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"
+   ]
+  },
+  {
+   "name": "expo-linear-gradient",
+   "version": "57.0.2",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"
+   ]
+  },
+  {
+   "name": "expo-modules-core",
+   "version": "57.0.20",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"
+   ]
+  },
+  {
+   "name": "expo-sharing",
+   "version": "57.0.23",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"
+   ]
+  },
+  {
+   "name": "expo-speech",
+   "version": "57.0.3",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"
+   ]
+  },
+  {
+   "name": "expo-splash-screen",
+   "version": "57.0.9",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"
+   ]
+  },
+  {
+   "name": "expo-sqlite",
+   "version": "57.0.3",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"
+   ]
+  },
+  {
+   "name": "expo-status-bar",
+   "version": "57.0.1",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"
+   ]
+  },
+  {
+   "name": "expo-system-ui",
+   "version": "57.0.4",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"
+   ]
+  },
+  {
+   "name": "fast-deep-equal",
+   "version": "3.1.3",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2017 Evgeny Poberezkin"
+   ]
+  },
+  {
+   "name": "fflate",
+   "version": "0.8.3",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2026 Arjun Barrett"
+   ]
+  },
+  {
+   "name": "flow-enums-runtime",
+   "version": "0.0.6",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Facebook, Inc. and its affiliates."
+   ]
+  },
+  {
+   "name": "hoist-non-react-statics",
+   "version": "3.3.2",
+   "licence": "BSD-3-Clause",
+   "copyright": [
+    "Copyright (c) 2015, Yahoo! Inc. All rights reserved."
+   ],
+   "text": "Software License Agreement (BSD License)\n========================================\n\nCopyright (c) 2015, Yahoo! Inc. All rights reserved.\n----------------------------------------------------\n\nRedistribution and use of this software in source and binary forms, with or\nwithout modification, are permitted provided that the following conditions are\nmet:\n\n  * Redistributions of source code must retain the above copyright notice, this\n    list of conditions and the following disclaimer.\n  * Redistributions in binary form must reproduce the above copyright notice,\n    this list of conditions and the following disclaimer in the documentation\n    and/or other materials provided with the distribution.\n  * Neither the name of Yahoo! Inc. nor the names of YUI's contributors may be\n    used to endorse or promote products derived from this software without\n    specific prior written permission of Yahoo! Inc.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND\nANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED\nWARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE\nDISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR\nANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES\n(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;\nLOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON\nANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\nSOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+  },
+  {
+   "name": "invariant",
+   "version": "2.2.4",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2013-present, Facebook, Inc."
+   ]
+  },
+  {
+   "name": "is-arrayish",
+   "version": "0.3.4",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015 JD Ballard"
+   ]
+  },
+  {
+   "name": "memoize-one",
+   "version": "5.2.1",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2019 Alexander Reardon"
+   ]
+  },
+  {
+   "name": "nanoid",
+   "version": "3.3.19",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright 2017 Andrey Sitnik <andrey@sitnik.ru>"
+   ]
+  },
+  {
+   "name": "nullthrows",
+   "version": "1.1.1",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2016 Andres Suarez"
+   ]
+  },
+  {
+   "name": "promise",
+   "version": "8.3.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2014 Forbes Lindesay"
+   ]
+  },
+  {
+   "name": "react",
+   "version": "19.2.3",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "react-freeze",
+   "version": "1.0.4",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2021 Software Mansion"
+   ]
+  },
+  {
+   "name": "react-is",
+   "version": "16.13.1",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Facebook, Inc. and its affiliates."
+   ]
+  },
+  {
+   "name": "react-native",
+   "version": "0.86.3",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "react-native-gesture-handler",
+   "version": "2.32.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2016 Software Mansion <swmansion.com>"
+   ]
+  },
+  {
+   "name": "react-native-safe-area-context",
+   "version": "5.7.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2019 Th3rd Wave"
+   ]
+  },
+  {
+   "name": "react-native-screens",
+   "version": "4.26.2",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2018 Software Mansion <swmansion.com>"
+   ]
+  },
+  {
+   "name": "react-native-view-shot",
+   "version": "5.1.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2016 Gaëtan Renaudeau"
+   ]
+  },
+  {
+   "name": "regenerator-runtime",
+   "version": "0.13.11",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2014-present, Facebook, Inc."
+   ]
+  },
+  {
+   "name": "scheduler",
+   "version": "0.27.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "simple-swizzle",
+   "version": "0.2.4",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015 Josh Junon"
+   ]
+  },
+  {
+   "name": "stacktrace-parser",
+   "version": "0.1.11",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2014-2019 Georg Tavonius"
+   ]
+  },
+  {
+   "name": "use-latest-callback",
+   "version": "0.2.6",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2023 Satyajit Sahoo"
+   ]
+  },
+  {
+   "name": "use-sync-external-store",
+   "version": "1.7.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "warn-once",
+   "version": "0.1.1",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2022 Satyajit Sahoo"
+   ]
+  },
+  {
+   "name": "whatwg-fetch",
+   "version": "3.6.20",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2014-2023 GitHub, Inc."
+   ]
+  },
+  {
+   "name": "whatwg-url-minimum",
+   "version": "0.1.2",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Phil Pluckthun,",
+    "Copyright (c) 650 Industries, Inc. (aka Expo),",
+    "Copyright (c) Sebastian Mayr"
+   ]
+  }
+ ],
+ "android": [
+  {
+   "name": "androidx.activity:activity",
+   "version": "1.8.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.activity:activity-ktx",
+   "version": "1.8.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.annotation:annotation",
+   "version": "1.9.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.annotation:annotation-experimental",
+   "version": "1.4.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.annotation:annotation-jvm",
+   "version": "1.9.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.appcompat:appcompat",
+   "version": "1.7.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.appcompat:appcompat-resources",
+   "version": "1.7.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.arch.core:core-common",
+   "version": "2.2.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.arch.core:core-runtime",
+   "version": "2.2.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.autofill:autofill",
+   "version": "1.3.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.cardview:cardview",
+   "version": "1.0.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.collection:collection",
+   "version": "1.4.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.collection:collection-jvm",
+   "version": "1.4.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.collection:collection-ktx",
+   "version": "1.4.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.concurrent:concurrent-futures",
+   "version": "1.1.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.constraintlayout:constraintlayout",
+   "version": "2.1.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.constraintlayout:constraintlayout-core",
+   "version": "1.0.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.coordinatorlayout:coordinatorlayout",
+   "version": "1.2.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.core:core",
+   "version": "1.17.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.core:core-ktx",
+   "version": "1.17.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.core:core-splashscreen",
+   "version": "1.2.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.core:core-viewtree",
+   "version": "1.0.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.cursoradapter:cursoradapter",
+   "version": "1.0.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.customview:customview",
+   "version": "1.1.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.documentfile:documentfile",
+   "version": "1.1.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.drawerlayout:drawerlayout",
+   "version": "1.1.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.dynamicanimation:dynamicanimation",
+   "version": "1.1.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.emoji2:emoji2",
+   "version": "1.3.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.emoji2:emoji2-views-helper",
+   "version": "1.3.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.fragment:fragment",
+   "version": "1.8.9",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.fragment:fragment-ktx",
+   "version": "1.8.9",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.graphics:graphics-shapes",
+   "version": "1.0.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.graphics:graphics-shapes-android",
+   "version": "1.0.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.interpolator:interpolator",
+   "version": "1.0.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.lifecycle:lifecycle-common",
+   "version": "2.6.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.lifecycle:lifecycle-livedata",
+   "version": "2.6.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.lifecycle:lifecycle-livedata-core",
+   "version": "2.6.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.lifecycle:lifecycle-livedata-core-ktx",
+   "version": "2.6.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.lifecycle:lifecycle-process",
+   "version": "2.6.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.lifecycle:lifecycle-runtime",
+   "version": "2.6.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.lifecycle:lifecycle-runtime-ktx",
+   "version": "2.6.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.lifecycle:lifecycle-viewmodel",
+   "version": "2.6.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.lifecycle:lifecycle-viewmodel-ktx",
+   "version": "2.6.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.lifecycle:lifecycle-viewmodel-savedstate",
+   "version": "2.6.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.loader:loader",
+   "version": "1.0.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.profileinstaller:profileinstaller",
+   "version": "1.3.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.recyclerview:recyclerview",
+   "version": "1.2.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.resourceinspection:resourceinspection-annotation",
+   "version": "1.0.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.savedstate:savedstate",
+   "version": "1.2.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.savedstate:savedstate-ktx",
+   "version": "1.2.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.startup:startup-runtime",
+   "version": "1.1.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.swiperefreshlayout:swiperefreshlayout",
+   "version": "1.1.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.tracing:tracing",
+   "version": "1.2.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.tracing:tracing-ktx",
+   "version": "1.2.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.transition:transition",
+   "version": "1.7.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.transition:transition-ktx",
+   "version": "1.7.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.vectordrawable:vectordrawable",
+   "version": "1.1.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.vectordrawable:vectordrawable-animated",
+   "version": "1.1.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.versionedparcelable:versionedparcelable",
+   "version": "1.1.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.viewpager:viewpager",
+   "version": "1.0.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.viewpager2:viewpager2",
+   "version": "1.0.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.window:window",
+   "version": "1.5.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.window:window-core",
+   "version": "1.5.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "androidx.window:window-core-android",
+   "version": "1.5.1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "com.facebook.fbjni:fbjni",
+   "version": "0.7.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:animated-base",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:animated-drawable",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:animated-gif",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:drawee",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:fbcore",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:fresco",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:imagepipeline",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:imagepipeline-base",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:imagepipeline-native",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:imagepipeline-okhttp3",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:memory-type-ashmem",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:memory-type-java",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:memory-type-native",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:middleware",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:nativeimagefilters",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:nativeimagetranscoder",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:soloader",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:ui-common",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:ui-core",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:urimod",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:vito-options",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:vito-renderer",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:vito-source",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.fresco:webpsupport",
+   "version": "3.6.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.infer.annotation:infer-annotation",
+   "version": "0.18.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.soloader:annotation",
+   "version": "0.12.1",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.soloader:nativeloader",
+   "version": "0.12.1",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.soloader:soloader",
+   "version": "0.12.1",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.facebook.yoga:proguard-annotations",
+   "version": "1.19.0",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) Meta Platforms, Inc. and affiliates."
+   ]
+  },
+  {
+   "name": "com.google.android.material:material",
+   "version": "1.13.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "com.google.code.findbugs:jsr305",
+   "version": "3.0.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "com.google.code.gson:gson",
+   "version": "2.8.6",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "com.google.errorprone:error_prone_annotations",
+   "version": "2.15.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "com.google.guava:listenablefuture",
+   "version": "1.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "com.parse.bolts:bolts-tasks",
+   "version": "1.4.0",
+   "licence": "BSD-3-Clause",
+   "copyright": [
+    "Copyright (c) 2013-present, Facebook, Inc. All rights reserved."
+   ],
+   "text": "BSD License\n\nFor Bolts software\n\nCopyright (c) 2013-present, Facebook, Inc. All rights reserved.\n\nRedistribution and use in source and binary forms, with or without modification,\nare permitted provided that the following conditions are met:\n\n * Redistributions of source code must retain the above copyright notice, this\n   list of conditions and the following disclaimer.\n\n * Redistributions in binary form must reproduce the above copyright notice,\n   this list of conditions and the following disclaimer in the documentation\n   and/or other materials provided with the distribution.\n\n * Neither the name Facebook nor the names of its contributors may be used to\n   endorse or promote products derived from this software without specific\n   prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND\nANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED\nWARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE\nDISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR\nANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES\n(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;\nLOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON\nANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\nSOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+  },
+  {
+   "name": "com.squareup.okhttp3:okhttp",
+   "version": "4.9.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "com.squareup.okhttp3:okhttp-urlconnection",
+   "version": "4.9.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "com.squareup.okio:okio",
+   "version": "3.16.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "com.squareup.okio:okio-jvm",
+   "version": "3.16.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "com.squareup.zstd:zstd-kmp",
+   "version": "0.4.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "com.squareup.zstd:zstd-kmp-android",
+   "version": "0.4.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "com.squareup.zstd:zstd-kmp-okio",
+   "version": "0.4.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "com.squareup.zstd:zstd-kmp-okio-android",
+   "version": "0.4.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "commons-codec:commons-codec",
+   "version": "1.10",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "commons-io:commons-io",
+   "version": "1.4",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "io.github.lukmccall.pika:pika-api",
+   "version": "0.3.2",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2025 Łukasz Kosmaty"
+   ]
+  },
+  {
+   "name": "javax.inject:javax.inject",
+   "version": "1",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "org.brotli:dec",
+   "version": "0.1.2",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2009, 2010, 2013-2016 by the Brotli Authors."
+   ]
+  },
+  {
+   "name": "org.jetbrains:annotations",
+   "version": "23.0.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "org.jetbrains.kotlin:kotlin-annotations-jvm",
+   "version": "1.3.72",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "org.jetbrains.kotlin:kotlin-bom",
+   "version": "1.8.22",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "org.jetbrains.kotlin:kotlin-reflect",
+   "version": "2.1.20",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "org.jetbrains.kotlin:kotlin-stdlib",
+   "version": "2.2.20",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
+   "version": "2.1.20",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
+   "version": "1.8.22",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "org.jetbrains.kotlinx:kotlinx-coroutines-android",
+   "version": "1.10.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "org.jetbrains.kotlinx:kotlinx-coroutines-bom",
+   "version": "1.10.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "org.jetbrains.kotlinx:kotlinx-coroutines-core",
+   "version": "1.10.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
+   "version": "1.10.2",
+   "licence": "Apache-2.0",
+   "copyright": []
+  },
+  {
+   "name": "org.jspecify:jspecify",
+   "version": "1.0.0",
+   "licence": "Apache-2.0",
+   "copyright": []
+  }
+ ]
+}

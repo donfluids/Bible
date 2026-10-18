@@ -184,6 +184,7 @@ scripts/build-db.mjs     Builds assets/db/bible-<edition>.db from data/raw/
 scripts/make-icons.mjs   Draws the icon, adaptive icon layers and splash images (SVG, rendered with Chromium)
 scripts/make-feature-graphic.mjs  Draws the Play feature graphics from the same book (scripts/icon-art.mjs)
 scripts/make-icon-font.py  Cuts the interface icons out of Material Symbols Rounded
+scripts/notices.mjs      Lists the third-party software in the app with licences and copyright lines (src/notices.json)
 assets/db/               bible-en.db (32 MB) and bible-ml.db (47 MB), one per edition
 assets/icons/            Icon, adaptive icon layers and splash images per edition
 data/overrides/          Hand corrections: Malayalam text, verse map, short meanings
@@ -278,9 +279,9 @@ two KJV verses), and Compare shows every verse that holds the same words.
 - **Abbott-Smith**, *A Manual Greek Lexicon of the New Testament* (1922), public domain,
   in the [TEI edition](https://github.com/translatable-exegetical-tools/Abbott-Smith) of
   the translatable-exegetical-tools project; and **BDB Glosses**, the sense outline of
-  Brown, Driver and Briggs (1906), public domain, from Open Scriptures'
-  [Hebrew Lexicon](https://github.com/openscriptures/HebrewLexicon) as arranged in
-  CrossWire's BDBGlosses_Strongs module. Shown as the fuller entry in the word sheet
+  Brown, Driver and Briggs (1906), public domain, in the digital edition of the Open
+  Scriptures Hebrew Bible Project's [Hebrew Lexicon](https://github.com/openscriptures/HebrewLexicon)
+  (CC BY 4.0) as arranged in CrossWire's BDBGlosses_Strongs module. Shown as the fuller entry in the word sheet
   (`scripts/lib/lexicons.mjs`); all editions.
 - **Interlinear Hebrew and Greek**: Translators Amalgamated Hebrew OT (TAHOT) and
   Greek NT (TAGNT) by [STEPBible](https://github.com/STEPBible/STEPBible-Data),
@@ -301,13 +302,24 @@ two KJV verses), and Compare shows every verse that holds the same words.
   (The Metropolitan Museum of Art, Open Access, public domain), its paper taken out by
   `scripts/card-rose.mjs`.
 
-The app shows these sources, their licences with links and the changes made to each
-under Settings → Sources and licences (`src/licences.ts`, with the full Open Font
-License and Apache License texts).
+The app shows these sources, their licences with links and the modifications made to
+each under Settings → Sources and licences, in English (`src/licences.ts`), followed by
+the third-party software in the Android app and the full MIT, Apache and Open Font
+License texts. The software list, `src/notices.json`, is generated from the JavaScript
+bundle's source map and the release runtime classpath, with each package's licence and
+copyright lines (BSD and ISC licences in full):
+
+```
+npx expo export --platform android --source-maps --output-dir /tmp/map
+(cd android && ./gradlew :app:dependencies --configuration releaseRuntimeClasspath -q > /tmp/deps.txt)
+node scripts/notices.mjs /tmp/map/_expo/static/js/android/index-*.map /tmp/deps.txt
+```
+
+Run it again when dependencies change; it stops on a licence it does not recognise.
 
 ### Licences of the data
 
-- The app's source code is MIT licensed (`LICENSE`).
+- The app's source code is © 2026 Rivers Research, MIT licensed (`LICENSE`).
 - `assets/db/bible-ml.db`, `data/align/mal/` and the Malayalam corrections in
   `data/overrides/` are adapted from the CC BY-SA 4.0 Malayalam text (and CC BY 4.0
   STEPBible data), so they are shared under **CC BY-SA 4.0**. The Malayalam word links
@@ -319,8 +331,9 @@ License and Apache License texts).
   readings shown where they differ, the Hebrew marks פ and ס removed, verse numbers
   mapped. Attribution: STEPBible.org, Tyndale House Cambridge,
   https://github.com/STEPBible/STEPBible-Data.
-- The KJV, WEB and BSB text, Abbott-Smith and BDB Glosses are public domain (the KJV
-  outside the United Kingdom).
+- The KJV, WEB and BSB text and Abbott-Smith are public domain (the KJV outside the
+  United Kingdom). The BDB text is public domain; its digital edition by Open Scriptures
+  is CC BY 4.0 (attribution: Open Scriptures Hebrew Bible Project).
 
 ## Malayalam word links
 
