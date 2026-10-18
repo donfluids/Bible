@@ -8,7 +8,7 @@ import { HEBREW_FONT, languageScript, scriptOf, scriptureFont } from '../fonts';
 import { renderingsLabel, translationName, useT } from '../i18n';
 import type { StringKey } from '../i18n';
 import { describeMorph } from '../morph';
-import { getConcordance, getConcordanceCount, getInterlinear, getOriginalCount, getRelated, getRenderings, getStrongs, getVerses } from '../queries';
+import { getConcordance, getConcordanceCount, getInterlinear, getLexicon, getOriginalCount, getRelated, getRenderings, getStrongs, getVerses } from '../queries';
 import { useSettings } from '../settings';
 import { formatCount, formatRef, isHebrew, plainKjvUsage } from '../text';
 import { useTheme } from '../theme';
@@ -437,6 +437,8 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                   </Section>
                 ) : null}
 
+                <LexiconEntry id={entry.id} theme={theme} t={t} onOpenRef={onOpenRef} />
+
                 <Section label={t('strongsDictionary')} theme={theme}>
                   {entry.definition ? <Text style={[styles.body, { color: theme.text }]}>{entry.definition}</Text> : null}
                   {entry.kjv_usage ? (
@@ -577,6 +579,85 @@ function Renderings({ label, list, theme, onPress }: { label: string; list: Rend
  * Derivation text such as "plural of H433 (אֱלוֹהַּ);" with each named entry as a link.
  * The link shows the word itself rather than its number when the text gives it.
  */
+/** How much of a long entry shows before "Show the whole entry". */
+const LEXICON_PREVIEW = 600;
+
+/**
+ * The fuller dictionary entry: Abbott-Smith for a Greek word, the BDB outline for a
+ * Hebrew one (see scripts/lib/lexicons.mjs for the markup). Verse references open the
+ * verse; Greek and Hebrew words use the original-language font; glosses are bold.
+ */
+function LexiconEntry({ id, theme, t, onOpenRef }: { id: string; theme: Theme; t: ReturnType<typeof useT>; onOpenRef: (ref: Ref) => void }) {
+  const db = useSQLiteContext();
+  const [entry, setEntry] = useState<{ source: 'AS' | 'BDB'; body: string } | null>(null);
+  const [all, setAll] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    setEntry(null);
+    setAll(false);
+    getLexicon(db, id).then((e) => {
+      if (!cancelled) setEntry(e);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [db, id]);
+  if (!entry) return null;
+  const lines = entry.body.split('\n');
+  // The preview: lines until about LEXICON_PREVIEW characters, the last one cut to four
+  // lines, so it always reaches the first meaning.
+  let shown = lines.length;
+  if (!all) {
+    let n = 0;
+    shown = 0;
+    while (shown < lines.length && n < LEXICON_PREVIEW) n += lines[shown++].length;
+  }
+  const cut = !all && (shown < lines.length || lines.slice(0, shown).join('').length > LEXICON_PREVIEW);
+  const hebrew = entry.source === 'BDB';
+  return (
+    <Section label={t(hebrew ? 'lexiconHebrew' : 'lexiconGreek')} theme={theme}>
+      {lines.slice(0, shown).map((line, i) => {
+        const tab = line.indexOf('\t');
+        const label = tab > 0 ? line.slice(0, tab) : '';
+        const text = tab > 0 ? line.slice(tab + 1) : line;
+        return (
+          <Text key={i} numberOfLines={cut && i === shown - 1 ? 4 : undefined} style={[styles.lexLine, { color: theme.text }]}>
+            {/* A left-to-right mark: a line that opens with a Hebrew word still reads left to right. */}
+            {'\u200e'}
+            {label ? <Text style={[styles.lexLabel, { color: theme.muted }]}>{label}  </Text> : null}
+            {text.split(/(⟦[^⟧]*⟧|⟪[^⟫]*⟫|‹[^›]*›)/).map((part, j) => {
+              if (part.startsWith('⟦')) {
+                const [key, shownRef] = part.slice(1, -1).split('|');
+                const [book, chapter, verse] = key.split(':').map(Number);
+                return (
+                  <Text key={j} accessibilityRole="link" onPress={() => onOpenRef({ book, chapter, verse })} style={{ color: theme.accent }}>
+                    {shownRef}
+                  </Text>
+                );
+              }
+              if (part.startsWith('⟪')) {
+                const word = part.slice(1, -1);
+                return (
+                  <Text key={j} style={{ fontFamily: /[\u0590-\u05ff]/.test(word) ? HEBREW_FONT : undefined }}>
+                    {word}
+                  </Text>
+                );
+              }
+              if (part.startsWith('‹')) return <Text key={j} style={styles.lexGloss}>{part.slice(1, -1)}</Text>;
+              return <Text key={j}>{part}</Text>;
+            })}
+          </Text>
+        );
+      })}
+      {cut || all ? (
+        <Pressable onPress={() => setAll((v) => !v)} hitSlop={8} accessibilityRole="button" style={styles.lexMore}>
+          <Text style={[styles.legendToggleText, { color: theme.accent }]}>{all ? t('showLess') : t('showWholeEntry')}</Text>
+        </Pressable>
+      ) : null}
+    </Section>
+  );
+}
+
 function LinkedText({ text, color, accent, hebrewFont, onPick }: { text: string; color: string; accent: string; hebrewFont: string; onPick: (p: WordPick) => void }) {
   const parts = text.split(/([HG]\d{1,4}(?:\s*\([^)]*\))?)(?![\d\w])/);
   return (
@@ -659,6 +740,10 @@ const styles = StyleSheet.create({
   exampleRef: { fontSize: 13, fontWeight: '600', marginBottom: 2 },
   body: { fontSize: 15, lineHeight: 22 },
   derivation: { fontSize: 15, lineHeight: 22, marginTop: 6 },
+  lexLine: { fontSize: 15, lineHeight: 23, marginBottom: 8 },
+  lexLabel: { fontWeight: '700' },
+  lexGloss: { fontWeight: '700' },
+  lexMore: { alignSelf: 'flex-start', paddingVertical: 4 },
   numberLine: { fontSize: 13, lineHeight: 18, marginTop: 10 },
   legendToggle: { marginTop: 16, alignSelf: 'flex-start', minHeight: 32, justifyContent: 'center' },
   legendToggleText: { fontSize: 14, fontWeight: '600' },

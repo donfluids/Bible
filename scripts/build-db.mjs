@@ -4,8 +4,9 @@
 //   npm run build-db              # both editions
 //   node scripts/build-db.mjs ml  # one edition
 //
-// Editions (see src/edition.ts): "en" bundles the KJV and WEB into assets/db/bible-en.db;
-// "ml" bundles the Malayalam Sathyavedapusthakam and the KJV into assets/db/bible-ml.db.
+// Editions (see src/edition.ts): "en" bundles the KJV, the Berean Standard Bible and the
+// WEB into assets/db/bible-en.db; "ml" bundles the Malayalam Sathyavedapusthakam and the
+// KJV into assets/db/bible-ml.db; "ta" the Tamil IRV and the KJV into bible-ta.db.
 //
 // Output schema (all text is UTF-8):
 //   books(id, osis, name, testament, chapters)
@@ -54,6 +55,10 @@
 //     Greek here is every word found in the Textus Receptus or the Byzantine text, in the
 //     place TAGNT gives it; where those texts read a different word from Nestle-Aland, their
 //     word is shown. Hebrew section marks (פ ס) are dropped. Verse numbers follow the KJV.
+//   lexicon(id, source, body)
+//     a fuller dictionary entry for a Strong's number: source AS (Abbott-Smith, Greek) or
+//     BDB (BDB Glosses, Hebrew); body is lines of text with the light markup described
+//     in scripts/lib/lexicons.mjs (verse references, original words, glosses, sense labels)
 //   verse_map(translation, book, chapter, verse, n, obook, ochapter, overse)
 //     translation verses numbered differently from the KJV numbering of the interlinear;
 //     n orders the KJV verses when one verse holds two. From data/overrides/versification.json
@@ -61,6 +66,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import { deflateRawSync, inflateRawSync } from 'node:zlib';
 import { textHash } from './lib/tokens.mjs';
+import { abbottSmith, bdbGlosses } from './lib/lexicons.mjs';
 import { readFileSync, readdirSync, mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -68,7 +74,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = join(ROOT, 'data', 'raw');
 const OUT_DIR = join(ROOT, 'assets', 'db');
-const EDITIONS = { en: ['KJV', 'WEB'], ml: ['MAL', 'KJV'], ta: ['TAM', 'KJV'] };
+const EDITIONS = { en: ['KJV', 'BSB', 'WEB'], ml: ['MAL', 'KJV'], ta: ['TAM', 'KJV'] };
 
 // USFM book code, display name, testament. Order is the Protestant canon.
 const BOOKS = [
@@ -172,6 +178,8 @@ const UNTAGGED = new Set(['WEB']);
 const ALL_TRANSLATIONS = [
   { id: 'KJV', name: 'King James Version', dir: 'kjv', suffix: 'eng-kjv2006.usfm' },
   { id: 'WEB', name: 'World English Bible', dir: 'web', suffix: 'engwebp.usfm' },
+  // Made by scripts/bsb-from-sword.mjs from CrossWire's module, whose Strong's numbers are right.
+  { id: 'BSB', name: 'Berean Standard Bible', dir: 'bsb', suffix: 'bsb.usfm' },
   { id: 'MAL', name: 'സത്യവേദപുസ്തകം 1910', dir: 'mal2015', suffix: 'mal2015.usfm' },
   // The IRV's \toc2 is an abbreviation (ஆதி); its \h is the book's name (ஆதியாகமம்).
   // Tamil needs no zero-width non-joiner; the IRV has eight stray ones, one inside a word (1 John 5:3).
@@ -546,6 +554,19 @@ function alignmentFor(alignments, key, text) {
  * (നിത്യജീവൻ to "eternal" and "life"); its links share the word's place and the tag lists
  * the numbers with "+": gap,length,number[+number…], the chief word first.
  */
+// Leading words of an English phrase that belong to the grammar, not the word itself.
+const LEADING_WORDS = new Set(('the a an of to in into on for from with by at as and or but nor so that which who whom whose ' +
+  'my your his her its our their thy thine mine me him them us you o this these those all every not no will shall would should ' +
+  'be is are was were been being have has had do does did let may might can could must ' +
+  'i we he she it they then now when if because surely just even according am').split(' '));
+function coreRendering(phrase) {
+  const words = phrase.split(/\s+/);
+  let i = 0;
+  while (i < words.length - 1 && LEADING_WORDS.has(words[i].replace(/[^A-Za-z]/g, '').toLowerCase()) ) i++;
+  // A possessive groups with its word: "God’s" with "God".
+  return words.slice(i).join(' ').replace(/[’']s$/, '');
+}
+
 function tagsFrom(entries) {
   const parts = [];
   let prevEnd = 0;
@@ -768,6 +789,7 @@ function buildEdition(edition) {
                         PRIMARY KEY(strongs, translation)) WITHOUT ROWID;
     CREATE TABLE interlinear(book INTEGER NOT NULL, chapter INTEGER NOT NULL, data BLOB NOT NULL,
                         PRIMARY KEY(book, chapter)) WITHOUT ROWID;
+    CREATE TABLE lexicon(id TEXT PRIMARY KEY, source TEXT NOT NULL, body TEXT NOT NULL) WITHOUT ROWID;
     CREATE TABLE verse_map(translation TEXT NOT NULL, book INTEGER NOT NULL, chapter INTEGER NOT NULL, verse INTEGER NOT NULL,
                         n INTEGER NOT NULL, obook INTEGER NOT NULL, ochapter INTEGER NOT NULL, overse INTEGER NOT NULL,
                         PRIMARY KEY(translation, book, chapter, verse, n)) WITHOUT ROWID;
@@ -896,7 +918,9 @@ function buildEdition(edition) {
       const verseKey = `${bookId}:${chapter}:${verse}`;
       for (const m of entries) {
         tagCount++;
-        const word = m.word;
+        // The BSB tags whole phrases ("your God", "of the LORD"); its renderings are
+        // grouped without the leading little words, so the chips read "God", "LORD".
+        const word = t.id === 'BSB' ? coreRendering(m.word) : m.word;
         const lower = word.toLowerCase();
         const strayPronoun = !!linked && linked.pronouns.has(word) && !HEBREW_PRONOUNS.has(m.id) && !GREEK_PRONOUNS.has(m.id);
         if (strayPronoun) {
@@ -951,6 +975,17 @@ function buildEdition(edition) {
       nStrongs++;
     }
   }
+  // Fuller dictionary entries: Abbott-Smith for the Greek, BDB Glosses for the Hebrew.
+  const insLex = db.prepare('INSERT INTO lexicon VALUES (?,?,?)');
+  const lexicons = [
+    ['AS', abbottSmith(join(RAW, 'abbott-smith.tei.xml'))],
+    ['BDB', bdbGlosses(join(RAW, 'bdbglosses', 'modules', 'lexdict', 'zld', 'bdbglosses_strongs', 'bdbglosses_strongs'))],
+  ];
+  for (const [source, entries] of lexicons) {
+    if (!entries.size) throw new Error(`lexicon ${source} missing: run npm run fetch-data`);
+    for (const [id, body] of entries) insLex.run(id, source, body);
+    stats[`lexicon${source}`] = entries.size;
+  }
   const insMap = db.prepare('INSERT INTO verse_map VALUES (?,?,?,?,?,?,?,?)');
   let mapped = 0;
   for (const [id, entries] of Object.entries(loadVerseMap())) {
@@ -962,13 +997,14 @@ function buildEdition(edition) {
     }
   }
   stats.verseMap = mapped;
-  insMeta.run('schema', '10');
+  insMeta.run('schema', '11');
   insMeta.run('edition', edition);
   insMeta.run('built', new Date().toISOString().slice(0, 10));
   insMeta.run('translations', JSON.stringify(TRANSLATIONS.map(({ id, name }) => ({ id, name }))));
   const SOURCES = {
     KJV: 'eBible.org eng-kjv2006, public domain',
     WEB: 'eBible.org engwebp, public domain',
+    BSB: 'CrossWire BSB module 2.0, Berean Standard Bible, BSB Publishing, CC0 / public domain',
     MAL: 'eBible.org mal2015, Malayalam Sathyavedapusthakam 1910 in contemporary orthography, Free Bible Foundation 2015, CC BY-SA 4.0',
     TAM: 'eBible.org tam2017, Tamil Indian Revised Version, Bridge Connectivity Solutions 2017, 2019, CC BY-SA 4.0',
   };
@@ -976,6 +1012,7 @@ function buildEdition(edition) {
     ...Object.fromEntries(TRANSLATIONS.map((t) => [t.id, SOURCES[t.id]])),
     strongs: 'Open Scriptures strongs (CC BY-SA)',
     interlinear: 'STEPBible TAHOT and TAGNT, Tyndale House Cambridge (CC BY 4.0)',
+    lexicon: "Abbott-Smith, Manual Greek Lexicon of the NT (public domain, TEI by translatable-exegetical-tools); BDB Glosses (CrossWire, from Open Scriptures' Hebrew Lexicon, public domain)",
   }));
   db.exec('COMMIT');
   const interlinear = buildInterlinear(db);

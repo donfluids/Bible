@@ -1,4 +1,4 @@
-export type TranslationId = 'KJV' | 'WEB' | 'MAL' | 'TAM';
+export type TranslationId = 'KJV' | 'WEB' | 'BSB' | 'MAL' | 'TAM';
 
 export interface Translation {
   id: TranslationId;
@@ -15,6 +15,8 @@ export const TRANSLATIONS: Translation[] = [
   { id: 'KJV', name: 'King James Version', tagged: true, lineHeight: 1.55 },
   // The WEB source's Strong's tags are unreliable, so they are not built (scripts/build-db.mjs).
   { id: 'WEB', name: 'World English Bible', tagged: false, lineHeight: 1.55 },
+  // Tagged by its publishers (Berean word tables), via CrossWire's module.
+  { id: 'BSB', name: 'Berean Standard Bible', tagged: true, lineHeight: 1.55 },
   // Tagged by scripts/align.mjs (machine alignment, confident links only).
   { id: 'MAL', name: 'സത്യവേദപുസ്തകം 1910 (Malayalam)', tagged: true, lineHeight: 1.75, script: 'ml' },
   // Tagged by scripts/align.mjs --lang ta, like the Malayalam.
@@ -26,6 +28,9 @@ export function translationInfo(id: TranslationId): Translation {
 }
 
 /** The translation whose Strong's tags back the concordance: itself if tagged, else the KJV. */
+/** The English Bibles, whose book names are the English ones of the books table. */
+export const isEnglish = (id: TranslationId) => id === 'KJV' || id === 'WEB' || id === 'BSB';
+
 export function taggedTranslation(id: TranslationId): TranslationId {
   return translationInfo(id).tagged ? id : 'KJV';
 }

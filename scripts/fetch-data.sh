@@ -29,6 +29,14 @@ fetch tam2017.zip https://ebible.org/Scriptures/tam2017_usfm.zip
 fetch strongs-hebrew.js https://raw.githubusercontent.com/openscriptures/strongs/master/hebrew/strongs-hebrew-dictionary.js
 fetch strongs-greek.js  https://raw.githubusercontent.com/openscriptures/strongs/master/greek/strongs-greek-dictionary.js
 
+# Berean Standard Bible (CC0), CrossWire's SWORD module: its Strong's tags sit on the right
+# words (eBible's engbsb are shifted). Turned into USFM by scripts/bsb-from-sword.mjs below.
+fetch bsb-sword.zip https://www.crosswire.org/ftpmirror/pub/sword/packages/rawzip/BSB.zip
+# Abbott-Smith, A Manual Greek Lexicon of the New Testament (1922), TEI, public domain
+fetch abbott-smith.tei.xml https://raw.githubusercontent.com/translatable-exegetical-tools/Abbott-Smith/master/abbott-smith.tei.xml
+# BDB Glosses keyed to Strong's (CrossWire, from Open Scriptures' Hebrew Lexicon), public domain
+fetch bdbglosses.zip https://www.crosswire.org/ftpmirror/pub/sword/packages/rawzip/BDBGlosses_Strongs.zip
+
 # STEPBible Translators Amalgamated Hebrew OT and Greek NT (CC BY 4.0), Tyndale House Cambridge.
 # Their licence permits bundling in software but asks that the files themselves are not redistributed.
 mkdir -p step
@@ -44,10 +52,13 @@ for name in \
   fetch "step/$name" "$STEP/$encoded"
 done
 
-rm -rf kjv web mal2015 tam2017
-mkdir -p kjv web mal2015 tam2017
+rm -rf kjv web mal2015 tam2017 bsb-sword bsb bdbglosses
+mkdir -p kjv web mal2015 tam2017 bsb-sword bdbglosses
 unzip -oq kjv.zip -d kjv
 unzip -oq web.zip -d web
 unzip -oq mal2015.zip -d mal2015
 unzip -oq tam2017.zip -d tam2017
+unzip -oq bsb-sword.zip -d bsb-sword
+unzip -oq bdbglosses.zip -d bdbglosses
+node "$RAW/../../scripts/bsb-from-sword.mjs" "$RAW/bsb-sword" "$RAW/bsb"
 echo "done: $(ls kjv/*.usfm | wc -l) KJV files, $(ls web/*.usfm | wc -l) WEB files, $(ls mal2015/*.usfm | wc -l) Malayalam files, $(ls tam2017/*.usfm | wc -l) Tamil files"

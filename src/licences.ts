@@ -52,6 +52,45 @@ const WEB = (lang: Language): Source => ({
   ),
 });
 
+const BSB = (lang: Language): Source => ({
+  title: pick({ en: 'Berean Standard Bible' }, lang),
+  credit: pick({ en: 'BSB Publishing, dedicated to the public domain (CC0). Text and word tags from the CrossWire module (version 2.0), built from the Berean tables.' }, lang),
+  links: [
+    { label: 'berean.bible', url: 'https://berean.bible' },
+    { label: 'CrossWire', url: 'https://www.crosswire.org/sword/modules/ModInfo.jsp?modName=BSB' },
+  ],
+  changes: pick(
+    {
+      en: 'Section headings and parallel-passage references are left out, as in the other Bibles here. Where the BSB tags a phrase for one Hebrew or Greek word, its list of renderings shows the phrase without the small words that lead it ("your God" is counted as "God").',
+    },
+    lang,
+  ),
+});
+
+const LEXICONS = (lang: Language): Source => ({
+  title: pick({ en: 'Greek and Hebrew dictionaries: Abbott-Smith and BDB', ml: 'ഗ്രീക്ക്, എബ്രായ നിഘണ്ടുക്കൾ: Abbott-Smith, BDB', ta: 'கிரேக்க, எபிரெய அகராதிகள்: Abbott-Smith, BDB' }, lang),
+  credit: pick(
+    {
+      en: "Greek: G. Abbott-Smith, A Manual Greek Lexicon of the New Testament (1922), in the TEI edition of the translatable-exegetical-tools project. Hebrew: the sense outline of Brown, Driver and Briggs, A Hebrew and English Lexicon (1906), from Open Scriptures' Hebrew Lexicon as arranged in CrossWire's BDB Glosses module. Both are in the public domain.",
+      ml: 'ഗ്രീക്ക്: G. Abbott-Smith, A Manual Greek Lexicon of the New Testament (1922), translatable-exegetical-tools പദ്ധതിയുടെ TEI പതിപ്പ്. എബ്രായ: Brown, Driver, Briggs, A Hebrew and English Lexicon (1906)-ന്റെ അർത്ഥസംഗ്രഹം, Open Scriptures-ന്റെ Hebrew Lexicon-ൽ നിന്ന്, CrossWire-ന്റെ BDB Glosses രൂപത്തിൽ. രണ്ടും പൊതുസ്വത്ത്.',
+      ta: 'கிரேக்கம்: G. Abbott-Smith, A Manual Greek Lexicon of the New Testament (1922), translatable-exegetical-tools திட்டத்தின் TEI பதிப்பு. எபிரெயம்: Brown, Driver, Briggs, A Hebrew and English Lexicon (1906)-இன் பொருள் சுருக்கம், Open Scriptures-இன் Hebrew Lexicon-இலிருந்து, CrossWire-இன் BDB Glosses வடிவில். இரண்டும் பொதுவுடைமை.',
+    },
+    lang,
+  ),
+  links: [
+    { label: 'Abbott-Smith (GitHub)', url: 'https://github.com/translatable-exegetical-tools/Abbott-Smith' },
+    { label: 'Open Scriptures Hebrew Lexicon', url: 'https://github.com/openscriptures/HebrewLexicon' },
+  ],
+  changes: pick(
+    {
+      en: 'The wording is unchanged. Verse references are made into links, and the Hebrew headword, which the word sheet already shows, is left out of each Hebrew entry.',
+      ml: 'വാക്കുകളിൽ മാറ്റമില്ല. വാക്യസൂചികകൾ കണ്ണികളാക്കി; പദവിവരത്തിൽ മുകളിൽ കാണുന്ന എബ്രായ പദം എബ്രായ വിവരണങ്ങളിൽനിന്ന് ഒഴിവാക്കി.',
+      ta: 'வார்த்தைகளில் மாற்றம் இல்லை. வசனக்குறிப்புகள் இணைப்புகளாக்கப்பட்டன; சொல் விவரத்தில் மேலே தெரியும் எபிரெய சொல் எபிரெய விவரங்களிலிருந்து விடப்பட்டது.',
+    },
+    lang,
+  ),
+});
+
 const MALAYALAM = (lang: Language): Source => ({
   title: pick({ en: 'Sathyavedapusthakam 1910 (Malayalam)', ml: 'സത്യവേദപുസ്തകം 1910' }, lang),
   credit: pick(
@@ -214,6 +253,6 @@ export function sourcesFor(edition: EditionId, lang: Language): Source[] {
       : edition === 'ta'
         ? // The word links join the list once the Tamil is aligned.
           [TAMIL(lang), ...(translationInfo('TAM').tagged ? [TAMIL_LINKS(lang)] : []), KJV(lang)]
-        : [KJV(lang), WEB(lang)];
-  return [...texts, STRONGS(lang), STEPBIBLE(lang), FONTS(lang, edition), ICONS(lang), SOFTWARE(lang)];
+        : [KJV(lang), BSB(lang), WEB(lang)];
+  return [...texts, STRONGS(lang), LEXICONS(lang), STEPBIBLE(lang), FONTS(lang, edition), ICONS(lang), SOFTWARE(lang)];
 }

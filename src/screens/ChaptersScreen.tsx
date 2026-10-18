@@ -6,6 +6,7 @@ import { Header } from '../components/Header';
 import { useT } from '../i18n';
 import { useSettings } from '../settings';
 import { useTheme } from '../theme';
+import { isEnglish } from '../types';
 import type { Book } from '../types';
 
 interface Props {
@@ -21,7 +22,7 @@ export function ChaptersScreen({ book, current, onPick, onBack }: Props) {
   const insets = useSafeAreaInsets();
   const t = useT();
   const { settings } = useSettings();
-  const title = book.names[settings.translation] && settings.translation !== 'KJV' && settings.translation !== 'WEB' ? book.names[settings.translation]! : book.name;
+  const title = book.names[settings.translation] && !isEnglish(settings.translation) ? book.names[settings.translation]! : book.name;
   const chapters = Array.from({ length: book.chapters }, (_, i) => i + 1);
   // As many columns of at least 56 dp as fit, stretched to fill the row exactly, so the
   // grid has no ragged gap on the right.

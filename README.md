@@ -264,12 +264,24 @@ two KJV verses), and Compare shows every verse that holds the same words.
   [eBible.org](https://ebible.org/find/details.php?id=engwebp). Public domain;
   "World English Bible" is a trademark of eBible.org. Its Strong's numbers are not
   used (see Known limitations).
+- **Berean Standard Bible**, BSB Publishing, dedicated to the public domain (CC0), from
+  [CrossWire's SWORD module](https://www.crosswire.org/sword/modules/ModInfo.jsp?modName=BSB)
+  (version 2.0), whose Strong's numbers come from the Berean word tables. eBible.org's
+  engbsb is not used: its Strong's numbers are shifted by a word in many verses.
+  `scripts/bsb-from-sword.mjs` turns the module into USFM. English edition only.
 - **Malayalam Sathyavedapusthakam 1910**, revised edition in contemporary orthography,
   copyright © 2015 The Free Bible Foundation, from
   [eBible.org](https://ebible.org/find/details.php?id=mal2015), CC BY-SA 4.0.
   Bundled in the Malayalam edition only.
 - **Strong's Hebrew and Greek dictionaries**, digital edition by
   [Open Scriptures](https://github.com/openscriptures/strongs), CC BY-SA.
+- **Abbott-Smith**, *A Manual Greek Lexicon of the New Testament* (1922), public domain,
+  in the [TEI edition](https://github.com/translatable-exegetical-tools/Abbott-Smith) of
+  the translatable-exegetical-tools project; and **BDB Glosses**, the sense outline of
+  Brown, Driver and Briggs (1906), public domain, from Open Scriptures'
+  [Hebrew Lexicon](https://github.com/openscriptures/HebrewLexicon) as arranged in
+  CrossWire's BDBGlosses_Strongs module. Shown as the fuller entry in the word sheet
+  (`scripts/lib/lexicons.mjs`); all editions.
 - **Interlinear Hebrew and Greek**: Translators Amalgamated Hebrew OT (TAHOT) and
   Greek NT (TAGNT) by [STEPBible](https://github.com/STEPBible/STEPBible-Data),
   Tyndale House Cambridge, CC BY 4.0. Their licence permits bundling the data in
@@ -303,7 +315,8 @@ License and Apache License texts).
   readings shown where they differ, the Hebrew marks פ and ס removed, verse numbers
   mapped. Attribution: STEPBible.org, Tyndale House Cambridge,
   https://github.com/STEPBible/STEPBible-Data.
-- The KJV and WEB text is public domain (the KJV outside the United Kingdom).
+- The KJV, WEB and BSB text, Abbott-Smith and BDB Glosses are public domain (the KJV
+  outside the United Kingdom).
 
 ## Malayalam word links
 

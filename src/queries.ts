@@ -96,6 +96,11 @@ export async function getStrongs(db: SQLiteDatabase, id: string): Promise<Strong
   );
 }
 
+/** A fuller dictionary entry for a Strong's number (Abbott-Smith or BDB Glosses), or null. */
+export async function getLexicon(db: SQLiteDatabase, id: string): Promise<{ source: 'AS' | 'BDB'; body: string } | null> {
+  return db.getFirstAsync<{ source: 'AS' | 'BDB'; body: string }>('SELECT source, body FROM lexicon WHERE id = ?', id).catch(() => null);
+}
+
 /**
  * Words related to an entry through Strong's derivations: the ones it comes from (named
  * in its derivation) and the ones that name it in theirs, those it comes from first.

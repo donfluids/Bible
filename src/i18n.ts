@@ -122,6 +122,10 @@ const en = {
   examples: 'Examples',
   relatedWords: 'Related words',
   strongsDictionary: "Strong's dictionary (1890)",
+  lexiconGreek: "Abbott-Smith's Greek lexicon (1922)",
+  lexiconHebrew: 'Brown–Driver–Briggs, outline of meanings (1906)',
+  showWholeEntry: 'Show the whole entry',
+  showLess: 'Show less',
   strongsNumberLine: "Strong's number {id}, for looking the word up in other Bible tools",
   seeAllVerses: 'See all {n} verses',
   seeOneVerse: 'See the one verse',
@@ -184,7 +188,7 @@ const en = {
   sourcesLicences: 'Sources and licences',
   licence: 'Licence',
   changesMade: 'Changes made in this app',
-  aboutEnglish: "King James Version, 1769 text with Strong's numbers, and the World English Bible, both from eBible.org. Both are in the public domain (the KJV outside the United Kingdom). Their translators' footnotes appear as small letters in the text; tap one to read it.",
+  aboutEnglish: "King James Version, 1769 text with Strong's numbers, and the World English Bible, both from eBible.org, and the Berean Standard Bible, whose words are linked to the Hebrew and Greek by its translators. All three are in the public domain (the KJV outside the United Kingdom). Their translators' footnotes appear as small letters in the text; tap one to read it.",
   aboutMalayalam: 'മലയാളം സത്യവേദപുസ്തകം 1910, revised edition in contemporary orthography, copyright © 2015 The Free Bible Foundation, from eBible.org, licensed CC BY-SA 4.0. The links from Malayalam words to Hebrew and Greek are machine-made and not checked by hand. The King James Version (1769, with Strong\'s numbers) is in the public domain outside the United Kingdom. Changes and licences: Sources and licences, below.',
   aboutTamil: "Tamil Indian Revised Version (IRV), copyright © 2017, 2019 Bridge Connectivity Solutions, from eBible.org, licensed CC BY-SA 4.0. The links from Tamil words to Hebrew and Greek are machine-made and not checked by hand. The King James Version (1769, with Strong's numbers) is in the public domain outside the United Kingdom. Changes and licences: Sources and licences, below.",
   aboutStrongs: "Hebrew and Greek entries are from Strong's Exhaustive Concordance (1890), in the digital edition by Open Scriptures, licensed CC BY-SA.",
@@ -337,6 +341,10 @@ const ml: Record<StringKey, string> = {
   examples: 'ഉദാഹരണങ്ങൾ',
   relatedWords: 'ബന്ധപ്പെട്ട പദങ്ങൾ',
   strongsDictionary: 'സ്ട്രോങ്സ് നിഘണ്ടു (ഇംഗ്ലീഷ്, 1890)',
+  lexiconGreek: 'Abbott-Smith ഗ്രീക്ക് നിഘണ്ടു (ഇംഗ്ലീഷ്, 1922)',
+  lexiconHebrew: 'Brown–Driver–Briggs, അർത്ഥസംഗ്രഹം (ഇംഗ്ലീഷ്, 1906)',
+  showWholeEntry: 'മുഴുവൻ കാണിക്കുക',
+  showLess: 'ചുരുക്കുക',
   strongsNumberLine: 'സ്ട്രോങ്സ് നമ്പർ {id}; മറ്റു ബൈബിൾ ഉപകരണങ്ങളിൽ ഈ പദം തിരയാൻ',
   seeAllVerses: '{n} വാക്യങ്ങളും കാണുക',
   seeOneVerse: 'ആ ഒരു വാക്യം കാണുക',
@@ -550,6 +558,10 @@ const ta: Record<StringKey, string> = {
   examples: 'எடுத்துக்காட்டுகள்',
   relatedWords: 'தொடர்புடைய சொற்கள்',
   strongsDictionary: 'ஸ்ட்ராங் அகராதி (1890)',
+  lexiconGreek: 'Abbott-Smith கிரேக்க அகராதி (ஆங்கிலம், 1922)',
+  lexiconHebrew: 'Brown–Driver–Briggs, பொருள் சுருக்கம் (ஆங்கிலம், 1906)',
+  showWholeEntry: 'முழுவதையும் காட்டு',
+  showLess: 'சுருக்கு',
   strongsNumberLine: 'ஸ்ட்ராங் எண் {id}; மற்ற வேதாகமக் கருவிகளில் இந்தச் சொல்லைத் தேட',
   seeAllVerses: '{n} வசனங்களையும் காண்க',
   seeOneVerse: 'அந்த ஒரு வசனத்தைக் காண்க',
@@ -678,5 +690,6 @@ export function translationName(language: Language, id: string): string {
   if (id === 'TAM') return language === 'ta' ? 'இண்டியன் ரிவைஸ்டு வெர்ஸன்' : 'Indian Revised Version (Tamil)';
   if (id === 'KJV') return language === 'ml' ? 'കിംഗ് ജെയിംസ് വേർഷൻ' : language === 'ta' ? 'கிங் ஜேம்ஸ் வெர்ஸன்' : 'King James Version';
   if (id === 'WEB') return language === 'ml' ? 'വേൾഡ് ഇംഗ്ലീഷ് ബൈബിൾ' : language === 'ta' ? 'வேர்ல்டு இங்கிலீஷ் பைபிள்' : 'World English Bible';
+  if (id === 'BSB') return 'Berean Standard Bible';
   return id;
 }
