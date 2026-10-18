@@ -76,6 +76,7 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
           </View>
           <View style={[styles.block, divider]}>
             <Text style={[styles.rowTitle, { color: theme.text }]}>{t('highlightStyle')}</Text>
+            <Text style={[styles.rowSub, { color: theme.muted }]}>{t('highlightStyleDetail')}</Text>
             <Segmented
               options={[
                 ['soft', t('highlightSoft')],

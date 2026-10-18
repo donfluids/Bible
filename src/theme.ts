@@ -38,8 +38,8 @@ type Palette = Omit<Theme, 'font' | 'markText' | 'markMuted' | 'markAccent'>;
 const LIGHT_MARKS: Record<HighlightColor, string> = { yellow: '#FFF0A6', green: '#D7F0C3', blue: '#D2E6FF', pink: '#FFD9E6' };
 const SEPIA_MARKS: Record<HighlightColor, string> = { yellow: '#F3DE8E', green: '#CFE1AE', blue: '#C6DAEF', pink: '#F0C9D5' };
 const DARK_MARKS: Record<HighlightColor, string> = { yellow: '#4A4210', green: '#21391C', blue: '#1B2F4A', pink: '#47212F' };
-// The Fluorescent setting: highlighter-pen colours, the same in every theme. On a dark
-// page the text on them turns dark (7.9:1 or better; faint text 5.4:1).
+// The Fluorescent setting (dark theme only): highlighter-pen colours. The text on them
+// turns dark (7.9:1 or better; faint text 5.4:1).
 const FLUORESCENT_MARKS: Record<HighlightColor, string> = { yellow: '#F2FF3D', green: '#7DFF6E', blue: '#5CE6FF', pink: '#FF7AD1' };
 const ON_FLUORESCENT = '#14140F';
 const ON_FLUORESCENT_MUTED = '#33332A';
@@ -179,15 +179,15 @@ export function useTheme(): Theme {
   const choice = settings?.theme ?? 'system';
   const base = choice === 'system' ? (system === 'dark' ? palette.dark : palette.light) : palette[choice === 'sepia' ? 'sepia' : choice === 'dark' ? 'dark' : 'light'];
   const serif = settings?.serif ?? false;
-  const fluorescent = settings?.highlightStyle === 'fluorescent';
+  // Fluorescent colours are for dark pages only; light and sepia keep their soft tints.
+  const fluorescent = settings?.highlightStyle === 'fluorescent' && base.dark;
   // The same object while nothing changes, so memoised lists do not redraw on unrelated settings.
   return useMemo(() => {
-    // Verse numbers and note letters on a bright colour take the text colour: the
-    // accents are too light (dark page) or too close in brightness (light page) on them.
-    const markText = fluorescent && base.dark ? ON_FLUORESCENT : base.text;
+    // On a bright colour the text, and the verse numbers and note letters (the accent is
+    // too light on it), turn dark.
     const onMark = fluorescent
-      ? { markText, markMuted: ON_FLUORESCENT_MUTED, markAccent: markText }
-      : { markText, markMuted: base.muted, markAccent: base.accent };
+      ? { markText: ON_FLUORESCENT, markMuted: ON_FLUORESCENT_MUTED, markAccent: ON_FLUORESCENT }
+      : { markText: base.text, markMuted: base.muted, markAccent: base.accent };
     return { ...base, ...onMark, marks: fluorescent ? FLUORESCENT_MARKS : base.marks, font: serif ? SERIF_FONT : undefined };
   }, [base, serif, fluorescent]);
 }
