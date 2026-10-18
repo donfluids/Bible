@@ -23,24 +23,39 @@ interface Props {
   /** The part being marked now in this verse, and its colour (or null for the eraser). */
   selection: [number, number] | null;
   selectionColor: string;
+  /** Text colour on the part being marked now. */
+  selectionText: string;
+  /** The whole verse stands on a highlight colour. */
+  highlighted: boolean;
   register: (key: string, slot: WordSlot | null) => void;
 }
 
 /**
  * A verse in marker mode: its words in a wrapping row, each its own view so it can be
- * measured, coloured where marked and where the finger is marking now.
+ * measured, coloured where marked and where the finger is marking now. A word coloured
+ * like the next one takes the space between them into its colour, so a marked run
+ * reads as one stroke as it does outside marker mode.
  */
-export const MarkableVerse = memo(function MarkableVerse({ verse, fontSize, lineHeight, font, theme, marks, selection, selectionColor, register }: Props) {
+export const MarkableVerse = memo(function MarkableVerse({ verse, fontSize, lineHeight, font, theme, marks, selection, selectionColor, selectionText, highlighted, register }: Props) {
   const words = useMemo(() => wordsOf(verse.text), [verse.text]);
   const gap = Math.round(fontSize * 0.28);
+  // Each word's colour: the part being marked now over a saved mark.
+  const selectedAt = words.map((w) => !!selection && w.start < selection[1] && w.end > selection[0]);
+  const fills = words.map((w, i) => {
+    if (selectedAt[i]) return selectionColor;
+    const mark = [...marks].reverse().find(([a, b]) => w.start < b && w.end > a);
+    return mark ? theme.marks[mark[2]] : undefined;
+  });
   return (
     <View style={styles.row}>
       {verse.verse > 0 ? (
-        <Text style={[styles.number, { color: theme.accent, fontSize: Math.max(11, fontSize - 6), lineHeight, marginRight: gap }]}>{verse.verse}</Text>
+        <Text style={[styles.number, { color: highlighted ? theme.markAccent : theme.accent, fontSize: Math.max(11, fontSize - 6), lineHeight, marginRight: gap }]}>{verse.verse}</Text>
       ) : null}
-      {words.map((w) => {
-        const selected = selection && w.start < selection[1] && w.end > selection[0];
-        const mark = [...marks].reverse().find(([a, b]) => w.start < b && w.end > a);
+      {words.map((w, i) => {
+        const fill = fills[i];
+        const joinNext = !!fill && fills[i + 1] === fill;
+        const joinPrev = !!fill && fills[i - 1] === fill;
+        const textColor = fill === selectionColor && selectedAt[i] ? selectionText : fill ? theme.markText : highlighted ? theme.markText : theme.text;
         const key = `${verse.book}:${verse.chapter}:${verse.verse}:${w.start}`;
         return (
           <View
@@ -48,12 +63,17 @@ export const MarkableVerse = memo(function MarkableVerse({ verse, fontSize, line
             collapsable={false}
             ref={(view) => register(key, view ? { verse: verse.verse, start: w.start, end: w.end, view } : null)}
             style={[
-              { marginRight: gap, borderRadius: 4 },
-              mark && { backgroundColor: theme.marks[mark[2]] },
-              selected && { backgroundColor: selectionColor },
+              joinNext ? { paddingRight: gap } : { marginRight: gap },
+              {
+                borderTopLeftRadius: joinPrev ? 0 : 4,
+                borderBottomLeftRadius: joinPrev ? 0 : 4,
+                borderTopRightRadius: joinNext ? 0 : 4,
+                borderBottomRightRadius: joinNext ? 0 : 4,
+              },
+              fill ? { backgroundColor: fill } : null,
             ]}
           >
-            <Text style={[{ fontSize, lineHeight, color: theme.text, fontFamily: font }, verse.verse === 0 && styles.title]}>{w.text}</Text>
+            <Text style={[{ fontSize, lineHeight, color: textColor, fontFamily: font }, verse.verse === 0 && styles.title]}>{w.text}</Text>
           </View>
         );
       })}

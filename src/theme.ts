@@ -27,13 +27,24 @@ export interface Theme {
   font: string | undefined;
   /** Verse highlight colours, tuned to the palette. */
   marks: Record<HighlightColor, string>;
+  /** Text, faint text and accent (verse numbers, note letters) on a highlight colour. */
+  markText: string;
+  markMuted: string;
+  markAccent: string;
 }
+
+type Palette = Omit<Theme, 'font' | 'markText' | 'markMuted' | 'markAccent'>;
 
 const LIGHT_MARKS: Record<HighlightColor, string> = { yellow: '#FFF0A6', green: '#D7F0C3', blue: '#D2E6FF', pink: '#FFD9E6' };
 const SEPIA_MARKS: Record<HighlightColor, string> = { yellow: '#F3DE8E', green: '#CFE1AE', blue: '#C6DAEF', pink: '#F0C9D5' };
 const DARK_MARKS: Record<HighlightColor, string> = { yellow: '#4A4210', green: '#21391C', blue: '#1B2F4A', pink: '#47212F' };
+// The Fluorescent setting: highlighter-pen colours, the same in every theme. On a dark
+// page the text on them turns dark (7.9:1 or better; faint text 5.4:1).
+const FLUORESCENT_MARKS: Record<HighlightColor, string> = { yellow: '#F2FF3D', green: '#7DFF6E', blue: '#5CE6FF', pink: '#FF7AD1' };
+const ON_FLUORESCENT = '#14140F';
+const ON_FLUORESCENT_MUTED = '#33332A';
 
-const light: Omit<Theme, 'font'> = {
+const light: Palette = {
   marks: LIGHT_MARKS,
   name: 'light',
   dark: false,
@@ -51,7 +62,7 @@ const light: Omit<Theme, 'font'> = {
   highlight: '#FFF1C2',
 };
 
-const sepia: Omit<Theme, 'font'> = {
+const sepia: Palette = {
   marks: SEPIA_MARKS,
   name: 'sepia',
   dark: false,
@@ -69,7 +80,7 @@ const sepia: Omit<Theme, 'font'> = {
   highlight: '#F5DC9C',
 };
 
-const dark: Omit<Theme, 'font'> = {
+const dark: Palette = {
   marks: DARK_MARKS,
   name: 'dark',
   dark: true,
@@ -91,7 +102,7 @@ const dark: Omit<Theme, 'font'> = {
  * The Malayalam app is green, like its icon (ink #1F4D2E on #EEF3E6); the English app is
  * brown. Same structure, different hue; every pair is checked for 4.5:1 or better.
  */
-const greenLight: Omit<Theme, 'font'> = {
+const greenLight: Palette = {
   ...light,
   bg: '#F7F9F2',
   text: '#1A1F18',
@@ -102,13 +113,13 @@ const greenLight: Omit<Theme, 'font'> = {
   linked: '#D3DEC8',
 };
 
-const greenSepia: Omit<Theme, 'font'> = {
+const greenSepia: Palette = {
   ...sepia,
   accent: '#35603A',
   accentSoft: '#DCDDB9',
 };
 
-const greenDark: Omit<Theme, 'font'> = {
+const greenDark: Palette = {
   ...dark,
   bg: '#111511',
   card: '#1A201A',
@@ -122,7 +133,7 @@ const greenDark: Omit<Theme, 'font'> = {
 };
 
 /** The Tamil app is deep blue; its pairs are checked for 4.5:1 or better too. */
-const blueLight: Omit<Theme, 'font'> = {
+const blueLight: Palette = {
   ...light,
   bg: '#F4F7FB',
   text: '#151B26',
@@ -133,13 +144,13 @@ const blueLight: Omit<Theme, 'font'> = {
   linked: '#CCD8E8',
 };
 
-const blueSepia: Omit<Theme, 'font'> = {
+const blueSepia: Palette = {
   ...sepia,
   accent: '#2E4C78',
   accentSoft: '#DCD8C5',
 };
 
-const blueDark: Omit<Theme, 'font'> = {
+const blueDark: Palette = {
   ...dark,
   bg: '#0F1319',
   card: '#171D26',
@@ -152,7 +163,7 @@ const blueDark: Omit<Theme, 'font'> = {
   linked: '#2B3646',
 };
 
-const PALETTES: Record<EditionId, Record<ThemeName, Omit<Theme, 'font'>>> = {
+const PALETTES: Record<EditionId, Record<ThemeName, Palette>> = {
   en: { light, sepia, dark },
   ml: { light: greenLight, sepia: greenSepia, dark: greenDark },
   ta: { light: blueLight, sepia: blueSepia, dark: blueDark },
@@ -168,6 +179,15 @@ export function useTheme(): Theme {
   const choice = settings?.theme ?? 'system';
   const base = choice === 'system' ? (system === 'dark' ? palette.dark : palette.light) : palette[choice === 'sepia' ? 'sepia' : choice === 'dark' ? 'dark' : 'light'];
   const serif = settings?.serif ?? false;
+  const fluorescent = settings?.highlightStyle === 'fluorescent';
   // The same object while nothing changes, so memoised lists do not redraw on unrelated settings.
-  return useMemo(() => ({ ...base, font: serif ? SERIF_FONT : undefined }), [base, serif]);
+  return useMemo(() => {
+    // Verse numbers and note letters on a bright colour take the text colour: the
+    // accents are too light (dark page) or too close in brightness (light page) on them.
+    const markText = fluorescent && base.dark ? ON_FLUORESCENT : base.text;
+    const onMark = fluorescent
+      ? { markText, markMuted: ON_FLUORESCENT_MUTED, markAccent: markText }
+      : { markText, markMuted: base.muted, markAccent: base.accent };
+    return { ...base, ...onMark, marks: fluorescent ? FLUORESCENT_MARKS : base.marks, font: serif ? SERIF_FONT : undefined };
+  }, [base, serif, fluorescent]);
 }

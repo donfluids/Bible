@@ -8,6 +8,7 @@ import type { Bookmark, HighlightColor, TextMark, TranslationId } from './types'
 
 export type ThemeChoice = 'system' | 'light' | 'sepia' | 'dark';
 export type Layout = 'verses' | 'paragraphs';
+export type HighlightStyle = 'soft' | 'fluorescent';
 
 export interface Settings {
   translation: TranslationId;
@@ -19,6 +20,8 @@ export interface Settings {
   serif: boolean;
   /** One verse per line, or verses run together in paragraphs. */
   layout: Layout;
+  /** Highlight colours: soft tints of the page, or bright highlighter-pen colours. */
+  highlightStyle: HighlightStyle;
   keepAwake: boolean;
   underlineWords: boolean;
   /** Show the Hebrew or Greek words under each verse. */
@@ -44,6 +47,7 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
   theme: 'system',
   serif: false,
   layout: 'verses',
+  highlightStyle: 'soft',
   keepAwake: false,
   underlineWords: true,
   interlinear: false,
@@ -128,7 +132,10 @@ export function SettingsProvider({ edition, children }: { edition: Edition; chil
     [saveValue],
   );
   const value = useMemo(() => ({ settings, update, commit }), [settings, update, commit]);
-  const display = useMemo(() => ({ theme: settings.theme, serif: settings.serif, language: settings.language }), [settings.theme, settings.serif, settings.language]);
+  const display = useMemo(
+    () => ({ theme: settings.theme, serif: settings.serif, language: settings.language, highlightStyle: settings.highlightStyle }),
+    [settings.theme, settings.serif, settings.language, settings.highlightStyle],
+  );
   return (
     <SettingsContext.Provider value={value}>
       <DisplayContext.Provider value={display}>{children}</DisplayContext.Provider>
@@ -150,6 +157,7 @@ export interface DisplaySettings {
   theme: Settings['theme'];
   serif: boolean;
   language: Language;
+  highlightStyle: HighlightStyle;
 }
 const DisplayContext = createContext<DisplaySettings | null>(null);
 

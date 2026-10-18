@@ -11,7 +11,7 @@ import type { Language } from '../edition';
 import { translationName, useT } from '../i18n';
 import { getMeta } from '../queries';
 import { FONT_SIZES, useSettings } from '../settings';
-import type { Layout, ThemeChoice } from '../settings';
+import type { HighlightStyle, Layout, ThemeChoice } from '../settings';
 import { useTheme } from '../theme';
 
 /** Each interface language in its own script. */
@@ -72,6 +72,17 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
               ] as [ThemeChoice, string][]}
               value={settings.theme}
               onChange={(value) => update({ theme: value })}
+            />
+          </View>
+          <View style={[styles.block, divider]}>
+            <Text style={[styles.rowTitle, { color: theme.text }]}>{t('highlightStyle')}</Text>
+            <Segmented
+              options={[
+                ['soft', t('highlightSoft')],
+                ['fluorescent', t('highlightFluorescent')],
+              ] as [HighlightStyle, string][]}
+              value={settings.highlightStyle}
+              onChange={(highlightStyle) => update({ highlightStyle })}
             />
           </View>
           <View style={[styles.block, divider]}>

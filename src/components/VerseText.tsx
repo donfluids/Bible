@@ -39,6 +39,8 @@ interface Props {
   bookmarked?: boolean;
   /** Background colour of a highlighted verse. */
   highlightColor?: string;
+  /** The verse stands on a highlight colour drawn behind it (the reader's verse rows). */
+  onHighlight?: boolean;
   /** Marked parts of the verse, as [start, end, colour] by character offset. */
   marks?: [number, number, HighlightColor][];
   /** The verse has a personal note; tapping the pencil opens it. */
@@ -90,6 +92,7 @@ export const VerseText = memo(function VerseText({
   flash,
   bookmarked,
   highlightColor,
+  onHighlight,
   marks,
   hasNote,
   onNotePress,
@@ -108,6 +111,10 @@ export const VerseText = memo(function VerseText({
   const bold = script ? { fontFamily: scriptureFont(script, serif, true) } : { fontWeight: '700' as const };
   const lineHeight = Math.round(fontSize * translationInfo(script === 'ta' ? 'TAM' : script === 'ml' ? 'MAL' : 'KJV').lineHeight);
   const small = Math.max(11, fontSize - 6);
+  // On a highlight colour the text, number and note letters take the colours made for it.
+  const onMark = onHighlight || !!highlightColor;
+  const textColor = onMark ? theme.markText : theme.text;
+  const accent = onMark ? theme.markAccent : theme.accent;
 
   if (verse.omitted) {
     return (
@@ -145,7 +152,7 @@ export const VerseText = memo(function VerseText({
         continue;
       }
       out.push(
-        <Text key={from} style={[match && bold, { backgroundColor: mark ? theme.marks[mark[2]] : theme.highlight }]}>
+        <Text key={from} style={[match && bold, mark ? { backgroundColor: theme.marks[mark[2]], color: theme.markText } : { backgroundColor: theme.highlight }]}>
           {piece}
         </Text>,
       );
@@ -157,7 +164,7 @@ export const VerseText = memo(function VerseText({
     <Text
       key={`n${note.n}`}
       onPress={onNote ? () => onNote(note) : undefined}
-      style={{ fontSize: small, color: theme.accent, fontWeight: '700' }}
+      style={{ fontSize: small, color: accent, fontWeight: '700' }}
       accessibilityRole="button"
       accessibilityLabel={`${note.kind === 'x' ? t('crossReference') : t('footnote')} ${noteLetter(note.n)}`}
     >
@@ -188,7 +195,7 @@ export const VerseText = memo(function VerseText({
     <Text
       style={[
         styles.text,
-        { fontSize, lineHeight, color: theme.text, fontFamily: font },
+        { fontSize, lineHeight, color: textColor, fontFamily: font },
         isTitle && styles.title,
         highlightColor ? { backgroundColor: highlightColor } : null,
         flash && { backgroundColor: theme.highlight },
@@ -198,9 +205,9 @@ export const VerseText = memo(function VerseText({
       onLongPress={onLongPress}
       accessibilityHint={onLongPress ? t('verseHint') : undefined}
     >
-      {bookmarked ? <Text style={{ color: theme.accent }}>▎</Text> : null}
+      {bookmarked ? <Text style={{ color: accent }}>▎</Text> : null}
       {hasNote ? (
-        <Text onPress={onNotePress} style={{ color: theme.accent, fontSize: small + 2 }} accessibilityRole="button" accessibilityLabel={t('editNote')}>
+        <Text onPress={onNotePress} style={{ color: accent, fontSize: small + 2 }} accessibilityRole="button" accessibilityLabel={t('editNote')}>
           <Text style={{ fontFamily: ICON_FONT_FAMILY }}>{iconChar('edit_note')}</Text>{' '}
         </Text>
       ) : null}
@@ -210,7 +217,7 @@ export const VerseText = memo(function VerseText({
           onLongPress={onLongPress}
           accessibilityRole={onNumberPress ? 'button' : undefined}
           accessibilityLabel={onNumberPress ? numberLabel : undefined}
-          style={[styles.number, { color: theme.accent, fontSize: small }]}
+          style={[styles.number, { color: accent, fontSize: small }]}
         >
           {verse.verse}{' '}
         </Text>

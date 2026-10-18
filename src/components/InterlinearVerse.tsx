@@ -14,6 +14,8 @@ interface Props {
   onWord: (pick: WordPick) => void;
   showTranslit?: boolean;
   hideCantillation?: boolean;
+  /** The verse stands on a highlight colour. */
+  highlighted?: boolean;
 }
 
 /**
@@ -27,8 +29,10 @@ function objectMarkerGloss(gloss: string): string {
 }
 
 /** The Hebrew or Greek words of one verse as a wrapping row of cells. */
-export const InterlinearVerse = memo(function InterlinearVerse({ words, hebrew, fontSize, onWord, showTranslit = true, hideCantillation = false }: Props) {
+export const InterlinearVerse = memo(function InterlinearVerse({ words, hebrew, fontSize, onWord, showTranslit = true, hideCantillation = false, highlighted = false }: Props) {
   const theme = useTheme();
+  const text = highlighted ? theme.markText : theme.text;
+  const muted = highlighted ? theme.markMuted : theme.muted;
   const small = Math.max(11, Math.round(fontSize * 0.68));
   return (
     <View style={[styles.row, hebrew && styles.rowRtl]}>
@@ -44,16 +48,16 @@ export const InterlinearVerse = memo(function InterlinearVerse({ words, hebrew, 
             disabled={!w.strongs && !w.morph}
             style={({ pressed }) => [
               styles.cell,
-              { backgroundColor: pressed ? theme.accentSoft : 'transparent', borderBottomColor: marked ? theme.accent : 'transparent' },
+              { backgroundColor: pressed ? theme.accentSoft : 'transparent', borderBottomColor: marked ? (highlighted ? theme.markAccent : theme.accent) : 'transparent' },
             ]}
             accessibilityRole="button"
             accessibilityLabel={faded ? w.text : `${w.text}, ${gloss}`}
           >
-            <Text style={[styles.original, { color: faded ? theme.muted : theme.text, fontSize: fontSize + (hebrew ? 5 : 3), writingDirection: hebrew ? 'rtl' : 'ltr', fontFamily: hebrew ? HEBREW_FONT : undefined }]}>
+            <Text style={[styles.original, { color: faded ? muted : text, fontSize: fontSize + (hebrew ? 5 : 3), writingDirection: hebrew ? 'rtl' : 'ltr', fontFamily: hebrew ? HEBREW_FONT : undefined }]}>
               {hebrew && hideCantillation ? stripCantillation(w.text) : w.text}
             </Text>
-            {showTranslit ? <Text style={[styles.sub, { color: theme.muted, fontSize: small }]}>{w.translit}</Text> : null}
-            {gloss ? <Text style={[styles.sub, { color: theme.text, fontSize: small }]}>{gloss}</Text> : null}
+            {showTranslit ? <Text style={[styles.sub, { color: muted, fontSize: small }]}>{w.translit}</Text> : null}
+            {gloss ? <Text style={[styles.sub, { color: text, fontSize: small }]}>{gloss}</Text> : null}
           </Pressable>
         );
       })}

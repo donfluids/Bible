@@ -982,6 +982,8 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
               marks={verseMarks.get(v.verse) ?? NO_MARKS}
               selection={inVerse}
               selectionColor={markTool === 'erase' || !markTool ? theme.border : theme.marks[markTool]}
+              selectionText={markTool === 'erase' || !markTool ? theme.text : theme.markText}
+              highlighted={!!mark}
               register={registerWord}
             />
           </View>
@@ -1153,7 +1155,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                     markTool === c && styles.markSwatchChosen,
                   ]}
                 >
-                  {markTool === c ? <Icon name="check" size={18} color={theme.text} /> : null}
+                  {markTool === c ? <Icon name="check" size={18} color={theme.markText} /> : null}
                 </Pressable>
               ))}
               <Pressable
@@ -1252,7 +1254,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                     hitSlop={6}
                     style={[styles.swatch, { backgroundColor: theme.marks[c], borderColor: theme.dark ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.12)' }]}
                   >
-                    {chosen ? <Icon name="check" size={20} color={theme.text} /> : null}
+                    {chosen ? <Icon name="check" size={20} color={theme.markText} /> : null}
                   </Pressable>
                 );
               })}
@@ -1592,9 +1594,9 @@ const ReaderVerse = memo(function ReaderVerse({
             style={[styles.tapColumn, { width: Math.max(40, Math.round(fontSize * 2)) }]}
           >
             {v.verse > 0 ? (
-              <Text style={[styles.tapNumber, { color: theme.accent, fontSize: Math.max(14, fontSize - 4), lineHeight }]}>{v.verse}</Text>
+              <Text style={[styles.tapNumber, { color: markColor ? theme.markAccent : theme.accent, fontSize: Math.max(14, fontSize - 4), lineHeight }]}>{v.verse}</Text>
             ) : null}
-            <Icon name={expanded ? 'expand_less' : 'expand_more'} size={Math.max(12, Math.round(fontSize * 0.6))} color={theme.muted} />
+            <Icon name={expanded ? 'expand_less' : 'expand_more'} size={Math.max(12, Math.round(fontSize * 0.6))} color={markColor ? theme.markMuted : theme.muted} />
           </Pressable>
           <View style={styles.tapText}>
             <VerseText
@@ -1608,6 +1610,7 @@ const ReaderVerse = memo(function ReaderVerse({
               notes={notes}
               onNote={cb.openNote}
               underline={underlined}
+              onHighlight={!!markColor}
               marks={marks}
               selectionTranslation={translation}
             />
@@ -1627,12 +1630,13 @@ const ReaderVerse = memo(function ReaderVerse({
           notes={notes}
           onNote={cb.openNote}
           underline={underlined}
+          onHighlight={!!markColor}
           marks={marks}
           selectionTranslation={translation}
         />
       )}
       {words && words.length > 0 ? (
-        <InterlinearVerse words={words} hebrew={v.book <= 39} fontSize={fontSize} onWord={onWord} showTranslit={showTranslit} hideCantillation={hideCantillation} />
+        <InterlinearVerse words={words} hebrew={v.book <= 39} fontSize={fontSize} onWord={onWord} showTranslit={showTranslit} hideCantillation={hideCantillation} highlighted={!!markColor} />
       ) : null}
     </View>
   );
