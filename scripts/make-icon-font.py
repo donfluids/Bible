@@ -32,6 +32,7 @@ ICONS = [
     'chevron_right', 'delete', 'history', 'menu_book', 'sticky_note_2', 'info', 'text_increase',
     'text_decrease', 'add', 'remove', 'ink_highlighter', 'ink_eraser', 'edit', 'note_stack', 'note_add',
     'menu_book_fill', 'bookmarks_fill', 'note_stack_fill', 'format_list_bulleted', 'arrow_back_ios_new',
+    'volume_up', 'stop_circle',
 ]
 
 

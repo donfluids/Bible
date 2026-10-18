@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Modal, PanResponder, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Modal, PanResponder, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { Pressable } from './Pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -10,6 +10,7 @@ import type { StringKey } from '../i18n';
 import { describeMorph } from '../morph';
 import { getConcordance, getConcordanceCount, getInterlinear, getLexicon, getOriginalCount, getRelated, getRenderings, getStrongs, getVerses } from '../queries';
 import { useSettings } from '../settings';
+import { hasVoice, sayWord, stopSaying } from '../speech';
 import { formatCount, formatRef, isHebrew, plainKjvUsage } from '../text';
 import { useTheme } from '../theme';
 import type { Theme } from '../theme';
@@ -138,6 +139,16 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
   const native = nativeTranslation(edition);
   const nativeFirst = !!native && languageScript(settings.language) === translationInfo(native).script && translationInfo(native).tagged ? native : null;
   const [data, setData] = useState<Loaded | null>(null);
+  // The word being said aloud; a new word, or closing the sheet, stops it.
+  const [speaking, setSpeaking] = useState(false);
+  const sayToken = useRef(0);
+  useEffect(() => {
+    setSpeaking(false);
+    return () => {
+      sayToken.current++;
+      stopSaying();
+    };
+  }, [pick?.strongs]);
   const [showLegend, setShowLegend] = useState(false);
 
   // The sheet is laid out at full height and slid down to rest at half height (or off
@@ -278,6 +289,26 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
   const listCount = data ? data.original || data.count : 0;
   const name = translationName(settings.language, tagged);
 
+  const say = async () => {
+    if (!entry?.lemma) return;
+    if (speaking) {
+      sayToken.current++;
+      stopSaying();
+      setSpeaking(false);
+      return;
+    }
+    const language = hebrew ? 'hebrew' : 'greek';
+    if ((await hasVoice(language)) === false) {
+      Alert.alert(t('noVoiceTitle'), t(hebrew ? 'noHebrewVoice' : 'noGreekVoice'));
+      return;
+    }
+    const token = ++sayToken.current;
+    setSpeaking(true);
+    sayWord(entry.lemma, language, () => {
+      if (sayToken.current === token) setSpeaking(false);
+    });
+  };
+
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onBack ?? onClose} statusBarTranslucent>
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={t('close')} />
@@ -357,6 +388,13 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                     </>
                   ) : null}
                   <Text style={[styles.lemma, { color: theme.text, fontFamily: originalFont }]}>{entry.lemma}</Text>
+                  <IconButton
+                    name={speaking ? 'stop_circle' : 'volume_up'}
+                    onPress={say}
+                    accessibilityLabel={speaking ? t('stopSaying') : t('sayWord')}
+                    color={theme.accent}
+                    size={28}
+                  />
                 </View>
                 {headline.length > 0 ? (
                   <>
