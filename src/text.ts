@@ -1,4 +1,3 @@
-import { isEnglish } from './types';
 import type { Book, Ref, Segment, TranslationId, VerseRow } from './types';
 
 /** Strong's numbers are Hebrew in the Old Testament and Greek in the New. */
@@ -40,7 +39,9 @@ export function parseSegments(verse: Pick<VerseRow, 'book' | 'text' | 'tags'>): 
 export function bookName(books: Book[], id: number, translation?: TranslationId): string {
   const book = books.find((b) => b.id === id);
   if (!book) return `Book ${id}`;
-  if (translation && !isEnglish(translation)) return book.names[translation] ?? book.name;
+  // English Bibles use the books table's names (the same test as isEnglish in types.ts;
+  // this file has no runtime imports, so scripts can load it directly).
+  if (translation && translation !== 'KJV' && translation !== 'WEB' && translation !== 'BSB') return book.names[translation] ?? book.name;
   return book.name;
 }
 
