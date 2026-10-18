@@ -1,0 +1,41 @@
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { Pressable } from './Pressable';
+import { useTheme } from '../theme';
+import { Icon } from './Icon';
+
+/**
+ * Connected buttons for picking one of a few options. The selected one is filled, and
+ * ticked when there is room (three options or fewer; four Malayalam words leave none).
+ */
+export function Segmented<T extends string>({ options, value, onChange }: { options: [T, string][]; value: T; onChange: (value: T) => void }) {
+  const theme = useTheme();
+  return (
+    <View style={[styles.segmented, { borderColor: theme.muted }]} accessibilityRole="radiogroup">
+      {options.map(([option, label], i) => {
+        const active = option === value;
+        return (
+          <Pressable
+            key={option}
+            onPress={() => onChange(option)}
+            accessibilityRole="radio"
+            accessibilityState={{ checked: active }}
+            android_ripple={{ color: theme.accentSoft }}
+            style={[styles.segment, i > 0 && { borderLeftWidth: 1, borderLeftColor: theme.muted }, active && { backgroundColor: theme.accentSoft }]}
+          >
+            {active && options.length <= 3 ? <Icon name="check" size={18} color={theme.accent} /> : null}
+            <Text numberOfLines={1} style={[styles.segmentText, { color: active ? theme.accent : theme.text }]}>
+              {label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  segmented: { flexDirection: 'row', borderWidth: 1, borderRadius: 20, overflow: 'hidden', marginTop: 10 },
+  segment: { flex: 1, minHeight: 40, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingHorizontal: 6 },
+  segmentText: { fontSize: 14, fontWeight: '500', flexShrink: 1 },
+});

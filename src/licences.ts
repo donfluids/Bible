@@ -224,9 +224,34 @@ const ICONS = (lang: Language): Source => ({
   links: [{ label: 'fonts.google.com/icons', url: 'https://fonts.google.com/icons' }],
   changes: pick(
     {
-      en: 'Only the 30 icons the app uses are kept, fixed at one weight and size (scripts/make-icon-font.py).',
-      ml: 'ആപ്പ് ഉപയോഗിക്കുന്ന 30 ചിഹ്നങ്ങൾ മാത്രം, ഒരേ കനത്തിലും വലുപ്പത്തിലും (scripts/make-icon-font.py).',
-      ta: 'செயலி பயன்படுத்தும் 30 சின்னங்கள் மட்டும், ஒரே தடிமனிலும் அளவிலும் (scripts/make-icon-font.py).',
+      en: 'Only the icons the app uses are kept, fixed at one weight and size (scripts/make-icon-font.py).',
+      ml: 'ആപ്പ് ഉപയോഗിക്കുന്ന ചിഹ്നങ്ങൾ മാത്രം, ഒരേ കനത്തിലും വലുപ്പത്തിലും (scripts/make-icon-font.py).',
+      ta: 'செயலி பயன்படுத்தும் சின்னங்கள் மட்டும், ஒரே தடிமனிலும் அளவிலும் (scripts/make-icon-font.py).',
+    },
+    lang,
+  ),
+});
+
+const CARD_ART = (lang: Language): Source => ({
+  title: pick({ en: 'Verse card pictures', ml: 'വാക്യ കാർഡിലെ ചിത്രങ്ങൾ', ta: 'வசன அட்டைப் படங்கள்' }, lang),
+  credit: pick(
+    {
+      en: 'Fluent Emoji © Microsoft Corporation (MIT). The rose: Pierre-Joseph Redouté, Les Roses (1817–24), The Metropolitan Museum of Art, public domain.',
+      ml: 'Fluent Emoji © Microsoft Corporation (MIT). റോസാപ്പൂ: Pierre-Joseph Redouté, Les Roses (1817–24), The Metropolitan Museum of Art, പൊതുസ്വത്ത്.',
+      ta: 'Fluent Emoji © Microsoft Corporation (MIT). ரோஜா: Pierre-Joseph Redouté, Les Roses (1817–24), The Metropolitan Museum of Art, பொதுவுடைமை.',
+    },
+    lang,
+  ),
+  licence: MIT,
+  links: [
+    { label: 'github.com/microsoft/fluentui-emoji', url: 'https://github.com/microsoft/fluentui-emoji' },
+    { label: 'metmuseum.org', url: 'https://www.metmuseum.org/art/collection/search/762055' },
+  ],
+  changes: pick(
+    {
+      en: "The rose's paper is taken out and its edges faded (scripts/card-rose.mjs).",
+      ml: 'റോസാപ്പൂവിന്റെ കടലാസ് പശ്ചാത്തലം നീക്കി, അരികുകൾ മങ്ങിച്ചു (scripts/card-rose.mjs).',
+      ta: 'ரோஜாவின் காகிதப் பின்னணி நீக்கப்பட்டு, ஓரங்கள் மங்கலாக்கப்பட்டன (scripts/card-rose.mjs).',
     },
     lang,
   ),
@@ -236,9 +261,9 @@ const SOFTWARE = (lang: Language): Source => ({
   title: pick({ en: 'Software', ml: 'സോഫ്റ്റ്‌വെയർ', ta: 'மென்பொருள்' }, lang),
   credit: pick(
     {
-      en: "This app's code is MIT licensed. It is built with React Native, Expo, React Navigation and fflate (MIT); SQLite (public domain); and Android libraries under the Apache License 2.0 and BSD licences.",
-      ml: 'ഈ ആപ്പിന്റെ കോഡ് MIT അനുമതിപത്രത്തിലാണ്. React Native, Expo, React Navigation, fflate (MIT), SQLite (പൊതുസ്വത്ത്), Apache 2.0, BSD അനുമതിപത്രങ്ങളിലുള്ള Android ലൈബ്രറികൾ എന്നിവ ഉപയോഗിക്കുന്നു.',
-      ta: 'இந்தச் செயலியின் நிரல் MIT உரிமத்தில் உள்ளது. React Native, Expo, React Navigation, fflate (MIT), SQLite (பொதுவுடைமை), Apache 2.0, BSD உரிமங்களிலுள்ள Android நூலகங்கள் ஆகியவற்றைப் பயன்படுத்துகிறது.',
+      en: "This app's code is MIT licensed. It is built with React Native, Expo, React Navigation, react-native-view-shot and fflate (MIT); SQLite (public domain); and Android libraries under the Apache License 2.0 and BSD licences.",
+      ml: 'ഈ ആപ്പിന്റെ കോഡ് MIT അനുമതിപത്രത്തിലാണ്. React Native, Expo, React Navigation, react-native-view-shot, fflate (MIT), SQLite (പൊതുസ്വത്ത്), Apache 2.0, BSD അനുമതിപത്രങ്ങളിലുള്ള Android ലൈബ്രറികൾ എന്നിവ ഉപയോഗിക്കുന്നു.',
+      ta: 'இந்தச் செயலியின் நிரல் MIT உரிமத்தில் உள்ளது. React Native, Expo, React Navigation, react-native-view-shot, fflate (MIT), SQLite (பொதுவுடைமை), Apache 2.0, BSD உரிமங்களிலுள்ள Android நூலகங்கள் ஆகியவற்றைப் பயன்படுத்துகிறது.',
     },
     lang,
   ),
@@ -254,5 +279,5 @@ export function sourcesFor(edition: EditionId, lang: Language): Source[] {
         ? // The word links join the list once the Tamil is aligned.
           [TAMIL(lang), ...(translationInfo('TAM').tagged ? [TAMIL_LINKS(lang)] : []), KJV(lang)]
         : [KJV(lang), BSB(lang), WEB(lang)];
-  return [...texts, STRONGS(lang), LEXICONS(lang), STEPBIBLE(lang), FONTS(lang, edition), ICONS(lang), SOFTWARE(lang)];
+  return [...texts, STRONGS(lang), LEXICONS(lang), STEPBIBLE(lang), FONTS(lang, edition), ICONS(lang), CARD_ART(lang), SOFTWARE(lang)];
 }

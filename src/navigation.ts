@@ -1,5 +1,5 @@
 import { createNavigationContainerRef } from '@react-navigation/native';
-import type { Ref } from './types';
+import type { Ref, TranslationId } from './types';
 
 export type RootStackParamList = {
   /**
@@ -18,6 +18,8 @@ export type RootStackParamList = {
   Notebook: undefined;
   /** `isNew` opens a page just made, ready for writing. */
   NotePage: { id: string; isNew?: boolean };
+  /** "Share as card" for the verse at `ref`. */
+  Card: { ref: Ref; translation: TranslationId };
 };
 
 /** Lets the word sheet, which sits outside the navigator, open the concordance. */

@@ -1,0 +1,219 @@
+import React, { forwardRef, useEffect, useRef, useState } from 'react';
+import { Image, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { CARD_HEIGHT, CARD_WIDTH } from '../cards';
+import type { Art, CardSize, Design } from '../cards';
+import { scriptOf, scriptureFont } from '../fonts';
+import type { Script } from '../fonts';
+
+interface Props {
+  design: Design;
+  size: CardSize;
+  /** Width on screen; everything scales with it. */
+  width: number;
+  heading: string;
+  text: string;
+  reference: string;
+  message: string;
+  /** A credit the translation's licence asks for, under the reference. */
+  credit?: string;
+}
+
+// Stars of the Christmas design, on the square grid; a tall card spreads them down.
+const STARS: [number, number, number][] = [
+  [300, 26, 1],
+  [340, 120, 1.4],
+  [110, 22, 0.9],
+  [330, 330, 1],
+  [20, 140, 1.1],
+  [200, 40, 0.8],
+  [60, 300, 0.9],
+];
+
+// The space one character of each script takes at size 1, line height included.
+const CHAR_AREA: Record<Script | 'latin', number> = { latin: 0.62, ml: 1.15, ta: 1.2 };
+const LINE_HEIGHT: Record<Script | 'latin', number> = { latin: 1.5, ml: 1.75, ta: 1.7 };
+
+/**
+ * The verse as a card, drawn at `width` and captured from here for sharing. The verse is
+ * sized to fill what the heading, reference and message leave of the text box: first by
+ * an estimate from its length, then, once laid out, made smaller or larger until the
+ * text fits the box (long Malayalam and Tamil words wrap less evenly than English).
+ */
+export const VerseCard = forwardRef<View, Props>(function VerseCard({ design, size, width, heading, text, reference, message, credit }, ref) {
+  const u = width / CARD_WIDTH;
+  const height = CARD_HEIGHT[size] * u;
+  const layout = design[size];
+  const tall = size === 'tall';
+
+  const verseScript = scriptOf(text);
+  const v = verseScript ?? 'latin';
+  const headScript = scriptOf(heading);
+  const refScript = scriptOf(reference);
+  const msgScript = scriptOf(message);
+  const serif = (script: Script | null, bold = false) => scriptureFont(script, true, bold);
+
+  const headingSize = (headScript ? (tall ? 26 : 20) : tall ? 36 : 28) * (heading.length > 22 ? 0.82 : 1);
+  const aboveHeight = layout.above ? Math.max(...layout.above.map((a) => a.width * (a.ratio ?? 1))) + 8 : 0;
+  const boxW = CARD_WIDTH - layout.box.left - layout.box.right;
+  const used =
+    aboveHeight +
+    (design.cross ? (design.halo ? 60 : 42) : 0) +
+    (heading ? headingSize * 1.4 * (heading.length * headingSize * 0.5 > boxW ? 2 : 1) + 10 : 0) +
+    28 +
+    (message ? 34 : 0) +
+    (credit ? 14 : 0);
+  const boxH = CARD_HEIGHT[size] - layout.box.top - layout.box.bottom - used;
+  const estimate = Math.sqrt((boxW * Math.max(boxH, 40) * 0.9) / (Math.max(text.length, 1) * CHAR_AREA[v]));
+  const maxSize = tall ? 34 : 26;
+  const [fitScale, setFitScale] = useState(1);
+  const tries = useRef(0);
+  const content = `${design.id}|${size}|${heading}|${text}|${reference}|${message}|${credit ?? ''}`;
+  useEffect(() => {
+    tries.current = 0;
+    setFitScale(1);
+  }, [content]);
+  const verseSize = Math.max(8, Math.min(maxSize, estimate * fitScale));
+  // The text box's height on screen; the laid-out text is measured against it.
+  const boxPx = (CARD_HEIGHT[size] - layout.box.top - layout.box.bottom) * u;
+  const onContentLayout = (h: number) => {
+    if (tries.current >= 6 || h <= 0) return;
+    if (h > boxPx) {
+      tries.current++;
+      setFitScale((f) => f * Math.max(0.6, Math.sqrt(boxPx / h) * 0.96));
+    } else if (h < boxPx * 0.72 && verseSize < maxSize) {
+      tries.current++;
+      setFitScale((f) => f * Math.min(1.3, Math.sqrt((boxPx * 0.88) / h)));
+    }
+  };
+  const align = layout.align === 'left' ? 'left' : 'center';
+
+  const art = (a: Art, i: number, placed: boolean) => (
+    <Image
+      key={i}
+      source={a.src}
+      resizeMode="contain"
+      style={[
+        { width: a.width * u, height: a.width * (a.ratio ?? 1) * u },
+        placed && {
+          position: 'absolute',
+          left: a.left !== undefined ? a.left * u : undefined,
+          right: a.right !== undefined ? a.right * u : undefined,
+          top: a.top !== undefined ? a.top * u : undefined,
+          bottom: a.bottom !== undefined ? a.bottom * u : undefined,
+        },
+        (!!a.rotate || !!a.flip) && { transform: [...(a.rotate ? [{ rotate: `${a.rotate}deg` }] : []), ...(a.flip ? [{ scaleX: -1 }] : [])] },
+      ]}
+    />
+  );
+
+  return (
+    <View ref={ref} collapsable={false} style={{ width, height, overflow: 'hidden', backgroundColor: design.background[0] }}>
+      {design.background.length > 1 ? (
+        <LinearGradient
+          colors={design.background as [string, string, ...string[]]}
+          start={{ x: 0, y: 0 }}
+          end={design.diagonal ? { x: 1, y: 1 } : { x: 0, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+      ) : null}
+      {design.stars
+        ? STARS.map(([x, y, r], i) => (
+            <View
+              key={i}
+              style={{ position: 'absolute', left: (x - r) * u, top: (y * (CARD_HEIGHT[size] / 360) - r) * u, width: 2 * r * u, height: 2 * r * u, borderRadius: r * u, backgroundColor: design.stars, opacity: 0.7 }}
+            />
+          ))
+        : null}
+      {design.borders?.map((b, i) => (
+        <View key={i} style={{ position: 'absolute', left: b.inset * u, right: b.inset * u, top: b.inset * u, bottom: b.inset * u, borderWidth: b.width * u, borderColor: b.color, borderRadius: 2 * u }} />
+      ))}
+      {layout.art?.map((a, i) => art(a, i, true))}
+      <View
+        style={{
+          position: 'absolute',
+          left: layout.box.left * u,
+          right: layout.box.right * u,
+          top: layout.box.top * u,
+          bottom: layout.box.bottom * u,
+          justifyContent: 'center',
+          alignItems: layout.align === 'left' ? 'flex-start' : 'center',
+        }}
+      >
+        <View onLayout={(e) => onContentLayout(e.nativeEvent.layout.height)} style={{ width: '100%', alignItems: layout.align === 'left' ? 'flex-start' : 'center' }}>
+          {design.cross ? (
+            <View style={{ width: 22 * u, height: 30 * u, marginBottom: (design.halo ? 26 : 12) * u, marginTop: design.halo ? 18 * u : 0 }}>
+              {design.halo ? (
+                <>
+                  <View style={{ position: 'absolute', left: -33 * u, top: -29 * u, width: 88 * u, height: 88 * u, borderRadius: 44 * u, backgroundColor: design.halo, opacity: 0.25 }} />
+                  <View style={{ position: 'absolute', left: -19 * u, top: -15 * u, width: 60 * u, height: 60 * u, borderRadius: 30 * u, backgroundColor: design.halo, opacity: 0.45 }} />
+                </>
+              ) : null}
+              <View style={{ position: 'absolute', left: 9 * u, width: 4 * u, height: 30 * u, backgroundColor: design.cross }} />
+              <View style={{ position: 'absolute', top: 9 * u, width: 22 * u, height: 4 * u, backgroundColor: design.cross }} />
+            </View>
+          ) : null}
+          {layout.above ? <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 6 * u, marginBottom: 8 * u }}>{layout.above.map((a, i) => art(a, i, false))}</View> : null}
+          {heading ? (
+            <Text
+              allowFontScaling={false}
+              style={{
+                color: design.accent,
+                fontFamily: serif(headScript, !!headScript),
+                fontStyle: headScript ? 'normal' : 'italic',
+                fontSize: headingSize * u,
+                lineHeight: headingSize * 1.35 * u,
+                textAlign: align,
+                marginBottom: 10 * u,
+              }}
+            >
+              {heading}
+            </Text>
+          ) : null}
+          <Text
+            allowFontScaling={false}
+            style={{ color: design.ink, fontFamily: serif(verseScript), fontSize: verseSize * u, lineHeight: verseSize * LINE_HEIGHT[v] * u, textAlign: align }}
+          >
+            {text}
+          </Text>
+          <Text
+            allowFontScaling={false}
+            style={{
+              color: design.accent,
+              fontFamily: serif(refScript, true),
+              fontWeight: refScript ? undefined : '700',
+              fontSize: (refScript ? 12 : 11.5) * (tall ? 1.15 : 1) * u,
+              letterSpacing: refScript ? 0.3 * u : 2 * u,
+              textTransform: refScript ? 'none' : 'uppercase',
+              marginTop: 12 * u,
+              textAlign: align,
+            }}
+          >
+            {reference}
+          </Text>
+          {credit ? (
+            <Text allowFontScaling={false} style={{ color: design.faint, fontSize: 9 * u, marginTop: 4 * u, textAlign: align }}>
+              {credit}
+            </Text>
+          ) : null}
+          {message ? (
+            <Text
+              allowFontScaling={false}
+              style={{
+                color: design.ink,
+                fontFamily: serif(msgScript),
+                fontStyle: msgScript ? 'normal' : 'italic',
+                fontSize: (tall ? 17 : 14.5) * u,
+                lineHeight: (tall ? 17 : 14.5) * (msgScript ? 1.7 : 1.4) * u,
+                marginTop: 14 * u,
+                textAlign: align,
+              }}
+            >
+              {message}
+            </Text>
+          ) : null}
+        </View>
+      </View>
+    </View>
+  );
+});

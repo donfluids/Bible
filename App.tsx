@@ -32,6 +32,7 @@ import { LicencesScreen } from './src/screens/LicencesScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { NotebookScreen } from './src/screens/NotebookScreen';
 import { NotePageScreen } from './src/screens/NotePageScreen';
+import { CardScreen } from './src/screens/CardScreen';
 import { switchTab } from './src/components/TabBar';
 
 export default function App() {
@@ -286,6 +287,7 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
           <Stack.Screen name="Licences" component={LicencesRoute} />
           <Stack.Screen name="Notebook" component={NotebookRoute} options={TAB_SCREEN} />
           <Stack.Screen name="NotePage" component={NotePageRoute} />
+          <Stack.Screen name="Card" component={CardRoute} />
         </Stack.Navigator>
       </NavigationContainer>
       <WordSheet
@@ -333,6 +335,7 @@ function ReaderRoute({ navigation, route }: Props<'Reader'>) {
       onOpenSearch={() => navigation.navigate('Search')}
       onOpenSettings={() => navigation.navigate('Settings')}
       onOpenNotePage={(id, isNew) => navigation.push('NotePage', { id, isNew })}
+      onOpenCard={(ref, translation) => navigation.push('Card', { ref, translation })}
       onWord={onWord}
     />
   );
@@ -406,6 +409,11 @@ function NotePageRoute({ navigation, route }: Props<'NotePage'>) {
   const t = useT();
   const openRef = useOpenRef(navigation, t('notebook'));
   return <NotePageScreen id={route.params.id} isNew={route.params.isNew} books={books} onOpenRef={openRef} onBack={() => navigation.goBack()} />;
+}
+
+function CardRoute({ navigation, route }: Props<'Card'>) {
+  const { books } = useApp();
+  return <CardScreen books={books} at={route.params.ref} translation={route.params.translation} onBack={() => navigation.goBack()} />;
 }
 
 function LicencesRoute({ navigation }: Props<'Licences'>) {

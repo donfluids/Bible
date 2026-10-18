@@ -53,6 +53,7 @@ interface Props {
   onOpenSettings: () => void;
   /** Open a notebook page; `isNew` for one just made from a verse. */
   onOpenNotePage: (id: string, isNew?: boolean) => void;
+  onOpenCard: (ref: Ref, translation: TranslationId) => void;
   onWord: (pick: WordPick) => void;
   /** The main reader shows the bottom tab bar; a reader opened from a list does not. */
   tabs?: boolean;
@@ -183,7 +184,7 @@ function KeepAwake() {
   return null;
 }
 
-export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onOpenNotePage, onWord, tabs = false }: Props) {
+export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onOpenNotePage, onOpenCard, onWord, tabs = false }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const t = useT();
@@ -1270,6 +1271,15 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
               </Pressable>
             </View>
             <View style={[styles.actionsDivider, { backgroundColor: theme.border }]} />
+            <SheetAction
+              icon="image"
+              label={t('shareAsCard')}
+              detail={t('shareAsCardDetail')}
+              onPress={() => {
+                setActions(null);
+                onOpenCard({ book: actions.book, chapter: actions.chapter, verse: actions.verse }, translation);
+              }}
+            />
             <SheetAction
               icon="note_add"
               label={t('addToNotebook')}
