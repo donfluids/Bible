@@ -826,6 +826,8 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
 
   // Cycle through the translations bundled in this edition, staying on the verse at the
   // top of the screen (which can have another number, or chapter, in the other translation).
+  const native = nativeTranslation(edition);
+  const nextTranslation = edition.translations[(edition.translations.indexOf(translation) + 1) % edition.translations.length];
   const switchTranslation = async (next: TranslationId) => {
     if (next === translation) return;
     const seen = firstVisible.current;
@@ -1257,29 +1259,22 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
       <View style={[styles.footer, { paddingBottom: bottomInset + 8, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
         <ChapterArrow icon="chevron_left" onPress={() => go(-1)} disabled={atStart} accessibilityLabel={t('previousChapter')} />
         <View style={styles.footerMiddle}>
-          {/* One pill per Bible: the open one filled, the others a tap away. The Malayalam
-              and Tamil apps tell their two apart by language (MAL or TAM, ENG); the English
-              app names its three (KJV, BSB, WEB). Settings lists each version in full. */}
-          {edition.translations.map((id) => {
-            const open = id === translation;
-            return (
-              <Pressable
-                key={id}
-                android_ripple={{ color: theme.accentSoft }}
-                onPress={() => switchTranslation(id)}
-                hitSlop={4}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: open }}
-                accessibilityLabel={translationInfo(id).name}
-                style={({ pressed }) => [styles.pill, { borderColor: open ? theme.accent : theme.border, backgroundColor: open ? theme.accent : 'transparent', opacity: pressed ? 0.7 : 1 }]}
-              >
-                <Text style={[styles.pillText, { color: open ? theme.onAccent : theme.muted }]}>
-                  {nativeTranslation(edition) && id !== nativeTranslation(edition) ? 'ENG' : id}
-                </Text>
-              </Pressable>
-            );
-          })}
-          <View style={[styles.pillDivider, { backgroundColor: theme.border }]} />
+          {/* One button for the Bibles. The Malayalam and Tamil apps name the other one, the
+              language a tap takes you to (ENG while reading Malayalam, MAL while reading
+              English); the English app names the one open (KJV) and moves on to the next
+              (BSB, then WEB) with each tap. Settings lists each version in full. */}
+          <Pressable
+            android_ripple={{ color: theme.accentSoft }}
+            onPress={() => switchTranslation(nextTranslation)}
+            hitSlop={6}
+            accessibilityRole="button"
+            accessibilityLabel={t('switchTo', { name: translationInfo(nextTranslation).name })}
+            style={({ pressed }) => [styles.pill, { borderColor: theme.accent, opacity: pressed ? 0.7 : 1 }]}
+          >
+            <Text style={[styles.pillText, { color: theme.accent }]}>
+              {native ? (nextTranslation === native ? native : 'ENG') : translation}
+            </Text>
+          </Pressable>
           <Pressable
             android_ripple={{ color: theme.accentSoft }}
             onPress={() => update({ interlinear: !interlinear })}
@@ -1819,7 +1814,6 @@ const styles = StyleSheet.create({
   nav: { fontSize: 16, fontWeight: '600' },
   footerMiddle: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 8, marginHorizontal: 8 },
   arrow: { width: 44, height: 44, borderRadius: 22, borderWidth: StyleSheet.hairlineWidth, alignItems: 'center', justifyContent: 'center' },
-  pillDivider: { width: StyleSheet.hairlineWidth, height: 24, marginHorizontal: 2 },
   playerBar: { paddingHorizontal: 10, paddingTop: 6, borderTopWidth: StyleSheet.hairlineWidth },
   playerRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   playerRef: { flex: 1, fontSize: 14, marginLeft: 6 },
