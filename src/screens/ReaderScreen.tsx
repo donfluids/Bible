@@ -1143,16 +1143,6 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
               onPress={toggleTranslation}
               accessibilityLabel={t('switchTranslation')}
             />
-            <HeaderIconButton
-              icon={reading.active ? 'stop_circle' : 'volume_up'}
-              onPress={reading.active ? reading.stop : () => startReading()}
-              accessibilityLabel={reading.active ? t('stopReading') : t('readAloud')}
-            />
-            <HeaderIconButton
-              icon="ink_highlighter"
-              onPress={marking ? stopMarking : () => startMarking()}
-              accessibilityLabel={marking ? t('markDone') : t('markText')}
-            />
             <HeaderIconButton icon="search" onPress={onOpenSearch} accessibilityLabel={t('search')} />
             <HeaderIconButton icon="settings" onPress={onOpenSettings} accessibilityLabel={t('settings')} />
           </>
@@ -1275,21 +1265,34 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
       ) : (
       <View style={[styles.footer, { paddingBottom: bottomInset + 8, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
         <NavButton label={t('previous')} onPress={() => go(-1)} disabled={atStart} />
-        <Pressable
-          android_ripple={{ color: theme.accentSoft }}
-          onPress={() => update({ interlinear: !interlinear })}
-          hitSlop={6}
-          accessibilityRole="switch"
-          accessibilityState={{ checked: interlinear }}
-          style={({ pressed }) => [
-            styles.pill,
-            { borderColor: interlinear ? theme.accent : theme.border, backgroundColor: interlinear ? theme.accent : 'transparent', opacity: pressed ? 0.7 : 1 },
-          ]}
-        >
-          <Text style={[styles.pillText, { color: interlinear ? theme.onAccent : theme.muted }]}>
-            {book?.testament === 'OT' ? t('hebrewInterlinear') : t('greekInterlinear')}
-          </Text>
-        </Pressable>
+        <View style={styles.footerMiddle}>
+          {/* Listening is a chapter action, so it sits with the chapter controls. */}
+          <Pressable
+            android_ripple={{ color: theme.accentSoft, borderless: true }}
+            onPress={() => startReading()}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('readAloud')}
+            style={({ pressed }) => [styles.listenButton, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
+          >
+            <Icon name="volume_up" size={18} color={theme.muted} />
+          </Pressable>
+          <Pressable
+            android_ripple={{ color: theme.accentSoft }}
+            onPress={() => update({ interlinear: !interlinear })}
+            hitSlop={6}
+            accessibilityRole="switch"
+            accessibilityState={{ checked: interlinear }}
+            style={({ pressed }) => [
+              styles.pill,
+              { borderColor: interlinear ? theme.accent : theme.border, backgroundColor: interlinear ? theme.accent : 'transparent', opacity: pressed ? 0.7 : 1 },
+            ]}
+          >
+            <Text style={[styles.pillText, { color: interlinear ? theme.onAccent : theme.muted }]}>
+              {book?.testament === 'OT' ? t('hebrewInterlinear') : t('greekInterlinear')}
+            </Text>
+          </Pressable>
+        </View>
         <NavButton label={t('next')} onPress={() => go(1)} disabled={atEnd} />
       </View>
       )}
@@ -1798,6 +1801,8 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   nav: { fontSize: 16, fontWeight: '600' },
+  footerMiddle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  listenButton: { width: 32, height: 32, borderRadius: 16, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   playerBar: { paddingHorizontal: 10, paddingTop: 6, borderTopWidth: StyleSheet.hairlineWidth },
   playerRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   playerRef: { flex: 1, fontSize: 14, marginLeft: 6 },
