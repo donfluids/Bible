@@ -175,6 +175,9 @@ Words chosen for the app's own features, used throughout:
 | newTestament | New Testament | புதிய ஏற்பாடு | |
 | previousChapter | Previous chapter | முந்தைய அதிகாரம் | |
 | switchTo | Switch to {name} | {name} வாசிக்க | |
+| bibleEnglish | ENG | ஆங்கிலம் | |
+| bibleMalayalam | MAL | மலையாளம் | |
+| bibleTamil | TAM | தமிழ் | |
 | nextChapter | Next chapter | அடுத்த அதிகாரம் | |
 | hebrewInterlinear | Hebrew | எபிரெயம் | |
 | greekInterlinear | Greek | கிரேக்கம் | |

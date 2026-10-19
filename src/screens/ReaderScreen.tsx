@@ -1260,8 +1260,8 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         <ChapterArrow icon="chevron_left" onPress={() => go(-1)} disabled={atStart} accessibilityLabel={t('previousChapter')} />
         <View style={styles.footerMiddle}>
           {/* One button for the Bibles. The Malayalam and Tamil apps name the other one, the
-              language a tap takes you to (ENG while reading Malayalam, MAL while reading
-              English); the English app names the one open (KJV) and moves on to the next
+              language a tap takes you to, in the interface language (ENG or ഇംഗ്ലീഷ് while
+              reading Malayalam, MAL or മലയാളം while reading English); the English app names the one open (KJV) and moves on to the next
               (BSB, then WEB) with each tap. Settings lists each version in full. */}
           <Pressable
             android_ripple={{ color: theme.accentSoft }}
@@ -1272,7 +1272,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
             style={({ pressed }) => [styles.pill, { borderColor: theme.accent, opacity: pressed ? 0.7 : 1 }]}
           >
             <Text style={[styles.pillText, { color: theme.accent }]}>
-              {native ? (nextTranslation === native ? native : 'ENG') : translation}
+              {native ? t(nextTranslation === 'MAL' ? 'bibleMalayalam' : nextTranslation === 'TAM' ? 'bibleTamil' : 'bibleEnglish') : translation}
             </Text>
           </Pressable>
           <Pressable
