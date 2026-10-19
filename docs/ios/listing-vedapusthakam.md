@@ -102,10 +102,12 @@ A Malayalam-English Bible: read the Sathyavedapusthakam (1910) and the King Jame
 • Compare a verse in Malayalam and the KJV side by side with the Hebrew (Old Testament) or Greek (New Testament).
 • Highlight a whole verse, a few words, or a passage running over several verses, in four colours. Keep bookmarks and notes.
 • Notebook: write sermon notes or a study. A reference such as John 3:16 becomes a link to the verse, with its text shown beneath. Add a verse to a page straight from the reader, and share a page with its verses.
+• Listen to a chapter read aloud by your phone's own voice (a Malayalam voice must be installed for the Malayalam text), with the verse being read marked as it goes.
+• Share a verse as a picture card, for a birthday, a wedding, Christmas or any day, with your own message.
 • Light, sepia and dark themes. Pinch to change the text size. Read verse by verse or in paragraphs.
 • Menus and buttons in Malayalam, or in English if you prefer.
 
-No internet needed: the whole text is inside the app. No ads, no account, and no data collected. Your highlights and notes stay on your phone.
+No internet needed: the whole text is inside the app. No ads, no account, and no data collected. Your highlights and notes stay on your phone, and in its iCloud backup if you use one.
 
 The links between Malayalam words and the Hebrew and Greek were made with computer help and may be wrong in places.
 

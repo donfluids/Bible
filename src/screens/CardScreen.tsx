@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, PixelRatio, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { Alert, KeyboardAvoidingView, PixelRatio, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import * as Sharing from 'expo-sharing';
@@ -19,6 +19,10 @@ import type { Book, Ref, TranslationId, VerseRow } from '../types';
 
 /** The most verses one card takes. */
 const MAX_VERSES = 6;
+const CREDITS: Partial<Record<TranslationId, string>> = {
+  MAL: 'സത്യവേദപുസ്തകം © The Free Bible Foundation · CC BY-SA 4.0',
+  TAM: 'IRV © Bridge Connectivity Solutions · CC BY-SA 4.0',
+};
 const THUMB = 76;
 
 interface Props {
@@ -47,6 +51,9 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
   const [message, setMessage] = useState('');
   const [sharing, setSharing] = useState(false);
   const card = useRef<View>(null);
+  const scroll = useRef<ScrollView>(null);
+  // The text boxes are at the foot of the page: keep the one being typed in above the keyboard.
+  const showInput = () => setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 250);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,8 +82,9 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
   const first = shown[0];
   const last = shown[shown.length - 1];
   const reference = first ? (shown.length > 1 ? `${formatRef(books, first, translation)}–${last.verse}` : formatRef(books, first, translation)) : '';
-  // The Tamil text's licence (CC BY-SA 4.0) asks for credit wherever it is shown.
-  const credit = translation === 'TAM' ? 'IRV · CC BY-SA 4.0' : undefined;
+  // The licences of the Malayalam and Tamil texts (CC BY-SA 4.0) ask for credit wherever
+  // they are shown.
+  const credit = CREDITS[translation];
   const design = designById(designId);
 
   const chooseOccasion = (id: Occasion) => {
@@ -112,10 +120,16 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
   };
 
   return (
-    <View style={[styles.screen, { backgroundColor: theme.bg }]}>
+    <KeyboardAvoidingView style={[styles.screen, { backgroundColor: theme.bg }]} behavior="padding">
       <Header title={t('shareAsCard')} onBack={onBack} />
-      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 }]} keyboardShouldPersistTaps="handled">
-        <View testID="card-preview" style={[styles.preview, { width: previewWidth, borderColor: theme.border }]}>
+      <ScrollView ref={scroll} contentContainerStyle={[styles.content, { paddingBottom: 24 }]} keyboardShouldPersistTaps="handled">
+        <View
+          testID="card-preview"
+          accessible
+          accessibilityRole="image"
+          accessibilityLabel={[heading.trim(), text, reference, message.trim()].filter(Boolean).join('. ')}
+          style={[styles.preview, { width: previewWidth, borderColor: theme.border }]}
+        >
           {first ? <VerseCard {...cardProps} width={previewWidth} /> : <View style={{ width: previewWidth, height: (previewWidth * CARD_HEIGHT[size]) / CARD_WIDTH }} />}
         </View>
 
@@ -180,6 +194,8 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
         <TextInput
           value={heading}
           onChangeText={setHeading}
+          onFocus={showInput}
+          accessibilityLabel={t('cardHeading')}
           maxLength={40}
           style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.card }]}
           placeholderTextColor={theme.muted}
@@ -188,6 +204,8 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
         <TextInput
           value={message}
           onChangeText={setMessage}
+          onFocus={showInput}
+          accessibilityLabel={t('cardMessage')}
           maxLength={80}
           placeholder={t('cardMessageHint')}
           style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.card }]}
@@ -208,11 +226,11 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
 
       {/* Drawn at the picture's own size, out of sight, so the shared picture is sharp. */}
       {first ? (
-        <View style={styles.offscreen} pointerEvents="none">
+        <View style={styles.offscreen} pointerEvents="none" importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
           <VerseCard ref={card} {...cardProps} width={captureWidth} />
         </View>
       ) : null}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

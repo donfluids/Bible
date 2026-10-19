@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useRef, useState } from 'react';
+import React, { forwardRef, useLayoutEffect, useRef, useState } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { CARD_HEIGHT, CARD_WIDTH } from '../cards';
@@ -56,34 +56,42 @@ export const VerseCard = forwardRef<View, Props>(function VerseCard({ design, si
   const headingSize = (headScript ? (tall ? 26 : 20) : tall ? 36 : 28) * (heading.length > 22 ? 0.82 : 1);
   const aboveHeight = layout.above ? Math.max(...layout.above.map((a) => a.width * (a.ratio ?? 1))) + 8 : 0;
   const boxW = CARD_WIDTH - layout.box.left - layout.box.right;
+  // Lines a line of text takes in the box, at a font size, from its length.
+  const lines = (s: string, size: number, script: Script | null) => Math.max(1, Math.ceil((s.length * size * (script ? 0.75 : 0.5)) / boxW));
+  const messageSize = tall ? 17 : 14.5;
+  const messageLine = messageSize * (msgScript ? 1.7 : 1.4);
   const used =
     aboveHeight +
     (design.cross ? (design.halo ? 60 : 42) : 0) +
     (heading ? headingSize * 1.4 * (heading.length * headingSize * 0.5 > boxW ? 2 : 1) + 10 : 0) +
     28 +
-    (message ? 34 : 0) +
-    (credit ? 14 : 0);
+    (message ? 14 + messageLine * lines(message, messageSize, msgScript) : 0) +
+    (credit ? 4 + 12 * lines(credit, 9, scriptOf(credit)) : 0);
   const boxH = CARD_HEIGHT[size] - layout.box.top - layout.box.bottom - used;
   const estimate = Math.sqrt((boxW * Math.max(boxH, 40) * 0.9) / (Math.max(text.length, 1) * CHAR_AREA[v]));
   const maxSize = tall ? 34 : 26;
   const [fitScale, setFitScale] = useState(1);
   const tries = useRef(0);
   const content = `${design.id}|${size}|${heading}|${text}|${reference}|${message}|${credit ?? ''}`;
-  useEffect(() => {
+  // Before the new content is laid out, so no layout of it is measured at the old scale.
+  useLayoutEffect(() => {
     tries.current = 0;
     setFitScale(1);
   }, [content]);
-  const verseSize = Math.max(8, Math.min(maxSize, estimate * fitScale));
+  const MIN_SIZE = 8;
+  const verseSize = Math.max(MIN_SIZE, Math.min(maxSize, estimate * fitScale));
   // The text box's height on screen; the laid-out text is measured against it.
   const boxPx = (CARD_HEIGHT[size] - layout.box.top - layout.box.bottom) * u;
   const onContentLayout = (h: number) => {
     if (tries.current >= 6 || h <= 0) return;
-    if (h > boxPx) {
+    // Each step works from the size in use, which the limits may hold below or above the
+    // estimate: a short verse stays at the largest size until it is made smaller.
+    if (h > boxPx && verseSize > MIN_SIZE) {
       tries.current++;
-      setFitScale((f) => f * Math.max(0.6, Math.sqrt(boxPx / h) * 0.96));
+      setFitScale((f) => Math.min(f, maxSize / estimate) * Math.max(0.6, Math.sqrt(boxPx / h) * 0.96));
     } else if (h < boxPx * 0.72 && verseSize < maxSize) {
       tries.current++;
-      setFitScale((f) => f * Math.min(1.3, Math.sqrt((boxPx * 0.88) / h)));
+      setFitScale((f) => Math.max(f, MIN_SIZE / estimate) * Math.min(1.3, Math.sqrt((boxPx * 0.88) / h)));
     }
   };
   const align = layout.align === 'left' ? 'left' : 'center';
@@ -192,7 +200,7 @@ export const VerseCard = forwardRef<View, Props>(function VerseCard({ design, si
             {reference}
           </Text>
           {credit ? (
-            <Text allowFontScaling={false} style={{ color: design.faint, fontSize: 9 * u, marginTop: 4 * u, textAlign: align }}>
+            <Text allowFontScaling={false} style={{ color: design.faint, fontFamily: serif(scriptOf(credit)), fontSize: 9 * u, lineHeight: 12 * u, marginTop: 4 * u, textAlign: align }}>
               {credit}
             </Text>
           ) : null}
@@ -203,8 +211,9 @@ export const VerseCard = forwardRef<View, Props>(function VerseCard({ design, si
                 color: design.ink,
                 fontFamily: serif(msgScript),
                 fontStyle: msgScript ? 'normal' : 'italic',
-                fontSize: (tall ? 17 : 14.5) * u,
-                lineHeight: (tall ? 17 : 14.5) * (msgScript ? 1.7 : 1.4) * u,
+                // Never larger than the verse it goes with.
+                fontSize: Math.min(messageSize, verseSize) * u,
+                lineHeight: (messageLine * Math.min(messageSize, verseSize)) / messageSize * u,
                 marginTop: 14 * u,
                 textAlign: align,
               }}

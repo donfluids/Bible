@@ -12,7 +12,7 @@ Bible: KJV, WEB, Hebrew, Greek
 **Short description** (80 of 80)
 
 ```
-KJV and World English Bible with the Hebrew and Greek behind each word. Offline.
+KJV, BSB and WEB Bibles. Hebrew and Greek behind the KJV and BSB words. Offline.
 ```
 
 **Full description**
@@ -29,9 +29,11 @@ Read the King James Version, the Berean Standard Bible and the World English Bib
 • Compare a verse in the KJV, the BSB and the WEB side by side with the Hebrew or Greek.
 • Highlight a whole verse, a few words, or a passage running over several verses, in four colours. Keep bookmarks and notes.
 • Notebook: write sermon notes or a study. A reference such as John 3:16 becomes a link to the verse, with its text shown beneath. Add a verse to a page straight from the reader, and share a page with its verses.
+• Listen to a chapter read aloud by your phone's own voice, with the verse being read marked as it goes.
+• Share a verse as a picture card, for a birthday, a wedding, Christmas or any day, with your own message.
 • Light, sepia and dark themes. Pinch to change the text size. Read verse by verse or in paragraphs.
 
-No internet needed: the whole text is inside the app. No ads, no account, and no data collected. Your highlights and notes stay on your phone.
+No internet needed: the whole text is inside the app. No ads, no account, and no data collected. Your highlights and notes stay on your phone, and in its Google backup if you use one.
 
-Sources: King James Version 1769 and World English Bible, from eBible.org (public domain; the KJV outside the United Kingdom); Berean Standard Bible (public domain), via CrossWire; Hebrew and Greek text and meanings from STEPBible.org, Tyndale House Cambridge (CC BY 4.0); Strong's dictionary from Open Scriptures (CC BY-SA); Abbott-Smith's Greek lexicon and the Brown–Driver–Briggs outline (public domain). Details are under Sources and licences in the app.
+Sources: King James Version 1769 and World English Bible, from eBible.org (public domain; the KJV outside the United Kingdom); Berean Standard Bible (public domain), via CrossWire; Hebrew and Greek text and meanings from STEPBible.org, Tyndale House Cambridge (CC BY 4.0); Strong's dictionary from Open Scriptures (CC BY-SA); Abbott-Smith's Greek lexicon (public domain); the Brown–Driver–Briggs outline from Open Scriptures (CC BY 4.0). Details are under Sources and licences in the app.
 ```

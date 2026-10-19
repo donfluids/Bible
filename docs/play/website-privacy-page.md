@@ -8,12 +8,15 @@ or the address chosen when it was first published). This task replaces the page'
 
 ## What changed in the policy
 
-A third app, the Tamil one, is added. Compared with the version dated 14 October 2026:
+Compared with the version dated 15 October 2026, which added the Tamil app:
 
-- Opening line: names all three apps, adding "வேதாகமம் (org.riversresearch.bible.tamil)";
-  effective date **15 October 2026**.
+- Effective date **20 October 2026**.
+- "Copying and sharing" now covers verses shared as a picture card: the card, with any
+  heading and message typed on it, is made on the phone and the apps keep no copy.
+- A new section, "Reading aloud", between "Copying and sharing" and "Links": the apps
+  pass only the text being read to the phone's own text-to-speech engine.
 
-Nothing else changed: the Tamil app works exactly like the other two.
+Nothing else changed.
 
 ## What to do
 
@@ -40,7 +43,7 @@ Nothing else changed: the Tamil app works exactly like the other two.
 
 - `curl -sI https://riversresearch.org/bible/privacy` (or the page's address) returns
   status 200 with `Content-Type: text/html`.
-- The page shows "Effective 15 October 2026", "வேதாகமம்", "for Android and iPhone" and
+- The page shows "Effective 20 October 2026", "Reading aloud", "picture card", "வேதாகமம்", "for Android and iPhone" and
   "iCloud", plus "Rivers Research LLC", all three package names and dond@riversresearch.org.
 - It opens on a phone without signing in.
 
@@ -54,7 +57,7 @@ The page's address, and that the text now reads as below.
 
 # Privacy policy
 
-Bible (org.riversresearch.bible), വേദപുസ്തകം (org.riversresearch.bible.malayalam) and வேதாகமம் (org.riversresearch.bible.tamil), for Android and iPhone, published by Rivers Research LLC. Effective 15 October 2026.
+Bible (org.riversresearch.bible), വേദപുസ്തകം (org.riversresearch.bible.malayalam) and வேதாகமம் (org.riversresearch.bible.tamil), for Android and iPhone, published by Rivers Research LLC. Effective 20 October 2026.
 
 > The apps collect no personal data and send nothing anywhere. They do not connect to the internet. Everything you save in them stays on your phone.
 
@@ -68,7 +71,11 @@ If backup is switched on in your phone's settings, your phone can include the ap
 
 ## Copying and sharing
 
-When you copy or share a verse or a notebook page, the text goes to the clipboard or to the app you choose, and only when you ask for it.
+When you copy or share a verse or a notebook page, or share a verse as a picture card, the text or picture goes to the clipboard or to the app you choose, and only when you ask for it. A card, with any heading and message you type on it, is made on your phone, and the apps keep no copy of it.
+
+## Reading aloud
+
+When you have a chapter, or a Hebrew or Greek word, read aloud, the apps pass that Bible text to your phone's own text-to-speech engine, which is part of your phone, not of the apps. Only the text being read is passed to it. Most engines work without the internet; if the engine on your phone uses online voices, its own privacy terms apply.
 
 ## Links
 
