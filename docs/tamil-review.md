@@ -175,8 +175,8 @@ Words chosen for the app's own features, used throughout:
 | newTestament | New Testament | புதிய ஏற்பாடு | |
 | previousChapter | Previous chapter | முந்தைய அதிகாரம் | |
 | nextChapter | Next chapter | அடுத்த அதிகாரம் | |
-| hebrewInterlinear | Hebrew words | எபிரெயம் | |
-| greekInterlinear | Greek words | கிரேக்கம் | |
+| hebrewInterlinear | Hebrew | எபிரெயம் | |
+| greekInterlinear | Greek | கிரேக்கம் | |
 | tapVerseNumber | Tap a verse number to show its {lang} words | வசன எண்ணைத் தொட்டால் அதன் {lang} வார்த்தைகள் தெரியும் | |
 | hebrew | Hebrew | எபிரெய | |
 | greek | Greek | கிரேக்க | |
@@ -233,7 +233,6 @@ Words chosen for the app's own features, used throughout:
 | tipNoTags | Hold a verse to highlight it, add a note, compare translations or bookmark it. The button below shows the whole verse in Hebrew or Greek; tap a word there for its meaning. | ஒரு வசனத்தை அழுத்திப் பிடித்து ஹைலைட் செய்யலாம், குறிப்பு சேர்க்கலாம், மொழிபெயர்ப்புகளை ஒப்பிடலாம், அடையாளக்குறி இடலாம். கீழே உள்ள பொத்தான் முழு வசனத்தையும் எபிரெயத்தில் அல்லது கிரேக்கத்தில் காட்டும்; அங்கே ஒரு வார்த்தையைத் தொட்டால் அதன் பொருள் தெரியும். | |
 | gotIt | Got it | புரிந்தது | |
 | choosePassage | {title}, choose passage | {title}, பகுதியைத் தேர்ந்தெடுக்க | |
-| switchTranslation | Switch translation | மொழிபெயர்ப்பை மாற்று | |
 | copied | Copied | நகலெடுக்கப்பட்டது | |
 | bookmarked | Bookmarked | அடையாளக்குறி இடப்பட்டது | |
 | actCopy | Copy | நகலெடு | |
