@@ -1,18 +1,20 @@
-// Saying a Hebrew or Greek word with the phone's own text-to-speech voice (expo-speech).
-// The phone's voices speak modern Hebrew and modern Greek; nothing is downloaded by the app.
+// The phone's own text-to-speech voice (expo-speech): a Hebrew or Greek word in the word
+// sheet, and chapters read aloud in the reader. The phone's voices speak modern Hebrew and
+// modern Greek; nothing is downloaded by the app.
 import * as Speech from 'expo-speech';
 import { stripCantillation } from './text';
 
 export type OriginalLanguage = 'hebrew' | 'greek';
+export type VoiceLanguage = OriginalLanguage | 'english' | 'malayalam' | 'tamil';
 
-const LANGUAGE: Record<OriginalLanguage, string> = { hebrew: 'he-IL', greek: 'el-GR' };
+export const LANGUAGE: Record<VoiceLanguage, string> = { hebrew: 'he-IL', greek: 'el-GR', english: 'en', malayalam: 'ml-IN', tamil: 'ta-IN' };
 // Older Android engines name Hebrew "iw".
-const CODES: Record<OriginalLanguage, string[]> = { hebrew: ['he', 'iw'], greek: ['el'] };
+const CODES: Record<VoiceLanguage, string[]> = { hebrew: ['he', 'iw'], greek: ['el'], english: ['en'], malayalam: ['ml'], tamil: ['ta'] };
 
 let voices: Promise<Speech.Voice[]> | null = null;
 
 /** Whether the phone has a voice for the language; null when it does not say (some engines list none). */
-export async function hasVoice(language: OriginalLanguage): Promise<boolean | null> {
+export async function hasVoice(language: VoiceLanguage): Promise<boolean | null> {
   // A browser can wait for its voice list forever; after a moment the answer is "not known".
   voices ??= Promise.race([
     Speech.getAvailableVoicesAsync().catch(() => []),

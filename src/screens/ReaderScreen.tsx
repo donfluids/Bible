@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, AppState, FlatList, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, AppState, FlatList, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, ViewToken } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,10 +9,12 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
+import { READ_SPEEDS, spokenText, useReadAloud, voiceFor } from '../readAloud';
+import { hasVoice } from '../speech';
 import { CompareSheet } from '../components/CompareSheet';
 import { HEADER_MAX_FONT_SCALE, Header, HeaderChip, HeaderIconButton } from '../components/Header';
 import { TAB_BAR_HEIGHT, TabBar } from '../components/TabBar';
-import { Icon } from '../components/Icon';
+import { Icon, IconButton } from '../components/Icon';
 import type { IconName } from '../components/Icon';
 import { nativeTranslation, useEdition } from '../edition';
 import { scriptOf, scriptureFont } from '../fonts';
@@ -491,6 +493,53 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
 
   const goRef = useRef(go);
   goRef.current = go;
+
+  // Reading the chapter aloud with the phone's voice, verse by verse, on into the next chapter.
+  const chapterVerses = useMemo(() => {
+    if (!items) return null;
+    const out: VerseRow[] = [];
+    for (const it of items) {
+      if (it.kind === 'verse') out.push(it.verse);
+      else if (it.kind === 'para') out.push(...it.verses);
+    }
+    return out.filter((v) => !v.omitted && spokenText(v) !== '');
+  }, [items]);
+  const readOn = useCallback(() => {
+    const n = neighbour(books, position.book, position.chapter, 1);
+    if (!n) return false;
+    scrollTarget.current = { flash: false };
+    moveTo(n);
+    return true;
+  }, [books, position.book, position.chapter, moveTo]);
+  const reading = useReadAloud({ chapterKey, verses: chapterVerses, translation, rate: settings.readSpeed, nextChapter: readOn });
+  const readingVerse = reading.verse;
+  // The verse being read is kept in view until the reader scrolls the page themselves.
+  const [following, setFollowing] = useState(true);
+  useEffect(() => {
+    if (readingVerse === null || !following) return;
+    const rows = itemsRef.current;
+    if (!rows) return;
+    const index = rows.findIndex((it) => (it.kind === 'verse' && it.verse.verse === readingVerse) || (it.kind === 'para' && it.verses.some((v) => v.verse === readingVerse)));
+    if (index < 0) return;
+    listRef.current?.scrollToIndex({ index, viewPosition: 0.2, animated: true });
+  }, [readingVerse, following, items]);
+  const NO_VOICE = { english: 'noEnglishVoice', malayalam: 'noMalayalamVoice', tamil: 'noTamilVoice' } as const;
+  const startReading = async (from?: number) => {
+    setActions(null);
+    if (marking) setMarkTool(null);
+    const language = voiceFor(translation) as keyof typeof NO_VOICE;
+    if ((await hasVoice(language)) === false) {
+      Alert.alert(t('noVoiceTitle'), t(NO_VOICE[language]));
+      return;
+    }
+    setFollowing(true);
+    const seen = firstVisible.current;
+    reading.start(from ?? (seen && seen.key === chapterKey ? seen.verse : undefined));
+  };
+  const cycleSpeed = () => {
+    const i = READ_SPEEDS.indexOf(settings.readSpeed);
+    update({ readSpeed: READ_SPEEDS[(i + 1) % READ_SPEEDS.length] });
+  };
   // Swipe left for the next chapter, right for the previous. Vertical movement fails the
   // gesture quickly so scrolling is unaffected, and a swipe starting at either edge is
   // left to Android's back gesture.
@@ -758,6 +807,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
 
   const startMarking = (from?: VerseRow) => {
     setActions(null);
+    reading.stop();
     if (from) markFrom.current = from.verse;
     setMarkTool(lastMarkColor);
   };
@@ -949,7 +999,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                     numberLabel={t('verseActions', { n: v.verse })}
                     notes={notes.get(v.verse)}
                     underline={underlineWords}
-                    flash={flash === v.verse}
+                    flash={flash === v.verse || readingVerse === v.verse}
                     bookmarked={bookmarked.has(bookmarkKey(v))}
                     highlightColor={color ? theme.marks[color] : undefined}
                     marks={verseMarks.get(v.verse)}
@@ -963,7 +1013,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         );
       }
       const v = item.verse;
-      const flashing = flash === v.verse;
+      const flashing = flash === v.verse || readingVerse === v.verse;
       const marked = bookmarked.has(bookmarkKey(v));
       const mark = highlights[bookmarkKey(v)];
       if (marking && !v.omitted) {
@@ -1020,7 +1070,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
       );
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [theme, fontSize, onRowWord, underlineWords, flash, interlinear, interlinearMode, expanded, originalWords, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, translation, t, scriptFont, verseMarks, marking, markTool, selection, registerWord],
+    [theme, fontSize, onRowWord, underlineWords, flash, readingVerse, interlinear, interlinearMode, expanded, originalWords, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, translation, t, scriptFont, verseMarks, marking, markTool, selection, registerWord],
   );
 
   // The list's own props stay the same objects between renders, so a change elsewhere on
@@ -1094,6 +1144,11 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
               accessibilityLabel={t('switchTranslation')}
             />
             <HeaderIconButton
+              icon={reading.active ? 'stop_circle' : 'volume_up'}
+              onPress={reading.active ? reading.stop : () => startReading()}
+              accessibilityLabel={reading.active ? t('stopReading') : t('readAloud')}
+            />
+            <HeaderIconButton
               icon="ink_highlighter"
               onPress={marking ? stopMarking : () => startMarking()}
               accessibilityLabel={marking ? t('markDone') : t('markText')}
@@ -1103,7 +1158,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
           </>
         }
       />
-      {keepAwake ? <KeepAwake /> : null}
+      {keepAwake || (reading.active && reading.playing) ? <KeepAwake /> : null}
       <GestureDetector gesture={gestures}>
         <View style={styles.body} ref={bodyRef} collapsable={false}>
       {loadFailed ? (
@@ -1124,6 +1179,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
           contentContainerStyle={styles.list}
           scrollEnabled={!dragging}
           onScroll={onScroll}
+          onScrollBeginDrag={reading.active ? () => setFollowing(false) : undefined}
           onLayout={onListLayout}
           scrollEventThrottle={16}
           onContentSizeChange={onContentSizeChange}
@@ -1177,6 +1233,43 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
             <Pressable onPress={stopMarking} accessibilityRole="button" style={({ pressed }) => [styles.markDone, { backgroundColor: theme.accent, opacity: pressed ? 0.7 : 1 }]}>
               <Text style={[styles.markDoneText, { color: theme.onAccent }]}>{t('markDone')}</Text>
             </Pressable>
+          </View>
+        </View>
+      ) : reading.active ? (
+        <View style={[styles.playerBar, { paddingBottom: bottomInset + 8, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
+          {!following ? (
+            <Pressable
+              onPress={() => setFollowing(true)}
+              accessibilityRole="button"
+              style={({ pressed }) => [styles.backToReading, { backgroundColor: theme.accent, opacity: pressed ? 0.8 : 1 }]}
+            >
+              <Text style={[styles.backToReadingText, { color: theme.onAccent }]}>{t('backToReading')}</Text>
+            </Pressable>
+          ) : null}
+          <View style={styles.playerRow}>
+            <Text numberOfLines={1} style={[styles.playerRef, { color: theme.muted }]}>
+              {`${shortBookName(position.book, translation)} ${position.chapter}${readingVerse ? `:${readingVerse}` : ''}`}
+            </Text>
+            <IconButton name="skip_previous" onPress={() => reading.step(-1)} accessibilityLabel={t('previousVerse')} color={theme.text} />
+            <Pressable
+              onPress={reading.playing ? reading.pause : reading.resume}
+              accessibilityRole="button"
+              accessibilityLabel={reading.playing ? t('pauseReading') : t('resumeReading')}
+              style={({ pressed }) => [styles.playButton, { backgroundColor: theme.accent, opacity: pressed ? 0.8 : 1 }]}
+            >
+              <Icon name={reading.playing ? 'pause' : 'play_arrow'} size={30} color={theme.onAccent} />
+            </Pressable>
+            <IconButton name="skip_next" onPress={() => reading.step(1)} accessibilityLabel={t('nextVerse')} color={theme.text} />
+            <Pressable
+              onPress={cycleSpeed}
+              accessibilityRole="button"
+              accessibilityLabel={`${t('readingSpeed')} ${settings.readSpeed}×`}
+              hitSlop={6}
+              style={[styles.speedChip, { borderColor: theme.border }]}
+            >
+              <Text style={[styles.speedText, { color: theme.text }]}>{settings.readSpeed}×</Text>
+            </Pressable>
+            <IconButton name="close" onPress={reading.stop} accessibilityLabel={t('stopReading')} color={theme.muted} />
           </View>
         </View>
       ) : (
@@ -1289,6 +1382,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                 setToNotebook(actions);
               }}
             />
+            <SheetAction icon="volume_up" label={t('readFromHere')} detail={t('readFromHereDetail')} onPress={() => startReading(actions.verse)} />
             <SheetAction icon="ink_highlighter" label={t('markText')} detail={t('markTextDetail')} onPress={() => startMarking(actions)} />
             <SheetAction
               icon="compare_arrows"
@@ -1704,6 +1798,14 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   nav: { fontSize: 16, fontWeight: '600' },
+  playerBar: { paddingHorizontal: 10, paddingTop: 6, borderTopWidth: StyleSheet.hairlineWidth },
+  playerRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  playerRef: { flex: 1, fontSize: 14, marginLeft: 6 },
+  playButton: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', marginHorizontal: 2 },
+  speedChip: { minWidth: 52, height: 34, borderRadius: 17, borderWidth: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8, marginLeft: 4 },
+  speedText: { fontSize: 14, fontWeight: '600' },
+  backToReading: { alignSelf: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 18, marginBottom: 6 },
+  backToReadingText: { fontSize: 14, fontWeight: '600' },
   markBar: { paddingHorizontal: 18, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth, gap: 8 },
   markHint: { fontSize: 13, lineHeight: 18 },
   markRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },

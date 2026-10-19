@@ -23,6 +23,8 @@ export interface Settings {
   /** Highlight colours: soft tints of the page, or bright highlighter-pen colours. */
   highlightStyle: HighlightStyle;
   keepAwake: boolean;
+  /** Speaking rate of chapters read aloud: 0.75, 1 or 1.25. */
+  readSpeed: number;
   underlineWords: boolean;
   /** Show the Hebrew or Greek words under each verse. */
   interlinear: boolean;
@@ -49,6 +51,7 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
   layout: 'verses',
   highlightStyle: 'soft',
   keepAwake: false,
+  readSpeed: 1,
   underlineWords: true,
   interlinear: false,
   interlinearMode: 'all',

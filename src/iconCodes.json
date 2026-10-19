@@ -41,5 +41,9 @@
  "arrow_back_ios_new": 57383,
  "volume_up": 57384,
  "stop_circle": 57385,
- "image": 57386
+ "image": 57386,
+ "play_arrow": 57387,
+ "pause": 57388,
+ "skip_previous": 57389,
+ "skip_next": 57390
 }
