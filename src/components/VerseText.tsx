@@ -112,7 +112,8 @@ export const VerseText = memo(function VerseText({
   const lineHeight = Math.round(fontSize * translationInfo(script === 'ta' ? 'TAM' : script === 'ml' ? 'MAL' : 'KJV').lineHeight);
   const small = Math.max(11, fontSize - 6);
   // On a highlight colour the text, number and note letters take the colours made for it.
-  const onMark = onHighlight || !!highlightColor;
+  // A flash covers the highlight colour, so the text keeps the page's colours under it.
+  const onMark = (onHighlight || !!highlightColor) && !flash;
   const textColor = onMark ? theme.markText : theme.text;
   const accent = onMark ? theme.markAccent : theme.accent;
 

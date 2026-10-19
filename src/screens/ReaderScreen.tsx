@@ -1677,6 +1677,9 @@ const ReaderVerse = memo(function ReaderVerse({
   // underlines its words.
   const showingWords = !!words && words.length > 0;
   const underlined = underlineWords && !interlinear;
+  // A flash (a jump here, or the verse being read aloud) covers the highlight colour, so
+  // the text goes back to the colours made for the page.
+  const onMark = !!markColor && !flashing;
   return (
     <View
       style={[
@@ -1701,9 +1704,9 @@ const ReaderVerse = memo(function ReaderVerse({
             style={[styles.tapColumn, { width: Math.max(40, Math.round(fontSize * 2)) }]}
           >
             {v.verse > 0 ? (
-              <Text style={[styles.tapNumber, { color: markColor ? theme.markAccent : theme.accent, fontSize: Math.max(14, fontSize - 4), lineHeight }]}>{v.verse}</Text>
+              <Text style={[styles.tapNumber, { color: onMark ? theme.markAccent : theme.accent, fontSize: Math.max(14, fontSize - 4), lineHeight }]}>{v.verse}</Text>
             ) : null}
-            <Icon name={expanded ? 'expand_less' : 'expand_more'} size={Math.max(12, Math.round(fontSize * 0.6))} color={markColor ? theme.markMuted : theme.muted} />
+            <Icon name={expanded ? 'expand_less' : 'expand_more'} size={Math.max(12, Math.round(fontSize * 0.6))} color={onMark ? theme.markMuted : theme.muted} />
           </Pressable>
           <View style={styles.tapText}>
             <VerseText
@@ -1717,7 +1720,7 @@ const ReaderVerse = memo(function ReaderVerse({
               notes={notes}
               onNote={cb.openNote}
               underline={underlined}
-              onHighlight={!!markColor}
+              onHighlight={onMark}
               marks={marks}
               selectionTranslation={translation}
             />
@@ -1737,13 +1740,13 @@ const ReaderVerse = memo(function ReaderVerse({
           notes={notes}
           onNote={cb.openNote}
           underline={underlined}
-          onHighlight={!!markColor}
+          onHighlight={onMark}
           marks={marks}
           selectionTranslation={translation}
         />
       )}
       {words && words.length > 0 ? (
-        <InterlinearVerse words={words} hebrew={v.book <= 39} fontSize={fontSize} onWord={onWord} showTranslit={showTranslit} hideCantillation={hideCantillation} highlighted={!!markColor} />
+        <InterlinearVerse words={words} hebrew={v.book <= 39} fontSize={fontSize} onWord={onWord} showTranslit={showTranslit} hideCantillation={hideCantillation} highlighted={onMark} />
       ) : null}
     </View>
   );

@@ -142,11 +142,15 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
   // The word being said aloud; a new word, or closing the sheet, stops it.
   const [speaking, setSpeaking] = useState(false);
   const sayToken = useRef(0);
+  // Set while the sheet's own word is being said: only that is stopped here, so a chapter
+  // being read aloud goes on when the sheet opens or closes.
+  const saying = useRef(false);
   useEffect(() => {
     setSpeaking(false);
     return () => {
       sayToken.current++;
-      stopSaying();
+      if (saying.current) stopSaying();
+      saying.current = false;
     };
   }, [pick?.strongs]);
   const [showLegend, setShowLegend] = useState(false);
@@ -293,6 +297,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
     if (!entry?.lemma) return;
     if (speaking) {
       sayToken.current++;
+      saying.current = false;
       stopSaying();
       setSpeaking(false);
       return;
@@ -304,8 +309,11 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
     }
     const token = ++sayToken.current;
     setSpeaking(true);
+    saying.current = true;
     sayWord(entry.lemma, language, () => {
-      if (sayToken.current === token) setSpeaking(false);
+      if (sayToken.current !== token) return;
+      saying.current = false;
+      setSpeaking(false);
     });
   };
 

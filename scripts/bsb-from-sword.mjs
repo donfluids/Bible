@@ -15,6 +15,7 @@ import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readZText } from './lib/sword.mjs';
+import { chiefFirst } from './lib/function-words.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const [src = join(ROOT, 'data/raw/bsb-sword'), out = join(ROOT, 'data/raw/bsb')] = process.argv.slice(2);
@@ -67,12 +68,13 @@ function inline(s) {
     s
       // Footnotes: their text only.
       .replace(/<note\b[^>]*>([\s\S]*?)<\/note>/g, (_, body) => `\\f + \\ft ${plain(body)}\\f*`)
-      // Words: the first Strong's number of each; untranslated (empty) words go.
+      // Words with their Strong's numbers, the chief word first ("Father's": πατήρ, then
+      // ὁ); untranslated (empty) words go.
       .replace(/<w\b([^>]*)\/>/g, '')
       .replace(/<w\b([^>]*)>([\s\S]*?)<\/w>/g, (_, attrs, word) => {
-        const n = /strong:([HG]\d+)/.exec(attrs);
+        const ids = [...attrs.matchAll(/strong:([HG]\d+)/g)].map((m) => m[1]);
         const w = word.replace(/<[^>]*>/g, '');
-        return n && w.trim() ? `\\w ${w}|strong="${n[1]}"\\w*` : w;
+        return ids.length && w.trim() ? `\\w ${w}|strong="${chiefFirst(ids).join('+')}"\\w*` : w;
       })
       // Paragraphs start, poetry lines and list items begin a new line.
       .replace(/<div\b[^>]*type="x-p"[^>]*sID[^>]*\/>/g, '\n\\p ')
@@ -107,7 +109,7 @@ for (const [t, entries] of testaments.entries()) {
         lines.push(...before);
         if (!body) {
           // A verse the BSB leaves out: say so, with the note on the verse before when it explains it.
-          const note = [...lastNotes.matchAll(/\\ft ([^\\]*)/g)].map((m) => m[1]).find((n) => /\b(include|add|verse)/i.test(n));
+          const note = [...lastNotes.matchAll(/\\ft ([^\\]*)/g)].map((m) => m[1]).find((n) => /\b(include|add)/i.test(n));
           lines.push(`\\v ${v} \\f + \\ft ${note ?? 'The BSB does not include this verse; some later manuscripts do.'}\\f*`);
           omitted++;
           continue;

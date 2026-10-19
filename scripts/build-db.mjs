@@ -63,6 +63,7 @@
 //     translation verses numbered differently from the KJV numbering of the interlinear;
 //     n orders the KJV verses when one verse holds two. From data/overrides/versification.json
 //   meta(key, value)
+import { contentNumbers } from './lib/function-words.mjs';
 import { DatabaseSync } from 'node:sqlite';
 import { deflateRawSync, inflateRawSync } from 'node:zlib';
 import { textHash } from './lib/tokens.mjs';
@@ -70,6 +71,7 @@ import { abbottSmith, bdbGlosses } from './lib/lexicons.mjs';
 import { readFileSync, readdirSync, mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = join(ROOT, 'data', 'raw');
@@ -203,10 +205,11 @@ function cleanVerse(raw) {
   // \w word|strong="H0430"\w*  and nested  \+w ...\+w*
   s = s.replace(/\\\+?w\s+([^|\\]*?)\|([^\\]*?)\\\+?w\*/g, (_, word, attrs) => {
     const sm = /strong="([^"]+)"/.exec(attrs);
-    const n = sm ? normalizeStrongs(sm[1]) : null;
+    // One number, or several joined by "+" (the BSB's phrases), the chief word first.
+    const ids = sm ? sm[1].split('+').map(normalizeStrongs) : [];
     const w = word.trim();
-    if (!n || !w) return w;
-    return `⟨${w}|${n}⟩`;
+    if (!ids.length || ids.some((n) => !n) || !w) return w;
+    return `⟨${w}|${ids.join('+')}⟩`;
   });
   // \w without attributes
   s = s.replace(/\\\+?w\s+([^\\]*?)\\\+?w\*/g, '$1');
@@ -236,14 +239,14 @@ function splitTags(tagged) {
   const notes = [];
   let last = 0;
   let prevEnd = 0;
-  for (const m of tagged.matchAll(/⟨([^|⟩]*)\|[HG](\d+)⟩|\x06(\d+)\x06/g)) {
+  for (const m of tagged.matchAll(/⟨([^|⟩]*)\|([HG]\d+(?:\+[HG]\d+)*)⟩|\x06(\d+)\x06/g)) {
     text += tagged.slice(last, m.index);
     if (m[3] !== undefined) {
       notes.push({ idx: Number(m[3]), pos: text.length });
     } else {
       const start = text.length;
       text += m[1];
-      tags.push(`${start - prevEnd},${m[1].length},${m[2]}`);
+      tags.push(`${start - prevEnd},${m[1].length},${m[2].replace(/[HG]/g, '')}`);
       prevEnd = text.length;
     }
     last = m.index + m[0].length;
@@ -873,7 +876,16 @@ function buildEdition(edition) {
           const { text, notes: markers } = split;
           let tags = UNTAGGED.has(t.id) ? '' : split.tags;
           // Tagged words: the source's own tags, or for Malayalam and Tamil the aligned links.
-          let entries = UNTAGGED.has(t.id) ? [] : [...tagged.matchAll(/⟨([^|⟩]*)\|([HG]\d+)⟩/g)].map((m) => ({ word: m[1].trim(), id: m[2] }));
+          // A word with several numbers counts in the concordance of each; it is listed as a
+          // rendering of its chief word only when that is its one word of meaning ("Father's"
+          // under πατήρ, but "Israelites" under neither son nor Israel).
+          let entries = UNTAGGED.has(t.id)
+            ? []
+            : [...tagged.matchAll(/⟨([^|⟩]*)\|([HG]\d+(?:\+[HG]\d+)*)⟩/g)].flatMap((m) => {
+                const ids = m[2].split('+');
+                const rendering = ids.length === 1 || contentNumbers(ids).length === 1;
+                return ids.map((id, k) => ({ word: m[1].trim(), id, concordanceOnly: k > 0 || !rendering }));
+              });
           let aligned = false;
           let hand = false;
           if (linked) {
@@ -923,7 +935,7 @@ function buildEdition(edition) {
         const word = t.id === 'BSB' ? coreRendering(m.word) : m.word;
         const lower = word.toLowerCase();
         const strayPronoun = !!linked && linked.pronouns.has(word) && !HEBREW_PRONOUNS.has(m.id) && !GREEK_PRONOUNS.has(m.id);
-        if (strayPronoun) {
+        if (strayPronoun || m.concordanceOnly) {
           if (!seen.has(m.id)) { seen.add(m.id); if (!conc.has(m.id)) conc.set(m.id, []); conc.get(m.id).push(bookId, chapter, verse); }
           continue;
         }
@@ -1058,6 +1070,13 @@ function buildEdition(edition) {
   try { sizes = JSON.parse(readFileSync(SIZES, 'utf8')); } catch { /* first build */ }
   sizes[edition] = statSync(OUT).size;
   writeFileSync(SIZES, JSON.stringify(sizes, null, 1) + '\n');
+  // The copy's name carries a hash of the database, so a rebuilt one reaches phones that
+  // have a copy even when its size is unchanged (src/db.ts).
+  const HASHES = join(ROOT, 'src', 'dbHashes.json');
+  let hashes = {};
+  try { hashes = JSON.parse(readFileSync(HASHES, 'utf8')); } catch { /* first build */ }
+  hashes[edition] = createHash('sha256').update(readFileSync(OUT)).digest('hex').slice(0, 12);
+  writeFileSync(HASHES, JSON.stringify(hashes, null, 1) + '\n');
   console.log(JSON.stringify({ edition, ...stats, strongsEntries: nStrongs, bytes: statSync(OUT).size }, null, 2));
 }
 

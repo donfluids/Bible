@@ -47,13 +47,21 @@ function inline(xml) {
     .trim();
 }
 
+// The forms of σύ ("you": σέ, σοί, σοῦ, ὑμᾶς, ὑμεῖς, ὑμῖν) are listed in the source
+// under αὐτός; they belong to σύ.
+const FILED_UNDER = { σύ: ['G4571', 'G4671', 'G4675', 'G5209', 'G5210', 'G5213'] };
+const MISFILED = Object.fromEntries(Object.entries(FILED_UNDER).flatMap(([head, ids]) => ids.map((id) => [id, head])));
+
 /** Abbott-Smith entries by Greek Strong's number ("G4102"). */
 export function abbottSmith(path) {
   const out = new Map();
   if (!existsSync(path)) return out;
   const src = readFileSync(path, 'utf8');
   for (const [, n, body] of src.matchAll(/<entry\b[^>]*\bn="([^"]*)"[^>]*>([\s\S]*?)<\/entry>/g)) {
-    const ids = (n.split('|')[1] ?? '').split(/[,\s]+/).filter((x) => /^G\d+$/.test(x));
+    // n is the headword then every number it covers: "εἰμί|G1488|G1510|…".
+    const head = n.split('|')[0];
+    const ids = [...n.split('|').slice(1).flatMap((x) => x.split(/[,\s]+/)), ...(FILED_UNDER[head] ?? [])]
+      .filter((x) => /^G\d+$/.test(x) && (!MISFILED[x] || MISFILED[x] === head));
     if (!ids.length) continue;
     const lines = [];
     const form = /<form\b[^>]*>([\s\S]*?)<\/form>/.exec(body);

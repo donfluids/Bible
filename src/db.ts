@@ -1,15 +1,17 @@
 import { Platform } from 'react-native';
 import { defaultDatabaseDirectory } from 'expo-sqlite';
 import { Directory, File, Paths } from 'expo-file-system';
+import DATABASE_HASHES from './dbHashes.json';
 import DATABASE_SIZES from './dbSizes.json';
 import { CONFIGURED_EDITION_ID } from './edition';
 
 /**
- * Name of the on-device copy of the bundled database. The bundled file is copied
- * on first launch and kept. Bump the suffix whenever assets/db/bible.db is
- * rebuilt so devices that already have a copy pick up the new one.
+ * Name of the on-device copy of the bundled database. The bundled file is copied on
+ * first launch and kept. The name carries the database's hash (recorded by
+ * scripts/build-db.mjs), so a phone with a copy of an earlier build makes a new one.
  */
-export const DATABASE_NAME = 'bible-v14.db';
+const hash = CONFIGURED_EDITION_ID ? (DATABASE_HASHES as Record<string, string>)[CONFIGURED_EDITION_ID] : undefined;
+export const DATABASE_NAME = hash ? `bible-v14-${hash}.db` : 'bible-v14.db';
 
 export const DATABASE_ASSET = require('../assets/db/bible.db');
 
@@ -68,7 +70,7 @@ export function removeIncompleteCopy(): void {
 }
 
 /**
- * Delete copies left behind by earlier database versions (bible-v1.db and so on, with
+ * Delete copies left behind by earlier database versions (bible-v1.db, bible-v14-<hash>.db, with
  * any journal files, in the old folder or this one). Each one is about 40 MB. With
  * `assetCache`, also the cache copy of the bundled asset that the first import leaves;
  * that is skipped in the launch that made the copy, in case it has to be made again.
@@ -79,7 +81,7 @@ export function removeStaleDatabases(assetCache: boolean): void {
       if (!dir.exists) continue;
       for (const entry of dir.list()) {
         const name = entry.name;
-        if (!/^bible-v\d+\.db/.test(name) || (dir.uri.replace(/\/$/, '') === DATABASE_DIR.replace(/\/$/, '') && name.startsWith(DATABASE_NAME))) continue;
+        if (!/^bible-v\d+(-[0-9a-f]+)?\.db/.test(name) || (dir.uri.replace(/\/$/, '') === DATABASE_DIR.replace(/\/$/, '') && name.startsWith(DATABASE_NAME))) continue;
         try {
           entry.delete();
         } catch {

@@ -59,13 +59,17 @@ export function useReadAloud({ chapterKey, verses, translation, rate, nextChapte
   // Set while waiting for the next chapter's verses after turning to it.
   const continuing = useRef<string | null>(null);
   const pauseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Set while this reader's own verse is being spoken. Another reader (one opened from
+  // Saved or Search) stopping, or the word sheet closing, must not stop this one.
+  const speaking = useRef(false);
 
   const halt = useCallback(() => {
     token.current++;
     continuing.current = null;
     if (pauseTimer.current) clearTimeout(pauseTimer.current);
     pauseTimer.current = null;
-    Speech.stop();
+    if (speaking.current) Speech.stop();
+    speaking.current = false;
   }, []);
 
   const speakAt = useCallback(
@@ -89,6 +93,7 @@ export function useReadAloud({ chapterKey, verses, translation, rate, nextChapte
       setIndex(i);
       setPlaying(true);
       setActive(true);
+      speaking.current = true;
       Speech.speak(spokenText(list[i]), {
         language: LANGUAGE[voiceFor(tr)],
         rate: r,
@@ -97,10 +102,13 @@ export function useReadAloud({ chapterKey, verses, translation, rate, nextChapte
         },
         // Stopped from elsewhere (a word said in the word sheet): paused at this verse.
         onStopped: () => {
-          if (token.current === mine) setPlaying(false);
+          if (token.current !== mine) return;
+          speaking.current = false;
+          setPlaying(false);
         },
         onError: () => {
           if (token.current !== mine) return;
+          speaking.current = false;
           setIndex(null);
           setPlaying(false);
           setActive(false);
@@ -141,6 +149,8 @@ export function useReadAloud({ chapterKey, verses, translation, rate, nextChapte
     (fromVerse?: number) => {
       const list = live.current.verses;
       if (!list || list.length === 0) return;
+      // Just after a chapter turn the old chapter's verses can still be here.
+      if (`${list[0].book}:${list[0].chapter}` !== live.current.chapterKey) return;
       const i = fromVerse === undefined ? 0 : list.findIndex((v) => v.verse >= fromVerse);
       speakAt(i < 0 ? 0 : i);
     },
@@ -154,7 +164,9 @@ export function useReadAloud({ chapterKey, verses, translation, rate, nextChapte
   const resume = useCallback(() => {
     const i = live.current.index;
     if (i !== null) speakAt(i);
-  }, [speakAt]);
+    // Paused between chapters: read the chapter now shown from its start.
+    else start();
+  }, [speakAt, start]);
   // While paused, a step only moves the mark; reading resumes from there.
   const step = useCallback(
     (delta: 1 | -1) => {
