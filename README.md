@@ -13,11 +13,13 @@ From 0.3.8 the package names are `org.riversresearch.bible` and
 `org.riversresearch.bible.malayalam`; earlier builds used `org.donfluids.bible...`, so
 phones treat them as different apps. Upload only 0.3.8 or later to Play.
 
-0.4.0 (build 26), 0.4.1 (build 27) and 0.4.2 build 28 never went to Play; 0.4.2 build 29 did. 0.4.3 (build 30) was built for upload; 0.4.4 (build 31) adds the Berean Standard Bible (English app) and fuller Greek and Hebrew entries (both apps). 0.4.5 (build 32) adds verse cards to share, the Hebrew and Greek word said aloud, and the Fluorescent highlights of the dark theme (both apps). 0.4.6 (build 33) adds chapters read aloud with the phone's voice and the formal Sources and licences screen with the full third-party list. 0.4.7 (build 34) moves Listen to the chapter row at the bottom and leaves the top bar with the book, search and settings. 0.4.8 (build 35) fixes reading aloud (a highlighted verse stays readable in Fluorescent; looking up a word or going back no longer pauses it), restores fuller Greek dictionary entries for common words, keeps all Hebrew and Greek numbers on BSB phrases, credits the Malayalam text on cards, and revises the Malayalam wording. 0.4.9 (build 36) is a test of the new reader layout: Listen in the top bar, and at the bottom round arrows for the chapters with one pill per Bible (MAL, ENG; or KJV, BSB, WEB) and a Hebrew or Greek pill. Upload 0.4.8, or 0.4.9 once the new layout is approved; earlier builds that never went to Play can be skipped.
+0.4.0 (build 26), 0.4.1 (build 27) and 0.4.2 build 28 never went to Play; 0.4.2 build 29 did. 0.4.3 (build 30) was built for upload; 0.4.4 (build 31) adds the Berean Standard Bible (English app) and fuller Greek and Hebrew entries (both apps). 0.4.5 (build 32) adds verse cards to share, the Hebrew and Greek word said aloud, and the Fluorescent highlights of the dark theme (both apps). 0.4.6 (build 33) adds chapters read aloud with the phone's voice and the formal Sources and licences screen with the full third-party list. 0.4.7 (build 34) moves Listen to the chapter row at the bottom and leaves the top bar with the book, search and settings. 0.4.8 (build 35) fixes reading aloud (a highlighted verse stays readable in Fluorescent; looking up a word or going back no longer pauses it), restores fuller Greek dictionary entries for common words, keeps all Hebrew and Greek numbers on BSB phrases, credits the Malayalam text on cards, and revises the Malayalam wording. 0.4.9 (build 36) is a test of the new reader layout: Listen in the top bar, and at the bottom round arrows for the chapters with one pill per Bible (MAL, ENG; or KJV, BSB, WEB) and a Hebrew or Greek pill. 0.4.10 (build 37) makes the Bible switch one button: it names the Bible a tap takes you to, in the interface language (ഇംഗ്ലീഷ് or മലയാളം with the Malayalam interface, ENG or MAL with English); the English app's button shows the Bible open and moves to the next. Upload 0.4.8, or 0.4.10 once the new layout is approved; earlier builds that never went to Play can be skipped.
 From 0.4.1 the bundles carry 32- and 64-bit ARM; the APKs are 64-bit only.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Vedapusthakam-0.4.10-b37.aab](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.10-b37.aab) | 0.4.10 | 37 | release key | 4f83109 | 49.7 MiB | `c8f5b7fedc5cf42b7a1cf550f879d96e29efaaabe85d13d39c70d88593bdaff2` |
+| [Bible-0.4.10-b37.aab](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.4.10-b37.aab) | 0.4.10 | 37 | release key | 4f83109 | 51.1 MiB | `548b06a98b693703c275ded5a1bf695536c3a62422bd372adf7088ba5757b23a` |
 | [Vedapusthakam-0.4.9-b36.aab](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.9-b36.aab) | 0.4.9 | 36 | release key | d6bd35b | 49.7 MiB | `304244737974bac390c4888362fbf626387d463b9c30c49240af6fd2745a5ba3` |
 | [Bible-0.4.9-b36.aab](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.4.9-b36.aab) | 0.4.9 | 36 | release key | d6bd35b | 51.1 MiB | `308f95c565920bf931be78d71e7390f821a069c88239539293e4ffb3607b2892` |
 | [Vedapusthakam-0.4.8-b35.aab](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.8-b35.aab) | 0.4.8 | 35 | release key | 67cbde4 | 49.7 MiB | `a47c80e4bfe989a5b097b5d671da392c5828d5111f8258a148268170c93ff0f0` |
@@ -63,6 +65,7 @@ From 0.4.1 the bundles carry 32- and 64-bit ARM; the APKs are 64-bit only.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Bible-0.4.10-b37.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.4.10-b37.apk) | 0.4.10 | 37 | release key | 4f83109 | 47.3 MiB | `9d16246f4c8dcb9bd08a4c0345faca741d2997c3a481c4d2fa6aafc301755b82` |
 | [Bible-0.4.9-b36.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.4.9-b36.apk) | 0.4.9 | 36 | release key | d6bd35b | 47.3 MiB | `5f03768abf85be5c1906162848207e59780ed508ecbb496e0682151367165bd5` |
 | [Bible-0.4.8-b35.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.4.8-b35.apk) | 0.4.8 | 35 | release key | 67cbde4 | 47.3 MiB | `7823972c061efe9daec6e4f9bab1f1755881dcf927ece63d9e264d14463234ed` |
 | [Bible-0.4.7-b34.apk](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.4.7-b34.apk) | 0.4.7 | 34 | release key | 0d3eba2 | 47.3 MiB | `d32a85a5fc347e002e92533d8f7db634298e7c04cf125d66de3e87eb145f155d` |
@@ -101,6 +104,7 @@ From 0.4.1 the bundles carry 32- and 64-bit ARM; the APKs are 64-bit only.
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Vedapusthakam-0.4.10-b37.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.10-b37.apk) | 0.4.10 | 37 | release key | 4f83109 | 45.9 MiB | `a598497d39a2eca5ecffa071c7f64ef1ba4a1ca27796b055c86ea8b07758499f` |
 | [Vedapusthakam-0.4.9-b36.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.9-b36.apk) | 0.4.9 | 36 | release key | d6bd35b | 45.9 MiB | `873ca66a0a059eccc08b02c99a7c00cd2e5f04d1b6b83e4fac5c14617f106651` |
 | [Vedapusthakam-0.4.8-b35.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.8-b35.apk) | 0.4.8 | 35 | release key | 67cbde4 | 45.9 MiB | `8e3a01b0039c491b8c0c4097699fe7b7df15f1845f25ee4641078862eb5c3de1` |
 | [Vedapusthakam-0.4.7-b34.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.7-b34.apk) | 0.4.7 | 34 | release key | 0d3eba2 | 45.9 MiB | `8ea787006cd885641c07f1cf91ab2f5e4978ac368ca67b23dc767d289e67f11d` |
@@ -145,6 +149,8 @@ read by a Tamil speaker (docs/tamil-review.md on the main branch). Package
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Vedagamam-0.4.10-b37.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedagamam-0.4.10-b37.apk) | 0.4.10 | 37 | release key | 4f83109 | 46.1 MiB | `7210b7469c7b3884071fa9f0a72f37ce1230c5d328e5f76d55a7beefc666b264` |
+| [Vedagamam-0.4.10-b37.aab](https://github.com/donfluids/Bible/raw/apk-builds/Vedagamam-0.4.10-b37.aab) | 0.4.10 | 37 | release key | 4f83109 | 50.0 MiB | `9af8a0a0234f1e29eaba8ffd0c4b6114ee34d72670a24e3846910138a884c0db` |
 | [Vedagamam-0.4.9-b36.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedagamam-0.4.9-b36.apk) | 0.4.9 | 36 | release key | d6bd35b | 46.1 MiB | `3cd2ab00491e93875a29c961cf30d304669b09eab9fd28d933aec47ab6311b92` |
 | [Vedagamam-0.4.9-b36.aab](https://github.com/donfluids/Bible/raw/apk-builds/Vedagamam-0.4.9-b36.aab) | 0.4.9 | 36 | release key | d6bd35b | 50.0 MiB | `b037f92869611e7979185940cb81c10539f63588384314fbf8210f6d522e2477` |
 | [Vedagamam-0.4.8-b35.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedagamam-0.4.8-b35.apk) | 0.4.8 | 35 | release key | 67cbde4 | 46.2 MiB | `83e80643f4071bf058e61f7d701ebd9955f69f41560d5c3b674e7a17d9163622` |
