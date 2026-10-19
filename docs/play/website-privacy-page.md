@@ -16,7 +16,10 @@ Compared with the version dated 15 October 2026, which added the Tamil app:
 - A new section, "Reading aloud", between "Copying and sharing" and "Links": the apps
   pass only the text being read to the phone's own text-to-speech engine.
 
-Nothing else changed.
+Nothing else changed. If the page still shows an older version (dated 14 or 15 October
+2026, or earlier), replace it all the same: the text below is the whole current policy.
+
+This privacy page is the only change the website needs for these app updates.
 
 ## What to do
 
