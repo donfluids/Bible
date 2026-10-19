@@ -135,13 +135,16 @@ export function SavedScreen({ books, onOpenRef, onWord }: Props) {
     const text = markedWords(m, markVerses);
     if (!text) return null;
     const script = translationInfo(m.translation).script;
+    // One block of the mark's colour: a colour behind the text itself leaves bands between the lines.
     return (
-      <Text
-        numberOfLines={3}
-        style={[{ fontSize: listFont, lineHeight: Math.round(listFont * translationInfo(m.translation).lineHeight), color: theme.text, fontFamily: scriptureFont(script, settings.serif) ?? theme.font }]}
-      >
-        <Text style={{ backgroundColor: color }}>{text}</Text>
-      </Text>
+      <View style={[styles.markBlock, color ? { backgroundColor: color } : null]}>
+        <Text
+          numberOfLines={3}
+          style={[{ fontSize: listFont, lineHeight: Math.round(listFont * translationInfo(m.translation).lineHeight), color: color ? theme.markText : theme.text, fontFamily: scriptureFont(script, settings.serif) ?? theme.font }]}
+        >
+          {text}
+        </Text>
+      </View>
     );
   };
   const empty = sections.length === 0;
@@ -201,6 +204,7 @@ export function SavedScreen({ books, onOpenRef, onWord }: Props) {
 }
 
 const styles = StyleSheet.create({
+  markBlock: { alignSelf: 'flex-start', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4, marginTop: 2 },
   screen: { flex: 1 },
   list: { alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
   emptyBox: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, paddingBottom: 96 },
