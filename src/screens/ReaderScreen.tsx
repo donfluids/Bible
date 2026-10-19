@@ -12,7 +12,7 @@ import { useKeepAwake } from 'expo-keep-awake';
 import { READ_SPEEDS, spokenText, useReadAloud, voiceFor } from '../readAloud';
 import { hasVoice } from '../speech';
 import { CompareSheet } from '../components/CompareSheet';
-import { HEADER_MAX_FONT_SCALE, Header, HeaderChip, HeaderIconButton } from '../components/Header';
+import { HEADER_MAX_FONT_SCALE, Header, HeaderIconButton } from '../components/Header';
 import { TAB_BAR_HEIGHT, TabBar } from '../components/TabBar';
 import { Icon, IconButton } from '../components/Icon';
 import type { IconName } from '../components/Icon';
@@ -1134,15 +1134,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         }
         right={
           <>
-            {/* The Malayalam and Tamil apps tell their two Bibles apart by language (MAL or
-                TAM, ENG); the English app has two English ones, so it uses their names (KJV,
-                WEB). Settings lists each version in full. */}
-            <HeaderChip
-              icon="swap_horiz"
-              label={nativeTranslation(edition) ? (translation === nativeTranslation(edition) ? translation : 'ENG') : translation}
-              onPress={toggleTranslation}
-              accessibilityLabel={t('switchTranslation')}
-            />
+            <HeaderIconButton icon="volume_up" onPress={() => startReading()} accessibilityLabel={t('readAloud')} />
             <HeaderIconButton icon="search" onPress={onOpenSearch} accessibilityLabel={t('search')} />
             <HeaderIconButton icon="settings" onPress={onOpenSettings} accessibilityLabel={t('settings')} />
           </>
@@ -1264,18 +1256,23 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         </View>
       ) : (
       <View style={[styles.footer, { paddingBottom: bottomInset + 8, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
-        <NavButton label={t('previous')} onPress={() => go(-1)} disabled={atStart} />
+        <ChapterArrow icon="chevron_left" onPress={() => go(-1)} disabled={atStart} accessibilityLabel={t('previousChapter')} />
         <View style={styles.footerMiddle}>
-          {/* Listening is a chapter action, so it sits with the chapter controls. */}
+          {/* The Malayalam and Tamil apps tell their two Bibles apart by language (MAL or
+              TAM, ENG); the English app has three English ones, so it uses their names (KJV,
+              BSB, WEB). Settings lists each version in full. */}
           <Pressable
-            android_ripple={{ color: theme.accentSoft, borderless: true }}
-            onPress={() => startReading()}
-            hitSlop={8}
+            android_ripple={{ color: theme.accentSoft }}
+            onPress={toggleTranslation}
+            hitSlop={6}
             accessibilityRole="button"
-            accessibilityLabel={t('readAloud')}
-            style={({ pressed }) => [styles.listenButton, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
+            accessibilityLabel={t('switchTranslation')}
+            style={({ pressed }) => [styles.pill, styles.pillRow, { borderColor: theme.accent, opacity: pressed ? 0.7 : 1 }]}
           >
-            <Icon name="volume_up" size={18} color={theme.muted} />
+            <Icon name="swap_horiz" size={16} color={theme.accent} />
+            <Text style={[styles.pillText, { color: theme.accent }]}>
+              {nativeTranslation(edition) ? (translation === nativeTranslation(edition) ? translation : 'ENG') : translation}
+            </Text>
           </Pressable>
           <Pressable
             android_ripple={{ color: theme.accentSoft }}
@@ -1293,7 +1290,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
             </Text>
           </Pressable>
         </View>
-        <NavButton label={t('next')} onPress={() => go(1)} disabled={atEnd} />
+        <ChapterArrow icon="chevron_right" onPress={() => go(1)} disabled={atEnd} accessibilityLabel={t('nextChapter')} />
       </View>
       )}
 
@@ -1477,11 +1474,21 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
   );
 }
 
-function NavButton({ label, onPress, disabled }: { label: string; onPress: () => void; disabled?: boolean }) {
+/** A chapter arrow: a round, see-through button at an end of the bottom row. */
+function ChapterArrow({ icon, onPress, disabled, accessibilityLabel }: { icon: IconName; onPress: () => void; disabled?: boolean; accessibilityLabel: string }) {
   const theme = useTheme();
   return (
-    <Pressable android_ripple={{ color: theme.accentSoft }} onPress={onPress} disabled={disabled} hitSlop={8} style={({ pressed }) => ({ opacity: disabled ? 0.3 : pressed ? 0.6 : 1 })}>
-      <Text style={[styles.nav, { color: theme.accent }]}>{label}</Text>
+    <Pressable
+      android_ripple={{ color: theme.accentSoft, borderless: true }}
+      onPress={onPress}
+      disabled={disabled}
+      hitSlop={8}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ disabled: !!disabled }}
+      style={({ pressed }) => [styles.arrow, { borderColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent', opacity: disabled ? 0.3 : 1 }]}
+    >
+      <Icon name={icon} size={26} color={theme.accent} />
     </Pressable>
   );
 }
@@ -1790,8 +1797,8 @@ const styles = StyleSheet.create({
   tipText: { fontSize: 15, lineHeight: 21 },
   tipDismiss: { fontSize: 15, fontWeight: '700', marginTop: 8, alignSelf: 'flex-end' },
   modeHint: { fontSize: 12, marginBottom: 6 },
-  pill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1 },
-  pillText: { fontSize: 13, fontWeight: '600' },
+  pill: { minHeight: 36, justifyContent: 'center', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 999, borderWidth: 1 },
+  pillText: { fontSize: 14, fontWeight: '600' },
   heading: { fontWeight: '700', letterSpacing: 1, marginTop: 14, marginBottom: 2 },
   // Letter spacing breaks up Malayalam conjuncts on some phones.
   headingMalayalam: { letterSpacing: 0 },
@@ -1799,13 +1806,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 18,
-    paddingTop: 10,
+    paddingHorizontal: 12,
+    paddingTop: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   nav: { fontSize: 16, fontWeight: '600' },
-  footerMiddle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  listenButton: { width: 32, height: 32, borderRadius: 16, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  footerMiddle: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 8, marginHorizontal: 8 },
+  arrow: { width: 44, height: 44, borderRadius: 22, borderWidth: StyleSheet.hairlineWidth, alignItems: 'center', justifyContent: 'center' },
+  pillRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   playerBar: { paddingHorizontal: 10, paddingTop: 6, borderTopWidth: StyleSheet.hairlineWidth },
   playerRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   playerRef: { flex: 1, fontSize: 14, marginLeft: 6 },

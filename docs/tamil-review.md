@@ -173,8 +173,8 @@ Words chosen for the app's own features, used throughout:
 | notes | Notes | வசனக் குறிப்புகள் | |
 | oldTestament | Old Testament | பழைய ஏற்பாடு | |
 | newTestament | New Testament | புதிய ஏற்பாடு | |
-| previous | ‹ Previous | ‹ முந்தையது | |
-| next | Next › | அடுத்தது › | |
+| previousChapter | Previous chapter | முந்தைய அதிகாரம் | |
+| nextChapter | Next chapter | அடுத்த அதிகாரம் | |
 | hebrewInterlinear | Hebrew words | எபிரெயம் | |
 | greekInterlinear | Greek words | கிரேக்கம் | |
 | tapVerseNumber | Tap a verse number to show its {lang} words | வசன எண்ணைத் தொட்டால் அதன் {lang} வார்த்தைகள் தெரியும் | |

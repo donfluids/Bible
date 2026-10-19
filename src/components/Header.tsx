@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Pressable } from './Pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useT } from '../i18n';
 import { IPHONE_LOOK } from '../platform';
 import { useTheme } from '../theme';
-import { Icon, IconButton } from './Icon';
+import { IconButton } from './Icon';
 import type { IconName } from './Icon';
 
 interface Props {
@@ -74,24 +73,6 @@ export function HeaderIconButton({ icon, onPress, accessibilityLabel }: { icon: 
   return <IconButton name={icon} onPress={onPress} accessibilityLabel={accessibilityLabel} />;
 }
 
-/** A tonal chip with an icon and a short label, such as the translation switch. */
-export function HeaderChip({ icon, label, onPress, accessibilityLabel }: { icon: IconName; label: string; onPress: () => void; accessibilityLabel: string }) {
-  const theme = useTheme();
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
-      android_ripple={{ color: theme.border }}
-      hitSlop={8}
-      style={({ pressed }) => [styles.chip, { backgroundColor: theme.accentSoft, opacity: pressed ? 0.8 : 1 }]}
-    >
-      <Icon name={icon} size={18} color={theme.accent} />
-      <Text maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={[styles.chipText, { color: theme.accent }]}>{label}</Text>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
   bar: { flexDirection: 'row', alignItems: 'center', minHeight: 64, paddingRight: 4 },
   center: { flex: 1, justifyContent: 'center', minHeight: 48 },
@@ -100,16 +81,4 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, lineHeight: 30, paddingVertical: 2, fontWeight: '500' },
   titleCentred: { textAlign: 'center', fontWeight: '600' },
   right: { flexDirection: 'row', alignItems: 'center' },
-  chip: {
-    height: 32,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingLeft: 8,
-    paddingRight: 12,
-    marginRight: 4,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  chipText: { fontSize: 14, fontWeight: '600' },
 });
