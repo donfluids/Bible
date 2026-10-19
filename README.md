@@ -185,6 +185,7 @@ scripts/make-icons.mjs   Draws the icon, adaptive icon layers and splash images 
 scripts/make-feature-graphic.mjs  Draws the Play feature graphics from the same book (scripts/icon-art.mjs)
 scripts/make-icon-font.py  Cuts the interface icons out of Material Symbols Rounded
 scripts/notices.mjs      Lists the third-party software in the app with licences and copyright lines (src/notices.json)
+scripts/tamil-review-strings.mjs  Rewrites the strings table of docs/tamil-review.md from src/i18n.ts
 assets/db/               bible-en.db (32 MB) and bible-ml.db (47 MB), one per edition
 assets/icons/            Icon, adaptive icon layers and splash images per edition
 data/overrides/          Hand corrections: Malayalam text, verse map, short meanings

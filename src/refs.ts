@@ -115,7 +115,7 @@ const TAMIL_NAMES: Record<number, string[]> = {
   7: ['நீதித்தலைவர்கள்', 'நியாயாதிபதி'], 8: ['ரூத்து'], 11: ['அரசர்கள்'], 12: ['அரசர்கள்'], 13: ['குறிப்பேடு'], 14: ['குறிப்பேடு'],
   15: ['எஸ்ரா'], 19: ['சங்கீதம்', 'திருப்பாடல்கள்'], 21: ['சபைஉரையாளர்'], 22: ['இனிமைமிகுபாடல்', 'உன்னதப்பாட்டு'],
   23: ['எசாயா'], 25: ['புலம்பல்'], 28: ['ஓசேயா'], 33: ['மீக்கா'], 35: ['அபக்கூக்கு', 'ஆபகூக்'], 38: ['செக்கரியா'], 39: ['மலாக்கி'],
-  44: ['அப்போஸ்தலர்', 'அப்போஸ்தலர்நடபடிகள்', 'நடபடிகள்', 'திருத்தூதர்பணிகள்'], 45: ['உரோமையர்'], 51: ['கொலோசையர்'],
+  43: ['யோ'], 44: ['அப்போஸ்தலர்', 'அப்போஸ்தலர்நடபடிகள்', 'நடபடிகள்', 'திருத்தூதர்பணிகள்'], 45: ['உரோமையர்'], 51: ['கொலோசையர்'],
   52: ['தெசலோனிக்கர்'], 53: ['தெசலோனிக்கர்'], 54: ['திமொத்தேயு'], 55: ['திமொத்தேயு'], 57: ['பிலமோன்'], 58: ['எபிரேயர்'],
   66: ['வெளிப்படுத்தல்', 'திருவெளிப்பாடு'],
 };
@@ -168,6 +168,10 @@ function scriptBook(script: NameScript, typed: string, books: Book[]): number | 
   const number = Number(m?.[1] ?? 0);
   const key = SCRIPTS[script].key(m?.[2] ?? '');
   if (!key) return undefined;
+  // The app's own short name for a book (அப், நீதி) is that book, even where it begins
+  // other books' names too (அபக்கூக்கு, நீதித்தலைவர்கள்).
+  const short = SHORT_NAMES[script].findIndex((s) => Number(/^([1-3])/.exec(s)?.[1] ?? 0) === number && SCRIPTS[script].key(s.replace(/^[1-3]\s*/, '')) === key);
+  if (short >= 0) return short + 1;
   const found = scriptNames(script, books).filter((n) => n.number === number && n.key.startsWith(key));
   const ids = new Set(found.map((n) => n.id));
   if (ids.size === 1) return found[0].id;
@@ -186,7 +190,10 @@ export interface ParsedRef extends Ref {
  * Returns null when nothing matches or the chapter is out of range for the book.
  */
 export function parseReference(input: string, books: Book[], translation?: TranslationId): ParsedRef | null {
-  const m = /^\s*([1-3]?\.?\s*[^\d:,]+?)\s*(\d{1,3})(?:\s*[:.,\s]\s*(\d{1,3}))?(?:\s*[-–]\s*\d{1,3}(?:\s*[:.]\s*\d{1,3})?)?\s*$/i.exec(input.replace(/\s+/g, ' '));
+  // முதலாம் கொரிந்தியர், 1-ஆம் யோவான், ഒന്നാം കൊരിന്ത്യർ: the number as a figure.
+  let typed = input.replace(/\s+/g, ' ').trim();
+  for (const [re, n] of ORDINALS) typed = typed.replace(re, n);
+  const m = /^\s*([1-3]?\.?\s*[^\d:,]+?)\s*(\d{1,3})(?:\s*[:.,\s]\s*(\d{1,3}))?(?:\s*[-–]\s*\d{1,3}(?:\s*[:.]\s*\d{1,3})?)?\s*$/i.exec(typed);
   if (!m) return null;
   const id = bookFromName(m[1], books, translation);
   return id ? withChapter(books, id, Number(m[2]), m[3] ? Number(m[3]) : undefined) : null;

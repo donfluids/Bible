@@ -120,6 +120,10 @@ below in search and in the notebook (for example "சங். 23" or "திர�
   differently (ஜ/ச, ஸ/ச, long and short vowels, இராஜா/ராஜா, …)? Each one named here can be
   added.
 - Search examples on the empty search screen: யோவான் 3:16, சங்கீதம் 23, அன்பு, H430.
+- References typed in search or written in the notebook: the short names in section 2 work
+  (அப் 2:38, நீதி 3:5), as do ordinals (முதலாம் கொரிந்தியர் 13:4, 1-ஆம் யோவான் 4:8) and
+  யோ 3:16 for John. Which other short forms do people write in sermon notes? எஸ் alone is
+  left out, since it could be Ezra or Esther.
 
 ## 5. Word links
 
@@ -129,9 +133,8 @@ note wrong links, and check the Tamil headline words the word sheet shows (for e
 
 ## 6. Sources and licences screen
 
-The Tamil texts in `src/licences.ts` (credit lines and "changes made" notes for the IRV, the
-KJV, Strong's, STEPBible, the fonts, icons and software). Licence is written உரிமம்
-throughout.
+The Sources and licences screen is in English only, by design: it is a formal notice, the
+same in all three apps. Nothing on it needs a Tamil check.
 
 ## 7. Store listings
 
@@ -143,6 +146,8 @@ whether to install the app.
 ## 8. Interface strings
 
 Every Tamil string in the app (`src/i18n.ts`, table `ta`), beside the English it translates.
+The table is written by `node scripts/tamil-review-strings.mjs`, so it always matches the app;
+notes in the Check column are kept as long as the Tamil they refer to is unchanged.
 {placeholders} such as {n}, {ref}, {title} are filled in by the app and must stay as they are.
 Words chosen for the app's own features, used throughout:
 
@@ -175,6 +180,55 @@ Words chosen for the app's own features, used throughout:
 | tapVerseNumber | Tap a verse number to show its {lang} words | வசன எண்ணைத் தொட்டால் அதன் {lang} வார்த்தைகள் தெரியும் | |
 | hebrew | Hebrew | எபிரெய | |
 | greek | Greek | கிரேக்க | |
+| sayWord | Say the word | சொல்லை உச்சரி | |
+| stopSaying | Stop | நிறுத்து | |
+| noVoiceTitle | No voice for this language | இந்த மொழிக்குக் குரல் இல்லை | |
+| noHebrewVoice | This phone has no Hebrew voice. You can add one in the phone’s settings, under Text-to-speech (Android) or Spoken Content (iPhone). | இந்தத் தொலைபேசியில் எபிரெயக் குரல் இல்லை. தொலைபேசியின் அமைப்புகளில் Text-to-speech (Android) அல்லது Spoken Content (iPhone) பகுதியில் ஒன்றைச் சேர்க்கலாம். | |
+| noGreekVoice | This phone has no Greek voice. You can add one in the phone’s settings, under Text-to-speech (Android) or Spoken Content (iPhone). | இந்தத் தொலைபேசியில் கிரேக்கக் குரல் இல்லை. தொலைபேசியின் அமைப்புகளில் Text-to-speech (Android) அல்லது Spoken Content (iPhone) பகுதியில் ஒன்றைச் சேர்க்கலாம். | |
+| readAloud | Read aloud | உரக்க வாசி | |
+| stopReading | Stop reading | வாசிப்பை நிறுத்து | |
+| readFromHere | Read from here | இங்கிருந்து வாசித்துக் காட்டு | |
+| readFromHereDetail | Listen to the chapter from this verse in the phone's voice | தொலைபேசியின் குரலில் இந்த வசனம் முதல் அதிகாரத்தைக் கேட்கலாம் | |
+| pauseReading | Pause | இடைநிறுத்து | |
+| resumeReading | Continue | தொடர் | |
+| previousVerse | Previous verse | முந்தைய வசனம் | |
+| nextVerse | Next verse | அடுத்த வசனம் | |
+| readingSpeed | Reading speed | வாசிப்பு வேகம் | |
+| backToReading | Back to reading | வாசிக்கும் இடத்திற்கு | |
+| noEnglishVoice | This phone has no English voice. You can add one in the phone's settings, under Text-to-speech (Android) or Spoken Content (iPhone). | இந்தத் தொலைபேசியில் ஆங்கிலக் குரல் இல்லை. தொலைபேசியின் அமைப்புகளில் Text-to-speech (Android) அல்லது Spoken Content (iPhone) பகுதியில் ஒன்றைச் சேர்க்கலாம். | |
+| noMalayalamVoice | This phone has no Malayalam voice. Install Speech Services by Google from the Play Store, choose it in the phone's Text-to-speech settings, and download the Malayalam voice there. | இந்தத் தொலைபேசியில் மலையாளக் குரல் இல்லை. Play Store-இலிருந்து Speech Services by Google-ஐ நிறுவி, தொலைபேசியின் Text-to-speech அமைப்புகளில் அதைத் தேர்ந்தெடுத்து, அங்கே மலையாளக் குரலைப் பதிவிறக்கவும். | |
+| noTamilVoice | This phone has no Tamil voice. Install Speech Services by Google from the Play Store, choose it in the phone's Text-to-speech settings, and download the Tamil voice there. | இந்தத் தொலைபேசியில் தமிழ்க் குரல் இல்லை. Play Store-இலிருந்து Speech Services by Google-ஐ நிறுவி, தொலைபேசியின் Text-to-speech அமைப்புகளில் அதைத் தேர்ந்தெடுத்து, அங்கே தமிழ்க் குரலைப் பதிவிறக்கவும். | |
+| shareAsCard | Share as card | அட்டையாகப் பகிர் | |
+| shareAsCardDetail | A picture of the verse, for a greeting or your status | வாழ்த்துக்கோ ஸ்டேட்டஸுக்கோ வசனத்தின் படம் | |
+| cardSquare | Square | சதுரம் | |
+| cardTall | Tall (status) | நீளம் (ஸ்டேட்டஸ்) | |
+| cardOccasion | Occasion | நிகழ்வு | |
+| cardDesign | Design | வடிவமைப்பு | |
+| cardHeading | Heading | தலைப்பு | |
+| cardMessage | Your message (optional) | உங்கள் செய்தி (விருப்பம்) | |
+| cardMessageHint | For example: Happy birthday, Mum! | எ.கா: பிறந்தநாள் வாழ்த்துக்கள், அம்மா! | |
+| cardVerses | Verses | வசனங்கள் | |
+| cardShare | Share picture | படத்தைப் பகிர் | |
+| cardFailed | The picture could not be made. | படத்தை உருவாக்க முடியவில்லை. | |
+| cardFewerVerses | One verse fewer | ஒரு வசனம் குறைவாக | |
+| cardMoreVerses | One more verse | இன்னும் ஒரு வசனம் | |
+| occasionNone | None | எதுவுமில்லை | |
+| occasionBirthday | Birthday | பிறந்தநாள் | |
+| occasionWedding | Wedding | திருமணம் | |
+| occasionAnniversary | Anniversary | திருமண நாள் | |
+| occasionSympathy | Sympathy | இரங்கல் | |
+| occasionGetWell | Get well | நலம் பெற | |
+| occasionChristmas | Christmas | கிறிஸ்துமஸ் | |
+| occasionEaster | Easter | ஈஸ்டர் | |
+| occasionNewYear | New Year | புத்தாண்டு | |
+| headingBirthday | Happy Birthday | பிறந்தநாள் வாழ்த்துக்கள் | |
+| headingWedding | On your wedding day | திருமண வாழ்த்துக்கள் | |
+| headingAnniversary | Happy Anniversary | திருமண நாள் வாழ்த்துக்கள் | |
+| headingSympathy | With deepest sympathy | ஆழ்ந்த இரங்கல்கள் | |
+| headingGetWell | Get well soon | விரைவில் நலம் பெற வாழ்த்துக்கள் | |
+| headingChristmas | Merry Christmas | கிறிஸ்துமஸ் வாழ்த்துக்கள் | |
+| headingEaster | Happy Easter | ஈஸ்டர் வாழ்த்துக்கள் | |
+| headingNewYear | Happy New Year | புத்தாண்டு வாழ்த்துக்கள் | |
 | tip | Tap any underlined word to see the Hebrew or Greek behind it. Hold a verse to copy, share or bookmark it. The button below shows the whole verse in the original language. | அடிக்கோடிட்ட ஒரு வார்த்தையைத் தொட்டால் அதன் எபிரெய அல்லது கிரேக்க மூலச்சொல் தெரியும். ஒரு வசனத்தை அழுத்திப் பிடித்தால் நகலெடுக்கலாம், பகிரலாம், அடையாளக்குறி இடலாம். கீழே உள்ள பொத்தான் முழு வசனத்தையும் மூலமொழியில் காட்டும். | |
 | tipNoTags | Hold a verse to highlight it, add a note, compare translations or bookmark it. The button below shows the whole verse in Hebrew or Greek; tap a word there for its meaning. | ஒரு வசனத்தை அழுத்திப் பிடித்து ஹைலைட் செய்யலாம், குறிப்பு சேர்க்கலாம், மொழிபெயர்ப்புகளை ஒப்பிடலாம், அடையாளக்குறி இடலாம். கீழே உள்ள பொத்தான் முழு வசனத்தையும் எபிரெயத்தில் அல்லது கிரேக்கத்தில் காட்டும்; அங்கே ஒரு வார்த்தையைத் தொட்டால் அதன் பொருள் தெரியும். | |
 | gotIt | Got it | புரிந்தது | |
@@ -268,6 +322,10 @@ Words chosen for the app's own features, used throughout:
 | examples | Examples | எடுத்துக்காட்டுகள் | |
 | relatedWords | Related words | தொடர்புடைய சொற்கள் | |
 | strongsDictionary | Strong's dictionary (1890) | ஸ்ட்ராங் அகராதி (1890) | |
+| lexiconGreek | Abbott-Smith's Greek lexicon (1922) | Abbott-Smith கிரேக்க அகராதி (ஆங்கிலம், 1922) | |
+| lexiconHebrew | Brown–Driver–Briggs, outline of meanings (1906) | Brown–Driver–Briggs, பொருள் சுருக்கம் (ஆங்கிலம், 1906) | |
+| showWholeEntry | Show the whole entry | முழுவதையும் காட்டு | |
+| showLess | Show less | சுருக்கு | |
 | strongsNumberLine | Strong's number {id}, for looking the word up in other Bible tools | ஸ்ட்ராங் எண் {id}; மற்ற வேதாகமக் கருவிகளில் இந்தச் சொல்லைத் தேட | |
 | seeAllVerses | See all {n} verses | {n} வசனங்களையும் காண்க | |
 | seeOneVerse | See the one verse | அந்த ஒரு வசனத்தைக் காண்க | |
@@ -298,6 +356,10 @@ Words chosen for the app's own features, used throughout:
 | themeAuto | Auto | தானாக | |
 | themeLight | Light | வெளிச்சம் | |
 | themeSepia | Sepia | செபியா | |
+| highlightStyle | Highlights | ஹைலைட்டுகள் | |
+| highlightSoft | Soft | மென்மை | |
+| highlightFluorescent | Fluorescent | ஃப்ளோரசன்ட் | |
+| highlightStyleDetail | Dark theme only | இருள் நிறத் திட்டத்தில் மட்டும் | |
 | themeDark | Dark | இருள் | |
 | layout | Layout | உரை அமைப்பு | |
 | layoutVerses | Verse per line | வசனம் வசனமாக | |
@@ -328,13 +390,11 @@ Words chosen for the app's own features, used throughout:
 | underlineDetail | Marks words that open a Greek or Hebrew entry | எபிரெய அல்லது கிரேக்க விவரம் திறக்கும் சொற்களுக்குக் கீழ் கோடு காட்டும் | |
 | aboutTexts | About the texts | உரைகளைப் பற்றி | |
 | sourcesLicences | Sources and licences | மூலங்களும் உரிமங்களும் | |
-| licence | Licence | உரிமம் | |
-| changesMade | Changes made in this app | இந்தச் செயலியில் செய்யப்பட்ட மாற்றங்கள் | |
-| aboutEnglish | King James Version, 1769 text with Strong's numbers, and the World English Bible, both from eBible.org. Both are in the public domain (the KJV outside the United Kingdom). Their translators' footnotes appear as small letters in the text; tap one to read it. | கிங் ஜேம்ஸ் வெர்ஸன் (1769, ஸ்ட்ராங் எண்களுடன்), வேர்ல்டு இங்கிலீஷ் பைபிள்: இரண்டும் eBible.org-இலிருந்து, பொதுவுடைமை (KJV ஐக்கிய இராச்சியத்திற்கு வெளியே). மொழிபெயர்ப்பாளர்களின் அடிக்குறிப்புகள் சிறிய எழுத்துகளாகத் தெரியும்; தொட்டால் படிக்கலாம். | |
-| aboutMalayalam | മലയാളം സത്യവേദപുസ്തകം 1910, revised edition in contemporary orthography, copyright © 2015 The Free Bible Foundation, from eBible.org, licensed CC BY-SA 4.0. The links from Malayalam words to Hebrew and Greek are machine-made and not checked by hand. The King James Version (1769, with Strong's numbers) is in the public domain outside the United Kingdom. Changes and licences: Sources and licences, below. | மலையாள சத்தியவேதபுஸ்தகம் 1910, Free Bible Foundation, eBible.org-இலிருந்து, CC BY-SA 4.0 உரிமம். | |
-| aboutTamil | Tamil Indian Revised Version (IRV), copyright © 2017, 2019 Bridge Connectivity Solutions, from eBible.org, licensed CC BY-SA 4.0. The links from Tamil words to Hebrew and Greek are machine-made and not checked by hand. The King James Version (1769, with Strong's numbers) is in the public domain outside the United Kingdom. Changes and licences: Sources and licences, below. | இண்டியன் ரிவைஸ்டு வெர்ஸன் (IRV) தமிழ் வேதாகமம், பதிப்புரிமை © 2017, 2019 Bridge Connectivity Solutions, eBible.org-இலிருந்து, CC BY-SA 4.0 உரிமம். தமிழ் வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திர உதவியுடன் உருவாக்கப்பட்டவை; கையால் சரிபார்க்கப்படவில்லை. கிங் ஜேம்ஸ் வெர்ஸன் (1769, ஸ்ட்ராங் எண்களுடன்) ஐக்கிய இராச்சியத்திற்கு வெளியே பொதுவுடைமை. மாற்றங்களும் உரிமங்களும்: கீழே உள்ள மூலங்களும் உரிமங்களும். | |
-| aboutStrongs | Hebrew and Greek entries are from Strong's Exhaustive Concordance (1890), in the digital edition by Open Scriptures, licensed CC BY-SA. | எபிரெய, கிரேக்க சொல் விவரங்கள் ஸ்ட்ராங் ஒத்தவாக்கிய அகராதியிலிருந்து (1890), Open Scriptures டிஜிட்டல் பதிப்பு, CC BY-SA உரிமம். | |
-| aboutInterlinear | The Hebrew (Leningrad Codex) and Greek words, with transliteration, glosses and grammar, are from the Translators Amalgamated Hebrew OT and Greek NT by STEPBible.org, Tyndale House Cambridge, licensed CC BY 4.0. The Greek is spelled as in the Nestle-Aland 28th edition and has every word of the Textus Receptus and the Byzantine text; where those texts have a different word from Nestle-Aland, their word is shown. Words not in the Nestle-Aland editions have a line beneath; tap one to see which texts have it. | எபிரெய (லெனின்கிராட் கோடெக்ஸ்), கிரேக்க வார்த்தைகள், ஒலிபெயர்ப்பு, பொருள், இலக்கணத்துடன், STEPBible.org (Tyndale House Cambridge) தயாரித்த Translators Amalgamated Hebrew OT and Greek NT-இலிருந்து, CC BY 4.0 உரிமம். கிரேக்கம் நெஸ்ட்லே-ஆலந்து 28-ஆம் பதிப்பின் எழுத்துக்கூட்டலில் உள்ளது; டெக்ஸ்டஸ் ரிசெப்டஸ், பைசாந்திய பாடங்களின் ஒவ்வொரு வார்த்தையும் அதில் உண்டு. அவற்றில் வேறு வார்த்தை இருக்கும் இடத்தில் அந்த வார்த்தை காட்டப்படுகிறது. நெஸ்ட்லே-ஆலந்து பதிப்புகளில் இல்லாத வார்த்தைகளுக்குக் கீழே கோடு இருக்கும்; எந்தப் பாடங்களில் அது உள்ளது என்று அறியத் தொடுங்கள். | |
+| aboutEnglish | Bibles: the King James Version (1769), the Berean Standard Bible and the World English Bible. The translators' footnotes appear as small letters in the text; tap one to read it. | வேதாகமங்கள்: கிங் ஜேம்ஸ் வெர்ஸன் (1769), பெரியன் ஸ்டாண்டர்டு பைபிள், வேர்ல்டு இங்கிலீஷ் பைபிள். மொழிபெயர்ப்பாளர்களின் அடிக்குறிப்புகள் சிறிய எழுத்துகளாகத் தெரியும்; தொட்டால் படிக்கலாம். | |
+| aboutMalayalam | Bibles: the Sathyavedapusthakam 1910 (Malayalam), in a revised edition in contemporary orthography, and the King James Version (1769). The links from Malayalam words to the Hebrew and Greek are machine-generated and not fully reviewed. | வேதாகமங்கள்: மலையாள சத்தியவேதபுஸ்தகம் 1910, கிங் ஜேம்ஸ் வெர்ஸன் (1769). | |
+| aboutTamil | Bibles: the Indian Revised Version (Tamil) and the King James Version (1769). The links from Tamil words to the Hebrew and Greek are machine-generated and not reviewed. | வேதாகமங்கள்: இண்டியன் ரிவைஸ்டு வெர்ஸன் (IRV) தமிழ், கிங் ஜேம்ஸ் வெர்ஸன் (1769). தமிழ் வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திர உதவியுடன் உருவாக்கப்பட்டவை; சரிபார்க்கப்படவில்லை. | |
+| aboutStrongs | Dictionaries: Strong's Hebrew and Greek Dictionaries (1890), Abbott-Smith's Greek lexicon (1922) and the Brown–Driver–Briggs Hebrew lexicon (1906). | அகராதிகள்: ஸ்ட்ராங் எபிரெய, கிரேக்க அகராதிகள் (1890), Abbott-Smith கிரேக்க அகராதி (1922), Brown–Driver–Briggs எபிரெய அகராதி (1906). | |
+| aboutInterlinear | The Hebrew (Leningrad Codex) and Greek words, with transliteration, glosses and grammar are from the Translators Amalgamated Hebrew OT and Greek NT of STEPBible.org (Tyndale House, Cambridge). The Greek is spelled as in the Nestle-Aland 28th edition and has every word of the Textus Receptus and the Byzantine text; where those texts have a different word from Nestle-Aland, their word is shown. Words not in the Nestle-Aland editions have a line beneath; tap one to see which texts have it. | எபிரெய (லெனின்கிராட் கோடெக்ஸ்), கிரேக்க வார்த்தைகள், ஒலிபெயர்ப்பு, பொருள், இலக்கணத்துடன், STEPBible.org (Tyndale House Cambridge) தயாரித்த Translators Amalgamated Hebrew OT and Greek NT-இலிருந்து. கிரேக்கம் நெஸ்ட்லே-ஆலந்து 28-ஆம் பதிப்பின் எழுத்துக்கூட்டலில் உள்ளது; டெக்ஸ்டஸ் ரிசெப்டஸ், பைசாந்திய பாடங்களின் ஒவ்வொரு வார்த்தையும் அதில் உண்டு. அவற்றில் வேறு வார்த்தை இருக்கும் இடத்தில் அந்த வார்த்தை காட்டப்படுகிறது. நெஸ்ட்லே-ஆலந்து பதிப்புகளில் இல்லாத வார்த்தைகளுக்குக் கீழே கோடு இருக்கும்; எந்தப் பாடங்களில் அது உள்ளது என்று அறியத் தொடுங்கள். | |
 | aboutWeb | The World English Bible is shown as plain text: the Strong's numbers in its source file are attached to the wrong words too often to use. Word lookups and verse lists use the King James Version; to tap the original words while reading the WEB, switch on Hebrew words or Greek words. | வேர்ல்டு இங்கிலீஷ் பைபிள் வெறும் உரையாக மட்டுமே காட்டப்படுகிறது: அதன் மூலக் கோப்பில் உள்ள ஸ்ட்ராங் எண்கள் அடிக்கடி தவறான வார்த்தைகளில் உள்ளன. சொல் விவரமும் வசனப் பட்டியலும் KJV-ஐப் பயன்படுத்துகின்றன. | |
 | databaseBuilt | Database built {date} | தரவுத்தளம் உருவாக்கப்பட்டது {date} | |
 | previewText | In the beginning | ஆதியிலே | |
@@ -365,3 +425,15 @@ Words chosen for the app's own features, used throughout:
 | readFailed | Your bookmarks, notes or notebook could not be read this time. They are left untouched; changes made now will not be saved. Close the app fully and open it again. | உங்கள் அடையாளக்குறிகளையோ குறிப்புகளையோ இந்த முறை படிக்க முடியவில்லை. அவை மாற்றப்படவில்லை; இப்போது செய்யும் மாற்றங்கள் சேமிக்கப்படாது. செயலியை முழுவதுமாக மூடி மீண்டும் திறங்கள். | |
 | restoredBackupTitle | Restored from a backup | பழைய நகலிலிருந்து மீட்கப்பட்டது | |
 | restoredBackup | Some saved data was damaged, so an earlier copy was used. Recent changes may be missing. | சேமித்திருந்த சில தகவல்கள் சேதமடைந்ததால் முந்தைய நகல் பயன்படுத்தப்பட்டது. சமீபத்திய மாற்றங்கள் இல்லாமல் இருக்கலாம். | |
+
+## 9. Verse cards
+
+A verse shared as a picture card carries Tamil the reader cannot edit, and people forward
+these widely, so check them with extra care:
+
+- The occasion headings (the `heading…` rows in section 8). The sender can change a heading
+  before sharing, but most will keep the one given.
+- The credit line printed under the reference on every Tamil card, which the IRV's licence
+  (CC BY-SA 4.0) asks for: `IRV © Bridge Connectivity Solutions · CC BY-SA 4.0`. It is in
+  English; say whether it should read in Tamil instead (for example with the IRV's Tamil name).
+- The card screen's labels (the `card…` and `occasion…` rows in section 8).
