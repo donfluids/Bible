@@ -19,10 +19,6 @@ import type { Book, Ref, TranslationId, VerseRow } from '../types';
 
 /** The most verses one card takes. */
 const MAX_VERSES = 6;
-const CREDITS: Partial<Record<TranslationId, string>> = {
-  MAL: 'സത്യവേദപുസ്തകം © The Free Bible Foundation · CC BY-SA 4.0',
-  TAM: 'IRV © Bridge Connectivity Solutions · CC BY-SA 4.0',
-};
 const THUMB = 76;
 
 interface Props {
@@ -82,9 +78,6 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
   const first = shown[0];
   const last = shown[shown.length - 1];
   const reference = first ? (shown.length > 1 ? `${formatRef(books, first, translation)}–${last.verse}` : formatRef(books, first, translation)) : '';
-  // The licences of the Malayalam and Tamil texts (CC BY-SA 4.0) ask for credit wherever
-  // they are shown.
-  const credit = CREDITS[translation];
   const design = designById(designId);
 
   const chooseOccasion = (id: Occasion) => {
@@ -104,7 +97,7 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
     size === 'square' ? Math.min(content, 420, wide ? room : Infinity) : Math.min(content, (room * CARD_WIDTH) / CARD_HEIGHT.tall);
   // The card that is captured, drawn off screen at the shared picture's size.
   const captureWidth = CARD_PIXELS / PixelRatio.get();
-  const cardProps = { design, size, heading: heading.trim(), text, reference, message: message.trim(), credit };
+  const cardProps = { design, size, heading: heading.trim(), text, reference, message: message.trim() };
 
   const share = async () => {
     if (!card.current || sharing) return;

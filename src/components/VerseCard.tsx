@@ -15,8 +15,6 @@ interface Props {
   text: string;
   reference: string;
   message: string;
-  /** A credit the translation's licence asks for, under the reference. */
-  credit?: string;
 }
 
 // Stars of the Christmas design, on the square grid; a tall card spreads them down.
@@ -40,7 +38,7 @@ const LINE_HEIGHT: Record<Script | 'latin', number> = { latin: 1.5, ml: 1.75, ta
  * an estimate from its length, then, once laid out, made smaller or larger until the
  * text fits the box (long Malayalam and Tamil words wrap less evenly than English).
  */
-export const VerseCard = forwardRef<View, Props>(function VerseCard({ design, size, width, heading, text, reference, message, credit }, ref) {
+export const VerseCard = forwardRef<View, Props>(function VerseCard({ design, size, width, heading, text, reference, message }, ref) {
   const u = width / CARD_WIDTH;
   const height = CARD_HEIGHT[size] * u;
   const layout = design[size];
@@ -65,14 +63,13 @@ export const VerseCard = forwardRef<View, Props>(function VerseCard({ design, si
     (design.cross ? (design.halo ? 60 : 42) : 0) +
     (heading ? headingSize * 1.4 * (heading.length * headingSize * 0.5 > boxW ? 2 : 1) + 10 : 0) +
     28 +
-    (message ? 14 + messageLine * lines(message, messageSize, msgScript) : 0) +
-    (credit ? 4 + 12 * lines(credit, 9, scriptOf(credit)) : 0);
+    (message ? 14 + messageLine * lines(message, messageSize, msgScript) : 0);
   const boxH = CARD_HEIGHT[size] - layout.box.top - layout.box.bottom - used;
   const estimate = Math.sqrt((boxW * Math.max(boxH, 40) * 0.9) / (Math.max(text.length, 1) * CHAR_AREA[v]));
   const maxSize = tall ? 34 : 26;
   const [fitScale, setFitScale] = useState(1);
   const tries = useRef(0);
-  const content = `${design.id}|${size}|${heading}|${text}|${reference}|${message}|${credit ?? ''}`;
+  const content = `${design.id}|${size}|${heading}|${text}|${reference}|${message}`;
   // Before the new content is laid out, so no layout of it is measured at the old scale.
   useLayoutEffect(() => {
     tries.current = 0;
@@ -199,11 +196,6 @@ export const VerseCard = forwardRef<View, Props>(function VerseCard({ design, si
           >
             {reference}
           </Text>
-          {credit ? (
-            <Text allowFontScaling={false} style={{ color: design.faint, fontFamily: serif(scriptOf(credit)), fontSize: 9 * u, lineHeight: 12 * u, marginTop: 4 * u, textAlign: align }}>
-              {credit}
-            </Text>
-          ) : null}
           {message ? (
             <Text
               allowFontScaling={false}
