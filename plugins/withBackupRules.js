@@ -10,7 +10,9 @@ const fs = require('fs');
 const path = require('path');
 const { withAndroidManifest, withDangerousMod } = require('expo/config-plugins');
 
-const EXCLUDE = '<exclude domain="file" path="SQLite/bible/" />';
+// Card photos (src/cardLooks.ts) can be several megabytes each and would soon fill the
+// 25 MB, so they are left out too; a saved card design comes back without its photo.
+const EXCLUDE = '<exclude domain="file" path="SQLite/bible/" />\n    <exclude domain="file" path="card-photos/" />';
 
 // Android 11 and older.
 const FULL_BACKUP = `<?xml version="1.0" encoding="utf-8"?>

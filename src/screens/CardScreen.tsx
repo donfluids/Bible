@@ -4,15 +4,20 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
-import { CARD_HEIGHT, CARD_PIXELS, CARD_WIDTH, DESIGNS, OCCASIONS, designById } from '../cards';
-import type { CardSize, DesignId, Occasion } from '../cards';
+import { CARD_COLOURS, CARD_HEIGHT, CARD_PIXELS, CARD_WIDTH, DEFAULT_LOOK, DESIGNS, OCCASIONS, lookDesign } from '../cards';
+import type { CardLook, CardSize, Occasion, TextPlace, VeilStrength } from '../cards';
+import { photoExists, pickPhoto, useSavedLooks } from '../cardLooks';
+import type { SavedLook } from '../cardLooks';
+import { AppSwitch } from '../components/AppSwitch';
 import { Header } from '../components/Header';
-import { IconButton } from '../components/Icon';
+import { Icon, IconButton } from '../components/Icon';
 import { Pressable } from '../components/Pressable';
 import { Segmented } from '../components/Segmented';
 import { VerseCard } from '../components/VerseCard';
+import { useEdition } from '../edition';
 import { useT } from '../i18n';
 import { getVerses } from '../queries';
+import { tellSaveFailed, useSettings } from '../settings';
 import { MAX_CONTENT_WIDTH, flattenVerse, formatRef } from '../text';
 import { useTheme } from '../theme';
 import type { Book, Ref, TranslationId, VerseRow } from '../types';
@@ -42,7 +47,11 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
   const [count, setCount] = useState(1);
   const [size, setSize] = useState<CardSize>('square');
   const [occasion, setOccasion] = useState<Occasion>('none');
-  const [designId, setDesignId] = useState<DesignId>('paper');
+  // The design as the sender has changed it: their photo or a colour, the text's place and face.
+  const [look, setLook] = useState<CardLook>(DEFAULT_LOOK);
+  const edition = useEdition();
+  const { settings } = useSettings();
+  const saved = useSavedLooks(edition.id, () => tellSaveFailed(settings.language));
   const [heading, setHeading] = useState('');
   const [message, setMessage] = useState('');
   const [sharing, setSharing] = useState(false);
@@ -77,13 +86,41 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
   const first = shown[0];
   const last = shown[shown.length - 1];
   const reference = first ? (shown.length > 1 ? `${formatRef(books, first, translation)}–${last.verse}` : formatRef(books, first, translation)) : '';
-  const design = designById(designId);
+  const { design, lightWords } = lookDesign(look);
+  const change = (patch: Partial<CardLook>) => setLook((l) => ({ ...l, ...patch }));
 
   const chooseOccasion = (id: Occasion) => {
     const o = OCCASIONS.find((x) => x.id === id)!;
     setOccasion(id);
-    setDesignId(o.design);
+    // A photo stays; the occasion's design gives the lines and colours around it.
+    setLook((l) => ({ ...l, design: o.design, colour: undefined }));
     setHeading(o.heading ? t(o.heading) : '');
+  };
+  // A design from the row starts afresh, keeping where the text stands and its face.
+  const chooseDesign = (id: CardLook['design']) => setLook((l) => ({ ...DEFAULT_LOOK, design: id, place: l.place, plainFace: l.plainFace }));
+  const choosePhoto = async () => {
+    try {
+      const uri = await pickPhoto(size);
+      // Over a photo the design's pictures would cover it; its lines can be turned back on.
+      if (uri) setLook((l) => ({ ...l, photo: uri, colour: undefined, extras: l.photo ? l.extras : false }));
+    } catch {
+      Alert.alert(t('cardPhotoFailed'));
+    }
+  };
+  const applySaved = (s: SavedLook) => setLook(photoExists(s.look.photo) ? s.look : { ...s.look, photo: undefined });
+  const removeSaved = (s: SavedLook) =>
+    Alert.alert(t('cardRemoveLook'), undefined, [
+      { text: t('cancel'), style: 'cancel' },
+      { text: t('remove'), style: 'destructive', onPress: () => saved.remove(s.id) },
+    ]);
+  const saveLook = () => {
+    try {
+      const s = saved.save(look);
+      setLook(s.look);
+      Alert.alert(t('cardLookSaved'));
+    } catch {
+      Alert.alert(t('cardFailed'));
+    }
   };
 
   // On a wide screen (a tablet, or a phone on its side) the card stands on the left and
@@ -96,7 +133,26 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
     size === 'square' ? Math.min(content, 420, wide ? room : Infinity) : Math.min(content, (room * CARD_WIDTH) / CARD_HEIGHT.tall);
   // The card that is captured, drawn off screen at the shared picture's size.
   const captureWidth = CARD_PIXELS / PixelRatio.get();
-  const cardProps = { design, size, heading: heading.trim(), text, reference, message: message.trim() };
+  const photo = look.photo ? { uri: look.photo, veil: look.veil, strength: look.strength, blur: look.blur } : undefined;
+  const cardProps = { design, size, heading: heading.trim(), text, reference, message: message.trim(), photo, place: look.place, plainFace: look.plainFace, lightWords };
+  // A small card for a saved look in the design row.
+  const lookThumb = (l: CardLook) => {
+    const shown = photoExists(l.photo) ? l : { ...l, photo: undefined };
+    const d = lookDesign(shown);
+    return (
+      <VerseCard
+        {...cardProps}
+        design={d.design}
+        lightWords={d.lightWords}
+        photo={shown.photo ? { uri: shown.photo, veil: shown.veil, strength: shown.strength, blur: shown.blur } : undefined}
+        place={shown.place}
+        plainFace={shown.plainFace}
+        size="square"
+        width={THUMB}
+      />
+    );
+  };
+  const sameLook = (a: CardLook, b: CardLook) => JSON.stringify(a) === JSON.stringify(b);
 
   const share = async () => {
     if (!card.current || sharing) return;
@@ -174,24 +230,135 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
 
         <Text style={[styles.label, { color: theme.text }]}>{t('cardDesign')}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+          {/* The sender's own photo first, then their saved designs, then the app's. */}
+          <Pressable
+            onPress={choosePhoto}
+            accessibilityRole="button"
+            accessibilityLabel={look.photo ? t('cardChangePhoto') : t('cardPhoto')}
+            style={[styles.thumb, { borderColor: look.photo && !saved.looks.some((sl) => sameLook(sl.look, look)) ? theme.accent : 'transparent' }]}
+          >
+            <View style={[styles.photoTile, { width: THUMB, height: THUMB, borderColor: theme.border, backgroundColor: theme.card }]}>
+              <Icon name="image" size={26} color={theme.accent} />
+              <Text style={[styles.photoTileText, { color: theme.accent }]} numberOfLines={2}>
+                {look.photo ? t('cardChangePhoto') : t('cardPhoto')}
+              </Text>
+            </View>
+          </Pressable>
+          {saved.looks.map((sl, i) => {
+            const active = sameLook(sl.look, look);
+            return (
+              <Pressable
+                key={sl.id}
+                onPress={() => applySaved(sl)}
+                onLongPress={() => removeSaved(sl)}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: active }}
+                accessibilityLabel={t('cardMyDesign', { n: i + 1 })}
+                accessibilityHint={t('cardRemoveLook')}
+                style={[styles.thumb, { borderColor: active ? theme.accent : 'transparent' }]}
+              >
+                <View pointerEvents="none">{lookThumb(sl.look)}</View>
+              </Pressable>
+            );
+          })}
           {DESIGNS.map((d, i) => {
-            const active = d.id === designId;
+            const active = !look.photo && !look.colour && d.id === look.design;
             return (
               <Pressable
                 key={d.id}
-                onPress={() => setDesignId(d.id)}
+                onPress={() => chooseDesign(d.id)}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: active }}
                 accessibilityLabel={`${t('cardDesign')} ${i + 1}`}
                 style={[styles.thumb, { borderColor: active ? theme.accent : 'transparent' }]}
               >
                 <View pointerEvents="none">
-                  <VerseCard {...cardProps} design={d} size="square" width={THUMB} />
+                  <VerseCard {...cardProps} design={d} photo={undefined} lightWords={false} size="square" width={THUMB} />
                 </View>
               </Pressable>
             );
           })}
         </ScrollView>
+
+        {look.photo ? (
+          <>
+            <Text style={[styles.label, { color: theme.text }]}>{t('cardVeil')}</Text>
+            <Segmented
+              options={[
+                ['light', t('cardVeilLight')],
+                ['dark', t('cardVeilDark')],
+              ]}
+              value={look.veil}
+              onChange={(veil) => change({ veil })}
+            />
+            <Segmented
+              options={[
+                ['1', t('cardFaint')],
+                ['2', t('cardMedium')],
+                ['3', t('cardStrong')],
+              ]}
+              value={String(look.strength) as '1' | '2' | '3'}
+              onChange={(v) => change({ strength: Number(v) as VeilStrength })}
+            />
+            <SwitchRow label={t('cardBlur')} detail={t('cardBlurDetail')} value={look.blur} onChange={(blur) => change({ blur })} />
+            <Pressable onPress={() => change({ photo: undefined })} accessibilityRole="button" style={styles.linkButton}>
+              <Text style={[styles.linkText, { color: theme.accent }]}>{t('cardRemovePhoto')}</Text>
+            </Pressable>
+          </>
+        ) : (
+          <>
+            <Text style={[styles.label, { color: theme.text }]}>{t('cardBackground')}</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+              <Pressable
+                onPress={() => change({ colour: undefined })}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: !look.colour }}
+                style={[styles.chip, { borderColor: !look.colour ? theme.accent : theme.border, backgroundColor: !look.colour ? theme.accentSoft : 'transparent' }]}
+              >
+                <Text style={[styles.chipText, { color: !look.colour ? theme.accent : theme.text }]}>{t('cardDesignColours')}</Text>
+              </Pressable>
+              {CARD_COLOURS.map((c) => (
+                <Pressable
+                  key={c}
+                  onPress={() => change({ colour: c })}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: look.colour === c }}
+                  accessibilityLabel={`${t('cardBackground')} ${c}`}
+                  style={[styles.swatch, { backgroundColor: c, borderColor: look.colour === c ? theme.accent : theme.border, borderWidth: look.colour === c ? 3 : 1 }]}
+                />
+              ))}
+            </ScrollView>
+          </>
+        )}
+
+        <Text style={[styles.label, { color: theme.text }]}>{t('cardPlace')}</Text>
+        <Segmented
+          options={[
+            ['top', t('cardTop')],
+            ['middle', t('cardMiddle')],
+            ['bottom', t('cardBottom')],
+          ] as [TextPlace, string][]}
+          value={look.place}
+          onChange={(place) => change({ place })}
+        />
+        <Text style={[styles.label, { color: theme.text }]}>{t('cardFace')}</Text>
+        <Segmented
+          options={[
+            ['book', t('cardFaceBook')],
+            ['plain', t('cardFacePlain')],
+          ]}
+          value={look.plainFace ? 'plain' : 'book'}
+          onChange={(v) => change({ plainFace: v === 'plain' })}
+        />
+        <SwitchRow label={t('cardExtras')} detail={t('cardExtrasDetail')} value={look.extras} onChange={(extras) => change({ extras })} />
+        <Pressable
+          onPress={saveLook}
+          disabled={saved.looks.some((sl) => sameLook(sl.look, look))}
+          accessibilityRole="button"
+          style={[styles.saveLook, { borderColor: theme.accent, opacity: saved.looks.some((sl) => sameLook(sl.look, look)) ? 0.5 : 1 }]}
+        >
+          <Text style={[styles.saveLookText, { color: theme.accent }]}>{t('cardSaveLook')}</Text>
+        </Pressable>
 
         <Text style={[styles.label, { color: theme.text }]}>{t('cardHeading')}</Text>
         <TextInput
@@ -238,6 +405,20 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
   );
 }
 
+/** A setting that is on or off, with a line saying what it does. */
+function SwitchRow({ label, detail, value, onChange }: { label: string; detail: string; value: boolean; onChange: (value: boolean) => void }) {
+  const theme = useTheme();
+  return (
+    <View style={styles.switchRow}>
+      <View style={styles.switchText}>
+        <Text style={[styles.switchLabel, { color: theme.text }]}>{label}</Text>
+        <Text style={[styles.switchDetail, { color: theme.muted }]}>{detail}</Text>
+      </View>
+      <AppSwitch value={value} onValueChange={onChange} accessibilityLabel={label} />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { padding: 16, alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
@@ -252,6 +433,17 @@ const styles = StyleSheet.create({
   chip: { minHeight: 40, paddingHorizontal: 14, borderRadius: 20, borderWidth: 1, justifyContent: 'center' },
   chipText: { fontSize: 15 },
   thumb: { borderWidth: 2, borderRadius: 6, padding: 2 },
+  photoTile: { borderWidth: 1, borderStyle: 'dashed', borderRadius: 4, alignItems: 'center', justifyContent: 'center', gap: 4, padding: 4 },
+  photoTileText: { fontSize: 11, fontWeight: '600', textAlign: 'center' },
+  swatch: { width: 40, height: 40, borderRadius: 20 },
+  switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 16 },
+  switchText: { flex: 1 },
+  switchLabel: { fontSize: 15, fontWeight: '600' },
+  switchDetail: { fontSize: 13, marginTop: 2 },
+  linkButton: { alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center', marginTop: 4 },
+  linkText: { fontSize: 15, fontWeight: '600' },
+  saveLook: { marginTop: 20, minHeight: 48, borderRadius: 24, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  saveLookText: { fontSize: 16, fontWeight: '600' },
   input: { minHeight: 48, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, fontSize: 16 },
   footer: { paddingHorizontal: 16, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth },
   shareButton: { minHeight: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', width: '100%', maxWidth: 480 },

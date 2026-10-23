@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
+import { AppSwitch } from '../components/AppSwitch';
 import { Header } from '../components/Header';
 import { Icon, IconButton } from '../components/Icon';
 import { SectionLabel } from '../components/SectionLabel';
@@ -212,20 +213,6 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
         </View>
       </ScrollView>
     </View>
-  );
-}
-
-/** A switch whose track shows when off as well as on. */
-function AppSwitch({ value, onValueChange }: { value: boolean; onValueChange: (value: boolean) => void }) {
-  const theme = useTheme();
-  return (
-    <Switch
-      value={value}
-      onValueChange={onValueChange}
-      trackColor={{ false: theme.dark ? '#4A4238' : '#CFC6B8', true: theme.accent }}
-      thumbColor={value ? theme.onAccent : theme.dark ? theme.muted : '#FFFFFF'}
-      ios_backgroundColor={theme.dark ? '#4A4238' : '#CFC6B8'}
-    />
   );
 }
 

@@ -8,16 +8,15 @@ or the address chosen when it was first published). This task replaces the page'
 
 ## What changed in the policy
 
-Compared with the version dated 15 October 2026, which added the Tamil app:
+Compared with the version dated 20 October 2026:
 
-- Effective date **20 October 2026**.
-- "Copying and sharing" now covers verses shared as a picture card: the card, with any
-  heading and message typed on it, is made on the phone and the apps keep no copy.
-- A new section, "Reading aloud", between "Copying and sharing" and "Links": the apps
-  pass only the text being read to the phone's own text-to-speech engine.
+- Effective date **23 October 2026**.
+- "Copying and sharing" now also covers a photo the user puts on a card: it is chosen in
+  the phone's own photo picker, the app sees only that photo and sends it nowhere, and a
+  saved card design keeps a copy on the phone, outside the phone's backup.
 
-Nothing else changed. If the page still shows an older version (dated 14 or 15 October
-2026, or earlier), replace it all the same: the text below is the whole current policy.
+Nothing else changed. If the page still shows an older version (dated 20 October 2026 or
+earlier), replace it all the same: the text below is the whole current policy.
 
 This privacy page is the only change the website needs for these app updates.
 
@@ -46,7 +45,7 @@ This privacy page is the only change the website needs for these app updates.
 
 - `curl -sI https://riversresearch.org/bible/privacy` (or the page's address) returns
   status 200 with `Content-Type: text/html`.
-- The page shows "Effective 20 October 2026", "Reading aloud", "picture card", "வேதாகமம்", "for Android and iPhone" and
+- The page shows "Effective 23 October 2026", "Reading aloud", "picture card", "photo picker", "வேதாகமம்", "for Android and iPhone" and
   "iCloud", plus "Rivers Research LLC", all three package names and dond@riversresearch.org.
 - It opens on a phone without signing in.
 
@@ -60,7 +59,7 @@ The page's address, and that the text now reads as below.
 
 # Privacy policy
 
-Bible (org.riversresearch.bible), വേദപുസ്തകം (org.riversresearch.bible.malayalam) and வேதாகமம் (org.riversresearch.bible.tamil), for Android and iPhone, published by Rivers Research LLC. Effective 20 October 2026.
+Bible (org.riversresearch.bible), വേദപുസ്തകം (org.riversresearch.bible.malayalam) and வேதாகமம் (org.riversresearch.bible.tamil), for Android and iPhone, published by Rivers Research LLC. Effective 23 October 2026.
 
 > The apps collect no personal data and send nothing anywhere. They do not connect to the internet. Everything you save in them stays on your phone.
 
@@ -74,7 +73,7 @@ If backup is switched on in your phone's settings, your phone can include the ap
 
 ## Copying and sharing
 
-When you copy or share a verse or a notebook page, or share a verse as a picture card, the text or picture goes to the clipboard or to the app you choose, and only when you ask for it. A card, with any heading and message you type on it, is made on your phone, and the apps keep no copy of it.
+When you copy or share a verse or a notebook page, or share a verse as a picture card, the text or picture goes to the clipboard or to the app you choose, and only when you ask for it. A card, with any heading and message you type on it, is made on your phone, and the apps keep no copy of it. If you put one of your own photos on a card, you choose it in your phone's own photo picker: the app sees only that photo, uses it on your phone and sends it nowhere. A card design you save keeps its own copy of the photo on your phone, left out of the phone's backup; removing the design deletes the copy.
 
 ## Reading aloud
 

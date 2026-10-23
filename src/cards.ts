@@ -229,3 +229,71 @@ export const OCCASIONS: { id: Occasion; label: StringKey; heading: StringKey | n
 export function designById(id: DesignId): Design {
   return DESIGNS.find((d) => d.id === id) ?? DESIGNS[DESIGNS.length - 1];
 }
+
+/** Where the verse and its lines stand on the card. */
+export type TextPlace = 'top' | 'middle' | 'bottom';
+/** The see-through layer over a photo that keeps the words readable: light under dark words, dark under light ones. */
+export type Veil = 'light' | 'dark';
+export type VeilStrength = 1 | 2 | 3;
+
+/**
+ * A design as the sender has changed it: their own photo behind the words (under a light
+ * or dark veil, sharp or blurred) or a plain colour, where the words stand, a book or a
+ * plain face, and whether the design's pictures, lines and cross show. Saved looks are
+ * kept on the phone (src/cardLooks.ts).
+ */
+export interface CardLook {
+  design: DesignId;
+  /** A copy of the chosen photo in the app's own files. */
+  photo?: string;
+  veil: Veil;
+  strength: VeilStrength;
+  blur: boolean;
+  /** A plain background instead of the design's colours (no photo). */
+  colour?: string;
+  place: TextPlace;
+  plainFace: boolean;
+  extras: boolean;
+}
+
+export const DEFAULT_LOOK: CardLook = { design: 'paper', veil: 'light', strength: 2, blur: false, place: 'middle', plainFace: false, extras: true };
+
+/** Plain backgrounds to choose from: three light, four deep. */
+export const CARD_COLOURS = ['#FFFFFF', '#F6EEDC', '#FCE9EC', '#E3EEF7', '#1F2A44', '#4A1C28', '#1E3A2B'];
+
+/** How much of the veil shows at each strength. */
+export const VEIL_OPACITY: Record<Veil, Record<VeilStrength, number>> = {
+  light: { 1: 0.35, 2: 0.55, 3: 0.75 },
+  dark: { 1: 0.3, 2: 0.5, 3: 0.7 },
+};
+export const VEIL_COLOUR: Record<Veil, string> = { light: '#FFFAF0', dark: '#0F0C08' };
+
+const DARK_WORDS = { ink: '#2A2118', accent: '#7A4E1C', faint: 'rgba(42,33,24,0.6)' };
+const LIGHT_WORDS = { ink: '#FFFFFF', accent: '#F3D894', faint: 'rgba(255,255,255,0.72)' };
+
+/** Relative brightness of a #RRGGBB colour, 0 (black) to 1 (white). */
+function brightness(hex: string): number {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/**
+ * The design to draw for a look: the words in colours that read on the photo's veil or
+ * the plain colour (light words on a dark one), and without its pictures and lines when
+ * those are turned off.
+ */
+export function lookDesign(look: CardLook): { design: Design; lightWords: boolean } {
+  const base = designById(look.design);
+  const lightWords = look.photo ? look.veil === 'dark' : !!look.colour && brightness(look.colour) < 0.45;
+  const words = look.photo || look.colour ? (lightWords ? LIGHT_WORDS : DARK_WORDS) : null;
+  const design: Design = {
+    ...base,
+    ...(words ?? {}),
+    background: look.photo ? [VEIL_COLOUR[look.veil]] : look.colour ? [look.colour] : base.background,
+    ...(look.extras ? {} : { borders: undefined, cross: undefined, halo: undefined, stars: undefined }),
+    ...(look.extras && words ? { borders: base.borders?.map((b) => ({ ...b, color: words.accent })), cross: base.cross ? words.accent : undefined } : {}),
+    square: look.extras ? base.square : { ...base.square, art: undefined, above: undefined },
+    tall: look.extras ? base.tall : { ...base.tall, art: undefined, above: undefined },
+  };
+  return { design, lightWords };
+}
