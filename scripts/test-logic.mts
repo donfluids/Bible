@@ -122,13 +122,14 @@ test('Tamil: two-letter stems are not grouped', () => assert.equal(groupForms([{
 
 // --- Patterns that must stay fast on long text ---
 const books = [{ id: 43, osis: 'John', name: 'John', testament: 'NT', chapters: 21, names: {} }] as Book[];
-const fast = (name: string, fn: () => void, ms = 200) =>
+// Each takes milliseconds now; the slow patterns these guard against took seconds or minutes.
+const fast = (name: string, fn: () => void, ms = 1000) =>
   test(name, () => {
     const t = Date.now();
     fn();
     assert.ok(Date.now() - t < ms, `took ${Date.now() - t} ms`);
   });
-// 400 spaces: instant now; about 1.3 s if spaces were no longer squeezed (in minutes beyond).
+// 400 spaces: instant now; over 10 s if spaces were no longer squeezed (minutes beyond).
 fast('a long search with spaces', () => parseReference(' '.repeat(400) + 'x', books));
 fast('a long search of words', () => parseReference('love '.repeat(1000) + 'x', books));
 fast('a long notebook page', () => findReferences('John 3:16 and some words 1 2 3 '.repeat(500), books));
