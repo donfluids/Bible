@@ -435,6 +435,14 @@
    ]
   },
   {
+   "name": "react-native-svg",
+   "version": "15.15.4",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) [2015-2016] [Horcrux]"
+   ]
+  },
+  {
    "name": "react-native-view-shot",
    "version": "5.1.0",
    "licence": "MIT",
