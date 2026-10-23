@@ -691,11 +691,15 @@ function relinkShifted(pending, verseMap) {
 
 // Forms of one Malayalam word under one Strong's number, grouped by stem: the shortest
 // form heads the group, and a later form joins it when it starts with the head's stem
-// (three characters at least) or shares most of the head (സൃഷ്ടിച്ച, സൃഷ്ടിക്കും). The stem
-// is the head less a final ം ു ്, or with a final chillu written as its consonant, since
-// inflections continue from it (മകൻ: മകനെ, മകനായ). A group is labelled by its commonest
-// base form (one ending in ം, ു, ് or a chillu, like ദൈവം or മകൻ) unless that form is
-// rare in the group, and then by the group's commonest form.
+// (three characters at least, or two when the head is a base form: ജനം, ജനത്തെ) or shares
+// most of the head (സൃഷ്ടിച്ച, സൃഷ്ടിക്കും). The stem is the head less a final ം ു ്, or with
+// a final chillu written as its consonant, since inflections continue from it (മകൻ: മകനെ,
+// മകനായ). A group is labelled by its commonest base form (one ending in ം, ു, ് or a
+// chillu, like ദൈവം or മകൻ) unless that form is rare in the group, and then by the group's
+// commonest form. A label that ends in a case ending (യെരൂശലേമിൽ, ജനത്തെ, ആലയത്തിന്റെ)
+// gives way to the plain form it is built on (its stem starts the label), when that has a
+// tenth of its uses (യെരൂശലേം) or is the head in ു that the other forms continue
+// (ക്രിസ്തു: ക്രിസ്തുവിൽ; not a dative or past in …ന്നു, …ക്കു).
 const CHILLU = { 'ൻ': 'ന', 'ർ': 'ര', 'ൽ': 'ല', 'ൾ': 'ള', 'ൺ': 'ണ' };
 const mlStem = (w) => {
   const last = w.slice(-1);
@@ -703,6 +707,9 @@ const mlStem = (w) => {
 };
 // Not "…ും" (and, also) or a case ending such as "…ത്തു", "…ക്കു", "…ന്നു".
 const isBaseForm = (w) => /[്ൻർൽൾൺ]$|[^ു]ം$|[^ുത്കന്ട]ു$/u.test(w) && !/(ത്തു|ക്കു|ന്നു|ട്ടു)$/u.test(w);
+// Malayalam case endings a noun's label should not carry: locative, genitive, instrumental,
+// sociative, accusative (…ിൽ, …ിൽവെച്ചു, …ിലെ, …ിന്റെ, …ുടെ, …ാൽ, …ോടു, …ത്തെ, …നെ; not …വരെ).
+const ML_CASE_ENDING = /(ിൽ|ിൽവെച്ചു|ിലെ|ിലും|ിലേക്കു|ിൽനിന്നു|ിങ്കൽ|ന്റെ|ുടെ|ാൽ|ോടു|ോട്|ത്തെ|[നളയ]െ|(?<!വ)രെ)$/u;
 function sharedStart(a, b) {
   let i = 0;
   while (i < a.length && i < b.length && a[i] === b[i]) i++;
@@ -722,7 +729,7 @@ function groupForms(entries, stemOf = mlStem, isBase = isBaseForm) {
   const sorted = [...entries].sort((a, b) => a.display.length - b.display.length || b.refs.length - a.refs.length);
   for (const e of sorted) {
     const g = groups.find((x) => {
-      if (x.stem.length >= 3 && e.display.startsWith(x.stem)) return true;
+      if ((x.stem.length >= 3 || (x.stem.length === 2 && isBase === isBaseForm && isBase(x.head))) && e.display.startsWith(x.stem)) return true;
       const n = sharedStart(x.head, e.display);
       return n >= 5 && n >= 0.6 * x.head.length;
     });
@@ -737,6 +744,14 @@ function groupForms(entries, stemOf = mlStem, isBase = isBaseForm) {
     // Else the shortest form that is still common in the group.
     const shortCommon = [...g.members].sort((a, b) => a.display.length - b.display.length).find((m) => m.refs.length >= top.refs.length * 0.3);
     g.display = base && base.refs.length >= top.refs.length * 0.3 ? base.display : (shortCommon ?? top).display;
+    if (isBase === isBaseForm && ML_CASE_ENDING.test(g.display)) {
+      const label = g.members.find((m) => m.display === g.display);
+      const headInU = (m) => m.display === g.head && /ു$/u.test(m.display) && !/(ന്നു|ക്കു)$/u.test(m.display) && g.members.some((o) => o !== m && o.display.startsWith(g.head.slice(0, -1)));
+      const plain = g.members.filter(
+        (m) => !ML_CASE_ENDING.test(m.display) && g.display.startsWith(mlStem(m.display)) && (headInU(m) || (isBase(m.display) && m.refs.length >= label.refs.length * 0.1)),
+      );
+      if (plain.length) g.display = commonest(plain).display;
+    }
     const seen = new Set();
     const refs = [];
     for (const m of g.members) {
