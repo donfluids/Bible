@@ -7,7 +7,7 @@ import { TabBar } from '../components/TabBar';
 import { useT } from '../i18n';
 import { selectPosition, selectRecent, usePlace } from '../place';
 import { useSettings } from '../settings';
-import { bookName } from '../text';
+import { MAX_CONTENT_WIDTH, bookName } from '../text';
 import { useTheme } from '../theme';
 import type { Book } from '../types';
 
@@ -48,6 +48,8 @@ export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Header title={t('books')} />
+      {/* On a tablet the list keeps to the reading width. */}
+      <View style={styles.column}>
       {recent.length > 0 ? (
         <View style={styles.recent}>
           <View style={styles.recentHead}>
@@ -112,6 +114,7 @@ export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
         }}
         contentContainerStyle={styles.listEnd}
       />
+      </View>
       <TabBar current="Books" />
     </View>
   );
@@ -138,6 +141,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   listEnd: { paddingBottom: 24 },
+  column: { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
   name: { fontSize: 17 },
   count: { fontSize: 15, fontVariant: ['tabular-nums'] },
 });

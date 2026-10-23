@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, AppState, FlatList, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, AppState, FlatList, Share, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, ViewToken } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -192,6 +192,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
   const t = useT();
   const edition = useEdition();
   const insets = useSafeAreaInsets();
+  const { width: windowWidth } = useWindowDimensions();
   const { settings, update, commit } = useSettings();
   const {
     translation,
@@ -1115,6 +1116,8 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
   const title = useMemo(() => `${bookName(books, position.book, translation)} ${position.chapter}`, [books, position, translation]);
   // With the tab bar, it keeps the space for the phone's navigation bar.
   const bottomInset = tabs ? 0 : insets.bottom;
+  // On a tablet the chapter row and the player keep to the reading width, under the text.
+  const barSide = Math.max(0, (windowWidth - MAX_CONTENT_WIDTH) / 2);
   const atStart = position.book === books[0]?.id && position.chapter === 1;
   const atEnd = position.book === books[books.length - 1]?.id && position.chapter === book?.chapters;
 
@@ -1219,7 +1222,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
           </View>
         </View>
       ) : reading.active ? (
-        <View style={[styles.playerBar, { paddingBottom: bottomInset + 8, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
+        <View style={[styles.playerBar, { paddingBottom: bottomInset + 8, paddingHorizontal: 10 + barSide, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
           {!following ? (
             <Pressable
               onPress={() => setFollowing(true)}
@@ -1256,7 +1259,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
           </View>
         </View>
       ) : (
-      <View style={[styles.footer, { paddingBottom: bottomInset + 8, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
+      <View style={[styles.footer, { paddingBottom: bottomInset + 8, paddingHorizontal: 12 + barSide, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
         <ChapterArrow icon="chevron_left" onPress={() => go(-1)} disabled={atStart} accessibilityLabel={t('previousChapter')} />
         <View style={styles.footerMiddle}>
           {/* One button for the Bibles. The Malayalam and Tamil apps name the other one, the

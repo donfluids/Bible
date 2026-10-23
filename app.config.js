@@ -109,8 +109,8 @@ module.exports = ({ config }) => {
     ios: {
       ...config.ios,
       bundleIdentifier: e.package,
-      // iPhone only, as the Android app is offered for phones.
-      supportsTablet: false,
+      // iPhone and iPad; the layout keeps text and bars to a reading width on a wide screen.
+      supportsTablet: true,
       infoPlist: {
         // No encryption beyond what iOS itself does: no export compliance papers needed.
         ITSAppUsesNonExemptEncryption: false,

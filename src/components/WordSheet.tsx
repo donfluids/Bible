@@ -129,7 +129,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
   const edition = useEdition();
   const { settings } = useSettings();
   const insets = useSafeAreaInsets();
-  const { height: winH } = useWindowDimensions();
+  const { height: winH, width: winW } = useWindowDimensions();
   // Occurrence counts come from a tagged translation; an untagged one uses the KJV.
   const tagged = taggedTranslation(translation);
   const withKjv = tagged !== 'KJV' && edition.translations.includes('KJV');
@@ -159,7 +159,10 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
   // screen to close), on the native driver so the drag stays smooth while JS is busy.
   // Offsets: 0 = full height, halfY = half height, fullH = closed.
   const fullH = Math.max(320, winH - insets.top - 24);
-  const halfH = Math.min(fullH, Math.max(380, Math.round(winH * 0.56)));
+  // On a screen turned on its side (a tablet or phone in landscape) half a short screen
+  // shows little more than the word, so the sheet opens at full height there.
+  const landscape = winW > winH * 1.2;
+  const halfH = landscape ? fullH : Math.min(fullH, Math.max(380, Math.round(winH * 0.56)));
   const halfY = fullH - halfH;
   const offset = useRef(new Animated.Value(halfY)).current;
   const restY = useRef(halfY);

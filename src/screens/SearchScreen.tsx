@@ -117,6 +117,8 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
           />
         ) : null}
       </View>
+      {/* Everything above the results keeps to the reading width on a tablet. */}
+      <View style={styles.column}>
       {!query.trim() ? (
         <View style={styles.examples}>
           <Text style={[styles.examplesLabel, { color: theme.muted }]}>{t('searchExamples')}</Text>
@@ -196,6 +198,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
                 : t('nVerses', { n: formatCount(results.length) })}
         </Text>
       ) : null}
+      </View>
       <FlatList
         data={results ?? []}
         keyExtractor={verseKey}
@@ -214,6 +217,7 @@ const LIST_FOOTER = <View style={{ height: 40 }} />;
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   list: { alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
+  column: { alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
   inputBox: {
     alignSelf: 'center',
     width: '100%',

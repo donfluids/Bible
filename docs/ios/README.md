@@ -72,12 +72,16 @@ try the app there before sending it for review. Things to try on an iPhone:
 - Swipe from the left edge goes back from a pushed screen; chapters still turn by swiping.
 - The keyboard does not cover the verse note box or a notebook page.
 - Bookmarks and notes survive closing the app from the app switcher.
+- On an iPad: turn it on its side and back; the text, bars and sheets keep to a reading
+  width, and Split View (two apps side by side) still lays out properly.
 
 ## 6. The listing and review
 
 - Listing text: `listing-vedapusthakam.md`, `listing-bible.md` and `listing-vedagamam.md` in this folder.
 - Screenshots: `screenshots/ml` and `screenshots/en`, 1320 × 2868 (6.9-inch iPhone), which
   App Store Connect scales for smaller iPhones.
+- iPad screenshots: the apps run on iPad too, so App Store Connect also asks for 13-inch iPad
+  screenshots (2064 × 2752, portrait): `screenshots/ipad-ml` and `screenshots/ipad-en`.
 - App Privacy: **Data Not Collected** (the apps collect nothing and have no internet use).
 - Age rating questionnaire: none of the content types apply → 4+.
 - Pricing: Free. Availability: all countries and regions **except the United Kingdom**

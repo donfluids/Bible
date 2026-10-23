@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useT } from '../i18n';
 import { IPHONE_LOOK } from '../platform';
+import { MAX_CONTENT_WIDTH } from '../text';
 import { useTheme } from '../theme';
 import { IconButton } from './Icon';
 import type { IconName } from './Icon';
@@ -41,7 +42,10 @@ export function Header({ title, onBack, backLabel, center, right }: Props) {
   const [sides, setSides] = useState({ left: 0, right: 0 });
   const pad = sides.right - sides.left;
   return (
-    <View style={[styles.bar, { paddingTop: insets.top, backgroundColor: theme.bg, paddingLeft: onBack ? 4 : 16 }]}>
+    // On a tablet the bar's buttons stay within the reading width, over the text, not at
+    // the far edges of the screen.
+    <View style={{ paddingTop: insets.top, backgroundColor: theme.bg }}>
+    <View style={[styles.bar, { paddingLeft: onBack ? 4 : 16 }]}>
       {onBack ? (
         <View onLayout={centred ? (e) => setSides((s) => ({ ...s, left: e.nativeEvent.layout.width + 4 })) : undefined}>
           <IconButton name={IOS ? 'arrow_back_ios_new' : 'arrow_back'} onPress={onBack} accessibilityLabel={backLabel ?? t('back')} color={theme.text} />
@@ -65,6 +69,7 @@ export function Header({ title, onBack, backLabel, center, right }: Props) {
         </View>
       ) : null}
     </View>
+    </View>
   );
 }
 
@@ -74,7 +79,7 @@ export function HeaderIconButton({ icon, onPress, accessibilityLabel }: { icon: 
 }
 
 const styles = StyleSheet.create({
-  bar: { flexDirection: 'row', alignItems: 'center', minHeight: 64, paddingRight: 4 },
+  bar: { flexDirection: 'row', alignItems: 'center', minHeight: 64, paddingRight: 4, width: '100%', maxWidth: MAX_CONTENT_WIDTH + 32, alignSelf: 'center' },
   center: { flex: 1, justifyContent: 'center', minHeight: 48 },
   centerAfterBack: { marginLeft: 4 },
   // Room above and below for Malayalam's stacked letters (ഞായറാഴ്ച), which a tight line clips.

@@ -8,6 +8,7 @@ import type { IconName } from './Icon';
 import { useT } from '../i18n';
 import type { StringKey } from '../i18n';
 import { navigationRef } from '../navigation';
+import { MAX_CONTENT_WIDTH } from '../text';
 import { useTheme } from '../theme';
 
 /** The four places the bar switches between; each is a screen of the stack. */
@@ -61,6 +62,8 @@ export function TabBar({ current, hidden = false }: { current: TabName; hidden?:
         accessibilityRole="tablist"
         importantForAccessibility={hidden ? 'no-hide-descendants' : 'auto'}
       >
+        {/* On a tablet the tabs keep to the reading width rather than spread to the edges. */}
+        <View style={styles.tabs}>
         {TABS.map((tab) => {
           const selected = tab.name === current;
           const label = t(tab.label);
@@ -86,13 +89,15 @@ export function TabBar({ current, hidden = false }: { current: TabName; hidden?:
             </Pressable>
           );
         })}
+        </View>
       </Animated.View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  bar: { flexDirection: 'row', overflow: 'hidden', borderTopWidth: StyleSheet.hairlineWidth },
+  bar: { overflow: 'hidden', borderTopWidth: StyleSheet.hairlineWidth },
+  tabs: { flex: 1, flexDirection: 'row', width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' },
   tab: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2, paddingHorizontal: 2 },
   indicator: { width: 56, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   label: { fontSize: 12 },

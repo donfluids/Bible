@@ -94,9 +94,14 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
     setHeading(o.heading ? t(o.heading) : '');
   };
 
-  const content = Math.min(window.width, MAX_CONTENT_WIDTH) - 32;
-  // A tall card is kept short enough to leave the choices in view.
-  const previewWidth = size === 'square' ? Math.min(content, 420) : Math.min(content, ((window.height * 0.5) * CARD_WIDTH) / CARD_HEIGHT.tall);
+  // On a wide screen (a tablet, or a phone on its side) the card stands on the left and
+  // the choices scroll beside it; otherwise the choices come under the card.
+  const wide = window.width >= 760 && window.width > window.height;
+  const content = wide ? Math.min(window.width / 2, MAX_CONTENT_WIDTH) - 32 : Math.min(window.width, MAX_CONTENT_WIDTH) - 32;
+  // A tall card is kept short enough to leave the choices in view (beside it: the screen's height).
+  const room = wide ? window.height - 220 : window.height * 0.5;
+  const previewWidth =
+    size === 'square' ? Math.min(content, 420, wide ? room : Infinity) : Math.min(content, (room * CARD_WIDTH) / CARD_HEIGHT.tall);
   // The card that is captured, drawn off screen at the shared picture's size.
   const captureWidth = CARD_PIXELS / PixelRatio.get();
   const cardProps = { design, size, heading: heading.trim(), text, reference, message: message.trim(), credit };
@@ -119,19 +124,25 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
     }
   };
 
+  const preview = (
+    <View
+      testID="card-preview"
+      accessible
+      accessibilityRole="image"
+      accessibilityLabel={[heading.trim(), text, reference, message.trim()].filter(Boolean).join('. ')}
+      style={[styles.preview, { width: previewWidth, borderColor: theme.border }]}
+    >
+      {first ? <VerseCard {...cardProps} width={previewWidth} /> : <View style={{ width: previewWidth, height: (previewWidth * CARD_HEIGHT[size]) / CARD_WIDTH }} />}
+    </View>
+  );
+
   return (
     <KeyboardAvoidingView style={[styles.screen, { backgroundColor: theme.bg }]} behavior="padding">
       <Header title={t('shareAsCard')} onBack={onBack} />
-      <ScrollView ref={scroll} contentContainerStyle={[styles.content, { paddingBottom: 24 }]} keyboardShouldPersistTaps="handled">
-        <View
-          testID="card-preview"
-          accessible
-          accessibilityRole="image"
-          accessibilityLabel={[heading.trim(), text, reference, message.trim()].filter(Boolean).join('. ')}
-          style={[styles.preview, { width: previewWidth, borderColor: theme.border }]}
-        >
-          {first ? <VerseCard {...cardProps} width={previewWidth} /> : <View style={{ width: previewWidth, height: (previewWidth * CARD_HEIGHT[size]) / CARD_WIDTH }} />}
-        </View>
+      <View style={wide ? styles.wide : styles.screen}>
+      {wide ? <View style={styles.wideCard}>{preview}</View> : null}
+      <ScrollView ref={scroll} style={styles.screen} contentContainerStyle={[styles.content, { paddingBottom: 24 }]} keyboardShouldPersistTaps="handled">
+        {wide ? null : preview}
 
         <Segmented
           options={[
@@ -212,6 +223,7 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
           placeholderTextColor={theme.muted}
         />
       </ScrollView>
+      </View>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + 12, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
         <Pressable
@@ -237,6 +249,8 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { padding: 16, alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
+  wide: { flex: 1, flexDirection: 'row' },
+  wideCard: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16 },
   preview: { alignSelf: 'center', borderWidth: StyleSheet.hairlineWidth, borderRadius: 4, overflow: 'hidden', marginBottom: 6 },
   label: { fontSize: 15, fontWeight: '600', marginTop: 18, marginBottom: 8 },
   versesRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
