@@ -98,40 +98,6 @@ const dark: Palette = {
   highlight: '#3A3220',
 };
 
-/**
- * The Malayalam app is green, like its icon (ink #1F4D2E on #EEF3E6); the English app is
- * brown. Same structure, different hue; every pair is checked for 4.5:1 or better.
- */
-const greenLight: Palette = {
-  ...light,
-  bg: '#F7F9F2',
-  text: '#1A1F18',
-  muted: '#5C6758',
-  border: '#DCE3D2',
-  accent: '#2B5E3A',
-  accentSoft: '#E2ECDA',
-  linked: '#D3DEC8',
-};
-
-const greenSepia: Palette = {
-  ...sepia,
-  accent: '#35603A',
-  accentSoft: '#DCDDB9',
-};
-
-const greenDark: Palette = {
-  ...dark,
-  bg: '#111511',
-  card: '#1A201A',
-  text: '#E4EBE0',
-  muted: '#9AA596',
-  border: '#2C352B',
-  accent: '#8CC79A',
-  onAccent: '#111511',
-  accentSoft: '#1F2C21',
-  linked: '#2E3A2D',
-};
-
 /** The Tamil app is deep blue; its pairs are checked for 4.5:1 or better too. */
 const blueLight: Palette = {
   ...light,
@@ -165,7 +131,8 @@ const blueDark: Palette = {
 
 const PALETTES: Record<EditionId, Record<ThemeName, Palette>> = {
   en: { light, sepia, dark },
-  ml: { light: greenLight, sepia: greenSepia, dark: greenDark },
+  // The Malayalam app has the English app's paper and brown.
+  ml: { light, sepia, dark },
   ta: { light: blueLight, sepia: blueSepia, dark: blueDark },
 };
 

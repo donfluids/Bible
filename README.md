@@ -81,8 +81,8 @@ rendering counts all work in Malayalam.
   the left edge. Rotates to landscape; on tablets the text keeps a
   comfortable column width.
 - Appearance: light, sepia or dark (or follow the phone), a serif typeface, verse-per-line
-  or paragraph layout, and keep-the-screen-awake. The English app is brown, the
-  Malayalam app green like its icon (an open book with א and α and a gold dove, the Holy Spirit, coming down onto the pages). Android-style top bars and icons (Material Symbols
+  or paragraph layout, and keep-the-screen-awake. Both apps are brown on cream
+  paper; the Malayalam app's icon is green (an open book with א and α and a gold dove, the Holy Spirit, coming down onto the pages). Android-style top bars and icons (Material Symbols
   Rounded), and one bottom-sheet style throughout; the verse sheet has Copy, Share,
   Bookmark and Note buttons and highlight colours in one place.
 - Text size in eight steps, from Settings or by pinching the text with two fingers.

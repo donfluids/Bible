@@ -27,8 +27,8 @@ const EDITIONS = {
     icons: './assets/icons/ml',
     languages: ['ml', 'en'],
     easProjectId: '',
-    splashBackground: '#F7F9F2',
-    splashBackgroundDark: '#111511',
+    splashBackground: '#FBF8F1',
+    splashBackgroundDark: '#15130F',
     adaptiveBackground: '#EEF3E6',
   },
   ta: {
