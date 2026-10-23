@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Dimensions, useColorScheme } from 'react-native';
 import { translate } from './i18n';
+import { cleanSettings } from './settingsClean';
 import { loadEntry, useAutosave } from './persist';
 import type { Loaded } from './persist';
 import type { Edition, Language } from './edition';
@@ -85,19 +86,9 @@ function load(edition: Edition): Loaded<Settings> {
     (raw) => {
       const parsed = JSON.parse(raw) as Partial<Settings>;
       if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('not settings');
-      // A stored value of the wrong kind (from a damaged or altered file) gives way to the
-      // default, and sizes stay within what the screen can lay out.
-      const kept = Object.fromEntries(
-        Object.entries(parsed).filter(([k, v]) => {
-          const d = (defaults as unknown as Record<string, unknown>)[k];
-          return d === undefined || (v !== null && typeof v === typeof d && Array.isArray(v) === Array.isArray(d));
-        }),
-      ) as Partial<Settings>;
-      const merged = { ...defaults, ...kept };
-      merged.fontSize = Math.min(FONT_SIZES[FONT_SIZES.length - 1], Math.max(FONT_SIZES[0], merged.fontSize || defaults.fontSize));
-      merged.readSpeed = Math.min(2, Math.max(0.5, merged.readSpeed || 1));
+      const merged = cleanSettings(parsed, defaults, FONT_SIZES);
       // Fields of older versions that moved to src/place.ts.
-      for (const old of ['position', 'recent', 'lastChapters']) delete (merged as Record<string, unknown>)[old];
+      for (const old of ['position', 'recent', 'lastChapters']) delete (merged as unknown as Record<string, unknown>)[old];
       if (!edition.translations.includes(merged.translation)) merged.translation = edition.defaultTranslation;
       if (!edition.languages.includes(merged.language)) merged.language = edition.languages[0];
       return merged;

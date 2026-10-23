@@ -13,6 +13,8 @@ import { parseReference } from '../refs';
 import { useSettings } from '../settings';
 import { MAX_CONTENT_WIDTH, bookName, formatCount } from '../text';
 import { useTheme } from '../theme';
+import { newTestamentFirst, refInScope, scopeCounts } from '../searchScope';
+import type { Scope } from '../searchScope';
 import { shortBookName } from '../shortNames';
 import type { Book, LexiconHit, Ref, VerseRow, WordPick } from '../types';
 
@@ -26,8 +28,6 @@ interface Props {
 /** Verses read and shown at a time; "Show more" adds the next lot. */
 const PAGE = 100;
 
-/** Which matches are listed: all, one Testament or one book. */
-type Scope = 'all' | 'OT' | 'NT' | number;
 
 // Shown under an empty search box: a reference, a word and a Strong's number.
 const ENGLISH_EXAMPLES = ['John 3:16', 'Psalm 23', 'love', 'G26'];
@@ -76,8 +76,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
       try {
         const [refs, hits] = await Promise.all([searchText(db, translation, q, () => latest.current !== id), searchLexicon(db, q, 8)]);
         if (latest.current !== id) return;
-        const nt = refs.filter((r) => testament.get(r.book) === 'NT');
-        const ordered = [...nt, ...refs.filter((r) => testament.get(r.book) !== 'NT')];
+        const ordered = newTestamentFirst(refs, testament);
         const rows = await getVerses(db, translation, ordered.slice(0, PAGE));
         if (latest.current !== id) return;
         setMatches(ordered);
@@ -98,21 +97,13 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
   }, [db, translation, query, strongsId, goTo?.book, goTo?.chapter, goTo?.verse]);
 
   const testament = useMemo(() => new Map(books.map((b) => [b.id, b.testament])), [books]);
-  const inScope = useCallback((r: Ref, sc: Scope) => sc === 'all' || (typeof sc === 'number' ? r.book === sc : testament.get(r.book) === sc), [testament]);
+  const inScope = useCallback((r: Ref, sc: Scope) => refInScope(r, sc, testament), [testament]);
   const scoped = useMemo(() => (matches ?? []).filter((r) => inScope(r, scope)), [matches, scope, inScope]);
   // The chips above the list: all, each Testament, and the books with most matches.
   const chips = useMemo(() => {
-    if (!matches || matches.length < 2) return [];
-    const perBook = new Map<number, number>();
-    for (const r of matches) perBook.set(r.book, (perBook.get(r.book) ?? 0) + 1);
-    const nt = matches.filter((r) => testament.get(r.book) === 'NT').length;
-    const list: { scope: Scope; label: string; n: number }[] = [{ scope: 'all', label: t('allResults'), n: matches.length }];
-    if (nt > 0 && nt < matches.length) list.push({ scope: 'NT', label: t('newTestament'), n: nt }, { scope: 'OT', label: t('oldTestament'), n: matches.length - nt });
-    if (perBook.size > 1) {
-      const top = [...perBook].sort((a, b) => b[1] - a[1] || a[0] - b[0]).slice(0, 8);
-      for (const [book, n] of top) list.push({ scope: book, label: shortBookName(book, translation) || bookName(books, book, translation), n });
-    }
-    return list;
+    const label = (sc: Scope) =>
+      sc === 'all' ? t('allResults') : sc === 'NT' ? t('newTestament') : sc === 'OT' ? t('oldTestament') : shortBookName(sc, translation) || bookName(books, sc, translation);
+    return scopeCounts(matches ?? [], testament).map((c) => ({ ...c, label: label(c.scope) }));
   }, [matches, testament, books, translation, t]);
   const chooseScope = async (next: Scope) => {
     if (!matches || next === scope) return;

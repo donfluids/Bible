@@ -257,6 +257,30 @@ Malayalam in 15 chapters; the WEB's Romans 14:24–26, the doxology the KJV has 
 translation keeps the verse (staying in the same chapter where a Malayalam verse holds
 two KJV verses), and Compare shows every verse that holds the same words.
 
+## Checks before a release
+
+```
+npm test             # typecheck, reference finder and logic tests (scripts/test-logic.mts)
+npm run check-data   # the built databases: numbering, text, links, verse counts
+npm run smoke        # every main screen of each app in a browser, at four sizes
+```
+
+- `npm test` covers what once broke without anyone seeing: which Greek or Hebrew word a
+  tapped word stands for, the word sheet's chips and Malayalam headline, settings and
+  saved card designs read back from a damaged file, search order and filters, Malayalam
+  search spelling, the Malayalam meanings of the build (`scripts/lib/forms.mjs`), and
+  patterns that must stay fast on long text.
+- `npm run check-data` runs after every `npm run build-db`. Besides the rules (no gaps,
+  no empty verses, no stray characters, every link to a Strong's entry that exists), it
+  compares each chapter's verse count with `data/checks/verse-counts.json`; after an
+  intended change run it with `-- --update` and commit the snapshot.
+- `npm run smoke` needs the web packages once: `npm install --no-save react-dom@19.2.3
+  react-native-web@^0.21.2`. It fails on a screen that does not open, a step that does
+  not work or a JavaScript error, and leaves a screenshot of each step in `smoke-out/`.
+- What only a phone can show (the photo picker, voices, the back button, TalkBack, an
+  update over the old version) is in [`docs/testing/phone-checklist.md`](docs/testing/phone-checklist.md),
+  about 20 minutes a phone.
+
 ## Sources and licences
 
 - **King James Version**, 1769 text with Strong's numbers, from

@@ -19,6 +19,7 @@ import { FLAG_LXX, FLAG_NOT_IN_BYZ, FLAG_NOT_IN_NA, FLAG_NOT_IN_TR, FLAG_REPLACE
 import type { Book, OriginalWord, Ref, RelatedWord, Rendering, StrongsEntry, TranslationId, VerseRow, WordPick } from '../types';
 import { Icon, IconButton } from './Icon';
 import { VerseText } from './VerseText';
+import { headlineWords, sameSpelling, topRenderings, wordsInVerse } from '../wordChoice';
 
 /** A window at least this wide shows the word sheet as a panel beside the text. */
 export const PANEL_MIN_WIDTH = 1000;
@@ -99,34 +100,8 @@ function syllables(pron: string | null): { text: string; stressed: boolean }[] {
     .map((p) => ({ text: p.includes("'") ? p.replace(/'/g, '').toUpperCase() : p, stressed: p.includes("'") }));
 }
 
-/** English words that only travel with a tagged word (θεός: "the 12"), not renderings of it. */
-const LONE_FUNCTION_WORDS = new Set(['the', 'a', 'an', 'of', 'to', 'and', 'in', 'that', 'for', 'by', 'with', 'is', 'be', 'it']);
 
-/**
- * The renderings worth a chip: the main ones, not one-off phrasings or the stray words a
- * machine-made link leaves (under 1% of the verses, and never fewer than two), nor a bare
- * "the" or "of" after the first (which stays: for ὁ or καί it is the rendering).
- */
-function topRenderings(list: Rendering[], max: number, total?: number): Rendering[] {
-  const floor = Math.max(2, (total ?? list[0]?.count ?? 0) * 0.01);
-  return list.filter((r, i) => i === 0 || (r.count >= floor && !LONE_FUNCTION_WORDS.has(r.word.toLowerCase()))).slice(0, max);
-}
 
-/**
- * The Malayalam headline: the commonest rendering, and a second one when it is a real
- * alternative: at least 4% of uses, and not another form of the first (ജനം beside
- * ജനത്തെ, ദൈവസ്നേഹം beside സ്നേഹം, മരിക്കും beside മരിച്ചു, by the same first two
- * letters). ദൈവം · ദേവന്മാർ, സമാധാനം · സുഖം, സ്നേഹം.
- */
-function headlineWords(list: Rendering[]): string[] {
-  if (list.length === 0) return [];
-  const total = list.reduce((n, r) => n + r.count, 0);
-  const first = list[0].word;
-  const stem = (word: string) => word.slice(0, -1);
-  const sameWord = (word: string) => word.slice(0, 2) === first.slice(0, 2) || word.includes(stem(first)) || first.includes(stem(word));
-  const second = list.slice(1).find((r) => r.count >= total * 0.04 && !sameWord(r.word));
-  return second ? [first, second.word] : [first];
-}
 
 /**
  * Bottom sheet for a tapped word. It opens at half height with the word, its meaning and
@@ -270,18 +245,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
       // A word tapped in a translation: the form the Hebrew or Greek has in that verse.
       // When the verse has as many of them as the translation, the nth word goes with the nth;
       // otherwise each form once, punctuation aside.
-      const matching = verseWords.filter((w) => w.strongs === strongs);
-      const nth = pick.nth?.[strongs];
-      const seen = new Set<string>();
-      const inVerse =
-        nth && nth[1] === matching.length
-          ? [matching[nth[0]]]
-          : matching.filter((w) => {
-              const key = `${bare(w.text)}|${w.morph}`;
-              if (seen.has(key)) return false;
-              seen.add(key);
-              return true;
-            });
+      const inVerse = wordsInVerse(verseWords, strongs, pick.nth?.[strongs]);
       const parts = choices.map((id, i) => {
         const e = id === strongs ? entry : partEntries[i];
         return { id, lemma: e?.lemma ?? null, gloss: e?.gloss ?? null };
@@ -317,7 +281,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
   // view, or for a translation word, every form with its number in that verse.
   const inVerse = original ? [original] : (data?.inVerse ?? []);
   // The dictionary spelling is left out when the word in the verse above already reads the same.
-  const sameTranslit = !!data?.entry?.translit && inVerse.some((w) => !!w.translit && plain(w.translit) === plain(data.entry!.translit!));
+  const sameTranslit = !!data?.entry?.translit && inVerse.some((w) => !!w.translit && sameSpelling(w.translit, data.entry!.translit!));
   const tappedScript = pick.word ? scriptOf(pick.word) : null;
   const tappedFont = tappedScript ? scriptureFont(tappedScript, settings.serif, true) : undefined;
   const pron = syllables(entry?.pron ?? null);
@@ -615,10 +579,6 @@ function PanelFrame({ theme, children }: FrameProps) {
   return <View style={[styles.panel, { backgroundColor: theme.card, borderLeftColor: theme.border }]}>{children}</View>;
 }
 
-/** A word without its punctuation. */
-const bare = (s: string) => s.replace(/[^\p{L}\p{M}]/gu, '');
-/** A transliteration without accents or case. */
-const plain = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
 
 /** One Hebrew or Greek word as it stands in the verse: form, transliteration, gloss, grammar. */
 function InVerseWord({ word, hebrew, font, theme, t, first, compact }: { word: OriginalWord; hebrew: boolean; font: string | undefined; theme: Theme; t: ReturnType<typeof useT>; first: boolean; compact: boolean }) {

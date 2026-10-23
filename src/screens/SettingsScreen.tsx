@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Constants from 'expo-constants';
 import { useSQLiteContext } from 'expo-sqlite';
 import { AppSwitch } from '../components/AppSwitch';
 import { Header } from '../components/Header';
@@ -206,6 +207,10 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
           <Text style={[styles.about, { color: theme.text, marginTop: 10 }]}>{t('aboutInterlinear')}</Text>
           {EDITION.translations.includes('WEB') ? <Text style={[styles.about, { color: theme.muted, marginTop: 10 }]}>{t('aboutWeb')}</Text> : null}
           {meta.built ? <Text style={[styles.rowSub, { color: theme.muted, marginTop: 10 }]}>{t('databaseBuilt', { date: meta.built })}</Text> : null}
+          {/* The app's version and build number, for a report of a problem (docs/testing). */}
+          <Text style={[styles.rowSub, { color: theme.muted, marginTop: 4 }]} selectable>
+            {t('appVersion', { version: `${Constants.expoConfig?.version ?? '?'} (${Constants.expoConfig?.android?.versionCode ?? Constants.expoConfig?.ios?.buildNumber ?? '?'})` })}
+          </Text>
           <Pressable onPress={onOpenLicences} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>
             <Text style={[styles.rowTitle, { color: theme.accent, flex: 1 }]}>{t('sourcesLicences')}</Text>
             <Icon name="chevron_right" color={theme.accent} />

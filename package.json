@@ -38,6 +38,7 @@
     "@types/react": "~19.2.2",
     "material-symbols": "^0.47.6",
     "playwright-core": "^1.56.1",
+    "tsx": "^4.23.15",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -48,6 +49,9 @@
     "typecheck": "tsc --noEmit",
     "fetch-data": "bash scripts/fetch-data.sh",
     "build-db": "node --no-warnings scripts/build-db.mjs",
+    "test": "tsc --noEmit && tsx scripts/test-refs.mts && tsx scripts/test-logic.mts",
+    "check-data": "node --no-warnings scripts/check-data.mjs",
+    "smoke": "node scripts/smoke.mjs",
     "doctor": "npx expo-doctor",
     "start:ml": "BIBLE_EDITION=ml expo start",
     "start:ta": "BIBLE_EDITION=ta expo start",

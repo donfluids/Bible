@@ -51,3 +51,6 @@ credentials/
 
 # Edition databases are bible-en.db, bible-ml.db and bible-ta.db; bible.db is only a name Metro redirects
 assets/db/bible.db
+
+# Screen check output (scripts/smoke.mjs)
+smoke-out/
