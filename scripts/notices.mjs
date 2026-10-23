@@ -121,12 +121,16 @@ const GROUP_LICENCE = [
   [/^org\.brotli$/, 'MIT'],
   [/^com\.facebook\.(fresco|soloader|yoga|fbjni|hermes|infer\.annotation)$/, 'MIT'],
   [/^com\.parse\.bolts$/, 'BSD-3-Clause'],
+  // Glide's POMs say "Simplified BSD License": its LICENSE file is the 2-clause text, with
+  // the Apache and MIT notices of the parts it took in (all in scripts/licences).
+  [/^com\.github\.bumptech\.glide$/, 'BSD-2-Clause'],
 ];
 // Copyright lines of the MIT and BSD libraries, from their licence files.
 const ANDROID_NOTICES = [
   [/^com\.facebook\./, 'Copyright (c) Meta Platforms, Inc. and affiliates.'],
   [/^org\.brotli$/, 'Copyright (c) 2009, 2010, 2013-2016 by the Brotli Authors.'],
   [/^com\.parse\.bolts$/, 'Copyright (c) 2013-present, Facebook, Inc. All rights reserved.'],
+  [/^com\.github\.bumptech\.glide$/, 'Copyright 2014 Google, Inc. All rights reserved.'],
   // pika ships no licence file; its POM gives the MIT licence, the author and the year.
   [/^io\.github\.lukmccall\.pika$/, 'Copyright (c) 2025 Łukasz Kosmaty'],
 ];
