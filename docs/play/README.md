@@ -14,6 +14,7 @@ their own listings.
 | `graphics/vedapusthakam-feature-*.png` | Feature graphics for the Malayalam app, Malayalam and English |
 | `screenshots/ml/*.png` | Eight framed phone screenshots for the Malayalam listing |
 | `screenshots/en/*.png` | The same eight with the interface in English and English captions, for the English translation |
+| `screenshots/tablet7-*/`, `screenshots/tablet10-*/` | Four tablet screenshots each (7-inch and 10-inch), Malayalam and English |
 | `website-privacy-page.md` | Brief for the riversresearch.org website project: where to publish the privacy policy and its exact text |
 
 The Malayalam wording in the listing and in the app's interface still needs a
@@ -98,6 +99,11 @@ Uninstalling removes the bookmarks and notes on that phone.
       bar is missing; the captions need a Malayalam speaker's read.
 - [ ] English translation of the listing: the eight in `screenshots/en/` (interface set to
       English, English captions, same order).
+- [ ] Tablet screenshots (from 0.4.11, which has the tablet layout and side by side): four
+      each for 7-inch (`screenshots/tablet7-ml/`, 1920 × 1080) and 10-inch
+      (`screenshots/tablet10-ml/`, 2560 × 1440): side by side, Greek words under both texts,
+      a word's sheet, dark theme. The English translation uses `tablet7-en/` and `tablet10-en/`.
+      Rendered the same way as the phone ones; the Malayalam captions need a speaker's read.
 - [ ] Category: Books & Reference. Contact email; website optional.
 
 ## 6. Countries and release
