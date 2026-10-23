@@ -214,6 +214,33 @@ Words chosen for the app's own features, used throughout:
 | cardVerses | Verses | வசனங்கள் | |
 | cardShare | Share picture | படத்தைப் பகிர் | |
 | cardFailed | The picture could not be made. | படத்தை உருவாக்க முடியவில்லை. | |
+| cardPhoto | Your photo | உங்கள் புகைப்படம் | |
+| cardChangePhoto | Change photo | புகைப்படத்தை மாற்று | |
+| cardRemovePhoto | Remove photo | புகைப்படத்தை நீக்கு | |
+| cardPhotoFailed | The photo could not be opened. | புகைப்படத்தைத் திறக்க முடியவில்லை. | |
+| cardVeil | Over the photo | புகைப்படத்தின் மேல் | |
+| cardVeilLight | Light | வெளிர் | |
+| cardVeilDark | Dark | அடர் | |
+| cardFaint | Faint | மெலிதாக | |
+| cardMedium | Medium | நடுத்தரம் | |
+| cardStrong | Strong | அதிகம் | |
+| cardBlur | Blur the photo | புகைப்படத்தை மங்கலாக்கு | |
+| cardBlurDetail | The words stand out more | சொற்கள் இன்னும் தெளிவாகத் தெரியும் | |
+| cardBackground | Background | பின்னணி | |
+| cardDesignColours | Design's own colours | வடிவமைப்பின் நிறங்கள் | |
+| cardPlace | Text position | உரையின் இடம் | |
+| cardTop | Top | மேலே | |
+| cardMiddle | Middle | நடுவில் | |
+| cardBottom | Bottom | கீழே | |
+| cardFace | Typeface | எழுத்துரு | |
+| cardFaceBook | Book | புத்தக | |
+| cardFacePlain | Plain | எளிய | |
+| cardExtras | Pictures and lines | படங்களும் கோடுகளும் | |
+| cardExtrasDetail | The design's pictures, border and cross | வடிவமைப்பின் படங்கள், ஓரக்கோடு, சிலுவை | |
+| cardSaveLook | Save as my design | என் வடிவமைப்பாகச் சேமி | |
+| cardLookSaved | Saved. It is first in the designs now. | சேமிக்கப்பட்டது. இனி வடிவமைப்புகளில் முதலில் இருக்கும். | |
+| cardMyDesign | My design {n} | என் வடிவமைப்பு {n} | |
+| cardRemoveLook | Remove this design? | இந்த வடிவமைப்பை நீக்கவா? | |
 | cardFewerVerses | One verse fewer | ஒரு வசனம் குறைவாக | |
 | cardMoreVerses | One more verse | இன்னும் ஒரு வசனம் | |
 | occasionNone | None | எதுவுமில்லை | |
