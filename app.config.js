@@ -18,7 +18,7 @@ const EDITIONS = {
     // Splash colours are the app's own backgrounds, so opening does not flash.
     splashBackground: '#FBF8F1',
     splashBackgroundDark: '#15130F',
-    adaptiveBackground: '#F4EFE4',
+    adaptiveBackground: '#6C4520',
   },
   ml: {
     name: 'വേദപുസ്തകം',
@@ -29,7 +29,7 @@ const EDITIONS = {
     easProjectId: '',
     splashBackground: '#FBF8F1',
     splashBackgroundDark: '#15130F',
-    adaptiveBackground: '#EEF3E6',
+    adaptiveBackground: '#6C4520',
   },
   ta: {
     name: 'வேதாகமம்',
@@ -40,7 +40,7 @@ const EDITIONS = {
     easProjectId: '',
     splashBackground: '#F4F7FB',
     splashBackgroundDark: '#0F1319',
-    adaptiveBackground: '#E9EFF7',
+    adaptiveBackground: '#6C4520',
   },
 };
 

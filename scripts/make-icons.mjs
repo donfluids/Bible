@@ -1,49 +1,45 @@
-// Draws an edition's app icon, Android adaptive icon layers, splash images and favicon
-// from the book in icon-art.mjs.
-//   node scripts/make-icons.mjs en     parchment and brown (English edition)
-//   node scripts/make-icons.mjs ml     cream and forest green (Malayalam edition)
-//   node scripts/make-icons.mjs ta     pale blue and deep blue (Tamil edition)
+// Draws the app icon, Android adaptive icon layers, splash images, favicon and the 512 × 512
+// Play icon from the art in icon-art.mjs. All three editions share it.
+//   node scripts/make-icons.mjs        writes assets/icons/{en,ml,ta}/ and docs/play/graphics/*-icon-512.png
 import fs from 'node:fs';
 import path from 'node:path';
-import { COLOURS, MIDDLE, ROOT, book, fontFaces, launch, monochrome } from './icon-art.mjs';
+import { MIDDLE, ROOT, art, background, launch, monochrome } from './icon-art.mjs';
 
-const edition = process.argv[2] ?? 'en';
-const c = COLOURS[edition];
-if (!c) {
-  console.error(`unknown edition ${edition}`);
-  process.exit(1);
-}
-const out = path.join(ROOT, 'assets', 'icons', edition);
-fs.mkdirSync(out, { recursive: true });
+// art: SVG in the art's units; scale: its size on a 1024 canvas; back: the brown behind it.
+const svg = (inner, scale, back, size = 1024) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 1024 1024">
+  ${back ? background() : ''}
+  <g transform="translate(512,${512 - MIDDLE * scale}) scale(${scale})">${inner}</g></svg>`;
 
-// art: SVG for the book; scale: its size on a 1024 canvas; background: colour or none.
-const svg = (art, scale, background) => `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  ${background ? `<rect width="1024" height="1024" fill="${background}"/>` : ''}
-  <g transform="translate(512,${512 - MIDDLE * scale}) scale(${scale})">${art}</g></svg>`;
+// The splash shows the icon as a rounded tile on the app's own cream or dark page.
+const tile = `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs><clipPath id="tile"><rect x="232" y="232" width="560" height="560" rx="128"/></clipPath></defs>
+  <g clip-path="url(#tile)"><g transform="translate(232,232) scale(${560 / 1024})">${svg(art(), 1, true)}</g></g></svg>`;
 
 const files = {
-  'icon.png': svg(book(c), 0.92, c.bg),
+  'icon.png': svg(art(), 1, true),
   // Adaptive icons show the middle 72 of 108 dp and may cut to a 66 dp circle (radius 313 of
-  // 1024); the cover's lower corners, 542 from the centre, set the scale.
-  'android-icon-foreground.png': svg(book(c), 0.57, null),
-  'android-icon-background.png': `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"><rect width="1024" height="1024" fill="${c.bg}"/></svg>`,
-  'android-icon-monochrome.png': svg(monochrome(), 0.57, null),
-  'splash-icon.png': svg(book(c), 0.84, null),
-  'splash-icon-dark.png': svg(book(c), 0.84, null),
+  // 1024); the book's lower corners, 399 from the middle, set the scale.
+  'android-icon-foreground.png': svg(art(), 0.74, false),
+  'android-icon-background.png': `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024">${background()}</svg>`,
+  'android-icon-monochrome.png': svg(monochrome(), 0.74, false),
+  'splash-icon.png': tile,
+  'splash-icon-dark.png': tile,
 };
 
 const browser = await launch();
 const page = await browser.newPage({ viewport: { width: 1024, height: 1024 }, deviceScaleFactor: 1 });
-const fonts = fontFaces();
-for (const [name, body] of Object.entries(files)) {
-  await page.setContent(`<!doctype html><style>${fonts} html, body { margin: 0; background: transparent; }</style>${body}`);
-  await page.evaluate(() => document.fonts.ready);
-  await page.locator('svg').screenshot({ path: path.join(out, name), omitBackground: true });
+const shoot = async (body, file, size = 1024) => {
+  await page.setViewportSize({ width: size, height: size });
+  await page.setContent(`<!doctype html><style>html, body { margin: 0; background: transparent; }</style>${body}`);
+  await page.locator('svg').first().screenshot({ path: file, omitBackground: true });
+};
+for (const edition of ['en', 'ml', 'ta']) {
+  const out = path.join(ROOT, 'assets', 'icons', edition);
+  fs.mkdirSync(out, { recursive: true });
+  for (const [name, body] of Object.entries(files)) await shoot(body, path.join(out, name));
+  await shoot(svg(art(), 1, true, 48), path.join(out, 'favicon.png'), 48);
 }
-// The favicon: the full icon, small.
-await page.setContent(`<!doctype html><style>${fonts} html, body { margin: 0; }</style>
-  <div style="width:48px;height:48px">${files['icon.png'].replace('width="1024" height="1024"', 'width="48" height="48"')}</div>`);
-await page.evaluate(() => document.fonts.ready);
-await page.locator('svg').screenshot({ path: path.join(out, 'favicon.png') });
+const graphics = path.join(ROOT, 'docs', 'play', 'graphics');
+for (const name of ['bible', 'vedapusthakam', 'vedagamam']) await shoot(svg(art(), 1, true, 512), path.join(graphics, `${name}-icon-512.png`), 512);
 await browser.close();
-console.log(`icons for edition ${edition} written to ${path.relative(ROOT, out)}`);
+console.log('icons written to assets/icons/{en,ml,ta} and docs/play/graphics');

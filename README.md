@@ -82,7 +82,7 @@ rendering counts all work in Malayalam.
   comfortable column width.
 - Appearance: light, sepia or dark (or follow the phone), a serif typeface, verse-per-line
   or paragraph layout, and keep-the-screen-awake. Both apps are brown on cream
-  paper; the Malayalam app's icon is green (an open book with א and α and a gold dove, the Holy Spirit, coming down onto the pages). Android-style top bars and icons (Material Symbols
+  paper; all three apps share one icon, an open white book under a lamp's flame on brown (Psalm 119:105). Android-style top bars and icons (Material Symbols
   Rounded), and one bottom-sheet style throughout; the verse sheet has Copy, Share,
   Bookmark and Note buttons and highlight colours in one place.
 - Text size in eight steps, from Settings or by pinching the text with two fingers.
@@ -181,13 +181,13 @@ src/components/          Header, Icon, SectionLabel, VerseText, InterlinearVerse
 src/screens/             Reader, Books, Chapters, Saved, Notebook, NotePage, Search, Concordance, Settings, Licences
 scripts/fetch-data.sh    Downloads the source texts into data/raw/ (not committed)
 scripts/build-db.mjs     Builds assets/db/bible-<edition>.db from data/raw/
-scripts/make-icons.mjs   Draws the icon, adaptive icon layers and splash images (SVG, rendered with Chromium)
-scripts/make-feature-graphic.mjs  Draws the Play feature graphics from the same book (scripts/icon-art.mjs)
+scripts/make-icons.mjs   Draws the icon, adaptive icon layers, splash images and 512 px Play icons (SVG, rendered with Chromium)
+scripts/make-feature-graphic.mjs  Draws the Play feature graphics from the same art (scripts/icon-art.mjs)
 scripts/make-icon-font.py  Cuts the interface icons out of Material Symbols Rounded
 scripts/notices.mjs      Lists the third-party software in the app with licences and copyright lines (src/notices.json)
 scripts/tamil-review-strings.mjs  Rewrites the strings table of docs/tamil-review.md from src/i18n.ts
 assets/db/               bible-en.db (32 MB) and bible-ml.db (47 MB), one per edition
-assets/icons/            Icon, adaptive icon layers and splash images per edition
+assets/icons/            Icon, adaptive icon layers and splash images per edition (the same in each)
 data/overrides/          Hand corrections: Malayalam text, verse map, short meanings
 src/edition.ts           Which texts and interface languages this build carries
 src/i18n.ts              Interface strings in English and Malayalam
