@@ -85,7 +85,17 @@ function load(edition: Edition): Loaded<Settings> {
     (raw) => {
       const parsed = JSON.parse(raw) as Partial<Settings>;
       if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('not settings');
-      const merged = { ...defaults, ...parsed };
+      // A stored value of the wrong kind (from a damaged or altered file) gives way to the
+      // default, and sizes stay within what the screen can lay out.
+      const kept = Object.fromEntries(
+        Object.entries(parsed).filter(([k, v]) => {
+          const d = (defaults as unknown as Record<string, unknown>)[k];
+          return d === undefined || (v !== null && typeof v === typeof d && Array.isArray(v) === Array.isArray(d));
+        }),
+      ) as Partial<Settings>;
+      const merged = { ...defaults, ...kept };
+      merged.fontSize = Math.min(FONT_SIZES[FONT_SIZES.length - 1], Math.max(FONT_SIZES[0], merged.fontSize || defaults.fontSize));
+      merged.readSpeed = Math.min(2, Math.max(0.5, merged.readSpeed || 1));
       // Fields of older versions that moved to src/place.ts.
       for (const old of ['position', 'recent', 'lastChapters']) delete (merged as Record<string, unknown>)[old];
       if (!edition.translations.includes(merged.translation)) merged.translation = edition.defaultTranslation;

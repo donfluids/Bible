@@ -264,6 +264,8 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
           placeholderTextColor={theme.muted}
           autoFocus
           autoCorrect={false}
+          // Longer than any reference or phrase; a pasted page would only slow every keystroke.
+          maxLength={200}
           returnKeyType="search"
           style={[styles.input, { color: theme.text }]}
         />
