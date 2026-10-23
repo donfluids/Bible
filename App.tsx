@@ -18,7 +18,7 @@ import { CONFIGURED_EDITION, EDITIONS, EditionContext, isEditionId } from './src
 import type { Edition, Language } from './src/edition';
 import { getBooks, getMeta } from './src/queries';
 import { SettingsProvider, useSettings } from './src/settings';
-import { NotebookProvider } from './src/notebook';
+import { NotebookProvider, useNotebook } from './src/notebook';
 import { useTheme } from './src/theme';
 import type { Book, Ref, WordPick } from './src/types';
 import { PANEL_MIN_WIDTH, WordSheet } from './src/components/WordSheet';
@@ -31,6 +31,7 @@ import { SearchScreen } from './src/screens/SearchScreen';
 import { LicencesScreen } from './src/screens/LicencesScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { NotebookScreen } from './src/screens/NotebookScreen';
+import { InkPageScreen } from './src/screens/InkPageScreen';
 import { NotePageScreen } from './src/screens/NotePageScreen';
 import { CardScreen } from './src/screens/CardScreen';
 import { switchTab } from './src/components/TabBar';
@@ -409,13 +410,17 @@ function SettingsRoute({ navigation }: Props<'Settings'>) {
 }
 
 function NotebookRoute({ navigation }: Props<'Notebook'>) {
-  return <NotebookScreen onOpenPage={(id, isNew) => navigation.push('NotePage', { id, isNew })} />;
+  return <NotebookScreen onOpenPage={(id, isNew, handwritten) => navigation.push('NotePage', { id, isNew, handwritten })} />;
 }
 
 function NotePageRoute({ navigation, route }: Props<'NotePage'>) {
   const { books } = useApp();
   const t = useT();
   const openRef = useOpenRef(navigation, t('notebook'));
+  // A handwritten page stays one when it is opened again.
+  const notebook = useNotebook();
+  const [handwritten] = useState(() => !!route.params.handwritten || !!notebook.page(route.params.id)?.ink);
+  if (handwritten) return <InkPageScreen id={route.params.id} onBack={() => navigation.goBack()} />;
   return <NotePageScreen id={route.params.id} isNew={route.params.isNew} books={books} onOpenRef={openRef} onBack={() => navigation.goBack()} />;
 }
 

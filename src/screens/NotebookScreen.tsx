@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import { Header, HeaderIconButton } from '../components/Header';
 import { Icon } from '../components/Icon';
+import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
+import type { Paper } from '../ink';
 import { TabBar } from '../components/TabBar';
 import { scriptOf, scriptureFont } from '../fonts';
 import { useT } from '../i18n';
@@ -12,16 +14,21 @@ import { MAX_CONTENT_WIDTH } from '../text';
 import { useTheme } from '../theme';
 
 interface Props {
-  onOpenPage: (id: string, isNew?: boolean) => void;
+  onOpenPage: (id: string, isNew?: boolean, handwritten?: boolean) => void;
 }
 
-/** The notebook's pages, the most recently edited first. */
+/** The notebook's pages, the most recently edited first. A new page is typed or handwritten. */
 export function NotebookScreen({ onOpenPage }: Props) {
   const theme = useTheme();
   const t = useT();
   const { settings } = useSettings();
   const { pages, create } = useNotebook();
-  const newPage = () => onOpenPage(create(), true);
+  const [choosing, setChoosing] = useState(false);
+  const newPage = () => setChoosing(true);
+  const start = (paper?: Paper) => {
+    setChoosing(false);
+    onOpenPage(create('', paper), true, !!paper);
+  };
   const font = (text: string, bold = false) => scriptureFont(scriptOf(text), false, bold);
 
   return (
@@ -45,10 +52,10 @@ export function NotebookScreen({ onOpenPage }: Props) {
           keyExtractor={(p) => p.id}
           contentContainerStyle={[styles.list, { paddingBottom: 24 }]}
           renderItem={({ item }) => {
-            const name = pageName(item, t('untitled'));
-            // The first lines after the one used as the name.
+            const name = pageName(item, item.ink ? t('handwritten') : t('untitled'));
+            // The first lines after the one used as the name; for a handwritten page, that it is one.
             const rest = item.title.trim() ? item.body : item.body.split('\n').slice(1).join('\n');
-            const preview = rest.replace(/\s+/g, ' ').trim();
+            const preview = item.ink ? (item.title.trim() ? t('handwritten') : '') : rest.replace(/\s+/g, ' ').trim();
             const date = new Date(item.updated).toLocaleDateString(settings.language === 'ml' ? 'ml-IN' : settings.language === 'ta' ? 'ta-IN' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
             return (
               <Pressable
@@ -57,9 +64,12 @@ export function NotebookScreen({ onOpenPage }: Props) {
                 accessibilityRole="button"
                 style={({ pressed }) => [styles.row, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
               >
-                <Text style={[styles.name, { color: theme.text, fontFamily: font(name, true), fontWeight: scriptOf(name) ? 'normal' : '600' }]} numberOfLines={1}>
-                  {name}
-                </Text>
+                <View style={styles.nameRow}>
+                  {item.ink ? <Icon name="draw" size={18} color={theme.muted} /> : null}
+                  <Text style={[styles.name, { color: theme.text, fontFamily: font(name, true), fontWeight: scriptOf(name) ? 'normal' : '600' }]} numberOfLines={1}>
+                    {name}
+                  </Text>
+                </View>
                 {preview ? (
                   <Text style={[styles.preview, { color: theme.muted, fontFamily: font(preview) }]} numberOfLines={2}>
                     {preview}
@@ -71,6 +81,11 @@ export function NotebookScreen({ onOpenPage }: Props) {
           }}
         />
       )}
+      <SimpleSheet visible={choosing} title={t('newPage')} onClose={() => setChoosing(false)}>
+        <SheetAction icon="edit_note" label={t('pageTyped')} detail={t('pageTypedDetail')} onPress={() => start()} />
+        <SheetAction icon="draw" label={t('pageHandLined')} detail={t('pageHandDetail')} onPress={() => start('lined')} />
+        <SheetAction icon="draw" label={t('pageHandPlain')} detail={t('pageHandDetail')} onPress={() => start('plain')} />
+      </SimpleSheet>
       <TabBar current="Notebook" />
     </View>
   );
@@ -80,7 +95,8 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   list: { alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
   row: { paddingHorizontal: 18, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth, gap: 3 },
-  name: { fontSize: 17 },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  name: { fontSize: 17, flexShrink: 1 },
   preview: { fontSize: 15, lineHeight: 22 },
   date: { fontSize: 12, marginTop: 2 },
   emptyBox: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, paddingBottom: 96 },

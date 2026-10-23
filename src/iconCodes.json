@@ -46,5 +46,11 @@
  "pause": 57388,
  "skip_previous": 57389,
  "skip_next": 57390,
- "chevron_left": 57391
+ "chevron_left": 57391,
+ "draw": 57392,
+ "undo": 57393,
+ "redo": 57394,
+ "line_weight": 57395,
+ "format_line_spacing": 57396,
+ "stylus": 57397
 }

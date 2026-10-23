@@ -68,6 +68,19 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
 - [ ] New page in the notebook: type a title and "John 3:16" (or യോഹന്നാൻ 3:16); after
       Done the reference is a link and the verse is quoted under it. Edit and share
       the page; delete a page.
+- [ ] **Handwritten page**: New page → Handwritten, lined paper. Write a few lines with
+      a finger: the line follows the finger without lag. Try each pen, Thick, the
+      highlighter over writing (the writing stays dark), the eraser, Undo and Redo.
+- [ ] Move the page with two fingers: it moves and nothing is written. Write near the
+      foot: the page grows.
+- [ ] **With a pen** (S Pen, Apple Pencil, any active stylus): write with the pen while
+      the hand rests on the screen. After the first pen stroke the app says the pen was
+      found; the resting hand writes nothing, and one finger now moves the page.
+      Note the phone or tablet and the pen.
+- [ ] Type a title, leave the page, close the app completely, open the page again: the
+      writing is all there. Switch to plain paper and back. Share the page: the picture
+      shows the title and the writing.
+- [ ] A handwritten page is not offered in "Add to notebook" from the verse menu.
 - [ ] Saved shows the bookmarks, highlights and notes from section 3.
 - [ ] Search for a word: results start in the New Testament; the Old and New Testament
       and book buttons narrow the list; Show more adds verses. Search for a reference

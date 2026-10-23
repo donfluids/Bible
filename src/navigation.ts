@@ -17,7 +17,7 @@ export type RootStackParamList = {
   Licences: undefined;
   Notebook: undefined;
   /** `isNew` opens a page just made, ready for writing. */
-  NotePage: { id: string; isNew?: boolean };
+  NotePage: { id: string; isNew?: boolean; handwritten?: boolean };
   /** "Share as card" for the verse at `ref`. */
   Card: { ref: Ref; translation: TranslationId };
 };

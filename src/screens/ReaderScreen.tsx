@@ -1489,7 +1489,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         {toNotebook ? (
           <>
             <SheetAction icon="add" label={t('newPage')} onPress={() => addToPage(toNotebook, null)} />
-            {notebook.pages.map((p) => (
+            {notebook.pages.filter((p) => !p.ink).map((p) => (
               <SheetAction key={p.id} icon="note_stack" label={pageName(p, t('untitled'))} onPress={() => addToPage(toNotebook, p.id)} />
             ))}
           </>

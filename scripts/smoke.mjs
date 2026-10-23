@@ -185,6 +185,8 @@ for (const edition of EDITIONS) {
     await step('notebook', async (snap) => {
       await tab('notebook');
       await vis(page.getByText(t.newPage, { exact: true })).click();
+      await wait(800);
+      await vis(page.getByText(t.pageTyped, { exact: true })).click();
       await wait(1200);
       await vis(page.locator('textarea')).fill(PAGE[edition]);
       await wait(600);
@@ -195,6 +197,28 @@ for (const edition of EDITIONS) {
       await snap();
       await vis(page.getByLabel(t.back)).click();
       await wait(1200);
+    });
+    await step('handwritten', async (snap) => {
+      await vis(page.getByLabel(t.newPage)).click();
+      await wait(800);
+      await vis(page.getByText(t.pageHandLined, { exact: true })).click();
+      await wait(1500);
+      const svg = await page.evaluate(() => {
+        const s = [...document.querySelectorAll('svg')].sort((a, b) => b.getBoundingClientRect().height - a.getBoundingClientRect().height)[0].getBoundingClientRect();
+        return { x: s.x, y: s.y, w: s.width };
+      });
+      await page.mouse.move(svg.x + svg.w * 0.15, svg.y + 80);
+      await page.mouse.down();
+      for (let i = 1; i <= 12; i++) await page.mouse.move(svg.x + svg.w * (0.15 + i * 0.05), svg.y + 80 + (i % 2) * 24, { steps: 3 });
+      await page.mouse.up();
+      await wait(600);
+      const strokes = await page.evaluate(() => [...document.querySelectorAll('svg path')].filter((e) => e.getAttribute('d')?.startsWith('M')).length);
+      if (strokes < 1) throw new Error('the stroke was not drawn');
+      await snap();
+      await vis(page.getByLabel(t.back)).click();
+      await wait(1200);
+      // The page is in the list, marked as handwritten.
+      await shows(t.handwritten);
     });
     await step('search', async (snap) => {
       await tab('tabRead');

@@ -430,6 +430,7 @@ Words chosen for the app's own features, used throughout:
 | aboutInterlinear | The Hebrew (Leningrad Codex) and Greek words, with transliteration, glosses and grammar are from the Translators Amalgamated Hebrew OT and Greek NT of STEPBible.org (Tyndale House, Cambridge). The Greek is spelled as in the Nestle-Aland 28th edition and has every word of the Textus Receptus and the Byzantine text; where those texts have a different word from Nestle-Aland, their word is shown. Words not in the Nestle-Aland editions have a line beneath; tap one to see which texts have it. | எபிரெய (லெனின்கிராட் கோடெக்ஸ்), கிரேக்க வார்த்தைகள், ஒலிபெயர்ப்பு, பொருள், இலக்கணத்துடன், STEPBible.org (Tyndale House Cambridge) தயாரித்த Translators Amalgamated Hebrew OT and Greek NT-இலிருந்து. கிரேக்கம் நெஸ்ட்லே-ஆலந்து 28-ஆம் பதிப்பின் எழுத்துக்கூட்டலில் உள்ளது; டெக்ஸ்டஸ் ரிசெப்டஸ், பைசாந்திய பாடங்களின் ஒவ்வொரு வார்த்தையும் அதில் உண்டு. அவற்றில் வேறு வார்த்தை இருக்கும் இடத்தில் அந்த வார்த்தை காட்டப்படுகிறது. நெஸ்ட்லே-ஆலந்து பதிப்புகளில் இல்லாத வார்த்தைகளுக்குக் கீழே கோடு இருக்கும்; எந்தப் பாடங்களில் அது உள்ளது என்று அறியத் தொடுங்கள். | |
 | aboutWeb | The World English Bible is shown as plain text: the Strong's numbers in its source file are attached to the wrong words too often to use. Word lookups and verse lists use the King James Version; to tap the original words while reading the WEB, switch on Hebrew words or Greek words. | வேர்ல்டு இங்கிலீஷ் பைபிள் வெறும் உரையாக மட்டுமே காட்டப்படுகிறது: அதன் மூலக் கோப்பில் உள்ள ஸ்ட்ராங் எண்கள் அடிக்கடி தவறான வார்த்தைகளில் உள்ளன. சொல் விவரமும் வசனப் பட்டியலும் KJV-ஐப் பயன்படுத்துகின்றன. | |
 | databaseBuilt | Database built {date} | தரவுத்தளம் உருவாக்கப்பட்டது {date} | |
+| appVersion | Version {version} | பதிப்பு {version} | |
 | previewText | In the beginning | ஆதியிலே | |
 | title | (title) | (தலைப்பு) | |
 | notebook | Notebook | குறிப்பேடு | |
@@ -443,6 +444,25 @@ Words chosen for the app's own features, used throughout:
 | deletePageConfirm | Delete this page? It cannot be brought back. | இந்தப் பக்கத்தை நீக்கவா? பிறகு திரும்பப் பெற முடியாது. | |
 | cancel | Cancel | வேண்டாம் | |
 | sharePage | Share page | பக்கத்தைப் பகிர் | |
+| pageTyped | Typed page | தட்டச்சுப் பக்கம் | |
+| pageTypedDetail | References such as John 3:16 link to the verse | யோவான் 3:16 போன்ற குறிப்புகள் வசனத்துக்கு இணைப்பாகும் | |
+| pageHandPlain | Handwritten, plain paper | கையெழுத்து, வெற்றுத் தாள் | |
+| pageHandLined | Handwritten, lined paper | கையெழுத்து, கோடிட்ட தாள் | |
+| pageHandDetail | Write with a pen or your finger | பேனாவாலோ விரலாலோ எழுதலாம் | |
+| handwritten | Handwritten | கையெழுத்து | |
+| penBlack | Black pen | கருப்பு பேனா | |
+| penBlue | Blue pen | நீல பேனா | |
+| penRed | Red pen | சிவப்பு பேனா | |
+| highlighterYellow | Yellow highlighter | மஞ்சள் ஹைலைட்டர் | |
+| penThin | Thin pen | மெல்லிய பேனா | |
+| penThick | Thick pen | தடித்த பேனா | |
+| undo | Undo | செயல்தவிர் | |
+| redo | Redo | மீண்டும் செய் | |
+| linedPaper | Lined paper | கோடிட்ட தாள் | |
+| plainPaper | Plain paper | வெற்றுத் தாள் | |
+| inkHint | Write with one finger or a pen. Move the page with two fingers. | ஒரு விரலாலோ பேனாவாலோ எழுதுங்கள். இரண்டு விரல்களால் பக்கத்தை நகர்த்தலாம். | |
+| inkPenFound | Pen found: now a finger moves the page and only the pen writes. | பேனா கண்டறியப்பட்டது: இனி விரல் பக்கத்தை நகர்த்தும், பேனா மட்டும் எழுதும். | |
+| inkShareFailed | The page could not be shared. | பக்கத்தைப் பகிர முடியவில்லை. | |
 | notebookEmptyTitle | No pages yet | இன்னும் பக்கங்கள் இல்லை | |
 | notebookEmpty | Write sermon notes, a study or a list of verses. Tap + to start a page, or hold a verse in the reader and choose Add to notebook. | பிரசங்கக் குறிப்புகள், வேத ஆய்வு, வசனப் பட்டியல் எழுதலாம். புதிய பக்கம் தொடங்க + ஐத் தொடுங்கள், அல்லது வாசிப்பில் ஒரு வசனத்தை அழுத்திப் பிடித்து “குறிப்பேட்டில் சேர்” என்பதைத் தேர்ந்தெடுங்கள். | |
 | addToNotebook | Add to notebook | குறிப்பேட்டில் சேர் | |

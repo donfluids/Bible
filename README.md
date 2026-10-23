@@ -63,6 +63,14 @@ rendering counts all work in Malayalam.
   being read. Hold a verse and choose Add to notebook to put it on a page, or start a
   new page with it. A page shares as plain text with its verses quoted. The note on a
   single verse is called വാക്യക്കുറിപ്പ് in Malayalam, to tell it apart.
+- A notebook page can instead be handwritten (New page → Handwritten, plain or lined
+  paper), for writing sermon notes with a pen on a tablet or phone, or with a finger:
+  black, blue and red pens in two widths, a yellow highlighter, an eraser that takes away
+  the strokes it passes over, undo and redo. One finger writes and two move the page; once
+  a pen has touched the page, a finger only moves it, so a resting hand does not write.
+  The page grows as the writing nears its foot and shares as a picture. The strokes are
+  kept on the phone in an entry of the page's own (src/ink.ts), with the same safety
+  copies as the rest.
 - A verse opened from search, Saved or a word's verse list opens in a reader of its own;
   Back returns to the list and then to the chapter you were reading.
 - The search box also searches the dictionary: an English meaning ("love"), a
@@ -177,8 +185,9 @@ src/morph.ts             Turns Hebrew and Greek grammar codes into plain words
 src/malayalamSearch.ts   Matches modern Malayalam spelling against the 1910 text
 src/settings.tsx         Persisted settings (translation, text size, bookmarks, notes)
 src/notebook.tsx         Notebook pages, kept in their own storage entry
+src/ink.ts               Handwritten pages: strokes, how they are stored, read back and drawn
 src/components/          Header, Icon, SectionLabel, VerseText, InterlinearVerse, WordSheet, CompareSheet, SimpleSheet, VerseListItem
-src/screens/             Reader, Books, Chapters, Saved, Notebook, NotePage, Search, Concordance, Settings, Licences
+src/screens/             Reader, Books, Chapters, Saved, Notebook, NotePage, InkPage, Search, Concordance, Settings, Licences
 scripts/fetch-data.sh    Downloads the source texts into data/raw/ (not committed)
 scripts/build-db.mjs     Builds assets/db/bible-<edition>.db from data/raw/
 scripts/make-icons.mjs   Draws the icon, adaptive icon layers, splash images and 512 px Play icons (SVG, rendered with Chromium)

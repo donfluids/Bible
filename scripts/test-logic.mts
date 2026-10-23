@@ -7,6 +7,7 @@
 //   npx tsx scripts/test-logic.mts
 import assert from 'node:assert/strict';
 import { groupForms, isTaBaseForm, taStem } from './lib/forms.mjs';
+import { addPoint, decodeInk, encodeInk, pageHeight, parseInk, strokePath, touchesStroke } from '../src/ink';
 import { cleanLook, ownPhotoIn, savedCopyIn } from '../src/lookClean';
 import { malayalamPattern } from '../src/malayalamSearch';
 import { findReferences, parseReference } from '../src/refs';
@@ -120,6 +121,29 @@ test('people: ജനം and ജനത്തെ are one word', () => assert.equal
 test('a verb keeps its commonest form', () => assert.equal(label([['വന്നു', 500], ['വന്നപ്പോൾ', 80], ['വരുന്നു', 40]]), 'വന്നു'));
 test('Tamil: two-letter stems are not grouped', () => assert.equal(groupForms([{ display: 'கல்', refs: [1, 1, 1] }, { display: 'கலை', refs: [1, 1, 2] }], taStem, isTaBaseForm).length, 2));
 
+// --- Handwritten pages (src/ink.ts) ---
+const strokeA = { c: 1, w: 3, p: [10, 20, 30, 25, 60, 40] };
+const strokeH = { c: -1, w: 18, p: [100, 300, 400, 300] };
+test('ink is read back as written', () => assert.deepEqual(parseInk(JSON.stringify(encodeInk({ strokes: [strokeA, strokeH] }))).strokes, [strokeA, strokeH]));
+test('ink is stored as steps', () => assert.deepEqual((encodeInk({ strokes: [strokeA] }) as { s: { d: number[] }[] }).s[0].d, [10, 20, 20, 5, 30, 15]));
+test('damaged strokes are left out, good ones kept', () => {
+  const raw = { v: 1, s: [{ c: 7, w: 3, d: [1, 1] }, { c: 0, w: 'x', d: [1, 1] }, { c: 0, w: 3, d: [1] }, { c: 0, w: 3, d: [1, 'a'] }, { c: 0, w: 3, d: [5, 5, 1, 1] }, null, 'x'] };
+  assert.deepEqual(decodeInk(raw).strokes, [{ c: 0, w: 3, p: [5, 5, 6, 6] }]);
+});
+test('ink that is not a page reads as an empty page', () => assert.deepEqual([decodeInk(null).strokes, decodeInk([1, 2]).strokes, decodeInk({ s: 'no' }).strokes], [[], [], []]));
+test('ink text that is not JSON throws (the store keeps it aside)', () => assert.throws(() => parseInk('{')));
+test('points off the page are refused', () => assert.equal(decodeInk({ s: [{ c: 0, w: 3, d: [5000, 10] }] }).strokes.length, 0));
+test('a pen held still adds no points', () => {
+  const p: number[] = [];
+  addPoint(p, 10, 10);
+  addPoint(p, 10.4, 10.3);
+  addPoint(p, 20, 10);
+  assert.deepEqual(p, [10, 10, 20, 10]);
+});
+test('the eraser finds a stroke it passes over, not one beside it', () => assert.ok(touchesStroke(strokeH, 250, 305, 10) && !touchesStroke(strokeH, 250, 340, 10)));
+test('a stroke path has no NaN', () => assert.ok(!/NaN|undefined/.test(strokePath(strokeA.p) + strokePath([5, 5]) + strokePath([1, 2, 3, 4]))));
+test('the page grows below the writing', () => assert.equal(pageHeight({ strokes: [{ c: 0, w: 3, p: [0, 2000] }] }, 800), 2500));
+
 // --- Patterns that must stay fast on long text ---
 const books = [{ id: 43, osis: 'John', name: 'John', testament: 'NT', chapters: 21, names: {} }] as Book[];
 // Each takes milliseconds now; the slow patterns these guard against took seconds or minutes.
@@ -133,6 +157,7 @@ const fast = (name: string, fn: () => void, ms = 1000) =>
 fast('a long search with spaces', () => parseReference(' '.repeat(400) + 'x', books));
 fast('a long search of words', () => parseReference('love '.repeat(1000) + 'x', books));
 fast('a long notebook page', () => findReferences('John 3:16 and some words 1 2 3 '.repeat(500), books));
+fast('a long handwritten page read back', () => parseInk(JSON.stringify(encodeInk({ strokes: [...Array(3000)].map((_, i) => ({ c: 0, w: 3, p: [...Array(100)].flatMap((__, j) => [j * 5 % 600, i + j]) })) }))));
 fast('a long Malayalam search', () => new RegExp(malayalamPattern('ൻ്റ'.repeat(200))!.source).test('ന്റ'.repeat(5000)));
 
 if (failures.length) {
