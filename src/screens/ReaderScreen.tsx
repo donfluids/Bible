@@ -12,7 +12,9 @@ import { useKeepAwake } from 'expo-keep-awake';
 import { READ_SPEEDS, spokenText, useReadAloud, voiceFor } from '../readAloud';
 import { hasVoice } from '../speech';
 import { CompareSheet } from '../components/CompareSheet';
-import { HEADER_MAX_FONT_SCALE, Header, HeaderIconButton } from '../components/Header';
+import { useIsFocused } from '@react-navigation/native';
+import { HEADER_MAX_FONT_SCALE, Header, HeaderIconButton, SHORT_SCREEN } from '../components/Header';
+import { useHardwareKeys } from '../keys';
 import { TAB_BAR_HEIGHT, TabBar } from '../components/TabBar';
 import { Icon, IconButton } from '../components/Icon';
 import type { IconName } from '../components/Icon';
@@ -196,7 +198,9 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
   const t = useT();
   const edition = useEdition();
   const insets = useSafeAreaInsets();
-  const { width: windowWidth } = useWindowDimensions();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  // A phone on its side: the bars take less height, so more of the text shows.
+  const shortScreen = windowHeight < SHORT_SCREEN;
   const { settings, update, commit } = useSettings();
   const {
     translation,
@@ -502,6 +506,10 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
 
   const goRef = useRef(go);
   goRef.current = go;
+  // A keyboard (a Chromebook's): the arrows turn the chapter, Ctrl+F opens search. Only the
+  // reader on top listens, and not while marking or under a sheet (src/keys.ts).
+  const focused = useIsFocused();
+  useHardwareKeys((key) => (key === 'find' ? onOpenSearch() : go(key === 'left' ? -1 : 1)), focused && !marking);
 
   // Reading the chapter aloud with the phone's voice, verse by verse, on into the next chapter.
   const chapterVerses = useMemo(() => {
@@ -1321,7 +1329,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
           </View>
         </View>
       ) : (
-      <View style={[styles.footer, { paddingBottom: bottomInset + 8, paddingHorizontal: 12 + barSide, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
+      <View style={[styles.footer, shortScreen && styles.footerShort, { paddingBottom: bottomInset + (shortScreen ? 4 : 8), paddingHorizontal: 12 + barSide, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
         <ChapterArrow icon="chevron_left" onPress={() => go(-1)} disabled={atStart} accessibilityLabel={t('previousChapter')} />
         <View style={styles.footerMiddle}>
           {/* One button for the Bibles. The Malayalam and Tamil apps name the other one, the
@@ -1884,6 +1892,7 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
+  footerShort: { paddingTop: 4 },
   nav: { fontSize: 16, fontWeight: '600' },
   footerMiddle: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 8, marginHorizontal: 8 },
   arrow: { width: 44, height: 44, borderRadius: 22, borderWidth: StyleSheet.hairlineWidth, alignItems: 'center', justifyContent: 'center' },

@@ -58,7 +58,7 @@ const light: Palette = {
   error: '#B3261E',
   accentSoft: '#F1E6D4',
   // Faint, so a chapter of linked words still reads as text; Android draws only solid underlines.
-  linked: '#E3D8C6',
+  linked: '#D3C2A6',
   highlight: '#FFF1C2',
 };
 
@@ -76,7 +76,7 @@ const sepia: Palette = {
   onAccent: '#FFFFFF',
   error: '#A1281E',
   accentSoft: '#E6D5B3',
-  linked: '#D6C5A2',
+  linked: '#C6B087',
   highlight: '#F5DC9C',
 };
 
@@ -107,7 +107,7 @@ const blueLight: Palette = {
   border: '#D6DEEA',
   accent: '#1F4E8C',
   accentSoft: '#DDE7F4',
-  linked: '#CCD8E8',
+  linked: '#B3C4DB',
 };
 
 const blueSepia: Palette = {
@@ -140,8 +140,10 @@ const PALETTES: Record<EditionId, Record<ThemeName, Palette>> = {
 export const SERIF_FONT = Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' });
 
 export function useTheme(): Theme {
-  const system = useColorScheme();
   const settings = useDisplaySettings();
+  // Outside the settings provider (the loading screen) the phone's mode is read directly.
+  const phoneDark = useColorScheme() === 'dark';
+  const system = (settings ? settings.systemDark : phoneDark) ? 'dark' : 'light';
   const palette = PALETTES[useEdition().id];
   const choice = settings?.theme ?? 'system';
   const base = choice === 'system' ? (system === 'dark' ? palette.dark : palette.light) : palette[choice === 'sepia' ? 'sepia' : choice === 'dark' ? 'dark' : 'light'];

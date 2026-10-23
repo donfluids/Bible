@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -8,11 +8,12 @@ import { Icon, IconButton } from '../components/Icon';
 import { SectionLabel } from '../components/SectionLabel';
 import { renderingsLabel, shortName, useT } from '../i18n';
 import { VerseListItem } from '../components/VerseListItem';
-import { searchLexicon, searchText } from '../queries';
+import { getVerses, searchLexicon, searchText } from '../queries';
 import { parseReference } from '../refs';
 import { useSettings } from '../settings';
 import { MAX_CONTENT_WIDTH, bookName, formatCount } from '../text';
 import { useTheme } from '../theme';
+import { shortBookName } from '../shortNames';
 import type { Book, LexiconHit, Ref, VerseRow, WordPick } from '../types';
 
 interface Props {
@@ -22,7 +23,11 @@ interface Props {
   onBack: () => void;
 }
 
-const LIMIT = 300;
+/** Verses read and shown at a time; "Show more" adds the next lot. */
+const PAGE = 100;
+
+/** Which matches are listed: all, one Testament or one book. */
+type Scope = 'all' | 'OT' | 'NT' | number;
 
 // Shown under an empty search box: a reference, a word and a Strong's number.
 const ENGLISH_EXAMPLES = ['John 3:16', 'Psalm 23', 'love', 'G26'];
@@ -39,7 +44,11 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
   const { translation } = settings;
   const [query, setQuery] = useState('');
   const inputRef = useRef<TextInput>(null);
+  // Every matching verse, New Testament first; the list shows a page of them at a time.
+  const [matches, setMatches] = useState<Ref[] | null>(null);
+  const [scope, setScope] = useState<Scope>('all');
   const [results, setResults] = useState<VerseRow[] | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [entries, setEntries] = useState<LexiconHit[]>([]);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -55,6 +64,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
     const q = query.trim();
     const id = ++latest.current;
     if (q.length < 2 || strongsId || goTo) {
+      setMatches(null);
       setResults(null);
       setEntries([]);
       setBusy(false);
@@ -64,12 +74,19 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
     setFailed(false);
     const timer = setTimeout(async () => {
       try {
-        const [rows, hits] = await Promise.all([searchText(db, translation, q, LIMIT, () => latest.current !== id), searchLexicon(db, q, 8)]);
+        const [refs, hits] = await Promise.all([searchText(db, translation, q, () => latest.current !== id), searchLexicon(db, q, 8)]);
         if (latest.current !== id) return;
+        const nt = refs.filter((r) => testament.get(r.book) === 'NT');
+        const ordered = [...nt, ...refs.filter((r) => testament.get(r.book) !== 'NT')];
+        const rows = await getVerses(db, translation, ordered.slice(0, PAGE));
+        if (latest.current !== id) return;
+        setMatches(ordered);
+        setScope('all');
         setResults(rows);
         setEntries(hits);
       } catch {
         if (latest.current !== id) return;
+        setMatches(null);
         setResults(null);
         setEntries([]);
         setFailed(true);
@@ -80,6 +97,50 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [db, translation, query, strongsId, goTo?.book, goTo?.chapter, goTo?.verse]);
 
+  const testament = useMemo(() => new Map(books.map((b) => [b.id, b.testament])), [books]);
+  const inScope = useCallback((r: Ref, sc: Scope) => sc === 'all' || (typeof sc === 'number' ? r.book === sc : testament.get(r.book) === sc), [testament]);
+  const scoped = useMemo(() => (matches ?? []).filter((r) => inScope(r, scope)), [matches, scope, inScope]);
+  // The chips above the list: all, each Testament, and the books with most matches.
+  const chips = useMemo(() => {
+    if (!matches || matches.length < 2) return [];
+    const perBook = new Map<number, number>();
+    for (const r of matches) perBook.set(r.book, (perBook.get(r.book) ?? 0) + 1);
+    const nt = matches.filter((r) => testament.get(r.book) === 'NT').length;
+    const list: { scope: Scope; label: string; n: number }[] = [{ scope: 'all', label: t('allResults'), n: matches.length }];
+    if (nt > 0 && nt < matches.length) list.push({ scope: 'NT', label: t('newTestament'), n: nt }, { scope: 'OT', label: t('oldTestament'), n: matches.length - nt });
+    if (perBook.size > 1) {
+      const top = [...perBook].sort((a, b) => b[1] - a[1] || a[0] - b[0]).slice(0, 8);
+      for (const [book, n] of top) list.push({ scope: book, label: shortBookName(book, translation) || bookName(books, book, translation), n });
+    }
+    return list;
+  }, [matches, testament, books, translation, t]);
+  const chooseScope = async (next: Scope) => {
+    if (!matches || next === scope) return;
+    const id = latest.current;
+    setScope(next);
+    setLoadingMore(true);
+    try {
+      const rows = await getVerses(db, translation, matches.filter((r) => inScope(r, next)).slice(0, PAGE));
+      if (latest.current === id) setResults(rows);
+    } catch {
+      if (latest.current === id) setFailed(true);
+    }
+    setLoadingMore(false);
+  };
+  const showMore = async () => {
+    if (!results || loadingMore) return;
+    const id = latest.current;
+    setLoadingMore(true);
+    try {
+      const rows = await getVerses(db, translation, scoped.slice(results.length, results.length + PAGE));
+      if (latest.current === id) setResults((prev) => [...(prev ?? []), ...rows]);
+    } catch {
+      if (latest.current === id) setFailed(true);
+    }
+    setLoadingMore(false);
+  };
+  const more = !!results && results.length < scoped.length;
+
   const listFont = Math.min(settings.fontSize, 18);
   // Stable list props: the rows redraw for a new query (its words are highlighted), not
   // when the spinner or the dictionary matches change.
@@ -89,36 +150,10 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
   );
   const listStyle = useMemo(() => [styles.list, { paddingBottom: insets.bottom + 24 }], [insets.bottom]);
 
-  return (
-    <View style={[styles.screen, { backgroundColor: theme.bg }]}>
-      <Header title={t('searchTitle', { name: shortName(translation), in: renderingsLabel(settings.language, translation) })} onBack={onBack} />
-      <View style={[styles.inputBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
-        <Icon name="search" color={theme.muted} />
-        <TextInput
-          ref={inputRef}
-          value={query}
-          onChangeText={setQuery}
-          placeholder={t('searchPlaceholder')}
-          placeholderTextColor={theme.muted}
-          autoFocus
-          autoCorrect={false}
-          returnKeyType="search"
-          style={[styles.input, { color: theme.text }]}
-        />
-        {query ? (
-          <IconButton
-            name="close"
-            onPress={() => {
-              setQuery('');
-              inputRef.current?.focus();
-            }}
-            accessibilityLabel={t('clearSearch')}
-            style={styles.clear}
-          />
-        ) : null}
-      </View>
-      {/* Everything above the results keeps to the reading width on a tablet. */}
-      <View style={styles.column}>
+  // The examples, the jump and dictionary rows, the count and the filters scroll with
+  // the verses, so a short screen still has room for the list.
+  const listHeader = (
+    <View style={styles.column}>
       {!query.trim() ? (
         <View style={styles.examples}>
           <Text style={[styles.examplesLabel, { color: theme.muted }]}>{t('searchExamples')}</Text>
@@ -187,17 +222,62 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
           ))}
         </View>
       ) : null}
-      {results && !busy ? (
+      {matches && !busy ? (
         <Text style={[styles.count, { color: theme.muted }]}>
-          {results.length === 0
-            ? t('noVerses')
-            : results.length >= LIMIT
-              ? t('firstN', { n: formatCount(LIMIT) })
-              : results.length === 1
-                ? t('oneVerse')
-                : t('nVerses', { n: formatCount(results.length) })}
+          {matches.length === 0 ? t('noVerses') : matches.length === 1 ? t('oneVerse') : t('nVerses', { n: formatCount(matches.length) })}
         </Text>
       ) : null}
+      {chips.length > 0 && !busy ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.chips}>
+          {chips.map((c) => {
+            const active = c.scope === scope;
+            return (
+              <Pressable
+                key={String(c.scope)}
+                onPress={() => chooseScope(c.scope)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                android_ripple={{ color: theme.accentSoft }}
+                style={[styles.chip, { borderColor: active ? theme.accent : theme.border, backgroundColor: active ? theme.accentSoft : 'transparent' }]}
+              >
+                <Text style={[styles.chipText, { color: active ? theme.accent : theme.text }]}>
+                  {c.label} <Text style={{ color: theme.muted }}>{formatCount(c.n)}</Text>
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      ) : null}
+    </View>
+  );
+
+  return (
+    <View style={[styles.screen, { backgroundColor: theme.bg }]}>
+      <Header title={t('searchTitle', { name: shortName(translation), in: renderingsLabel(settings.language, translation) })} onBack={onBack} />
+      <View style={[styles.inputBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
+        <Icon name="search" color={theme.muted} />
+        <TextInput
+          ref={inputRef}
+          value={query}
+          onChangeText={setQuery}
+          placeholder={t('searchPlaceholder')}
+          placeholderTextColor={theme.muted}
+          autoFocus
+          autoCorrect={false}
+          returnKeyType="search"
+          style={[styles.input, { color: theme.text }]}
+        />
+        {query ? (
+          <IconButton
+            name="close"
+            onPress={() => {
+              setQuery('');
+              inputRef.current?.focus();
+            }}
+            accessibilityLabel={t('clearSearch')}
+            style={styles.clear}
+          />
+        ) : null}
       </View>
       <FlatList
         data={results ?? []}
@@ -205,7 +285,26 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={listStyle}
         renderItem={renderResult}
-        ListFooterComponent={LIST_FOOTER}
+        ListHeaderComponent={listHeader}
+        ListFooterComponent={
+          more ? (
+            <Pressable
+              onPress={showMore}
+              disabled={loadingMore}
+              accessibilityRole="button"
+              android_ripple={{ color: theme.accentSoft }}
+              style={[styles.moreButton, { borderColor: theme.border }]}
+            >
+              {loadingMore ? (
+                <ActivityIndicator color={theme.accent} />
+              ) : (
+                <Text style={[styles.moreText, { color: theme.accent }]}>{t('showMore', { n: formatCount(scoped.length - (results?.length ?? 0)) })}</Text>
+              )}
+            </Pressable>
+          ) : (
+            LIST_FOOTER
+          )
+        }
       />
     </View>
   );
@@ -252,4 +351,9 @@ const styles = StyleSheet.create({
   strongsText: { fontSize: 17, fontWeight: '600' },
   strongsSub: { fontSize: 13, marginTop: 2 },
   count: { paddingHorizontal: 16, paddingBottom: 8, fontSize: 13 },
+  chips: { gap: 8, paddingHorizontal: 14, paddingBottom: 10 },
+  chip: { minHeight: 36, paddingHorizontal: 14, borderRadius: 18, borderWidth: 1, justifyContent: 'center', overflow: 'hidden' },
+  chipText: { fontSize: 14 },
+  moreButton: { margin: 16, marginBottom: 48, minHeight: 48, borderRadius: 24, borderWidth: 1, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  moreText: { fontSize: 15, fontWeight: '600' },
 });

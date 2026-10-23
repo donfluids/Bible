@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Dimensions, useColorScheme } from 'react-native';
 import { translate } from './i18n';
 import { loadEntry, useAutosave } from './persist';
 import type { Loaded } from './persist';
@@ -71,7 +71,11 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
 export const FONT_SIZES = [15, 17, 19, 21, 24, 28, 32, 36];
 
 function defaultsFor(edition: Edition): Settings {
-  return { ...BASE_DEFAULTS, translation: edition.defaultTranslation, language: edition.languages[0] };
+  // A tablet (shorter side 600 points or more) starts a size up, read from further away;
+  // a size once chosen is kept, so this only sets where a new install begins.
+  const { width, height } = Dimensions.get('window');
+  const fontSize = Math.min(width, height) >= 600 ? 21 : BASE_DEFAULTS.fontSize;
+  return { ...BASE_DEFAULTS, fontSize, translation: edition.defaultTranslation, language: edition.languages[0] };
 }
 
 function load(edition: Edition): Loaded<Settings> {
@@ -138,9 +142,12 @@ export function SettingsProvider({ edition, children }: { edition: Edition; chil
     [saveValue],
   );
   const value = useMemo(() => ({ settings, update, commit }), [settings, update, commit]);
+  // The phone's light or dark mode is read here once and handed down with the settings, so
+  // a change reaches every verse, memoised or not, while a chapter is open.
+  const systemDark = useColorScheme() === 'dark';
   const display = useMemo(
-    () => ({ theme: settings.theme, serif: settings.serif, language: settings.language, highlightStyle: settings.highlightStyle }),
-    [settings.theme, settings.serif, settings.language, settings.highlightStyle],
+    () => ({ theme: settings.theme, serif: settings.serif, language: settings.language, highlightStyle: settings.highlightStyle, systemDark }),
+    [settings.theme, settings.serif, settings.language, settings.highlightStyle, systemDark],
   );
   return (
     <SettingsContext.Provider value={value}>
@@ -164,6 +171,8 @@ export interface DisplaySettings {
   serif: boolean;
   language: Language;
   highlightStyle: HighlightStyle;
+  /** The phone is in dark mode. */
+  systemDark: boolean;
 }
 const DisplayContext = createContext<DisplaySettings | null>(null);
 

@@ -279,7 +279,7 @@ Words chosen for the app's own features, used throughout:
 | omitted | Omitted in this translation. | இந்த மொழிபெயர்ப்பில் இல்லை. | |
 | nothingSavedTitle | Nothing saved yet | இன்னும் எதுவும் சேமிக்கப்படவில்லை | |
 | nothingSaved | Hold a verse in the reader to bookmark it, highlight it or add a note. They will be listed here. | வாசிக்கும்போது ஒரு வசனத்தை அழுத்திப் பிடித்து அடையாளக்குறி இடலாம், ஹைலைட் செய்யலாம், வசனக் குறிப்பு சேர்க்கலாம். அவை இங்கே தெரியும். | |
-| searchTitle | Search the {translation} | {in} தேடு | |
+| searchTitle | Search the {name} | {in} தேடு | |
 | clearSearch | Clear search | தேடலை அழி | |
 | searchExamples | Try | இப்படித் தேடலாம் | |
 | searchPlaceholder | Words, a reference like John 3:16, or G26 | வார்த்தை, யோவான் 3:16 போன்ற குறிப்பு, அல்லது G26 | |
@@ -289,7 +289,8 @@ Words chosen for the app's own features, used throughout:
 | dictionaryEntry | {lang} dictionary entry | {lang} அகராதிப் பதிவு | |
 | dictionary | DICTIONARY | அகராதி | |
 | noVerses | No verses found | வசனங்கள் எதுவும் கிடைக்கவில்லை | |
-| firstN | First {n} verses, narrow the search for more | முதல் {n} வசனங்கள்; மேலும் காண தேடலைச் சுருக்குங்கள் | |
+| allResults | All | அனைத்தும் | |
+| showMore | Show more ({n} left) | மேலும் காட்டு (இன்னும் {n}) | |
 | nVerses | {n} verses | {n} வசனங்கள் | |
 | oneVerse | 1 verse | 1 வசனம் | |
 | versesIn | {n} verses in the {translation} | {in} {n} வசனங்கள் | |

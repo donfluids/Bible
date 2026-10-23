@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CommonActions, StackActions } from '@react-navigation/native';
-import { HEADER_MAX_FONT_SCALE } from './Header';
+import { HEADER_MAX_FONT_SCALE, SHORT_SCREEN } from './Header';
 import { Icon } from './Icon';
 import type { IconName } from './Icon';
 import { useT } from '../i18n';
@@ -23,6 +23,8 @@ const TABS: { name: TabName; icon: IconName; selectedIcon: IconName; label: Stri
 
 /** Height of the bar above the system navigation area. */
 export const TAB_BAR_HEIGHT = 64;
+/** On a phone turned on its side the bar is a row of icons, so more text shows. */
+const SHORT_BAR_HEIGHT = 40;
 
 /**
  * Shows a tab. The main reader is always at the bottom of the stack and the other tabs
@@ -49,12 +51,13 @@ export function TabBar({ current, hidden = false }: { current: TabName; hidden?:
   const theme = useTheme();
   const t = useT();
   const insets = useSafeAreaInsets();
+  const short = useWindowDimensions().height < SHORT_SCREEN;
   const shown = useRef(new Animated.Value(hidden ? 0 : 1)).current;
   useEffect(() => {
     // Height cannot use the native driver; the list above resizes with it.
     Animated.timing(shown, { toValue: hidden ? 0 : 1, duration: 180, useNativeDriver: false }).start();
   }, [hidden, shown]);
-  const height = shown.interpolate({ inputRange: [0, 1], outputRange: [0, TAB_BAR_HEIGHT] });
+  const height = shown.interpolate({ inputRange: [0, 1], outputRange: [0, short ? SHORT_BAR_HEIGHT : TAB_BAR_HEIGHT] });
   return (
     <View style={{ paddingBottom: insets.bottom, backgroundColor: theme.bg }}>
       <Animated.View
@@ -79,13 +82,15 @@ export function TabBar({ current, hidden = false }: { current: TabName; hidden?:
               <View style={[styles.indicator, selected && { backgroundColor: theme.accentSoft }]}>
                 <Icon name={selected ? tab.selectedIcon : tab.icon} color={selected ? theme.accent : theme.muted} />
               </View>
-              <Text
-                numberOfLines={1}
-                maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE}
-                style={[styles.label, { color: selected ? theme.accent : theme.muted, fontWeight: selected ? '700' : '500' }]}
-              >
-                {label}
-              </Text>
+              {short ? null : (
+                <Text
+                  numberOfLines={1}
+                  maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE}
+                  style={[styles.label, { color: selected ? theme.accent : theme.muted, fontWeight: selected ? '700' : '500' }]}
+                >
+                  {label}
+                </Text>
+              )}
             </Pressable>
           );
         })}

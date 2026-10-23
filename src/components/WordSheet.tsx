@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Animated, Modal, PanResponder, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Alert, Animated, BackHandler, Modal, PanResponder, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { Pressable } from './Pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -12,6 +12,7 @@ import { getConcordance, getConcordanceCount, getInterlinear, getLexicon, getOri
 import { useSettings } from '../settings';
 import { hasVoice, sayWord, stopSaying } from '../speech';
 import { formatCount, formatRef, isHebrew, plainKjvUsage } from '../text';
+import { useBlockKeys } from '../keys';
 import { useTheme } from '../theme';
 import type { Theme } from '../theme';
 import { FLAG_LXX, FLAG_NOT_IN_BYZ, FLAG_NOT_IN_NA, FLAG_NOT_IN_TR, FLAG_REPLACES_NA, FLAG_RESTORED, taggedTranslation, translationInfo } from '../types';
@@ -19,7 +20,13 @@ import type { Book, OriginalWord, Ref, RelatedWord, Rendering, StrongsEntry, Tra
 import { Icon, IconButton } from './Icon';
 import { VerseText } from './VerseText';
 
+/** A window at least this wide shows the word sheet as a panel beside the text. */
+export const PANEL_MIN_WIDTH = 1000;
+const PANEL_WIDTH = 420;
+
 interface Props {
+  /** Shown as a panel beside the text instead of a sheet over it (App decides by width). */
+  panel?: boolean;
   pick: WordPick | null;
   translation: TranslationId;
   books: Book[];
@@ -92,13 +99,17 @@ function syllables(pron: string | null): { text: string; stressed: boolean }[] {
     .map((p) => ({ text: p.includes("'") ? p.replace(/'/g, '').toUpperCase() : p, stressed: p.includes("'") }));
 }
 
+/** English words that only travel with a tagged word (θεός: "the 12"), not renderings of it. */
+const LONE_FUNCTION_WORDS = new Set(['the', 'a', 'an', 'of', 'to', 'and', 'in', 'that', 'for', 'by', 'with', 'is', 'be', 'it']);
+
 /**
  * The renderings worth a chip: the main ones, not one-off phrasings or the stray words a
- * machine-made link leaves (under 1% of the verses, and never fewer than two).
+ * machine-made link leaves (under 1% of the verses, and never fewer than two), nor a bare
+ * "the" or "of" after the first (which stays: for ὁ or καί it is the rendering).
  */
 function topRenderings(list: Rendering[], max: number, total?: number): Rendering[] {
   const floor = Math.max(2, (total ?? list[0]?.count ?? 0) * 0.01);
-  return list.filter((r, i) => i === 0 || r.count >= floor).slice(0, max);
+  return list.filter((r, i) => i === 0 || (r.count >= floor && !LONE_FUNCTION_WORDS.has(r.word.toLowerCase()))).slice(0, max);
 }
 
 /**
@@ -122,8 +133,9 @@ function headlineWords(list: Rendering[]): string[] {
  * pronunciation and how this Bible translates it; dragging the top up (or the button
  * above "See all") shows examples, related words and Strong's dictionary entry.
  */
-export function WordSheet({ pick, rootPick, translation, books, onClose, onBack, onPick, onSwitch, onShowOccurrences, onOpenRef }: Props) {
+export function WordSheet({ pick, rootPick, translation, books, onClose, onBack, onPick, onSwitch, onShowOccurrences, onOpenRef, panel = false }: Props) {
   const db = useSQLiteContext();
+  useBlockKeys(!!pick);
   const theme = useTheme();
   const t = useT();
   const edition = useEdition();
@@ -158,11 +170,14 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
   // The sheet is laid out at full height and slid down to rest at half height (or off
   // screen to close), on the native driver so the drag stays smooth while JS is busy.
   // Offsets: 0 = full height, halfY = half height, fullH = closed.
-  const fullH = Math.max(320, winH - insets.top - 24);
+  // As a panel beside the text (a wide screen) it takes the whole height.
+  const fullH = panel ? winH : Math.max(320, winH - insets.top - 24);
   // On a screen turned on its side (a tablet or phone in landscape) half a short screen
   // shows little more than the word, so the sheet opens at full height there.
-  const landscape = winW > winH * 1.2;
-  const halfH = landscape ? fullH : Math.min(fullH, Math.max(380, Math.round(winH * 0.56)));
+  const landscape = panel || winW > winH * 1.2;
+  // A short phone (an iPhone SE, a small Android) opens it taller, so the meaning shows too.
+  const short = winH < 760;
+  const halfH = landscape ? fullH : Math.min(fullH, Math.max(380, Math.round(winH * (short ? 0.8 : 0.56))));
   const halfY = fullH - halfH;
   const offset = useRef(new Animated.Value(halfY)).current;
   const restY = useRef(halfY);
@@ -284,6 +299,15 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
     };
   }, [db, pick, tagged, withKjv, nativeFirst]);
 
+  // A panel is no modal, so Back has to be caught here.
+  useEffect(() => {
+    if (!panel || !pick) return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      (onBack ?? onClose)();
+      return true;
+    });
+    return () => sub.remove();
+  }, [panel, pick, onBack, onClose]);
   if (!pick) return null;
   const original = pick.original;
   const hebrew = pick.strongs ? isHebrew(pick.strongs) : !!original && /[֐-׿]/.test(original.text);
@@ -329,11 +353,12 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
     });
   };
 
+  // On a wide screen the sheet is a panel at the right, and the text beside it stays in view.
+  const Frame = panel ? PanelFrame : ModalFrame;
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onBack ?? onClose} statusBarTranslucent>
-      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={t('close')} />
+    <Frame onClose={onClose} onBack={onBack} closeLabel={t('close')} theme={theme}>
       <Animated.View
-        style={[styles.sheet, { height: fullH, backgroundColor: theme.card, borderColor: theme.border, transform: [{ translateY: offset }] }]}
+        style={[styles.sheet, panel && styles.panelSheet, { height: fullH, backgroundColor: theme.card, borderColor: theme.border, transform: [{ translateY: offset }] }]}
       >
         <View {...drag.panHandlers} style={styles.dragArea}>
           <Pressable
@@ -383,10 +408,10 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
             ) : null}
 
             {inVerse.length > 0 ? (
-              <View style={[styles.inText, { backgroundColor: theme.accentSoft }]}>
+              <View style={[styles.inText, (short || landscape) && styles.inTextCompact, { backgroundColor: theme.accentSoft }]}>
                 <Text style={[styles.inTextLabel, { color: theme.muted }]}>{t('inThisVerse')}</Text>
                 {inVerse.map((w, i) => (
-                  <InVerseWord key={`${w.text}|${w.morph}`} word={w} hebrew={hebrew} font={originalFont} theme={theme} t={t} first={i === 0} />
+                  <InVerseWord key={`${w.text}|${w.morph}`} word={w} hebrew={hebrew} font={originalFont} theme={theme} t={t} first={i === 0} compact={short || landscape} />
                 ))}
               </View>
             ) : null}
@@ -535,6 +560,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
             onLayout={(e) => setFooterH(e.nativeEvent.layout.height)}
             style={[
               styles.footer,
+              panel && styles.panelFooter,
               { backgroundColor: theme.card, borderTopColor: theme.border, paddingBottom: insets.bottom + 12, transform: [{ translateY: footerOffset }] },
             ]}
           >
@@ -562,8 +588,31 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
             </Pressable>
           </Animated.View>
         ) : null}
+    </Frame>
+  );
+}
+
+interface FrameProps {
+  onClose: () => void;
+  onBack?: () => void;
+  closeLabel: string;
+  theme: Theme;
+  children: React.ReactNode;
+}
+
+/** The sheet over the screen, on a dimmed backdrop that closes it. */
+function ModalFrame({ onClose, onBack, closeLabel, children }: FrameProps) {
+  return (
+    <Modal visible transparent animationType="slide" onRequestClose={onBack ?? onClose} statusBarTranslucent>
+      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={closeLabel} />
+      {children}
     </Modal>
   );
+}
+
+/** The sheet as a column beside the text (App lays it out to the right of the screens). */
+function PanelFrame({ theme, children }: FrameProps) {
+  return <View style={[styles.panel, { backgroundColor: theme.card, borderLeftColor: theme.border }]}>{children}</View>;
 }
 
 /** A word without its punctuation. */
@@ -572,12 +621,12 @@ const bare = (s: string) => s.replace(/[^\p{L}\p{M}]/gu, '');
 const plain = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
 
 /** One Hebrew or Greek word as it stands in the verse: form, transliteration, gloss, grammar. */
-function InVerseWord({ word, hebrew, font, theme, t, first }: { word: OriginalWord; hebrew: boolean; font: string | undefined; theme: Theme; t: ReturnType<typeof useT>; first: boolean }) {
+function InVerseWord({ word, hebrew, font, theme, t, first, compact }: { word: OriginalWord; hebrew: boolean; font: string | undefined; theme: Theme; t: ReturnType<typeof useT>; first: boolean; compact: boolean }) {
   const grammar = word.morph ? describeMorph(word.morph, hebrew) : '';
   const note = textNote(word, t);
   return (
     <View style={first ? null : styles.inTextMore}>
-      <Text style={[styles.inTextWord, { color: theme.text, fontFamily: font, textAlign: hebrew ? 'right' : 'left' }]}>{word.text}</Text>
+      <Text style={[styles.inTextWord, compact && styles.inTextWordCompact, { color: theme.text, fontFamily: font, textAlign: hebrew ? 'right' : 'left' }]}>{word.text}</Text>
       <Text style={[styles.inTextLine, { color: theme.text }]}>
         {word.translit}
         {word.gloss ? <Text style={{ color: theme.muted }}>  ·  {word.gloss}</Text> : null}
@@ -585,7 +634,8 @@ function InVerseWord({ word, hebrew, font, theme, t, first }: { word: OriginalWo
       {grammar ? (
         <Text style={[styles.inTextLine, { color: theme.muted }]}>
           {grammar}
-          {grammar !== word.morph ? <Text style={{ fontVariant: ['tabular-nums'] }}>  ({word.morph})</Text> : null}
+          {/* The code is kept on one line (no-break hyphens); a short screen leaves it out. */}
+          {grammar !== word.morph && !compact ? <Text style={{ fontVariant: ['tabular-nums'] }}>{`  (${word.morph.replace(/-/g, '\u2011')})`}</Text> : null}
         </Text>
       ) : null}
       {note ? <Text style={[styles.note, { color: theme.accent }]}>{note}</Text> : null}
@@ -745,6 +795,9 @@ function LinkedText({ text, color, accent, hebrewFont, onPick }: { text: string;
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(20,17,13,0.32)' },
+  panel: { width: PANEL_WIDTH, borderLeftWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
+  panelSheet: { top: 0, bottom: undefined, maxWidth: undefined, borderTopLeftRadius: 0, borderTopRightRadius: 0, borderTopWidth: 0 },
+  panelFooter: { maxWidth: undefined },
   sheet: {
     position: 'absolute',
     bottom: 0,
@@ -770,8 +823,10 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   scrollContent: { paddingBottom: 16 },
   inText: { borderRadius: 14, padding: 14, marginBottom: 14 },
+  inTextCompact: { paddingVertical: 8, marginBottom: 10 },
   inTextLabel: { fontSize: 13, marginBottom: 2 },
   inTextWord: { fontSize: 32, lineHeight: 46 },
+  inTextWordCompact: { fontSize: 24, lineHeight: 34 },
   inTextLine: { fontSize: 15, lineHeight: 21, marginTop: 2 },
   note: { fontSize: 13, lineHeight: 18, marginTop: 8 },
   inTextMore: { marginTop: 12 },

@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { DefaultTheme, DarkTheme, NavigationContainer, StackActions } from '@react-navigation/native';
@@ -21,7 +21,7 @@ import { SettingsProvider, useSettings } from './src/settings';
 import { NotebookProvider } from './src/notebook';
 import { useTheme } from './src/theme';
 import type { Book, Ref, WordPick } from './src/types';
-import { WordSheet } from './src/components/WordSheet';
+import { PANEL_MIN_WIDTH, WordSheet } from './src/components/WordSheet';
 import { SavedScreen } from './src/screens/SavedScreen';
 import { BooksScreen } from './src/screens/BooksScreen';
 import { ChaptersScreen } from './src/screens/ChaptersScreen';
@@ -207,6 +207,7 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const { settings } = useSettings();
+  const wide = useWindowDimensions().width >= PANEL_MIN_WIDTH;
   const [loadedBooks, setBooks] = useState<Book[] | null>(null);
   const books = loadedBooks ?? initialBooks;
   const [booksFailed, setBooksFailed] = useState(false);
@@ -274,6 +275,10 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
   return (
     <AppContext.Provider value={appValue}>
       <StatusBar style={theme.dark ? 'light' : 'dark'} />
+      {/* On a wide screen (a tablet on its side, a Chromebook) the word sheet stands as a
+          panel at the right and the screens make room for it, so the text stays in view. */}
+      <View style={[styles.root, wide && styles.rootWide]}>
+      <View style={styles.root}>
       <NavigationContainer ref={navigationRef} theme={navTheme}>
         <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.bg } }}>
           <Stack.Screen name="Reader" component={ReaderRoute} />
@@ -290,7 +295,9 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
           <Stack.Screen name="Card" component={CardRoute} />
         </Stack.Navigator>
       </NavigationContainer>
+      </View>
       <WordSheet
+        panel={wide}
         pick={pick}
         translation={settings.translation}
         onClose={closeSheet}
@@ -302,6 +309,7 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
         rootPick={picks[0] ?? null}
         books={appValue.books}
       />
+      </View>
     </AppContext.Provider>
   );
 }
@@ -432,6 +440,7 @@ function Loading({ message }: { message: string }) {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  rootWide: { flexDirection: 'row' },
   center: { alignItems: 'center', justifyContent: 'center', gap: 12 },
   loadingText: { fontSize: 14 },
   failure: { paddingHorizontal: 28 },

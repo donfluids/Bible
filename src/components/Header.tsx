@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useT } from '../i18n';
 import { IPHONE_LOOK } from '../platform';
@@ -29,6 +29,9 @@ export const HEADER_MAX_FONT_SCALE = 1.2;
 
 const IOS = IPHONE_LOOK;
 
+/** A window this low is a phone in landscape; the bars take less height there. */
+export const SHORT_SCREEN = 500;
+
 /**
  * The top bar: back arrow, title, icon buttons on the right. On Android the title stands
  * on the left; on iPhone a plain title is centred, as iPhone apps have it, and the back
@@ -38,6 +41,7 @@ export function Header({ title, onBack, backLabel, center, right, maxWidth = MAX
   const theme = useTheme();
   const t = useT();
   const insets = useSafeAreaInsets();
+  const short = useWindowDimensions().height < SHORT_SCREEN;
   // To centre the title between buttons of different widths, the narrower side is padded
   // to the width of the wider one.
   const centred = IOS && !center;
@@ -47,7 +51,7 @@ export function Header({ title, onBack, backLabel, center, right, maxWidth = MAX
     // On a tablet the bar's buttons stay within the reading width, over the text, not at
     // the far edges of the screen.
     <View style={{ paddingTop: insets.top, backgroundColor: theme.bg }}>
-    <View style={[styles.bar, { paddingLeft: onBack ? 4 : 16, maxWidth }]}>
+    <View style={[styles.bar, short && styles.barShort, { paddingLeft: onBack ? 4 : 16, maxWidth }]}>
       {onBack ? (
         <View onLayout={centred ? (e) => setSides((s) => ({ ...s, left: e.nativeEvent.layout.width + 4 })) : undefined}>
           <IconButton name={IOS ? 'arrow_back_ios_new' : 'arrow_back'} onPress={onBack} accessibilityLabel={backLabel ?? t('back')} color={theme.text} />
@@ -55,8 +59,9 @@ export function Header({ title, onBack, backLabel, center, right, maxWidth = MAX
       ) : null}
       <View style={[styles.center, onBack && styles.centerAfterBack, centred && { paddingLeft: Math.max(0, pad), paddingRight: Math.max(0, -pad) }]}>
         {center ?? (
+          // A long title (സത്യവേദപുസ്തകത്തിൽ തിരയുക on a small phone) takes a second line.
           <Text
-            numberOfLines={1}
+            numberOfLines={2}
             maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE}
             style={[styles.title, { color: theme.text }, centred && styles.titleCentred]}
             accessibilityRole="header"
@@ -82,6 +87,8 @@ export function HeaderIconButton({ icon, onPress, accessibilityLabel }: { icon: 
 
 const styles = StyleSheet.create({
   bar: { flexDirection: 'row', alignItems: 'center', minHeight: 64, paddingRight: 4, width: '100%', alignSelf: 'center' },
+  // A phone on its side.
+  barShort: { minHeight: 52 },
   center: { flex: 1, justifyContent: 'center', minHeight: 48 },
   centerAfterBack: { marginLeft: 4 },
   // Room above and below for Malayalam's stacked letters (ഞായറാഴ്ച), which a tight line clips.

@@ -23,7 +23,8 @@
         }
       ],
       "./plugins/withAndroidRelease",
-      "./plugins/withBackupRules"
+      "./plugins/withBackupRules",
+      "./plugins/withKeyboardKeys"
     ],
     "ios": {
       "supportsTablet": true

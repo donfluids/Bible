@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Animated, KeyboardAvoidingView, Modal, PanResponder, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, KeyboardAvoidingView, Modal, PanResponder, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { Pressable } from './Pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useT } from '../i18n';
 import { useTheme } from '../theme';
+import { useBlockKeys } from '../keys';
+import { SHORT_SCREEN } from './Header';
 import { Icon, IconButton } from './Icon';
 import type { IconName } from './Icon';
 
@@ -29,9 +31,13 @@ export function SimpleSheet({ visible, title, onClose, children }: Props) {
 }
 
 function SheetBody({ title, onClose, children }: Omit<Props, 'visible'>) {
+  // An arrow key on a keyboard does not turn the chapter under an open sheet.
+  useBlockKeys(true);
   const theme = useTheme();
   const t = useT();
   const insets = useSafeAreaInsets();
+  // On a phone on its side the sheet may take nearly all the height, so more of the list shows.
+  const short = useWindowDimensions().height < SHORT_SCREEN;
   // 0 = shown, 1 = below the screen; a drag moves it by pixels on top of that.
   const shown = useRef(new Animated.Value(1)).current;
   const drag = useRef(new Animated.Value(0)).current;
@@ -57,7 +63,7 @@ function SheetBody({ title, onClose, children }: Omit<Props, 'visible'>) {
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={t('close')} />
       {/* Lifted above the keyboard while a note is typed: the app draws edge to edge, so Android does not resize it. */}
       <KeyboardAvoidingView behavior="padding" style={styles.lift} pointerEvents="box-none">
-        <Animated.View style={[styles.sheet, { backgroundColor: theme.card, borderColor: theme.border, paddingBottom: insets.bottom + 12, transform: [{ translateY }] }]}>
+        <Animated.View style={[styles.sheet, short && styles.sheetShort, { backgroundColor: theme.card, borderColor: theme.border, paddingBottom: insets.bottom + 12, transform: [{ translateY }] }]}>
           <View {...pan.panHandlers}>
             <View style={styles.gripHit}>
               <View style={[styles.grip, { backgroundColor: theme.border }]} />
@@ -113,6 +119,7 @@ export function SheetAction({ label, detail, icon, onPress, destructive }: Actio
 const styles = StyleSheet.create({
   backdrop: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(20,17,13,0.32)' },
   lift: { flex: 1, justifyContent: 'flex-end' },
+  sheetShort: { maxHeight: '94%' },
   sheet: {
     maxHeight: '80%',
     width: '100%',

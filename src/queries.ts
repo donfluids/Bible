@@ -254,28 +254,28 @@ export function getVerseCounts(db: SQLiteDatabase, translation: TranslationId): 
 }
 
 /**
- * Plain text search. Case-insensitive for ASCII letters. A straight apostrophe in the
- * query matches either a straight or a curly apostrophe in the text.
+ * Plain text search: every matching verse, as references in book order (the verses
+ * themselves are read a page at a time with getVerses). Case-insensitive for ASCII
+ * letters. A straight apostrophe in the query matches either a straight or a curly
+ * apostrophe in the text.
  */
 export async function searchText(
   db: SQLiteDatabase,
   translation: TranslationId,
   query: string,
-  limit: number,
   /** True once the result is no longer wanted (more has been typed); a long search then stops early. */
   stale?: () => boolean,
-): Promise<VerseRow[]> {
+): Promise<Ref[]> {
   // Joiners a keyboard may add are dropped: the Tamil text has none.
   const cleaned = query.trim().replace(/\s+/g, ' ').replace(/[\u200c\u200d]/g, (c) => (/[\u0b80-\u0bff]/.test(query) ? '' : c));
   if (!cleaned) return [];
   const malayalam = malayalamPattern(cleaned);
-  if (malayalam) return searchMalayalam(db, translation, malayalam, limit, stale);
+  if (malayalam) return searchMalayalam(db, translation, malayalam, stale);
   const pattern = '%' + cleaned.replace(/[\\%_]/g, (c) => '\\' + c).replace(/'/g, '_') + '%';
-  return db.getAllAsync<VerseRow>(
-    "SELECT book, chapter, verse, text, tags, omitted, para FROM verses WHERE translation = ? AND omitted = 0 AND text LIKE ? ESCAPE '\\' ORDER BY book, chapter, verse LIMIT ?",
+  return db.getAllAsync<Ref>(
+    "SELECT book, chapter, verse FROM verses WHERE translation = ? AND omitted = 0 AND text LIKE ? ESCAPE '\\' ORDER BY book, chapter, verse",
     translation,
     pattern,
-    limit,
   );
 }
 
@@ -287,11 +287,10 @@ async function searchMalayalam(
   db: SQLiteDatabase,
   translation: TranslationId,
   pattern: MalayalamPattern,
-  limit: number,
   stale?: () => boolean,
-): Promise<VerseRow[]> {
+): Promise<Ref[]> {
   const exact = new RegExp(pattern.source);
-  const out: VerseRow[] = [];
+  const out: Ref[] = [];
   const PAGE = 500;
   let after = [0, 0, 0];
   // The spelled-out alternatives keep most non-matching verses in the database (ശൗൽ reads
@@ -300,18 +299,14 @@ async function searchMalayalam(
   for (;;) {
     if (stale?.()) return out;
     const rows = await db.getAllAsync<VerseRow>(
-      `SELECT book, chapter, verse, text, tags, omitted, para FROM verses WHERE translation = ? AND omitted = 0 AND text LIKE ? ESCAPE '\\'${tighter} AND (book, chapter, verse) > (?, ?, ?) ORDER BY book, chapter, verse LIMIT ?`,
+      `SELECT book, chapter, verse, text FROM verses WHERE translation = ? AND omitted = 0 AND text LIKE ? ESCAPE '\\'${tighter} AND (book, chapter, verse) > (?, ?, ?) ORDER BY book, chapter, verse LIMIT ?`,
       translation,
       pattern.like,
       ...pattern.alternatives,
       ...after,
       PAGE,
     );
-    for (const row of rows) {
-      if (!exact.test(row.text)) continue;
-      out.push(row);
-      if (out.length >= limit) return out;
-    }
+    for (const row of rows) if (exact.test(row.text)) out.push({ book: row.book, chapter: row.chapter, verse: row.verse });
     if (rows.length < PAGE) return out;
     const last = rows[rows.length - 1];
     after = [last.book, last.chapter, last.verse];
