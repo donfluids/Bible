@@ -571,6 +571,39 @@ function coreRendering(phrase) {
   return words.slice(i).join(' ').replace(/[’']s$/, '');
 }
 
+// A run of spaces in a verse (left where a source dropped a footnote marker, or in the
+// source itself) becomes one space. It is done last, after the word links were matched
+// to the source text, so their positions and the footnotes' are moved with the text.
+function collapseSpaces(text, tags, markers) {
+  if (!/ {2}/.test(text)) return { text, tags, markers };
+  // kept[i]: how many characters of the new text come before old position i.
+  const kept = new Array(text.length + 1);
+  let out = '';
+  for (let i = 0; i < text.length; i++) {
+    kept[i] = out.length;
+    if (text[i] === ' ' && text[i - 1] === ' ') continue;
+    out += text[i];
+  }
+  kept[text.length] = out.length;
+  let pos = 0;
+  let prevEnd = 0;
+  const moved = tags
+    ? tags
+        .split(' ')
+        .map((triple) => {
+          const [gap, len, ids] = triple.split(',');
+          const s = pos + Number(gap);
+          const e = s + Number(len);
+          pos = e;
+          const part = `${kept[s] - prevEnd},${kept[e] - kept[s]},${ids}`;
+          prevEnd = kept[e];
+          return part;
+        })
+        .join(' ')
+    : tags;
+  return { text: out, tags: moved, markers: markers.map((m) => ({ ...m, pos: kept[m.pos] })) };
+}
+
 function tagsFrom(entries) {
   const parts = [];
   let prevEnd = 0;
@@ -858,7 +891,9 @@ function buildEdition(edition) {
     // Every verse is read before any is written, so the links can be checked against the
     // whole Bible.
     if (linked && alignedVerses) relinkShifted(pending, loadVerseMap()[t.id] ?? {});
-    for (const { book: bookId, chapter, verse, text, tags, entries, markers, notes, para } of pending) {
+    for (const row of pending) {
+      const { book: bookId, chapter, verse, entries, notes, para } = row;
+      const { text, tags, markers } = collapseSpaces(row.text, row.tags, row.markers);
       insVerse.run(t.id, bookId, chapter, verse, text, tags, 0, para);
       verses++;
       markers.forEach((mk, n) => {
