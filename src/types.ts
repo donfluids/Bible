@@ -183,4 +183,9 @@ export interface WordPick {
    * was tapped in the reader, the translation (so the reader marks it only there).
    */
   at?: Ref & { start: number; translation?: TranslationId };
+  /**
+   * For each number the tapped word links to: which of the verse's words with that number
+   * it is, and how many there are (the 2nd of 3), to pick the matching Hebrew or Greek word.
+   */
+  nth?: Record<string, [number, number]>;
 }

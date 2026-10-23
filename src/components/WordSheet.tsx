@@ -253,13 +253,20 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
       const nativeWords = !nativeFirst ? [] : tagged === nativeFirst ? renderings : nativeOther;
       const nativeCount = tagged === nativeFirst ? count : nativeOtherCount;
       // A word tapped in a translation: the form the Hebrew or Greek has in that verse.
+      // When the verse has as many of them as the translation, the nth word goes with the nth;
+      // otherwise each form once, punctuation aside.
+      const matching = verseWords.filter((w) => w.strongs === strongs);
+      const nth = pick.nth?.[strongs];
       const seen = new Set<string>();
-      const inVerse = verseWords.filter((w) => {
-        const key = `${w.text}|${w.morph}`;
-        if (w.strongs !== strongs || seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
+      const inVerse =
+        nth && nth[1] === matching.length
+          ? [matching[nth[0]]]
+          : matching.filter((w) => {
+              const key = `${bare(w.text)}|${w.morph}`;
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            });
       const parts = choices.map((id, i) => {
         const e = id === strongs ? entry : partEntries[i];
         return { id, lemma: e?.lemma ?? null, gloss: e?.gloss ?? null };
@@ -285,6 +292,8 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
   // The Hebrew or Greek as it stands in the verse: the word tapped in the Hebrew or Greek
   // view, or for a translation word, every form with its number in that verse.
   const inVerse = original ? [original] : (data?.inVerse ?? []);
+  // The dictionary spelling is left out when the word in the verse above already reads the same.
+  const sameTranslit = !!data?.entry?.translit && inVerse.some((w) => !!w.translit && plain(w.translit) === plain(data.entry!.translit!));
   const tappedScript = pick.word ? scriptOf(pick.word) : null;
   const tappedFont = tappedScript ? scriptureFont(tappedScript, settings.serif, true) : undefined;
   const pron = syllables(entry?.pron ?? null);
@@ -417,7 +426,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                 ) : entry.gloss ? (
                   <Text style={[styles.meaning, { color: theme.text }]}>{entry.gloss}</Text>
                 ) : null}
-                {pron.length > 0 || entry.translit ? (
+                {pron.length > 0 || (entry.translit && !sameTranslit) ? (
                   <Text style={styles.pronRow}>
                     {pron.map((s, i) => (
                       <Text key={i} style={[styles.pron, { color: theme.text, fontWeight: s.stressed ? '700' : '500' }]}>
@@ -425,7 +434,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                         {s.text}
                       </Text>
                     ))}
-                    {entry.translit ? <Text style={[styles.translit, { color: theme.muted }]}>{pron.length ? '   ' : ''}{entry.translit}</Text> : null}
+                    {entry.translit && !sameTranslit ? <Text style={[styles.translit, { color: theme.muted }]}>{pron.length ? '   ' : ''}{entry.translit}</Text> : null}
                   </Text>
                 ) : null}
 
@@ -556,6 +565,11 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
     </Modal>
   );
 }
+
+/** A word without its punctuation. */
+const bare = (s: string) => s.replace(/[^\p{L}\p{M}]/gu, '');
+/** A transliteration without accents or case. */
+const plain = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
 
 /** One Hebrew or Greek word as it stands in the verse: form, transliteration, gloss, grammar. */
 function InVerseWord({ word, hebrew, font, theme, t, first }: { word: OriginalWord; hebrew: boolean; font: string | undefined; theme: Theme; t: ReturnType<typeof useT>; first: boolean }) {

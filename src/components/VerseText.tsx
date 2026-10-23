@@ -9,7 +9,7 @@ import { parseSegments } from '../text';
 import { malayalamPattern } from '../malayalamSearch';
 import { useTheme } from '../theme';
 import { translationInfo } from '../types';
-import type { HighlightColor, Note, TranslationId, VerseRow, WordPick } from '../types';
+import type { HighlightColor, Note, Segment, TranslationId, VerseRow, WordPick } from '../types';
 
 interface Props {
   verse: VerseRow;
@@ -237,7 +237,7 @@ export const VerseText = memo(function VerseText({
             key={i}
             onPress={
               onWord
-                ? () => onWord({ strongs: seg.strongs!, word: seg.text, choices: seg.choices, at: { book: verse.book, chapter: verse.chapter, verse: verse.verse, start } })
+                ? () => onWord({ strongs: seg.strongs!, word: seg.text, choices: seg.choices, at: { book: verse.book, chapter: verse.chapter, verse: verse.verse, start }, nth: nthOf(segments, i) })
                 : undefined
             }
             onLongPress={onLongPress}
@@ -264,3 +264,18 @@ const styles = StyleSheet.create({
   omitted: { fontStyle: 'italic' },
   number: { fontWeight: '700' },
 });
+
+/** Which of the verse's words with each of this segment's numbers it is, and how many there are. */
+function nthOf(segments: Segment[], index: number): Record<string, [number, number]> {
+  const out: Record<string, [number, number]> = {};
+  for (const id of segments[index].choices ?? [segments[index].strongs!]) {
+    let n = 0, total = 0;
+    segments.forEach((seg, i) => {
+      if (seg.strongs !== id && !seg.choices?.includes(id)) return;
+      total++;
+      if (i < index) n++;
+    });
+    out[id] = [n, total];
+  }
+  return out;
+}
