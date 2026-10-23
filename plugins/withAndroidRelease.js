@@ -22,10 +22,11 @@ const GRADLE_PROPERTIES = {
   // Code shrinking (R8) and resource shrinking for release builds.
   'android.enableMinifyInReleaseBuilds': 'true',
   'android.enableShrinkResourcesInReleaseBuilds': 'true',
-  // 32- and 64-bit ARM. Play hands each phone only its own, so the bundle can carry both
-  // and still reach older and low-cost phones that run 32-bit Android. A sideloaded APK
-  // can be built for one: ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a
-  reactNativeArchitectures: 'armeabi-v7a,arm64-v8a',
+  // 32- and 64-bit ARM, and 64-bit Intel for Chromebooks with Intel or AMD chips. Play
+  // hands each device only its own, so the bundle can carry all three and still reach older
+  // and low-cost phones that run 32-bit Android. A sideloaded APK can be built for one:
+  // ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a
+  reactNativeArchitectures: 'armeabi-v7a,arm64-v8a,x86_64',
 };
 
 const SIGNING_BLOCK = `        release {
