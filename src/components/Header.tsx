@@ -16,6 +16,8 @@ interface Props {
   /** Replaces the plain title when given. */
   center?: React.ReactNode;
   right?: React.ReactNode;
+  /** The widest the bar's contents run on a wide screen (the reading width by default). */
+  maxWidth?: number;
 }
 
 /**
@@ -32,7 +34,7 @@ const IOS = IPHONE_LOOK;
  * on the left; on iPhone a plain title is centred, as iPhone apps have it, and the back
  * arrow is the iPhone chevron.
  */
-export function Header({ title, onBack, backLabel, center, right }: Props) {
+export function Header({ title, onBack, backLabel, center, right, maxWidth = MAX_CONTENT_WIDTH + 32 }: Props) {
   const theme = useTheme();
   const t = useT();
   const insets = useSafeAreaInsets();
@@ -45,7 +47,7 @@ export function Header({ title, onBack, backLabel, center, right }: Props) {
     // On a tablet the bar's buttons stay within the reading width, over the text, not at
     // the far edges of the screen.
     <View style={{ paddingTop: insets.top, backgroundColor: theme.bg }}>
-    <View style={[styles.bar, { paddingLeft: onBack ? 4 : 16 }]}>
+    <View style={[styles.bar, { paddingLeft: onBack ? 4 : 16, maxWidth }]}>
       {onBack ? (
         <View onLayout={centred ? (e) => setSides((s) => ({ ...s, left: e.nativeEvent.layout.width + 4 })) : undefined}>
           <IconButton name={IOS ? 'arrow_back_ios_new' : 'arrow_back'} onPress={onBack} accessibilityLabel={backLabel ?? t('back')} color={theme.text} />
@@ -79,7 +81,7 @@ export function HeaderIconButton({ icon, onPress, accessibilityLabel }: { icon: 
 }
 
 const styles = StyleSheet.create({
-  bar: { flexDirection: 'row', alignItems: 'center', minHeight: 64, paddingRight: 4, width: '100%', maxWidth: MAX_CONTENT_WIDTH + 32, alignSelf: 'center' },
+  bar: { flexDirection: 'row', alignItems: 'center', minHeight: 64, paddingRight: 4, width: '100%', alignSelf: 'center' },
   center: { flex: 1, justifyContent: 'center', minHeight: 48 },
   centerAfterBack: { marginLeft: 4 },
   // Room above and below for Malayalam's stacked letters (ഞായറാഴ്ച), which a tight line clips.

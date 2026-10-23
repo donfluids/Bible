@@ -112,6 +112,17 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
             </View>
             <AppSwitch value={settings.keepAwake} onValueChange={(v) => update({ keepAwake: v })} />
           </View>
+          {nativeTranslation(EDITION) ? (
+            <View style={[styles.row, divider]}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.rowTitle, { color: theme.text }]}>{t('sideBySide')}</Text>
+                <Text style={[styles.rowSub, { color: theme.muted }]}>
+                  {t('sideBySideDetail', { native: nativeTranslation(EDITION) === 'TAM' ? 'Tamil' : 'Malayalam' })}
+                </Text>
+              </View>
+              <AppSwitch value={settings.sideBySide} onValueChange={(v) => update({ sideBySide: v })} />
+            </View>
+          ) : null}
         </View>
 
         <Label text={t('translation')} />

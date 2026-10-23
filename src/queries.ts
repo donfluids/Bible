@@ -349,6 +349,32 @@ export async function getInterlinear(
   return new Map([...out, ...byVerse]);
 }
 
+/**
+ * For side-by-side reading: the KJV verses beside each verse of a chapter of `from`,
+ * keyed by that verse's number. Usually the verse of the same number; where `from` numbers
+ * verses differently (the Malayalam in 15 chapters) the verse_map table gives the KJV
+ * verses, which may lie in a neighbouring chapter.
+ */
+export async function getKjvBeside(db: SQLiteDatabase, from: TranslationId, book: number, chapter: number, verses: number[]): Promise<Map<number, VerseRow[]>> {
+  const rows = await db.getAllAsync<{ verse: number; obook: number; ochapter: number; overse: number }>(
+    'SELECT verse, obook, ochapter, overse FROM verse_map WHERE translation = ? AND book = ? AND chapter = ? ORDER BY verse, n',
+    from,
+    book,
+    chapter,
+  );
+  const mapped = new Map<number, Ref[]>();
+  for (const r of rows) mapped.set(r.verse, [...(mapped.get(r.verse) ?? []), { book: r.obook, chapter: r.ochapter, verse: r.overse }]);
+  const wanted = new Map<number, Ref[]>(verses.map((v) => [v, mapped.get(v) ?? [{ book, chapter, verse: v }]]));
+  const found = await getVerses(db, 'KJV', [...wanted.values()].flat());
+  const byRef = new Map(found.map((v) => [`${v.book}:${v.chapter}:${v.verse}`, v]));
+  const out = new Map<number, VerseRow[]>();
+  for (const [v, refs] of wanted) {
+    const beside = refs.map((r) => byRef.get(`${r.book}:${r.chapter}:${r.verse}`)).filter((x): x is VerseRow => !!x);
+    if (beside.length) out.set(v, beside);
+  }
+  return out;
+}
+
 /** The KJV-numbered verses that a verse of `translation` corresponds to (usually itself). */
 export async function toKjvRefs(db: SQLiteDatabase, translation: TranslationId, ref: Ref): Promise<Ref[]> {
   const rows = await db.getAllAsync<{ obook: number; ochapter: number; overse: number }>(

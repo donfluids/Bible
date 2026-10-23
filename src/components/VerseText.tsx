@@ -48,6 +48,8 @@ interface Props {
   onNotePress?: () => void;
   /** Mark the word whose sheet is open when it is in this verse (the reader's translation). */
   selectionTranslation?: TranslationId;
+  /** Number the verse with its chapter (7:25), for a verse beside another chapter's. */
+  withChapter?: boolean;
 }
 
 /** Character ranges of `query` inside `text`, ignoring case and apostrophe style (and Malayalam spelling variants). */
@@ -97,6 +99,7 @@ export const VerseText = memo(function VerseText({
   hasNote,
   onNotePress,
   selectionTranslation,
+  withChapter = false,
 }: Props) {
   const theme = useTheme();
   const t = useT();
@@ -220,7 +223,7 @@ export const VerseText = memo(function VerseText({
           accessibilityLabel={onNumberPress ? numberLabel : undefined}
           style={[styles.number, { color: accent, fontSize: small }]}
         >
-          {verse.verse}{' '}
+          {withChapter ? `${verse.chapter}:${verse.verse}` : verse.verse}{' '}
         </Text>
       ) : null}
       {segments.map((seg, i) => {

@@ -371,6 +371,8 @@ Words chosen for the app's own features, used throughout:
 | serifDetail | Scripture in a book-style face | அச்சிட்ட வேதாகமம் போன்ற எழுத்து வடிவம் | |
 | keepAwake | Keep screen awake | திரையை அணையாமல் வை | |
 | keepAwakeDetail | While the app is open | செயலி திறந்திருக்கும் வரை | |
+| sideBySide | Side by side | அருகருகே | |
+| sideBySideDetail | {native} and English verses together on a tablet or a phone turned sideways | டேப்லெட்டில் அல்லது தொலைபேசியைச் சாய்த்துப் பிடிக்கும்போது தமிழும் ஆங்கிலமும் ஒன்றாக | |
 | language | Interface language | செயலியின் மொழி | |
 | translation | Translation | மொழிபெயர்ப்பு | |
 | textSize | Text size | எழுத்தளவு | |

@@ -23,6 +23,8 @@ export interface Settings {
   /** Highlight colours: soft tints of the page, or bright highlighter-pen colours. */
   highlightStyle: HighlightStyle;
   keepAwake: boolean;
+  /** On a wide screen (a tablet, or a phone on its side), the edition's own Bible and the KJV side by side. */
+  sideBySide: boolean;
   /** Speaking rate of chapters read aloud: 0.75, 1 or 1.25. */
   readSpeed: number;
   underlineWords: boolean;
@@ -51,6 +53,7 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
   layout: 'verses',
   highlightStyle: 'soft',
   keepAwake: false,
+  sideBySide: true,
   readSpeed: 1,
   underlineWords: true,
   interlinear: false,

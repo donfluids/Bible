@@ -28,7 +28,7 @@ import { addMark, comparePoints, eraseMarks, markRanges } from '../marks';
 import { pageName, useNotebook } from '../notebook';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
 import { noteLetter, VerseText } from '../components/VerseText';
-import { getChapter, getInterlinear, getNotes, mapRef } from '../queries';
+import { getChapter, getInterlinear, getKjvBeside, getNotes, mapRef } from '../queries';
 import type { ChapterData } from '../queries';
 import { FONT_SIZES, useSettings } from '../settings';
 import type { Settings } from '../settings';
@@ -105,6 +105,10 @@ interface ChapterContent extends ChapterData {
 // The last few chapters read, and the ones either side, so turning a page does not
 // wait on the database.
 const chapterCache = new Map<string, Promise<ChapterContent>>();
+
+/** Side by side needs this much width (a tablet, or a phone on its side) and uses at most the other. */
+const SIDE_BY_SIDE_MIN_WIDTH = 720;
+const SIDE_BY_SIDE_MAX_WIDTH = 1200;
 
 function loadChapter(db: SQLiteDatabase, translation: TranslationId, book: number, chapter: number): Promise<ChapterContent> {
   const key = `${translation}:${book}:${chapter}`;
@@ -224,12 +228,16 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
   // Marker mode: the colour a finger marks words with, or the eraser; null while reading.
   const [markTool, setMarkTool] = useState<HighlightColor | 'erase' | null>(null);
   const marking = markTool !== null;
+  // On a wide screen the edition's own Bible stands on the left and the KJV beside it,
+  // verse by verse (Settings: side by side). Marker mode keeps one column.
+  const nativeBible = nativeTranslation(edition);
+  const sideBySide = !!nativeBible && settings.sideBySide && windowWidth >= SIDE_BY_SIDE_MIN_WIDTH && !marking;
   // The words being marked while a finger is down, and whether one is (the list then holds still).
   const [selection, setSelection] = useState<{ from: TextPoint; to: TextPoint } | null>(null);
   const [dragging, setDragging] = useState(false);
   // Paragraph layout cannot hold the interlinear cells or the words of marker mode, so those
   // use one verse per line.
-  const paragraphs = layout === 'paragraphs' && !interlinear && !marking;
+  const paragraphs = layout === 'paragraphs' && !interlinear && !marking && !sideBySide;
   const [items, setItems] = useState<Item[] | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -845,6 +853,29 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
     }
   };
   const originalLanguage = (v: { book: number }) => (v.book <= 39 ? t('hebrew') : t('greek'));
+  // Side by side shows both Bibles, the edition's own on the left: it is the one open.
+  useEffect(() => {
+    if (sideBySide && nativeBible && translation !== nativeBible) switchTranslation(nativeBible);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sideBySide]);
+  // The KJV verses beside each verse of the chapter, with the chapter they belong to.
+  const [beside, setBeside] = useState<{ key: string; verses: Map<number, VerseRow[]> } | null>(null);
+  const besideKey = `${translation}:${chapterKey}`;
+  useEffect(() => {
+    if (!sideBySide || !items) return;
+    let cancelled = false;
+    const verses = items.flatMap((it) => (it.kind === 'verse' ? [it.verse.verse] : []));
+    getKjvBeside(db, translation, position.book, position.chapter, verses)
+      .then((map) => {
+        if (!cancelled) setBeside({ key: besideKey, verses: map });
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sideBySide, items, besideKey]);
+  const besideVerses = sideBySide && beside?.key === besideKey ? beside.verses : null;
 
   // Words tapped in this reader carry its translation, so it marks only its own word.
   const handleWord = useCallback(
@@ -1043,18 +1074,19 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         );
       }
       const isExpanded = expanded.has(v.verse);
-      const showOriginal = interlinear && (interlinearMode === 'all' || isExpanded);
-      return (
+      // Side by side, the Hebrew or Greek words run under both columns, for every verse.
+      const showOriginal = interlinear && (sideBySide || interlinearMode === 'all' || isExpanded);
+      const verseRow = (
         <ReaderVerse
           verse={v}
           fontSize={fontSize}
           lineHeight={Math.round(fontSize * translationInfo(translation).lineHeight)}
           theme={theme}
           translation={translation}
-          interlinear={interlinear}
-          tapMode={interlinear && interlinearMode === 'tap'}
+          interlinear={interlinear && !sideBySide}
+          tapMode={interlinear && !sideBySide && interlinearMode === 'tap'}
           expanded={isExpanded}
-          words={showOriginal ? originalWords?.get(v.verse) : undefined}
+          words={showOriginal && !sideBySide ? originalWords?.get(v.verse) : undefined}
           flashing={flashing}
           marked={marked}
           markColor={mark ? theme.marks[mark] : undefined}
@@ -1070,9 +1102,38 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
           actions={rowActions}
         />
       );
+      if (!sideBySide) return verseRow;
+      // The KJV beside the verse, and the Hebrew or Greek words across both columns.
+      const english = besideVerses?.get(v.verse) ?? [];
+      const words = showOriginal ? originalWords?.get(v.verse) : undefined;
+      return (
+        <View style={[styles.pair, { borderBottomColor: theme.border }]}>
+          <View style={styles.pairRow}>
+            <View style={styles.pairColumn}>{verseRow}</View>
+            <View style={[styles.pairColumn, styles.pairRight, mark ? { backgroundColor: theme.marks[mark] } : null, flashing && { backgroundColor: theme.highlight }]}>
+              {english.map((e) => (
+                <VerseText
+                  key={`${e.book}:${e.chapter}:${e.verse}`}
+                  verse={e}
+                  fontSize={fontSize}
+                  onWord={onRowWord}
+                  onLongPress={() => rowActions.current.actions(v)}
+                  underline={underlineWords && !interlinear}
+                  onHighlight={!!mark && !flashing}
+                  selectionTranslation="KJV"
+                  withChapter={e.chapter !== v.chapter}
+                />
+              ))}
+            </View>
+          </View>
+          {words && words.length > 0 ? (
+            <InterlinearVerse words={words} hebrew={v.book <= 39} fontSize={fontSize} onWord={onRowWord} showTranslit={showTranslit} hideCantillation={hideCantillation} />
+          ) : null}
+        </View>
+      );
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [theme, fontSize, onRowWord, underlineWords, flash, readingVerse, interlinear, interlinearMode, expanded, originalWords, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, translation, t, scriptFont, verseMarks, marking, markTool, selection, registerWord],
+    [sideBySide, besideVerses, theme, fontSize, onRowWord, underlineWords, flash, readingVerse, interlinear, interlinearMode, expanded, originalWords, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, translation, t, scriptFont, verseMarks, marking, markTool, selection, registerWord],
   );
 
   // The list's own props stay the same objects between renders, so a change elsewhere on
@@ -1117,7 +1178,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
   // With the tab bar, it keeps the space for the phone's navigation bar.
   const bottomInset = tabs ? 0 : insets.bottom;
   // On a tablet the chapter row and the player keep to the reading width, under the text.
-  const barSide = Math.max(0, (windowWidth - MAX_CONTENT_WIDTH) / 2);
+  const barSide = Math.max(0, (windowWidth - (sideBySide ? SIDE_BY_SIDE_MAX_WIDTH : MAX_CONTENT_WIDTH)) / 2);
   const atStart = position.book === books[0]?.id && position.chapter === 1;
   const atEnd = position.book === books[books.length - 1]?.id && position.chapter === book?.chapters;
 
@@ -1126,6 +1187,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
       <Header
         onBack={onBack}
         backLabel={backLabel}
+        maxWidth={sideBySide ? SIDE_BY_SIDE_MAX_WIDTH : undefined}
         center={
           <ReaderTitle
             name={bookName(books, position.book, translation)}
@@ -1162,7 +1224,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
           data={items}
           keyExtractor={itemKey}
           renderItem={renderItem}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, sideBySide && styles.listWide]}
           scrollEnabled={!dragging}
           onScroll={onScroll}
           onScrollBeginDrag={reading.active ? () => setFollowing(false) : undefined}
@@ -1266,6 +1328,8 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
               language a tap takes you to, in the interface language (ENG or ഇംഗ്ലീഷ് while
               reading Malayalam, MAL or മലയാളം while reading English); the English app names the one open (KJV) and moves on to the next
               (BSB, then WEB) with each tap. Settings lists each version in full. */}
+          {/* Side by side shows both Bibles, so there is nothing to switch. */}
+          {sideBySide ? null : (
           <Pressable
             android_ripple={{ color: theme.accentSoft }}
             onPress={() => switchTranslation(nextTranslation)}
@@ -1278,6 +1342,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
               {native ? t(nextTranslation === 'MAL' ? 'bibleMalayalam' : nextTranslation === 'TAM' ? 'bibleTamil' : 'bibleEnglish') : translation}
             </Text>
           </Pressable>
+          )}
           <Pressable
             android_ripple={{ color: theme.accentSoft }}
             onPress={() => update({ interlinear: !interlinear })}
@@ -1790,6 +1855,11 @@ const styles = StyleSheet.create({
   loading: { flex: 1 },
   para: { marginBottom: 12 },
   list: { paddingHorizontal: 18, paddingTop: 12, alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
+  listWide: { maxWidth: SIDE_BY_SIDE_MAX_WIDTH },
+  pair: { borderBottomWidth: StyleSheet.hairlineWidth, paddingBottom: 4, marginBottom: 4 },
+  pairRow: { flexDirection: 'row', gap: 20 },
+  pairColumn: { flex: 1 },
+  pairRight: { paddingVertical: 2, paddingHorizontal: 4, borderRadius: 6 },
   verse: { paddingVertical: 5, borderRadius: 6 },
   verseInterlinear: { paddingBottom: 10, marginBottom: 6, borderBottomWidth: StyleSheet.hairlineWidth },
   tapRow: { flexDirection: 'row', alignItems: 'stretch' },
