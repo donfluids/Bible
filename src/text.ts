@@ -70,9 +70,12 @@ export function stripCantillation(text: string): string {
   return text.replace(/[\u0591-\u05AF]/g, '');
 }
 
+/** The KJV's paragraph marks, which the app leaves out wherever it shows the text. */
+export const PILCROW = /¶\s?/g;
+
 /** Verse text as a single line for copying or sharing. */
 export function flattenVerse(text: string): string {
-  return text.replace(/[\n\u2003]+/g, ' ').replace(/\s+/g, ' ').trim();
+  return text.replace(PILCROW, '').replace(/[\n\u2003]+/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 /** Same normalisation as the build script's plainText(), for dictionary search. */

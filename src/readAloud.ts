@@ -15,7 +15,7 @@ export function voiceFor(translation: TranslationId): VoiceLanguage {
 
 /** What is said for a verse: its text only, without the KJV's paragraph marks. */
 export function spokenText(verse: VerseRow): string {
-  return flattenVerse(verse.text).replace(/¶\s*/g, '').trim();
+  return flattenVerse(verse.text);
 }
 
 export interface ReadAloud {

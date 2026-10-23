@@ -5,7 +5,7 @@ import { useT } from '../i18n';
 import { useSelectedStart } from '../selection';
 import { ICON_FONT_FAMILY, iconChar } from './Icon';
 import { useDisplaySettings } from '../settings';
-import { parseSegments } from '../text';
+import { PILCROW, parseSegments } from '../text';
 import { malayalamPattern } from '../malayalamSearch';
 import { useTheme } from '../theme';
 import { translationInfo } from '../types';
@@ -137,7 +137,8 @@ export const VerseText = memo(function VerseText({
   // and the marked parts (their colour; a later mark shows over an earlier one).
   const highlighted = (text: string, start: number): React.ReactNode => {
     const marked = marks ?? [];
-    if (ranges.length === 0 && marked.length === 0) return text;
+    // The ¶ is dropped only from what is drawn, so marks and matches keep their offsets.
+    if (ranges.length === 0 && marked.length === 0) return text.replace(PILCROW, '');
     const end = start + text.length;
     const cuts = new Set([start, end]);
     for (const [a, b] of [...ranges, ...marked]) {
@@ -148,7 +149,7 @@ export const VerseText = memo(function VerseText({
     const out: React.ReactNode[] = [];
     for (let i = 0; i + 1 < points.length; i++) {
       const [from, to] = [points[i], points[i + 1]];
-      const piece = text.slice(from - start, to - start);
+      const piece = text.slice(from - start, to - start).replace(PILCROW, '');
       const match = ranges.some(([a, b]) => a <= from && b >= to);
       const mark = [...marked].reverse().find(([a, b]) => a <= from && b >= to);
       if (!match && !mark) {
@@ -168,12 +169,13 @@ export const VerseText = memo(function VerseText({
     <Text
       key={`n${note.n}`}
       onPress={onNote ? () => onNote(note) : undefined}
-      style={{ fontSize: small, color: accent, fontWeight: '700' }}
+      style={{ fontSize: Math.max(10, small - 3), color: accent, fontWeight: '700' }}
       accessibilityRole="button"
       accessibilityLabel={`${note.kind === 'x' ? t('crossReference') : t('footnote')} ${noteLetter(note.n)}`}
     >
       {' '}
       {noteLetter(note.n)}
+      {'\u202F'}
     </Text>
   );
 

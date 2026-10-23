@@ -128,7 +128,7 @@ const en = {
   omitted: 'Omitted in this translation.',
   nothingSavedTitle: 'Nothing saved yet',
   nothingSaved: 'Hold a verse in the reader to bookmark it, highlight it or add a note. They will be listed here.',
-  searchTitle: 'Search the {translation}',
+  searchTitle: 'Search the {name}',
   clearSearch: 'Clear search',
   searchExamples: 'Try',
   searchPlaceholder: 'Words, a reference like John 3:16, or G26',
@@ -850,6 +850,11 @@ export function renderingsLabel(language: Language, id: string): string {
   if (language === 'ml') return id === 'MAL' ? 'സത്യവേദപുസ്തകത്തിൽ' : id === 'KJV' ? 'KJV-യിൽ' : id === 'WEB' ? 'WEB-ൽ' : id;
   if (language === 'ta') return id === 'TAM' ? 'IRV-இல்' : `${id}-இல்`;
   return id === 'MAL' ? 'In Sathyavedapusthakam' : id === 'TAM' ? 'In the Tamil IRV' : `In the ${id}`;
+}
+
+/** A translation's short name in English running text: "Search the Sathyavedapusthakam". */
+export function shortName(id: string): string {
+  return id === 'MAL' ? 'Sathyavedapusthakam' : id === 'TAM' ? 'Tamil IRV' : id;
 }
 
 /** Display name of a translation in the interface language. */

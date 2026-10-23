@@ -94,7 +94,7 @@ const dark: Palette = {
   onAccent: '#15130F',
   error: '#F2B8B5',
   accentSoft: '#2C251B',
-  linked: '#3B342A',
+  linked: '#2C2721',
   highlight: '#3A3220',
 };
 
@@ -126,7 +126,7 @@ const blueDark: Palette = {
   accent: '#8DB4E8',
   onAccent: '#0F1319',
   accentSoft: '#1C2736',
-  linked: '#2B3646',
+  linked: '#1F2733',
 };
 
 const PALETTES: Record<EditionId, Record<ThemeName, Palette>> = {

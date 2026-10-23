@@ -73,8 +73,7 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
   }, [db, translation, at.book, at.chapter, at.verse]);
 
   const shown = verses.slice(0, count);
-  // The KJV's paragraph marks (¶) belong to the page, not the card.
-  const text = shown.map((v) => flattenVerse(v.text).replace(/¶\s*/g, '')).join(' ');
+  const text = shown.map((v) => flattenVerse(v.text)).join(' ');
   const first = shown[0];
   const last = shown[shown.length - 1];
   const reference = first ? (shown.length > 1 ? `${formatRef(books, first, translation)}–${last.verse}` : formatRef(books, first, translation)) : '';

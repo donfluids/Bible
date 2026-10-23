@@ -224,7 +224,7 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
                 accessibilityRole="link"
                 style={{ color: theme.accent, textDecorationLine: 'underline', fontWeight: scriptOf(p.text) ? 'normal' : '600', fontFamily: scriptureFont(scriptOf(p.text), settings.serif, true) }}
               >
-                {p.text}
+                {unbroken(p.text)}
               </Text>
             ) : (
               p.text
@@ -327,3 +327,8 @@ const styles = StyleSheet.create({
   titleInput: { fontSize: 22, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, marginBottom: 8 },
   bodyInput: { minHeight: 320, paddingVertical: 8 },
 });
+
+/** A reference kept on one line: no-break spaces, a no-break hyphen, and no break at a dash. */
+function unbroken(text: string): string {
+  return text.replace(/ /g, '\u00A0').replace(/-/g, '\u2011').replace(/–/g, '\u2060–\u2060');
+}
