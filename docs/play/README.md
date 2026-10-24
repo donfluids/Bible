@@ -93,8 +93,9 @@ Uninstalling removes the bookmarks and notes on that phone.
       `graphics/vedapusthakam-feature-en.png` for its English translation (1024 × 500, redrawn
       by `node scripts/make-feature-graphic.mjs`).
 - [ ] Phone screenshots: the eight in `screenshots/ml/` (1080 × 1920, Malayalam captions),
-      in this order: reader with highlights, word sheet, Hebrew/Greek words, compare,
-      marker, search, dark theme, notebook. They are the app's own screens rendered in Chromium from
+      in this order: reader with highlights, word sheet, Hebrew/Greek words, handwritten
+      notes, a verse card on a photo, search, dark theme, notebook (retaken for 0.4.18; the
+      handwriting is drawn into the app's own page, and the card's photo is a drawn sunrise). They are the app's own screens rendered in Chromium from
       a web build at phone size (no Android emulator was available), so the system status
       bar is missing; the captions need a Malayalam speaker's read.
 - [ ] English translation of the listing: the eight in `screenshots/en/` (interface set to
