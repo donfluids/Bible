@@ -17,13 +17,13 @@ Malayalam speaker before it goes live.
 **Short description** (80 of 80)
 
 ```
-മലയാളം–ഇംഗ്ലീഷ് ബൈബിൾ. പഴയനിയമത്തിന് എബ്രായ, പുതിയനിയമത്തിന് ഗ്രീക്ക് മൂലപദങ്ങൾ.
+മലയാളം–ഇംഗ്ലീഷ് പഠന ബൈബിൾ: പഴയനിയമത്തിന് എബ്രായ, പുതിയനിയമത്തിന് ഗ്രീക്ക് മൂലപദം
 ```
 
 **Full description**
 
 ```
-മലയാളം–ഇംഗ്ലീഷ് ബൈബിൾ: സത്യവേദപുസ്തകവും (1910) കിംഗ് ജെയിംസ് വേർഷനും വായിക്കാനും, മിക്ക വാക്കുകളുടെയും മൂലപദങ്ങൾ, പഴയനിയമത്തിൽ എബ്രായയും പുതിയനിയമത്തിൽ ഗ്രീക്കും, പഠിക്കാനും.
+മലയാളം–ഇംഗ്ലീഷ് പഠന ബൈബിൾ: സത്യവേദപുസ്തകവും (1910) കിംഗ് ജെയിംസ് വേർഷനും വായിക്കാനും, മിക്ക വാക്കുകളുടെയും മൂലപദങ്ങൾ, പഴയനിയമത്തിൽ എബ്രായയും പുതിയനിയമത്തിൽ ഗ്രീക്കും, പഠിക്കാനും.
 
 • സത്യവേദപുസ്തകവും കിംഗ് ജെയിംസ് വേർഷനും (KJV): ഒറ്റ സ്പർശത്തിൽ മാറാം.
 • അദ്ധ്യായം കേൾക്കാം: ഫോണിന്റെ മലയാളം ശബ്ദത്തിൽ വാക്യം തോറും വായിച്ചു കേൾപ്പിക്കും; വായിക്കുന്ന വാക്യം തെളിഞ്ഞുനിൽക്കും, അടുത്ത അദ്ധ്യായത്തിലേക്കു തുടരും.
@@ -47,22 +47,22 @@ Malayalam speaker before it goes live.
 
 ## English (translation)
 
-**App name** (23 of 30)
+**App name** (29 of 30)
 
 ```
-Malayalam English Bible
+Malayalam English Study Bible
 ```
 
-**Short description** (72 of 80)
+**Short description** (78 of 80)
 
 ```
-Malayalam-English Bible: Hebrew root words for the OT, Greek for the NT.
+Malayalam-English Study Bible: Hebrew root words for the OT, Greek for the NT.
 ```
 
 **Full description**
 
 ```
-A Malayalam-English Bible: read the Sathyavedapusthakam (1910) and the King James Version, and study the root words behind most of the Malayalam words, Hebrew in the Old Testament and Greek in the New.
+A Malayalam-English Study Bible: read the Sathyavedapusthakam (1910) and the King James Version, and study the root words behind most of the Malayalam words, Hebrew in the Old Testament and Greek in the New.
 
 • The Sathyavedapusthakam and the King James Version, switched with one tap.
 • Tap an underlined Malayalam word for its root word, Hebrew in the Old Testament or Greek in the New: meaning, pronunciation, grammar and Strong's dictionary entry.

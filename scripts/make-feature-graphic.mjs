@@ -14,8 +14,8 @@ const malayalam = (weight) =>
   path.join(ROOT, `node_modules/@expo-google-fonts/noto-serif-malayalam/${weight}/NotoSerifMalayalam_${weight}.ttf`);
 
 const VERSIONS = {
-  ml: { name: 'വേദപുസ്തകം', lines: ['മലയാളം–ഇംഗ്ലീഷ് ബൈബിൾ', 'പഴയനിയമം എബ്രായ മൂലപദങ്ങളോടൊപ്പം', 'പുതിയനിയമം ഗ്രീക്ക് മൂലപദങ്ങളോടൊപ്പം'] },
-  en: { name: 'Vedapusthakam', lines: ['Malayalam–English Bible', 'Old Testament with Hebrew root words', 'New Testament with Greek root words'] },
+  ml: { name: 'വേദപുസ്തകം', lines: ['മലയാളം–ഇംഗ്ലീഷ് പഠന ബൈബിൾ', 'പഴയനിയമം എബ്രായ മൂലപദങ്ങളോടൊപ്പം', 'പുതിയനിയമം ഗ്രീക്ക് മൂലപദങ്ങളോടൊപ്പം'] },
+  en: { name: 'Vedapusthakam', lines: ['Malayalam–English Study Bible', 'Old Testament with Hebrew root words', 'New Testament with Greek root words'] },
 };
 
 // The sunrise, filling the banner (cropped about its middle).

@@ -43,7 +43,7 @@ scripts), drop words from the end.
 **Description**
 
 ```
-മലയാളം–ഇംഗ്ലീഷ് ബൈബിൾ: സത്യവേദപുസ്തകവും (1910) കിംഗ് ജെയിംസ് വേർഷനും വായിക്കാനും, മിക്ക വാക്കുകളുടെയും മൂലപദങ്ങൾ, പഴയനിയമത്തിൽ എബ്രായയും പുതിയനിയമത്തിൽ ഗ്രീക്കും, പഠിക്കാനും.
+മലയാളം–ഇംഗ്ലീഷ് പഠന ബൈബിൾ: സത്യവേദപുസ്തകവും (1910) കിംഗ് ജെയിംസ് വേർഷനും വായിക്കാനും, മിക്ക വാക്കുകളുടെയും മൂലപദങ്ങൾ, പഴയനിയമത്തിൽ എബ്രായയും പുതിയനിയമത്തിൽ ഗ്രീക്കും, പഠിക്കാനും.
 
 • സത്യവേദപുസ്തകവും കിംഗ് ജെയിംസ് വേർഷനും (KJV): ഒറ്റ സ്പർശത്തിൽ മാറാം.
 • അദ്ധ്യായം കേൾക്കാം: ഫോണിന്റെ മലയാളം ശബ്ദത്തിൽ വാക്യം തോറും വായിച്ചു കേൾപ്പിക്കും; വായിക്കുന്ന വാക്യം തെളിഞ്ഞുനിൽക്കും, അടുത്ത അദ്ധ്യായത്തിലേക്കു തുടരും.
@@ -67,10 +67,10 @@ scripts), drop words from the end.
 
 ## English (U.S.)
 
-**Name** (23 of 30 characters)
+**Name** (29 of 30 characters)
 
 ```
-Malayalam English Bible
+Malayalam English Study Bible
 ```
 
 **Subtitle** (25 of 30 characters)
@@ -94,7 +94,7 @@ malayalam,sathyavedapusthakam,bible,kjv,hebrew,greek,interlinear,strongs,concord
 **Description**
 
 ```
-A Malayalam-English Bible: read the Sathyavedapusthakam (1910) and the King James Version, and study the root words behind most of the Malayalam words, Hebrew in the Old Testament and Greek in the New.
+A Malayalam-English Study Bible: read the Sathyavedapusthakam (1910) and the King James Version, and study the root words behind most of the Malayalam words, Hebrew in the Old Testament and Greek in the New.
 
 • The Sathyavedapusthakam and the King James Version, switched with one tap.
 • Tap an underlined Malayalam word for its root word, Hebrew in the Old Testament or Greek in the New: meaning, pronunciation, grammar and Strong's dictionary entry.
