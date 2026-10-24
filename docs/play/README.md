@@ -100,10 +100,10 @@ Uninstalling removes the bookmarks and notes on that phone.
       bar is missing; the captions need a Malayalam speaker's read.
 - [ ] English translation of the listing: the eight in `screenshots/en/` (interface set to
       English, English captions, same order).
-- [ ] Tablet screenshots (from 0.4.11, which has the tablet layout and side by side): four
-      each for 7-inch (`screenshots/tablet7-ml/`, 1920 × 1080) and 10-inch
-      (`screenshots/tablet10-ml/`, 2560 × 1440): side by side, Greek words under both texts,
-      a word's sheet, dark theme. The English translation uses `tablet7-en/` and `tablet10-en/`.
+- [ ] Tablet screenshots (retaken for 0.4.18): six each for 7-inch (`screenshots/tablet7-ml/`,
+      1920 × 1080) and 10-inch (`screenshots/tablet10-ml/`, 2560 × 1440): side by side, Greek
+      words under both texts, a word's panel, dark theme, handwritten notes, a verse card on
+      a photo. The English translation uses `tablet7-en/` and `tablet10-en/`.
       Rendered the same way as the phone ones; the Malayalam captions need a speaker's read.
 - [ ] Category: Books & Reference. Contact email; website optional.
 
