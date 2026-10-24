@@ -5,7 +5,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { Header, HeaderIconButton } from '../components/Header';
 import { languageScript, scriptOf, scriptureFont } from '../fonts';
 import { translationName, useT } from '../i18n';
-import { pageName, useNotebook } from '../notebook';
+import { useNotebook } from '../notebook';
 import { getVerseCounts, getVerses } from '../queries';
 import { findReferences } from '../refs';
 import type { FoundRef, TextPiece, VerseCount } from '../refs';
@@ -254,11 +254,10 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
   };
 
   const titleText = page.title.trim();
-  const draftTitle = draft.title.trim();
   return (
     <KeyboardAvoidingView style={[styles.screen, { backgroundColor: theme.bg }]} behavior="padding">
       <Header
-        title={editing ? draftTitle || t('newPage') : pageName(page, t('untitled'))}
+        title={t('notebook')}
         onBack={onBack}
         right={
           editing ? (

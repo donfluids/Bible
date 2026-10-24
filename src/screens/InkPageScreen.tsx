@@ -33,7 +33,7 @@ import {
   touchesStroke,
 } from '../ink';
 import type { Ink, PenSize, Stroke, Tool } from '../ink';
-import { pageName, useNotebook } from '../notebook';
+import { useNotebook } from '../notebook';
 import { loadEntry, useAutosave } from '../persist';
 import { tellLoadProblem, tellSaveFailed, useSettings } from '../settings';
 import { MAX_CONTENT_WIDTH } from '../text';
@@ -420,7 +420,7 @@ export function InkPageScreen({ id, onBack }: Props) {
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Header
-        title={title.trim() || pageName(page, t('handwritten'))}
+        title={t('handwritten')}
         onBack={onBack}
         right={
           <>
