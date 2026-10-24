@@ -10,6 +10,7 @@ import { groupForms, isTaBaseForm, taStem } from './lib/forms.mjs';
 import { addPoint, decodeInk, encodeInk, pageHeight, parseInk, strokePath, touchesStroke } from '../src/ink';
 import { cleanLook, ownPhotoIn, savedCopyIn } from '../src/lookClean';
 import { malayalamPattern } from '../src/malayalamSearch';
+import { getBeside } from '../src/queries';
 import { findReferences, parseReference } from '../src/refs';
 import { newTestamentFirst, refInScope, scopeCounts } from '../src/searchScope';
 import { cleanSettings } from '../src/settingsClean';
@@ -143,6 +144,36 @@ test('a pen held still adds no points', () => {
 test('the eraser finds a stroke it passes over, not one beside it', () => assert.ok(touchesStroke(strokeH, 250, 305, 10) && !touchesStroke(strokeH, 250, 340, 10)));
 test('a stroke path has no NaN', () => assert.ok(!/NaN|undefined/.test(strokePath(strokeA.p) + strokePath([5, 5]) + strokePath([1, 2, 3, 4]))));
 test('the page grows below the writing', () => assert.equal(pageHeight({ strokes: [{ c: 0, w: 3, p: [0, 2000] }] }, 800), 2500));
+
+// --- Side by side: the other Bible beside each verse, both ways (needs the built databases) ---
+const { DatabaseSync } = await import('node:sqlite');
+const { existsSync: exists, readdirSync: list } = await import('node:fs');
+const DB_DIR = new URL('../assets/db/', import.meta.url).pathname;
+// Verses the edition's Bible does not have (Acts 15:34 and 28:29, Romans 16:24 in the Malayalam).
+const NOT_IN = new Set(['MAL 44:15:34', 'MAL 44:28:29', 'MAL 45:16:24']);
+for (const [ed, native] of [['ml', 'MAL'], ['ta', 'TAM']] as const) {
+  const file = exists(DB_DIR) ? list(DB_DIR).find((f) => f.startsWith(`bible-${ed}`) && f.endsWith('.db')) : undefined;
+  if (!file) continue;
+  const raw = new DatabaseSync(DB_DIR + file, { readOnly: true });
+  const db = { getAllAsync: async (q: string, ...a: unknown[]) => raw.prepare(q).all(...(a.flat() as never[])), getFirstAsync: async (q: string, ...a: unknown[]) => raw.prepare(q).get(...(a.flat() as never[])) ?? null } as never;
+  const problems: string[] = [];
+  const chapters = raw.prepare('SELECT DISTINCT book, chapter FROM verse_map WHERE translation = ?').all(native) as { book: number; chapter: number }[];
+  for (const { book, chapter } of chapters) {
+    for (const [from, to] of [[native, 'KJV'], ['KJV', native]] as const) {
+      const verses = (raw.prepare('SELECT verse FROM verses WHERE translation = ? AND book = ? AND chapter = ? AND verse > 0 AND omitted = 0').all(from, book, chapter) as { verse: number }[]).map((r) => r.verse);
+      const beside = await getBeside(db, from, to, book, chapter, verses);
+      for (const v of verses) if (!beside.get(v)?.length && !NOT_IN.has(`${to} ${book}:${chapter}:${v}`)) problems.push(`${from} ${book}:${chapter}:${v}`);
+      // Each verse is found again from the verses beside it.
+      if (from !== native) continue;
+      for (const v of verses)
+        for (const k of beside.get(v) ?? []) {
+          const back = await getBeside(db, 'KJV', native, k.book, k.chapter, [k.verse]);
+          if (!(back.get(k.verse) ?? []).some((m) => m.book === book && m.chapter === chapter && m.verse === v)) problems.push(`${native} ${book}:${chapter}:${v} and back`);
+        }
+    }
+  }
+  test(`${ed} side by side: every verse of the renumbered chapters has its partner, both ways`, () => assert.deepEqual(problems.slice(0, 5), []));
+}
 
 // --- Patterns that must stay fast on long text ---
 const books = [{ id: 43, osis: 'John', name: 'John', testament: 'NT', chapters: 21, names: {} }] as Book[];

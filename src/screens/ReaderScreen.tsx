@@ -30,7 +30,7 @@ import { addMark, comparePoints, eraseMarks, markRanges } from '../marks';
 import { pageName, useNotebook } from '../notebook';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
 import { noteLetter, VerseText } from '../components/VerseText';
-import { getChapter, getInterlinear, getKjvBeside, getNotes, mapRef } from '../queries';
+import { getBeside, getChapter, getInterlinear, getNotes, mapRef } from '../queries';
 import type { ChapterData } from '../queries';
 import { FONT_SIZES, useSettings } from '../settings';
 import type { Settings } from '../settings';
@@ -861,19 +861,17 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
     }
   };
   const originalLanguage = (v: { book: number }) => (v.book <= 39 ? t('hebrew') : t('greek'));
-  // Side by side shows both Bibles, the edition's own on the left: it is the one open.
-  useEffect(() => {
-    if (sideBySide && nativeBible && translation !== nativeBible) switchTranslation(nativeBible);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sideBySide]);
-  // The KJV verses beside each verse of the chapter, with the chapter they belong to.
+  // Side by side shows both Bibles: the one open on the left (it is the one read aloud,
+  // and stays open when the phone is turned back), the other beside it.
+  const besideTranslation: TranslationId = translation === nativeBible ? 'KJV' : nativeBible ?? 'KJV';
+  // The other Bible's verses beside each verse of the chapter, with the chapter they belong to.
   const [beside, setBeside] = useState<{ key: string; verses: Map<number, VerseRow[]> } | null>(null);
-  const besideKey = `${translation}:${chapterKey}`;
+  const besideKey = `${translation}:${besideTranslation}:${chapterKey}`;
   useEffect(() => {
     if (!sideBySide || !items) return;
     let cancelled = false;
     const verses = items.flatMap((it) => (it.kind === 'verse' ? [it.verse.verse] : []));
-    getKjvBeside(db, translation, position.book, position.chapter, verses)
+    getBeside(db, translation, besideTranslation, position.book, position.chapter, verses)
       .then((map) => {
         if (!cancelled) setBeside({ key: besideKey, verses: map });
       })
@@ -1111,7 +1109,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         />
       );
       if (!sideBySide) return verseRow;
-      // The KJV beside the verse, and the Hebrew or Greek words across both columns.
+      // The other Bible beside the verse, and the Hebrew or Greek words across both columns.
       const english = besideVerses?.get(v.verse) ?? [];
       const words = showOriginal ? originalWords?.get(v.verse) : undefined;
       return (
@@ -1128,7 +1126,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                   onLongPress={() => rowActions.current.actions(v)}
                   underline={underlineWords && !interlinear}
                   onHighlight={!!mark && !flashing}
-                  selectionTranslation="KJV"
+                  selectionTranslation={besideTranslation}
                   withChapter={e.chapter !== v.chapter}
                 />
               ))}

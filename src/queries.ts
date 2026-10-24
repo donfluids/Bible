@@ -345,12 +345,15 @@ export async function getInterlinear(
 }
 
 /**
- * For side-by-side reading: the KJV verses beside each verse of a chapter of `from`,
- * keyed by that verse's number. Usually the verse of the same number; where `from` numbers
- * verses differently (the Malayalam in 15 chapters) the verse_map table gives the KJV
- * verses, which may lie in a neighbouring chapter.
+ * For side-by-side reading: the verses of `to` beside each verse of a chapter of `from`,
+ * keyed by that verse's number. Usually the verse of the same number. Where a Bible
+ * numbers verses differently from the KJV (the Malayalam in 15 chapters), the verse_map
+ * table takes the verse to its KJV verses and from those to the other Bible's, which may
+ * lie in a neighbouring chapter. One of the two is the KJV.
  */
-export async function getKjvBeside(db: SQLiteDatabase, from: TranslationId, book: number, chapter: number, verses: number[]): Promise<Map<number, VerseRow[]>> {
+export async function getBeside(db: SQLiteDatabase, from: TranslationId, to: TranslationId, book: number, chapter: number, verses: number[]): Promise<Map<number, VerseRow[]>> {
+  const key = (r: Ref) => `${r.book}:${r.chapter}:${r.verse}`;
+  // From a verse of `from` to KJV-numbered verses.
   const rows = await db.getAllAsync<{ verse: number; obook: number; ochapter: number; overse: number }>(
     'SELECT verse, obook, ochapter, overse FROM verse_map WHERE translation = ? AND book = ? AND chapter = ? ORDER BY verse, n',
     from,
@@ -359,12 +362,40 @@ export async function getKjvBeside(db: SQLiteDatabase, from: TranslationId, book
   );
   const mapped = new Map<number, Ref[]>();
   for (const r of rows) mapped.set(r.verse, [...(mapped.get(r.verse) ?? []), { book: r.obook, chapter: r.ochapter, verse: r.overse }]);
-  const wanted = new Map<number, Ref[]>(verses.map((v) => [v, mapped.get(v) ?? [{ book, chapter, verse: v }]]));
-  const found = await getVerses(db, 'KJV', [...wanted.values()].flat());
-  const byRef = new Map(found.map((v) => [`${v.book}:${v.chapter}:${v.verse}`, v]));
+  const kjv = new Map<number, Ref[]>(verses.map((v) => [v, mapped.get(v) ?? [{ book, chapter, verse: v }]]));
+  // From KJV-numbered verses to the verses of `to` that hold them; a verse `to` does not
+  // renumber is its own.
+  let wanted = kjv;
+  if (to !== 'KJV') {
+    const back = await db.getAllAsync<{ book: number; chapter: number; verse: number; obook: number; ochapter: number; overse: number }>(
+      'SELECT book, chapter, verse, obook, ochapter, overse FROM verse_map WHERE translation = ? AND obook = ? AND ochapter BETWEEN ? AND ? ORDER BY book, chapter, verse, n',
+      to,
+      book,
+      chapter - 1,
+      chapter + 1,
+    );
+    const holders = new Map<string, Ref[]>();
+    const renumbered = new Set<string>();
+    for (const r of back) {
+      const k = key({ book: r.obook, chapter: r.ochapter, verse: r.overse });
+      holders.set(k, [...(holders.get(k) ?? []), { book: r.book, chapter: r.chapter, verse: r.verse }]);
+      renumbered.add(key(r));
+    }
+    wanted = new Map();
+    for (const [v, refs] of kjv) {
+      const out: Ref[] = [];
+      // The verse of the same number, unless `to` gives it elsewhere, and any verse `to`
+      // takes it into (one KJV verse may be two, as 1 Timothy 6:21 in the Malayalam).
+      for (const r of refs) for (const h of [...(renumbered.has(key(r)) ? [] : [r]), ...(holders.get(key(r)) ?? [])]) if (!out.some((o) => key(o) === key(h))) out.push(h);
+      out.sort((a, b) => a.chapter - b.chapter || a.verse - b.verse);
+      wanted.set(v, out);
+    }
+  }
+  const found = await getVerses(db, to, [...wanted.values()].flat());
+  const byRef = new Map(found.map((v) => [key(v), v]));
   const out = new Map<number, VerseRow[]>();
   for (const [v, refs] of wanted) {
-    const beside = refs.map((r) => byRef.get(`${r.book}:${r.chapter}:${r.verse}`)).filter((x): x is VerseRow => !!x);
+    const beside = refs.map((r) => byRef.get(key(r))).filter((x): x is VerseRow => !!x && !x.omitted);
     if (beside.length) out.set(v, beside);
   }
   return out;

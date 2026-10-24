@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DefaultTheme, DarkTheme, NavigationContainer, StackActions } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -205,6 +205,9 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const TAB_SCREEN = { animation: 'none', gestureEnabled: false } as const;
 
 function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
+  // A phone on its side may have its buttons, or a camera cut-out, at the left or right:
+  // the screens keep clear of them.
+  const insets = useSafeAreaInsets();
   const db = useSQLiteContext();
   const theme = useTheme();
   const { settings } = useSettings();
@@ -278,7 +281,7 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
       <StatusBar style={theme.dark ? 'light' : 'dark'} />
       {/* On a wide screen (a tablet on its side, a Chromebook) the word sheet stands as a
           panel at the right and the screens make room for it, so the text stays in view. */}
-      <View style={[styles.root, wide && styles.rootWide]}>
+      <View style={[styles.root, wide && styles.rootWide, { paddingLeft: insets.left, paddingRight: insets.right, backgroundColor: theme.bg }]}>
       <View style={styles.root}>
       <NavigationContainer ref={navigationRef} theme={navTheme}>
         <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.bg } }}>

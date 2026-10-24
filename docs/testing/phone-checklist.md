@@ -28,8 +28,11 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
 - [ ] Scroll down: the bars fold away; scroll up: they come back.
 - [ ] Switch the Bible (the ഇംഗ്ലീഷ് / KJV button at the bottom) and back.
 - [ ] Turn on Greek/Hebrew at the bottom: words appear under each verse.
-- [ ] Turn the phone sideways: the text and bars fit, nothing is cut off. On the
-      Malayalam app, Malayalam and English stand side by side.
+- [ ] Turn the phone sideways: the text and bars fit, nothing is cut off, and nothing
+      lies under the phone's own buttons or camera at the side. On the Malayalam and
+      Tamil apps the two Bibles stand side by side, the one that was open on the left.
+- [ ] With English open, turn the phone sideways: English is on the left. Tap the
+      speaker: it reads English. Turn the phone back: English is still open.
 
 ## 3. Words and verses
 
