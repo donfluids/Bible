@@ -7,7 +7,7 @@
 //   npx tsx scripts/test-logic.mts
 import assert from 'node:assert/strict';
 import { groupForms, isTaBaseForm, taStem } from './lib/forms.mjs';
-import { addPoint, decodeInk, encodeInk, pageHeight, parseInk, pathOf, strokePath, touchesStroke } from '../src/ink';
+import { addPoint, decodeInk, encodeInk, packSteps, pageHeight, parseInk, pathOf, strokePath, touchesStroke, unpackSteps } from '../src/ink';
 import { cleanLook, ownPhotoIn, savedCopyIn } from '../src/lookClean';
 import { malayalamPattern } from '../src/malayalamSearch';
 import { getBeside } from '../src/queries';
@@ -126,7 +126,20 @@ test('Tamil: two-letter stems are not grouped', () => assert.equal(groupForms([{
 const strokeA = { c: 1, w: 3, p: [10, 20, 30, 25, 60, 40] };
 const strokeH = { c: -1, w: 18, p: [100, 300, 400, 300] };
 test('ink is read back as written', () => assert.deepEqual(parseInk(JSON.stringify(encodeInk({ strokes: [strokeA, strokeH] }))).strokes, [strokeA, strokeH]));
-test('ink is stored as steps', () => assert.deepEqual((encodeInk({ strokes: [strokeA] }) as { s: { d: number[] }[] }).s[0].d, [10, 20, 20, 5, 30, 15]));
+test('ink is stored as steps, written as letters', () => assert.deepEqual(unpackSteps((encodeInk({ strokes: [strokeA] }) as { s: [number, number, string][] }).s[0][2], 100), [10, 20, 20, 5, 30, 15]));
+test('letters hold any step', () => {
+  const values = [0, 1, -1, 15, -16, 16, -17, 600, -600, 123456, -999999];
+  assert.deepEqual(unpackSteps(packSteps(values), 100), values);
+});
+test('a small step is one letter', () => assert.equal(packSteps([3, -2, 15, -16]).length, 4));
+test('letters it could not have written are refused', () => assert.deepEqual([unpackSteps('AB"', 100), unpackSteps('g', 100), unpackSteps('A'.repeat(20), 10)], [null, null, null]));
+test('a page saved by 0.4.16 (steps as numbers) is read', () => assert.deepEqual(decodeInk({ v: 1, s: [{ c: 1, w: 3, d: [10, 20, 20, 5, 30, 15] }] }).strokes, [strokeA]));
+test('a damaged stroke in letters is left out', () => assert.deepEqual(decodeInk({ v: 2, s: [[0, 3, 'A!'], [7, 3, 'AA'], [0, 3, 'CE']] }).strokes, [{ c: 0, w: 3, p: [1, 2] }]));
+test('the letters take under half the room of numbers', () => {
+  const page = { strokes: [...Array(200)].map((_, i) => ({ c: 0, w: 3, p: [...Array(60)].flatMap((__, j) => [(i * 7 + j * 3) % 600, i * 20 + (j % 5)]) })) };
+  const numbers = JSON.stringify({ v: 1, s: page.strokes.map((st) => ({ c: st.c, w: st.w, d: st.p.map((v, k) => v - (k >= 2 ? st.p[k - 2] : 0)) })) }).length;
+  assert.ok(JSON.stringify(encodeInk(page)).length < numbers / 2, `${JSON.stringify(encodeInk(page)).length} vs ${numbers}`);
+});
 test('damaged strokes are left out, good ones kept', () => {
   const raw = { v: 1, s: [{ c: 7, w: 3, d: [1, 1] }, { c: 0, w: 'x', d: [1, 1] }, { c: 0, w: 3, d: [1] }, { c: 0, w: 3, d: [1, 'a'] }, { c: 0, w: 3, d: [5, 5, 1, 1] }, null, 'x'] };
   assert.deepEqual(decodeInk(raw).strokes, [{ c: 0, w: 3, p: [5, 5, 6, 6] }]);
