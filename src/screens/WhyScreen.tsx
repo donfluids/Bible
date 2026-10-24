@@ -27,7 +27,7 @@ const PARAGRAPHS: Piece[][] = [
     { text: 'Matthew 10:5–10', ref: { book: 40, chapter: 10, verse: 5 } },
     '), He told them to take nothing with them, for those who work for the Lord will be given what they need, and He said: “Freely ye have received, freely give” (',
     { text: 'Matthew 10:8', ref: { book: 40, chapter: 10, verse: 8 } },
-    '). In that spirit, this Bible is made available to all who need it.',
+    ').',
   ],
   [
     'Wherever you are on your journey, whether you are new to the faith or have walked with the Lord for many years, I pray that you come to know the Lord Jesus more and more. Having the word is not enough on its own; I pray that you spend time with the Lord, meditate on His word, and draw closer to Him.',
