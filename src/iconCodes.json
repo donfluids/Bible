@@ -52,5 +52,9 @@
  "redo": 57394,
  "line_weight": 57395,
  "format_line_spacing": 57396,
- "stylus": 57397
+ "stylus": 57397,
+ "link": 57398,
+ "download": 57399,
+ "upload": 57400,
+ "picture_as_pdf": 57401
 }

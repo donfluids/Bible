@@ -317,6 +317,11 @@ npm run smoke        # every main screen of each app in a browser, at four sizes
   Scriptures Hebrew Bible Project's [Hebrew Lexicon](https://github.com/openscriptures/HebrewLexicon)
   (CC BY 4.0) as arranged in CrossWire's BDBGlosses_Strongs module. Shown as the fuller entry in the word sheet
   (`scripts/lib/lexicons.mjs`); all editions.
+- **Cross references**, [OpenBible.info](https://www.openbible.info/labs/cross-references/),
+  CC BY, drawn from the Treasury of Scripture Knowledge and ranked by readers' votes. Up to
+  ten per verse, the most voted first, in every edition (`scripts/lib/crossrefs.mjs`;
+  `node --no-warnings scripts/add-crossrefs.mjs` renews them in built databases). Hold a
+  verse → Cross references.
 - **Interlinear Hebrew and Greek**: Translators Amalgamated Hebrew OT (TAHOT) and
   Greek NT (TAGNT) by [STEPBible](https://github.com/STEPBible/STEPBible-Data),
   Tyndale House Cambridge, CC BY 4.0. Their licence permits bundling the data in

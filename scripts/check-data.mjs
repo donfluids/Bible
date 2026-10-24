@@ -8,8 +8,8 @@
 // replacement or control characters, markup or doubled spaces in the text; Malayalam
 // and Tamil text without stray Latin letters; every word link (tags) inside its verse
 // and pointing at a Strong's entry that exists; every concordance, rendering, note and
-// heading pointing at a verse that exists; every lexicon entry belonging to a Strong's
-// entry. Then the snapshot (data/checks/verse-counts.json): the number of verses in each
+// heading pointing at a verse that exists; every cross reference from and to KJV verses;
+// every lexicon entry belonging to a Strong's entry. Then the snapshot (data/checks/verse-counts.json): the number of verses in each
 // chapter of each translation, so a rebuild that loses or gains a verse shows at once.
 // After an intended change (a correction of the text, a new translation) run --update
 // and commit the snapshot with it.
@@ -146,6 +146,23 @@ for (const file of readdirSync(DB_DIR).filter((f) => /^bible-\w+\.db$/.test(f)).
     .filter((h) => !verseKeys.get(h.t)?.has(`${h.book}:${h.chapter}:${h.v}`) && !verseKeys.get(h.t)?.has(`${h.book}:${h.chapter}:${h.v - 1}`))
     .map((h) => `${h.t} ${h.book}:${h.chapter} before ${h.v}`);
   report(errors, `${label}: headings before a missing verse`, badHeadings);
+  // Cross references (scripts/lib/crossrefs.mjs): KJV-numbered, from and to verses the KJV
+  // has, a range running forwards within its book.
+  const kjv = verseKeys.get('KJV');
+  const badCross = [];
+  for (const r of all('SELECT book, chapter, verse, refs FROM crossrefs')) {
+    const at = `${r.book}:${r.chapter}:${r.verse}`;
+    if (!kjv?.has(at)) badCross.push(`from ${at}: no such KJV verse`);
+    const blob = r.refs;
+    if (blob.length === 0 || blob.length % 6 !== 0) badCross.push(`${at}: ${blob.length} bytes`);
+    for (let i = 0; i + 5 < blob.length; i += 6) {
+      const a = `${blob[i]}:${blob[i + 1]}:${blob[i + 2]}`;
+      const b = `${blob[i + 3]}:${blob[i + 4]}:${blob[i + 5]}`;
+      if (!kjv?.has(a) || !kjv?.has(b)) badCross.push(`${at} -> ${a}-${b}: no such KJV verse`);
+      else if (blob[i + 3] !== blob[i] || blob[i + 4] * 1000 + blob[i + 5] < blob[i + 1] * 1000 + blob[i + 2]) badCross.push(`${at} -> ${a}-${b}: range runs backwards or across books`);
+    }
+  }
+  report(errors, `${label}: cross references`, badCross);
   const orphanLexicon = all('SELECT id FROM lexicon').filter((r) => !strongs.has(r.id)).map((r) => r.id);
   report(errors, `${label}: lexicon entries for a missing Strong's entry`, orphanLexicon);
   const interlinear = all('SELECT COUNT(*) AS n FROM interlinear')[0].n;

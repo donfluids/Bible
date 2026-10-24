@@ -166,6 +166,16 @@ for (const edition of EDITIONS) {
       await wait(800);
       if (await page.getByLabel(t.close).locator('visible=true').count()) await closeSheet();
     });
+    await step('cross-references', async (snap) => {
+      await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', '1') })).click();
+      await wait(1500);
+      await vis(page.getByText(t.crossReferences, { exact: true })).click();
+      await wait(2500);
+      // The list has loaded when its source line shows.
+      await shows(t.crossReferencesSource);
+      await snap();
+      await closeSheet();
+    });
     await step('card', async (snap) => {
       await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', '3') })).click();
       await wait(1200);

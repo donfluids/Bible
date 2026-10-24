@@ -401,6 +401,83 @@ export async function getBeside(db: SQLiteDatabase, from: TranslationId, to: Tra
   return out;
 }
 
+/** A cross reference, in the numbering of the Bible being read: a verse or a range. */
+export interface CrossRef {
+  start: Ref;
+  end: Ref;
+  /** The first verses of the range, in the Bible being read. */
+  verses: VerseRow[];
+  /** How many more verses the range holds. */
+  more: number;
+}
+
+/** At most this many verses of a range are quoted under it. */
+const CROSS_SHOWN = 3;
+/** At most this many cross references for one verse (two KJV verses may each have ten). */
+const CROSS_MAX = 12;
+
+/** The KJV-numbered verses a crossrefs row points at, in its order: [start, end] pairs. */
+function decodeCrossRefs(blob: Uint8Array): [Ref, Ref][] {
+  const out: [Ref, Ref][] = [];
+  for (let i = 0; i + 5 < blob.length; i += 6) {
+    out.push([
+      { book: blob[i], chapter: blob[i + 1], verse: blob[i + 2] },
+      { book: blob[i + 3], chapter: blob[i + 4], verse: blob[i + 5] },
+    ]);
+  }
+  return out;
+}
+
+/** How many cross references a verse of `translation` has (for the verse menu). */
+export async function countCrossRefs(db: SQLiteDatabase, translation: TranslationId, ref: Ref): Promise<number> {
+  return (await crossRefTargets(db, translation, ref)).length;
+}
+
+async function crossRefTargets(db: SQLiteDatabase, translation: TranslationId, ref: Ref): Promise<[Ref, Ref][]> {
+  const seen = new Set<string>();
+  const out: [Ref, Ref][] = [];
+  for (const kjv of await toKjvRefs(db, translation, ref)) {
+    const row = await db.getFirstAsync<{ refs: Uint8Array }>('SELECT refs FROM crossrefs WHERE book = ? AND chapter = ? AND verse = ?', kjv.book, kjv.chapter, kjv.verse);
+    if (!row) continue;
+    for (const pair of decodeCrossRefs(new Uint8Array(row.refs))) {
+      const key = `${pair[0].book}:${pair[0].chapter}:${pair[0].verse}-${pair[1].chapter}:${pair[1].verse}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(pair);
+    }
+  }
+  return out.slice(0, CROSS_MAX);
+}
+
+/**
+ * The cross references of a verse of `translation` (OpenBible.info's list, from the
+ * Treasury of Scripture Knowledge; the strongest first), each with the first verses of its
+ * range in `translation`. The list is in KJV numbering; a Bible that numbers verses
+ * differently has them mapped both ways.
+ */
+export async function getCrossRefs(db: SQLiteDatabase, translation: TranslationId, ref: Ref): Promise<CrossRef[]> {
+  const out: CrossRef[] = [];
+  for (const [start, end] of await crossRefTargets(db, translation, ref)) {
+    // The KJV verses of the range, which may run into the next chapter.
+    const range = await db.getAllAsync<Ref>(
+      "SELECT book, chapter, verse FROM verses WHERE translation = 'KJV' AND verse > 0 AND book = ? AND (chapter, verse) >= (?, ?) AND (chapter, verse) <= (?, ?) ORDER BY chapter, verse",
+      start.book,
+      start.chapter,
+      start.verse,
+      end.chapter,
+      end.verse,
+    );
+    const shownKjv = range.slice(0, CROSS_SHOWN);
+    const mapped: Ref[] = [];
+    for (const r of shownKjv) for (const m of await mapRefs(db, 'KJV', translation, r)) if (!mapped.some((x) => x.book === m.book && x.chapter === m.chapter && x.verse === m.verse)) mapped.push(m);
+    const verses = (await getVerses(db, translation, mapped)).filter((v) => !v.omitted);
+    const first = (await mapRef(db, 'KJV', translation, start)) ?? start;
+    const last = (await mapRef(db, 'KJV', translation, end)) ?? end;
+    out.push({ start: first, end: last, verses, more: Math.max(0, range.length - shownKjv.length) });
+  }
+  return out;
+}
+
 /** The KJV-numbered verses that a verse of `translation` corresponds to (usually itself). */
 export async function toKjvRefs(db: SQLiteDatabase, translation: TranslationId, ref: Ref): Promise<Ref[]> {
   const rows = await db.getAllAsync<{ obook: number; ochapter: number; overse: number }>(

@@ -10,7 +10,7 @@ import { groupForms, isTaBaseForm, taStem } from './lib/forms.mjs';
 import { addPoint, decodeInk, encodeInk, packSteps, pageHeight, parseInk, pathOf, strokePath, touchesStroke, unpackSteps } from '../src/ink';
 import { cleanLook, ownPhotoIn, savedCopyIn } from '../src/lookClean';
 import { malayalamPattern } from '../src/malayalamSearch';
-import { getBeside } from '../src/queries';
+import { countCrossRefs, getBeside, getCrossRefs } from '../src/queries';
 import { findReferences, parseReference } from '../src/refs';
 import { newTestamentFirst, refInScope, scopeCounts } from '../src/searchScope';
 import { cleanSettings } from '../src/settingsClean';
@@ -186,6 +186,19 @@ for (const [ed, native] of [['ml', 'MAL'], ['ta', 'TAM']] as const) {
     }
   }
   test(`${ed} side by side: every verse of the renumbered chapters has its partner, both ways`, () => assert.deepEqual(problems.slice(0, 5), []));
+  // Cross references: John 3:16 leads first to Romans 5:8, quoted in the edition's own Bible.
+  const john316 = await getCrossRefs(db, native, { book: 43, chapter: 3, verse: 16 });
+  test(`${ed} cross references of John 3:16, strongest first, in ${native}`, () => {
+    assert.deepEqual(john316[0].start, { book: 45, chapter: 5, verse: 8 });
+    assert.ok(john316.length >= 5 && john316.length <= 12, `${john316.length}`);
+    const script = native === 'MAL' ? /[\u0D00-\u0D7F]/ : /[\u0B80-\u0BFF]/;
+    assert.ok(john316.every((c) => c.verses.length > 0 && c.verses.every((v) => script.test(v.text))), 'every reference quoted in the edition\'s own Bible');
+  });
+  test(`${ed} a range is quoted in part and counted`, () => {
+    const range = john316.find((c) => c.end.verse > c.start.verse);
+    assert.ok(range && range.verses.length === Math.min(3, range.end.verse - range.start.verse + 1));
+  });
+  test(`${ed} the count in the verse menu matches the list`, async () => assert.equal(await countCrossRefs(db, native, { book: 43, chapter: 3, verse: 16 }), john316.length));
 }
 
 // --- Patterns that must stay fast on long text ---

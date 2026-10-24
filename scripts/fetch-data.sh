@@ -37,6 +37,10 @@ fetch abbott-smith.tei.xml https://raw.githubusercontent.com/translatable-exeget
 # BDB Glosses keyed to Strong's (CrossWire, from Open Scriptures' Hebrew Lexicon), public domain
 fetch bdbglosses.zip https://www.crosswire.org/ftpmirror/pub/sword/packages/rawzip/BDBGlosses_Strongs.zip
 
+# Cross references from OpenBible.info (CC BY), drawn from the Treasury of Scripture Knowledge
+# and ranked by readers' votes; KJV verse numbering.
+fetch cross-references.zip https://a.openbible.info/data/cross-references.zip
+
 # STEPBible Translators Amalgamated Hebrew OT and Greek NT (CC BY 4.0), Tyndale House Cambridge.
 # Their licence permits bundling in software but asks that the files themselves are not redistributed.
 mkdir -p step
@@ -52,8 +56,9 @@ for name in \
   fetch "step/$name" "$STEP/$encoded"
 done
 
-rm -rf kjv web mal2015 tam2017 bsb-sword bsb bdbglosses
-mkdir -p kjv web mal2015 tam2017 bsb-sword bdbglosses
+rm -rf kjv web mal2015 tam2017 bsb-sword bsb bdbglosses openbible
+mkdir -p kjv web mal2015 tam2017 bsb-sword bdbglosses openbible
+unzip -oq cross-references.zip -d openbible
 unzip -oq kjv.zip -d kjv
 unzip -oq web.zip -d web
 unzip -oq mal2015.zip -d mal2015

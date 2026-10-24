@@ -126,6 +126,15 @@ const BDB: Source = {
   modifications: 'Verse references made into links; the headword omitted where the word sheet shows it.',
 };
 
+const CROSS_REFERENCES: Source = {
+  title: 'Cross references',
+  notice:
+    'OpenBible.info, drawing on the Treasury of Scripture Knowledge (public domain), with each link ranked by readers\u2019 votes.',
+  licence: CC_BY,
+  source: [{ label: 'openbible.info/labs/cross-references', url: 'https://www.openbible.info/labs/cross-references/' }],
+  modifications: 'Up to ten links per verse kept, the most voted first, links with no votes left out; a range running on into the next book kept as its first verse; links to verses the KJV does not number left out.',
+};
+
 const FONTS = (edition: EditionId): Source => ({
   title: 'Fonts',
   notice:
@@ -179,7 +188,7 @@ export function sectionsFor(edition: EditionId): Section[] {
   return [
     { heading: 'Scripture texts', sources: texts },
     { heading: 'Hebrew and Greek data', sources: [STEPBIBLE, STRONGS] },
-    { heading: 'Dictionaries', sources: [ABBOTT_SMITH, BDB] },
+    { heading: 'Dictionaries and cross references', sources: [ABBOTT_SMITH, BDB, CROSS_REFERENCES] },
     { heading: 'Fonts, icons and pictures', sources: [FONTS(edition), ICONS, FLUENT, ROSE] },
     { heading: 'Software', sources: [APP(edition)] },
   ];

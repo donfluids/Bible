@@ -34,6 +34,7 @@ ICONS = [
     'menu_book_fill', 'bookmarks_fill', 'note_stack_fill', 'format_list_bulleted', 'arrow_back_ios_new',
     'volume_up', 'stop_circle', 'image', 'play_arrow', 'pause', 'skip_previous', 'skip_next', 'chevron_left',
     'draw', 'undo', 'redo', 'line_weight', 'format_line_spacing', 'stylus',
+    'link', 'download', 'upload', 'picture_as_pdf',
 ]
 
 

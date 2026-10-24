@@ -69,10 +69,11 @@ import { DatabaseSync } from 'node:sqlite';
 import { deflateRawSync, inflateRawSync } from 'node:zlib';
 import { textHash } from './lib/tokens.mjs';
 import { abbottSmith, bdbGlosses } from './lib/lexicons.mjs';
-import { readFileSync, readdirSync, mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { addCrossRefs } from './lib/crossrefs.mjs';
+import { recordDatabase } from './lib/dbfiles.mjs';
+import { readFileSync, readdirSync, mkdirSync, rmSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createHash } from 'node:crypto';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = join(ROOT, 'data', 'raw');
@@ -1035,23 +1036,11 @@ function buildEdition(edition) {
   for (const k of have) if (!kjv.has(k)) unmatched++;
   for (const k of kjv) if (!have.has(k)) missing++;
   stats.interlinear = { ...interlinear, versesNotInKjv: unmatched, kjvVersesWithoutOriginal: missing };
+  stats.crossrefs = addCrossRefs(db, RAW);
   db.exec('VACUUM');
   db.close();
 
-  // The app checks the copy it makes on the phone against this size, so a copy cut short
-  // (the app closed, or the phone out of space) is noticed and made again (src/db.ts).
-  const SIZES = join(ROOT, 'src', 'dbSizes.json');
-  let sizes = {};
-  try { sizes = JSON.parse(readFileSync(SIZES, 'utf8')); } catch { /* first build */ }
-  sizes[edition] = statSync(OUT).size;
-  writeFileSync(SIZES, JSON.stringify(sizes, null, 1) + '\n');
-  // The copy's name carries a hash of the database, so a rebuilt one reaches phones that
-  // have a copy even when its size is unchanged (src/db.ts).
-  const HASHES = join(ROOT, 'src', 'dbHashes.json');
-  let hashes = {};
-  try { hashes = JSON.parse(readFileSync(HASHES, 'utf8')); } catch { /* first build */ }
-  hashes[edition] = createHash('sha256').update(readFileSync(OUT)).digest('hex').slice(0, 12);
-  writeFileSync(HASHES, JSON.stringify(hashes, null, 1) + '\n');
+  recordDatabase(ROOT, edition, OUT);
   console.log(JSON.stringify({ edition, ...stats, strongsEntries: nStrongs, bytes: statSync(OUT).size }, null, 2));
 }
 

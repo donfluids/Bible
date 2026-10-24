@@ -30,7 +30,8 @@ import { addMark, comparePoints, eraseMarks, markRanges } from '../marks';
 import { pageName, useNotebook } from '../notebook';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
 import { noteLetter, VerseText } from '../components/VerseText';
-import { getBeside, getChapter, getInterlinear, getNotes, mapRef } from '../queries';
+import { countCrossRefs, getBeside, getChapter, getCrossRefs, getInterlinear, getNotes, mapRef } from '../queries';
+import type { CrossRef } from '../queries';
 import type { ChapterData } from '../queries';
 import { FONT_SIZES, useSettings } from '../settings';
 import type { Settings } from '../settings';
@@ -58,6 +59,8 @@ interface Props {
   /** Open a notebook page; `isNew` for one just made from a verse. */
   onOpenNotePage: (id: string, isNew?: boolean) => void;
   onOpenCard: (ref: Ref, translation: TranslationId) => void;
+  /** Open a verse in a reader of its own; `from` names where it was opened from, for going back. */
+  onOpenRef: (ref: Ref, from: string) => void;
   onWord: (pick: WordPick) => void;
   /** The main reader shows the bottom tab bar; a reader opened from a list does not. */
   tabs?: boolean;
@@ -192,7 +195,7 @@ function KeepAwake() {
   return null;
 }
 
-export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onOpenNotePage, onOpenCard, onWord, tabs = false }: Props) {
+export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onOpenNotePage, onOpenCard, onOpenRef, onWord, tabs = false }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const t = useT();
@@ -254,6 +257,28 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
   const [actions, setActions] = useState<VerseRow | null>(null);
   const [wordsFor, setWordsFor] = useState<VerseRow | null>(null);
   const [compare, setCompare] = useState<Ref | null>(null);
+  // Cross references: how many the verse in the menu has, and the list once opened.
+  const [crossCount, setCrossCount] = useState<{ key: string; n: number } | null>(null);
+  const [cross, setCross] = useState<{ verse: VerseRow; list: CrossRef[] | null } | null>(null);
+  useEffect(() => {
+    if (!actions) return;
+    let cancelled = false;
+    const key = bookmarkKey(actions);
+    countCrossRefs(db, translation, actions)
+      .then((n) => !cancelled && setCrossCount({ key, n }))
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [actions, db, translation]);
+  const openCross = (verse: VerseRow) => {
+    setActions(null);
+    setCross({ verse, list: null });
+    getCrossRefs(db, translation, verse)
+      .then((list) => setCross((c) => (c && c.verse === verse ? { verse, list } : c)))
+      .catch(() => setCross((c) => (c && c.verse === verse ? { verse, list: [] } : c)));
+  };
   const [noteEditor, setNoteEditor] = useState<{ verse: VerseRow; text: string } | null>(null);
   // The verse being added to the notebook, while its page is chosen.
   const [toNotebook, setToNotebook] = useState<VerseRow | null>(null);
@@ -1468,6 +1493,9 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                 setCompare({ book: actions.book, chapter: actions.chapter, verse: actions.verse });
               }}
             />
+            {crossCount && crossCount.key === bookmarkKey(actions) && crossCount.n > 0 ? (
+              <SheetAction icon="link" label={t('crossReferences')} detail={t('crossReferencesDetail', { n: crossCount.n })} onPress={() => openCross(actions)} />
+            ) : null}
             {actions.tags ? (
               <SheetAction
                 icon="translate"
@@ -1480,6 +1508,41 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
               />
             ) : null}
           </>
+        ) : null}
+      </SimpleSheet>
+
+      <SimpleSheet visible={!!cross} title={cross ? `${t('crossReferences')} · ${formatRef(books, cross.verse, translation)}` : ''} onClose={() => setCross(null)}>
+        {cross ? (
+          <View>
+            {cross.list === null ? <Text style={[styles.crossLoading, { color: theme.muted }]}>…</Text> : null}
+            {(cross.list ?? []).map((c) => {
+              const label =
+                formatRef(books, c.start, translation) +
+                (c.end.chapter !== c.start.chapter ? `–${c.end.chapter}:${c.end.verse}` : c.end.verse !== c.start.verse ? `–${c.end.verse}` : '');
+              return (
+                <Pressable
+                  key={label}
+                  onPress={() => {
+                    const from = formatRef(books, cross.verse, translation);
+                    setCross(null);
+                    onOpenRef(c.start, from);
+                  }}
+                  android_ripple={{ color: theme.accentSoft }}
+                  accessibilityRole="link"
+                  style={({ pressed }) => [styles.crossRow, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
+                >
+                  <Text style={[styles.crossRef, { color: theme.accent }, !!scriptOf(label) && { fontFamily: scriptureFont(scriptOf(label), settings.serif, true), fontWeight: 'normal' }]}>{label}</Text>
+                  {c.verses.length ? (
+                    <Text style={{ color: theme.text, fontSize: Math.max(15, fontSize - 3), lineHeight: Math.round(Math.max(15, fontSize - 3) * translationInfo(translation).lineHeight), fontFamily: scriptFont }} numberOfLines={4}>
+                      {c.verses.map((v) => flattenVerse(v.text)).join(' ')}
+                    </Text>
+                  ) : null}
+                  {c.more > 0 ? <Text style={[styles.crossMore, { color: theme.muted }]}>{t('moreVerses', { n: c.more })}</Text> : null}
+                </Pressable>
+              );
+            })}
+            {cross.list ? <Text style={[styles.crossSource, { color: theme.muted }]}>{t('crossReferencesSource')}</Text> : null}
+          </View>
         ) : null}
       </SimpleSheet>
 
@@ -1851,6 +1914,11 @@ function ActionButton({ icon, label, onPress, accessibilityLabel }: { icon: Icon
 }
 
 const styles = StyleSheet.create({
+  crossLoading: { fontSize: 18, paddingVertical: 12, paddingHorizontal: 20 },
+  crossRow: { paddingVertical: 12, paddingHorizontal: 20, borderBottomWidth: StyleSheet.hairlineWidth, gap: 4 },
+  crossRef: { fontSize: 15, fontWeight: '600' },
+  crossMore: { fontSize: 13 },
+  crossSource: { fontSize: 12, paddingHorizontal: 20, paddingTop: 10, paddingBottom: 4 },
   screen: { flex: 1 },
   titleButton: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', minHeight: 48, maxWidth: '100%' },
   title: { fontSize: 22, lineHeight: 30, fontWeight: '500' },

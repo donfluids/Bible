@@ -349,6 +349,7 @@ function ReaderRoute({ navigation, route }: Props<'Reader'>) {
       onOpenSettings={() => navigation.navigate('Settings')}
       onOpenNotePage={(id, isNew) => navigation.push('NotePage', { id, isNew })}
       onOpenCard={(ref, translation) => navigation.push('Card', { ref, translation })}
+      onOpenRef={(ref, back) => navigation.push('Reader', { from: back, ref: { book: ref.book, chapter: ref.chapter, verse: ref.verse } })}
       onWord={onWord}
     />
   );
