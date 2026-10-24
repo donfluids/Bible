@@ -15,6 +15,7 @@ export type RootStackParamList = {
   Concordance: { strongs: string; rendering?: string };
   Settings: undefined;
   Licences: undefined;
+  Why: undefined;
   Notebook: undefined;
   /** `isNew` opens a page just made, ready for writing. */
   NotePage: { id: string; isNew?: boolean; handwritten?: boolean };

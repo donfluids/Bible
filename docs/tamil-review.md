@@ -423,6 +423,7 @@ Words chosen for the app's own features, used throughout:
 | underlineDetail | Marks words that open a Greek or Hebrew entry | எபிரெய அல்லது கிரேக்க விவரம் திறக்கும் சொற்களுக்குக் கீழ் கோடு காட்டும் | |
 | aboutTexts | About the texts | உரைகளைப் பற்றி | |
 | sourcesLicences | Sources and licences | மூலங்களும் உரிமங்களும் | |
+| whyThisBible | Why this Bible | Why this Bible | |
 | aboutEnglish | Bibles: the King James Version (1769), the Berean Standard Bible and the World English Bible. The translators' footnotes appear as small letters in the text; tap one to read it. | வேதாகமங்கள்: கிங் ஜேம்ஸ் வெர்ஸன் (1769), பெரியன் ஸ்டாண்டர்டு பைபிள், வேர்ல்டு இங்கிலீஷ் பைபிள். மொழிபெயர்ப்பாளர்களின் அடிக்குறிப்புகள் சிறிய எழுத்துகளாகத் தெரியும்; தொட்டால் படிக்கலாம். | |
 | aboutMalayalam | Bibles: the Sathyavedapusthakam 1910 (Malayalam), in a revised edition in contemporary orthography, and the King James Version (1769). The links from Malayalam words to the Hebrew and Greek are machine-generated and not fully reviewed. | வேதாகமங்கள்: மலையாள சத்தியவேதபுஸ்தகம் 1910, கிங் ஜேம்ஸ் வெர்ஸன் (1769). | |
 | aboutTamil | Bibles: the Indian Revised Version (Tamil) and the King James Version (1769). The links from Tamil words to the Hebrew and Greek are machine-generated and not reviewed. | வேதாகமங்கள்: இண்டியன் ரிவைஸ்டு வெர்ஸன் (IRV) தமிழ், கிங் ஜேம்ஸ் வெர்ஸன் (1769). தமிழ் வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திர உதவியுடன் உருவாக்கப்பட்டவை; சரிபார்க்கப்படவில்லை. | |

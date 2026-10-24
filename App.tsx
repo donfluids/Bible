@@ -29,6 +29,7 @@ import { ConcordanceScreen } from './src/screens/ConcordanceScreen';
 import { ReaderScreen, preloadChapter } from './src/screens/ReaderScreen';
 import { SearchScreen } from './src/screens/SearchScreen';
 import { LicencesScreen } from './src/screens/LicencesScreen';
+import { WhyScreen } from './src/screens/WhyScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { NotebookScreen } from './src/screens/NotebookScreen';
 import { NotePageScreen } from './src/screens/NotePageScreen';
@@ -293,6 +294,7 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
           <Stack.Screen name="Concordance" component={ConcordanceRoute} />
           <Stack.Screen name="Settings" component={SettingsRoute} />
           <Stack.Screen name="Licences" component={LicencesRoute} />
+          <Stack.Screen name="Why" component={WhyRoute} />
           <Stack.Screen name="Notebook" component={NotebookRoute} options={TAB_SCREEN} />
           <Stack.Screen name="NotePage" component={NotePageRoute} />
           <Stack.Screen name="Card" component={CardRoute} />
@@ -408,7 +410,7 @@ function ConcordanceRoute({ navigation, route }: Props<'Concordance'>) {
 }
 
 function SettingsRoute({ navigation }: Props<'Settings'>) {
-  return <SettingsScreen onBack={() => navigation.goBack()} onOpenLicences={() => navigation.navigate('Licences')} />;
+  return <SettingsScreen onBack={() => navigation.goBack()} onOpenLicences={() => navigation.navigate('Licences')} onOpenWhy={() => navigation.navigate('Why')} />;
 }
 
 function NotebookRoute({ navigation }: Props<'Notebook'>) {
@@ -433,6 +435,12 @@ function NotePageRoute({ navigation, route }: Props<'NotePage'>) {
 function CardRoute({ navigation, route }: Props<'Card'>) {
   const { books } = useApp();
   return <CardScreen books={books} at={route.params.ref} translation={route.params.translation} onBack={() => navigation.goBack()} />;
+}
+
+function WhyRoute({ navigation }: Props<'Why'>) {
+  const t = useT();
+  const openRef = useOpenRef(navigation, t('whyThisBible'));
+  return <WhyScreen onBack={() => navigation.goBack()} onOpenRef={openRef} />;
 }
 
 function LicencesRoute({ navigation }: Props<'Licences'>) {

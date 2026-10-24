@@ -23,9 +23,10 @@ const LANGUAGE_NAMES: Record<Language, string> = { ml: 'മലയാളം', ta:
 interface Props {
   onBack: () => void;
   onOpenLicences: () => void;
+  onOpenWhy: () => void;
 }
 
-export function SettingsScreen({ onBack, onOpenLicences }: Props) {
+export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   // Lists run under the system navigation bar; the last row must clear it.
@@ -211,6 +212,10 @@ export function SettingsScreen({ onBack, onOpenLicences }: Props) {
           <Text style={[styles.rowSub, { color: theme.muted, marginTop: 4 }]} selectable>
             {t('appVersion', { version: `${Constants.expoConfig?.version ?? '?'} (${Constants.expoConfig?.android?.versionCode ?? Constants.expoConfig?.ios?.buildNumber ?? '?'})` })}
           </Text>
+          <Pressable onPress={onOpenWhy} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>
+            <Text style={[styles.rowTitle, { color: theme.accent, flex: 1 }]}>{t('whyThisBible')}</Text>
+            <Icon name="chevron_right" color={theme.accent} />
+          </Pressable>
           <Pressable onPress={onOpenLicences} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>
             <Text style={[styles.rowTitle, { color: theme.accent, flex: 1 }]}>{t('sourcesLicences')}</Text>
             <Icon name="chevron_right" color={theme.accent} />
