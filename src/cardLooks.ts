@@ -7,7 +7,8 @@
 import { useCallback, useRef, useState } from 'react';
 import { Directory, File, Paths } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
-import { DESIGNS } from './cards';
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
+import { CARD_PIXELS, DESIGNS } from './cards';
 import { cleanLook, ownPhotoIn, savedCopyIn } from './lookClean';
 import type { CardLook, CardSize } from './cards';
 import { loadEntry, useAutosave } from './persist';
@@ -47,7 +48,25 @@ export async function pickPhoto(size: CardSize): Promise<string | null> {
     exif: false,
   });
   if (result.canceled || !result.assets?.[0]) return null;
-  return result.assets[0].uri;
+  const { uri, width } = result.assets[0];
+  return shrink(uri, width);
+}
+
+/**
+ * A photo wider than the card's picture (CARD_PIXELS) is brought down to that width: a
+ * phone camera's crop can be 3,000 pixels across, which takes memory to draw (more so
+ * blurred) and room to keep as a saved design, and shows nothing more on the card. The
+ * original is used if that fails.
+ */
+async function shrink(uri: string, width: number): Promise<string> {
+  if (!width || width <= CARD_PIXELS) return uri;
+  try {
+    const image = await ImageManipulator.manipulate(uri).resize({ width: CARD_PIXELS }).renderAsync();
+    const saved = await image.saveAsync({ compress: 0.85, format: SaveFormat.JPEG });
+    return saved.uri;
+  } catch {
+    return uri;
+  }
 }
 
 function parse(raw: string): SavedLook[] {
