@@ -42,6 +42,8 @@ interface NotebookContextValue {
   append: (id: string, line: string) => void;
   /** Like edit, and written to the phone at once: for typed text when the app is left. */
   commit: (id: string, patch: PagePatch) => void;
+  /** The whole notebook replaced (by a restore that has merged a backup in), written at once. */
+  replaceAll: (pages: NotePage[]) => void;
 }
 
 const NotebookContext = createContext<NotebookContextValue | null>(null);
@@ -127,8 +129,16 @@ export function NotebookProvider({ edition, children }: { edition: Edition; chil
     });
   }, []);
   const page = useCallback((id: string) => latest.current.find((p) => p.id === id), []);
+  const replaceAll = useCallback(
+    (next: NotePage[]) => {
+      latest.current = next;
+      saveValue(next);
+      setPages(next);
+    },
+    [saveValue],
+  );
 
-  const value = useMemo(() => ({ pages, page, create, edit, remove, append, commit }), [pages, page, create, edit, remove, append, commit]);
+  const value = useMemo(() => ({ pages, page, create, edit, remove, append, commit, replaceAll }), [pages, page, create, edit, remove, append, commit, replaceAll]);
   return <NotebookContext.Provider value={value}>{children}</NotebookContext.Provider>;
 }
 

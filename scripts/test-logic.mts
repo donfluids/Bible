@@ -9,6 +9,8 @@ import assert from 'node:assert/strict';
 import { groupForms, isTaBaseForm, taStem } from './lib/forms.mjs';
 import { addPoint, decodeInk, encodeInk, packSteps, pageHeight, parseInk, pathOf, strokePath, touchesStroke, unpackSteps } from '../src/ink';
 import { cleanLook, ownPhotoIn, savedCopyIn } from '../src/lookClean';
+import { makeBackup, mergePages, readBackup } from '../src/notebookBackup';
+import { inkPageHtml, typedPageHtml } from '../src/pagePdf';
 import { malayalamPattern } from '../src/malayalamSearch';
 import { countCrossRefs, getBeside, getCrossRefs } from '../src/queries';
 import { findReferences, parseReference } from '../src/refs';
@@ -200,6 +202,43 @@ for (const [ed, native] of [['ml', 'MAL'], ['ta', 'TAM']] as const) {
   });
   test(`${ed} the count in the verse menu matches the list`, async () => assert.equal(await countCrossRefs(db, native, { book: 43, chapter: 3, verse: 16 }), john316.length));
 }
+
+// --- Notebook backup and restore (src/notebookBackup.ts), page PDFs (src/pagePdf.ts) ---
+const typedPage = { id: 'abc1', title: 'Sunday', body: 'John 3:16', created: 1000, updated: 2000 };
+const handPage = { id: 'abc2', title: '', body: '', created: 1000, updated: 3000, ink: { paper: 'lined' as const, strokes: 1 } };
+const handInk = { strokes: [{ c: 2, w: 3, p: [10, 80, 40, 90] }] };
+const backupText = makeBackup([typedPage, handPage], (id) => (id === 'abc2' ? handInk : null), 'ml', new Date(0));
+test('a backup is read back, typed and handwritten pages with their strokes', () => {
+  const b = readBackup(backupText);
+  assert.deepEqual(b.pages, [typedPage, handPage]);
+  assert.deepEqual(b.ink.get('abc2'), handInk);
+});
+test('a file that is not a backup is refused', () => {
+  for (const text of ['{', '[]', '{"kind":"other","pages":[]}', '{"kind":"riversresearch-notebook"}']) assert.throws(() => readBackup(text), text);
+});
+test('pages that are not pages are left out', () => {
+  const b = readBackup(JSON.stringify({ kind: 'riversresearch-notebook', pages: [null, 'x', { id: '../x', title: 'a' }, { id: 'ok1', title: 'Kept', body: 7 }, { id: 'ok1', title: 'Twice' }, { id: 'ok2', title: '', body: '' }] }));
+  assert.deepEqual(b.pages.map((p) => [p.id, p.title, p.body]), [['ok1', 'Kept', '']]);
+});
+test('a restore adds new pages, takes newer copies and keeps the rest; nothing is deleted', () => {
+  const here = [
+    { id: 'abc1', title: 'Sunday (edited here)', body: '', created: 1000, updated: 9000 },
+    { id: 'abc2', title: 'old', body: 'x', created: 1000, updated: 100 },
+    { id: 'mine', title: 'Only here', body: '', created: 1, updated: 1 },
+  ];
+  const m = mergePages(here, readBackup(backupText).pages);
+  assert.deepEqual([m.added, m.updated, m.kept, m.taken], [0, 1, 1, ['abc2']]);
+  assert.deepEqual(m.pages.map((p) => p.title), ['Sunday (edited here)', '', 'Only here']);
+});
+test('a page PDF escapes what was typed', () => {
+  const html = typedPageHtml('<b>x</b>', [{ pieces: [{ text: 'a & <i>' }, { text: 'John 3:16', ref: true }], quotes: [{ text: 'For God', more: 2 }] }], '— KJV', (n) => `${n} more`);
+  assert.ok(html.includes('&lt;b&gt;x&lt;/b&gt;') && html.includes('a &amp; &lt;i&gt;') && html.includes('class="ref">John 3:16') && html.includes('2 more') && !html.includes('<i>'));
+});
+test('a long handwritten page runs on over several PDF pages', () => {
+  const long = { strokes: [{ c: 0, w: 3, p: [10, 10, 20, 3000] }] };
+  assert.ok((inkPageHtml('T', long, 'lined').match(/<svg class="sheet"/g) ?? []).length >= 3);
+  assert.equal((inkPageHtml('', handInk, 'plain').match(/<svg class="sheet"/g) ?? []).length, 1);
+});
 
 // --- Patterns that must stay fast on long text ---
 const books = [{ id: 43, osis: 'John', name: 'John', testament: 'NT', chapters: 21, names: {} }] as Book[];

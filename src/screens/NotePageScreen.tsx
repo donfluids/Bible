@@ -3,6 +3,10 @@ import { Alert, AppState, KeyboardAvoidingView, ScrollView, Share, StyleSheet, T
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header, HeaderIconButton } from '../components/Header';
+import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
+import { sharePdf } from '../notebookFiles';
+import { typedPageHtml } from '../pagePdf';
+import type { TypedLine } from '../pagePdf';
 import { languageScript, scriptOf, scriptureFont } from '../fonts';
 import { translationName, useT } from '../i18n';
 import { useNotebook } from '../notebook';
@@ -64,6 +68,7 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
   const { settings } = useSettings();
   const { pages, edit, remove, commit } = useNotebook();
   const page = pages.find((p) => p.id === id);
+  const [shareSheet, setShareSheet] = useState(false);
   const [editing, setEditing] = useState(!!isNew || (!!page && !page.title.trim() && !page.body.trim()));
   const translation = settings.translation;
   const uiScript = languageScript(settings.language);
@@ -209,6 +214,27 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
     await Share.share({ message: out.join('\n').replace(/\n{3,}/g, '\n\n').trim() });
   };
 
+  // The page as a PDF: the writing, references in colour and the verses quoted under them.
+  const sharePagePdf = async () => {
+    const typed: TypedLine[] = lines.map((pieces) => ({
+      pieces: pieces.map((p) => ({ text: p.text, ref: !!p.ref })),
+      quotes: pieces.flatMap((p) => {
+        if (!p.ref) return [];
+        const { rows: shown, more } = quoted(p.ref);
+        if (shown.length === 0) return [];
+        const text = shown.map((v) => (shown.length > 1 ? `${verseLabel(v, shown)} ${flattenVerse(v.text)}` : flattenVerse(v.text))).join(' ');
+        return [{ text, more }];
+      }),
+    }));
+    const anyQuoted = typed.some((l) => l.quotes.length > 0);
+    const html = typedPageHtml(page.title.trim(), typed, anyQuoted ? `— ${translationName(settings.language, translation)}` : '', (n) => t('moreVerses', { n }));
+    try {
+      await sharePdf(html, page.title, t('sharePage'));
+    } catch {
+      Alert.alert(t('pdfFailed'));
+    }
+  };
+
   const renderLine = (pieces: TextPiece[], i: number) => {
     const text = pieces.map((p) => p.text).join('');
     if (!text.trim()) return <View key={i} style={{ height: lineHeight / 2 }} />;
@@ -271,7 +297,7 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
             />
           ) : (
             <>
-              <HeaderIconButton icon="share" onPress={sharePage} accessibilityLabel={t('sharePage')} />
+              <HeaderIconButton icon="share" onPress={() => setShareSheet(true)} accessibilityLabel={t('sharePage')} />
               <HeaderIconButton icon="edit" onPress={() => setEditing(true)} accessibilityLabel={t('editPage')} />
               <HeaderIconButton icon="delete" onPress={deletePage} accessibilityLabel={t('deletePage')} />
             </>
@@ -312,6 +338,24 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
           {lines.map(renderLine)}
         </ScrollView>
       )}
+      <SimpleSheet visible={shareSheet} title={t('sharePage')} onClose={() => setShareSheet(false)}>
+        <SheetAction
+          icon="share"
+          label={t('shareAsText')}
+          onPress={() => {
+            setShareSheet(false);
+            sharePage();
+          }}
+        />
+        <SheetAction
+          icon="picture_as_pdf"
+          label={t('shareAsPdf')}
+          onPress={() => {
+            setShareSheet(false);
+            sharePagePdf();
+          }}
+        />
+      </SimpleSheet>
     </KeyboardAvoidingView>
   );
 }

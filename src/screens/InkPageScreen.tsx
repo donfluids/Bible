@@ -8,6 +8,9 @@ import Svg, { G, Line, Path } from 'react-native-svg';
 import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
 import { Header, HeaderIconButton } from '../components/Header';
+import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
+import { sharePdf } from '../notebookFiles';
+import { inkPageHtml } from '../pagePdf';
 import { Icon } from '../components/Icon';
 import type { IconName } from '../components/Icon';
 import { Pressable } from '../components/Pressable';
@@ -409,6 +412,14 @@ export function InkPageScreen({ id, onBack }: Props) {
   }
 
   const pageRef = useRef<View>(null);
+  const [shareSheet, setShareSheet] = useState(false);
+  const sharePagePdf = async () => {
+    try {
+      await sharePdf(inkPageHtml(title.trim(), ink, paper), title, t('sharePage'));
+    } catch {
+      Alert.alert(t('pdfFailed'));
+    }
+  };
   const share = async () => {
     if (sharing) return;
     setSharing(true);
@@ -494,7 +505,7 @@ export function InkPageScreen({ id, onBack }: Props) {
               onPress={() => setPaper(paper === 'lined' ? 'plain' : 'lined')}
               accessibilityLabel={paper === 'lined' ? t('plainPaper') : t('linedPaper')}
             />
-            <HeaderIconButton icon="share" onPress={share} accessibilityLabel={t('sharePage')} />
+            <HeaderIconButton icon="share" onPress={() => setShareSheet(true)} accessibilityLabel={t('sharePage')} />
             <HeaderIconButton icon="delete" onPress={deletePage} accessibilityLabel={t('deletePage')} />
           </>
         }
@@ -549,6 +560,24 @@ export function InkPageScreen({ id, onBack }: Props) {
           </ScrollView>
         ) : null}
       </View>
+      <SimpleSheet visible={shareSheet} title={t('sharePage')} onClose={() => setShareSheet(false)}>
+        <SheetAction
+          icon="image"
+          label={t('shareAsPicture')}
+          onPress={() => {
+            setShareSheet(false);
+            share();
+          }}
+        />
+        <SheetAction
+          icon="picture_as_pdf"
+          label={t('shareAsPdf')}
+          onPress={() => {
+            setShareSheet(false);
+            sharePagePdf();
+          }}
+        />
+      </SimpleSheet>
     </View>
   );
 }

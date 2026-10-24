@@ -303,6 +303,9 @@ Words chosen for the app's own features, used throughout:
 | remove | Remove | நீக்கு | |
 | footnote | Footnote | அடிக்குறிப்பு | |
 | crossReference | Cross reference | இணை வசனம் | |
+| crossReferences | Cross references | இணை வசனங்கள் | |
+| crossReferencesDetail | {n} related passages, the strongest first | தொடர்புடைய {n} பகுதிகள், மிக நெருக்கமானவை முதலில் | |
+| crossReferencesSource | Treasury of Scripture Knowledge, via OpenBible.info (CC BY) | Treasury of Scripture Knowledge, OpenBible.info வழியாக (CC BY) | |
 | omitted | Omitted in this translation. | இந்த மொழிபெயர்ப்பில் இல்லை. | |
 | nothingSavedTitle | Nothing saved yet | இன்னும் எதுவும் சேமிக்கப்படவில்லை | |
 | nothingSaved | Hold a verse in the reader to bookmark it, highlight it or add a note. They will be listed here. | வாசிக்கும்போது ஒரு வசனத்தை அழுத்திப் பிடித்து அடையாளக்குறி இடலாம், ஹைலைட் செய்யலாம், வசனக் குறிப்பு சேர்க்கலாம். அவை இங்கே தெரியும். | |
@@ -445,6 +448,20 @@ Words chosen for the app's own features, used throughout:
 | deletePageConfirm | Delete this page? It cannot be brought back. | இந்தப் பக்கத்தை நீக்கவா? பிறகு திரும்பப் பெற முடியாது. | |
 | cancel | Cancel | வேண்டாம் | |
 | sharePage | Share page | பக்கத்தைப் பகிர் | |
+| backupRestore | Back up or restore | காப்புப்பிரதியும் மீட்டெடுப்பும் | |
+| saveBackup | Save a backup | காப்புப்பிரதி சேமி | |
+| saveBackupDetail | Every page, typed and handwritten, in one file to keep in Drive or Files, or to bring to another phone | தட்டச்சு, கையெழுத்து எல்லாப் பக்கங்களும் ஒரே கோப்பில்; Drive அல்லது Files-இல் வைக்கலாம், வேறு போனுக்குக் கொண்டுசெல்லலாம் | |
+| restoreBackup | Restore from a backup | காப்புப்பிரதியிலிருந்து மீட்டெடு | |
+| restoreBackupDetail | Pages in the file are added; a page here is replaced only by a newer copy of itself. Nothing is deleted. | கோப்பிலுள்ள பக்கங்கள் சேர்க்கப்படும்; இங்குள்ள ஒரு பக்கம் அதன் புதிய பதிப்பால் மட்டுமே மாற்றப்படும். எதுவும் நீக்கப்படாது. | |
+| backupEmpty | The notebook has no pages yet. | குறிப்பேட்டில் இன்னும் பக்கங்கள் இல்லை. | |
+| backupFailed | The backup could not be made. | காப்புப்பிரதியை உருவாக்க முடியவில்லை. | |
+| restoreNotBackup | This file is not a notebook backup. | இந்தக் கோப்பு குறிப்பேட்டுக் காப்புப்பிரதி அல்ல. | |
+| restoreTooLarge | This file is too large to be a notebook backup. | குறிப்பேட்டுக் காப்புப்பிரதியாக இருக்க இந்தக் கோப்பு மிகப் பெரியது. | |
+| restoreDone | Restored: {added} new, {updated} updated, {kept} already here. | மீட்டெடுக்கப்பட்டது: {added} புதியவை, {updated} புதுப்பிக்கப்பட்டவை, {kept} ஏற்கெனவே இருந்தவை. | |
+| shareAsText | Share as text | உரையாகப் பகிர் | |
+| shareAsPdf | Share as PDF | PDF ஆகப் பகிர் | |
+| shareAsPicture | Share as picture | படமாகப் பகிர் | |
+| pdfFailed | The PDF could not be made. | PDF உருவாக்க முடியவில்லை. | |
 | pageTyped | Typed page | தட்டச்சுப் பக்கம் | |
 | pageTypedDetail | References such as John 3:16 link to the verse | யோவான் 3:16 போன்ற குறிப்புகள் வசனத்துக்கு இணைப்பாகும் | |
 | pageHandPlain | Handwritten, plain paper | கையெழுத்து, வெற்றுத் தாள் | |

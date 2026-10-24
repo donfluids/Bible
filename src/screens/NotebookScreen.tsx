@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import { Header, HeaderIconButton } from '../components/Header';
 import { Icon } from '../components/Icon';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
 import type { Paper } from '../ink';
+import { useEdition } from '../edition';
+import { restoreBackup, saveBackup } from '../notebookFiles';
 import { TabBar } from '../components/TabBar';
 import { scriptOf, scriptureFont } from '../fonts';
 import { useT } from '../i18n';
@@ -22,9 +24,44 @@ export function NotebookScreen({ onOpenPage }: Props) {
   const theme = useTheme();
   const t = useT();
   const { settings } = useSettings();
-  const { pages, create } = useNotebook();
+  const { pages, create, replaceAll } = useNotebook();
+  const edition = useEdition();
+  const [backupSheet, setBackupSheet] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [choosing, setChoosing] = useState(false);
   const newPage = () => setChoosing(true);
+  const backUp = async () => {
+    setBackupSheet(false);
+    if (pages.length === 0) {
+      Alert.alert(t('backupEmpty'));
+      return;
+    }
+    setBusy(true);
+    try {
+      await saveBackup(pages, edition.id, t('saveBackup'));
+    } catch {
+      Alert.alert(t('backupFailed'));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const restore = async () => {
+    setBackupSheet(false);
+    setBusy(true);
+    try {
+      const outcome = await restoreBackup(pages, edition.id);
+      if (outcome.kind === 'tooLarge') Alert.alert(t('restoreTooLarge'));
+      else if (outcome.kind === 'notBackup') Alert.alert(t('restoreNotBackup'));
+      else if (outcome.kind === 'done') {
+        replaceAll(outcome.pages);
+        Alert.alert(t('restoreDone', { added: outcome.added, updated: outcome.updated, kept: outcome.kept }));
+      }
+    } catch {
+      Alert.alert(t('restoreNotBackup'));
+    } finally {
+      setBusy(false);
+    }
+  };
   const start = (paper?: Paper) => {
     setChoosing(false);
     onOpenPage(create('', paper), true, !!paper);
@@ -33,7 +70,15 @@ export function NotebookScreen({ onOpenPage }: Props) {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
-      <Header title={t('notebook')} right={<HeaderIconButton icon="note_add" onPress={newPage} accessibilityLabel={t('newPage')} />} />
+      <Header
+        title={t('notebook')}
+        right={
+          <>
+            <HeaderIconButton icon="download" onPress={() => !busy && setBackupSheet(true)} accessibilityLabel={t('backupRestore')} />
+            <HeaderIconButton icon="note_add" onPress={newPage} accessibilityLabel={t('newPage')} />
+          </>
+        }
+      />
       {pages.length === 0 ? (
         <View style={styles.emptyBox}>
           <View style={[styles.emptyIcon, { backgroundColor: theme.accentSoft }]}>
@@ -85,6 +130,10 @@ export function NotebookScreen({ onOpenPage }: Props) {
         <SheetAction icon="edit_note" label={t('pageTyped')} detail={t('pageTypedDetail')} onPress={() => start()} />
         <SheetAction icon="draw" label={t('pageHandLined')} detail={t('pageHandDetail')} onPress={() => start('lined')} />
         <SheetAction icon="draw" label={t('pageHandPlain')} detail={t('pageHandDetail')} onPress={() => start('plain')} />
+      </SimpleSheet>
+      <SimpleSheet visible={backupSheet} title={t('backupRestore')} onClose={() => setBackupSheet(false)}>
+        <SheetAction icon="download" label={t('saveBackup')} detail={t('saveBackupDetail')} onPress={backUp} />
+        <SheetAction icon="upload" label={t('restoreBackup')} detail={t('restoreBackupDetail')} onPress={restore} />
       </SimpleSheet>
       <TabBar current="Notebook" />
     </View>
