@@ -1,8 +1,10 @@
 // Draws the Google Play feature graphics (1024 × 500, no transparency) for the Malayalam
-// app's listing: the icon's lamp and book on shaded brown with a faint leather grain, the
-// app name in gold over a short gold rule and three lines beside it, in
+// app's listing: the icon's lamp and book on a sunrise over hills (scripts/sunrise.svg, the
+// background of the store screenshots too), the app name in gold over a short gold rule
+// and three lines beside it, in
 // Malayalam for the default listing and in English for its translation.
 //   node scripts/make-feature-graphic.mjs   writes docs/play/graphics/vedapusthakam-feature-{ml,en}.png
+import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { ROOT, art, fontFaces, launch } from './icon-art.mjs';
@@ -16,23 +18,26 @@ const VERSIONS = {
   en: { name: 'Vedapusthakam', lines: ['Malayalam–English Bible', 'Old Testament with Hebrew root words', 'New Testament with Greek root words'] },
 };
 
-// A fine grain over the brown, like the leather of a Bible's cover; it also hides banding.
-const GRAIN = `<svg class="grain" width="1024" height="500"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="3" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0"/></filter><rect width="1024" height="500" filter="url(#n)"/></svg>`;
+// The sunrise, filling the banner (cropped about its middle).
+const SUNRISE = fs
+  .readFileSync(path.join(ROOT, 'scripts', 'sunrise.svg'), 'utf8')
+  .replace('width="1080" height="1080"', 'class="sky" width="1024" height="500" preserveAspectRatio="xMidYMid slice"');
 
 const page = (v) => `<!doctype html><meta charset="utf-8"><style>
   ${fontFaces({ NameFace: malayalam('700Bold'), LineFace: malayalam('400Regular') })}
   html, body { margin: 0; }
   #g { position: relative; overflow: hidden; width: 1024px; height: 500px; display: flex; align-items: center; box-sizing: border-box; padding: 0 64px 0 56px;
-       background: radial-gradient(ellipse 80% 130% at 30% 35%, #946235 0%, #6C4520 45%, #3E250D 100%); }
-  .grain { position: absolute; inset: 0; opacity: .22; mix-blend-mode: overlay; }
-  .vignette { position: absolute; inset: 0; box-shadow: inset 0 0 120px 30px rgba(30, 15, 5, .45); }
+       background: #2E2236; }
+  .sky { position: absolute; inset: 0; }
+  /* A shade over the sky behind the words, so they read clearly against the sun. */
+  .shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(20,16,30,.15) 0%, rgba(20,16,30,.35) 40%, rgba(20,16,30,.55) 100%); }
   svg.book { position: relative; flex: none; }
   .text { position: relative; margin-left: 44px; flex: 1; min-width: 0; }
-  .name { font: 72px/1.25 NameFace, serif; white-space: nowrap; color: #F3D894; }
+  .name { font: 72px/1.25 NameFace, serif; white-space: nowrap; color: #FFE7B0; text-shadow: 0 2px 10px rgba(0,0,0,.45); }
   .rule { width: 140px; height: 3px; background: #C9A24A; margin: 14px 0 12px; }
-  .line { font: 30px/1.5 LineFace, serif; color: #F3EADB; white-space: nowrap; }
+  .line { font: 30px/1.5 LineFace, serif; color: #FBF3E6; white-space: nowrap; text-shadow: 0 1px 6px rgba(0,0,0,.5); }
 </style>
-<div id="g">${GRAIN}<div class="vignette"></div>
+<div id="g">${SUNRISE}<div class="shade"></div>
   <svg class="book" width="360" height="380" viewBox="-430 -460 860 900">${art()}</svg>
   <div class="text"><div class="name">${v.name}</div><div class="rule"></div><div class="line">${v.lines.join('<br>')}</div></div>
 </div>`;

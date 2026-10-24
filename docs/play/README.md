@@ -91,7 +91,8 @@ Uninstalling removes the bookmarks and notes on that phone.
 - [ ] App icon: `graphics/vedapusthakam-icon-512.png`.
 - [ ] Feature graphic: `graphics/vedapusthakam-feature-ml.png` for the Malayalam listing and
       `graphics/vedapusthakam-feature-en.png` for its English translation (1024 × 500, redrawn
-      by `node scripts/make-feature-graphic.mjs`).
+      by `node scripts/make-feature-graphic.mjs`, on the sunrise of `scripts/sunrise.svg` that
+      is also behind the store screenshots).
 - [ ] Phone screenshots: the eight in `screenshots/ml/` (1080 × 1920, Malayalam captions),
       in this order: reader with highlights, word sheet, Hebrew/Greek words, handwritten
       notes, a verse card on a photo, search, dark theme, notebook (retaken for 0.4.18; the
