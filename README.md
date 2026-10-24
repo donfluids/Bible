@@ -190,7 +190,7 @@ src/morph.ts             Turns Hebrew and Greek grammar codes into plain words
 src/malayalamSearch.ts   Matches modern Malayalam spelling against the 1910 text
 src/settings.tsx         Persisted settings (translation, text size, bookmarks, notes)
 src/notebook.tsx         Notebook pages, kept in their own storage entry
-src/notebookBackup.ts   Notebook backup file: written, read back and merged in (notebookFiles.ts saves and picks it; pagePdf.ts makes a page PDF)
+src/notebookBackup.ts    Notebook backup file: written, read back and merged in (notebookFiles.ts saves and picks it; pagePdf.ts makes a page PDF)
 src/ink.ts               Handwritten pages: strokes, how they are stored, read back and drawn
 src/components/          Header, Icon, SectionLabel, VerseText, InterlinearVerse, WordSheet, CompareSheet, SimpleSheet, VerseListItem
 src/screens/             Reader, Books, Chapters, Saved, Notebook, NotePage, InkPage, Search, Concordance, Settings, Licences

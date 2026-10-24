@@ -194,6 +194,14 @@
    ]
   },
   {
+   "name": "expo-document-picker",
+   "version": "57.0.3",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"
+   ]
+  },
+  {
    "name": "expo-file-system",
    "version": "57.0.7",
    "licence": "MIT",
@@ -252,6 +260,14 @@
   {
    "name": "expo-modules-core",
    "version": "57.0.20",
+   "licence": "MIT",
+   "copyright": [
+    "Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"
+   ]
+  },
+  {
+   "name": "expo-print",
+   "version": "57.0.2",
    "licence": "MIT",
    "copyright": [
     "Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)"
@@ -1307,7 +1323,7 @@
   },
   {
    "name": "commons-io:commons-io",
-   "version": "1.4",
+   "version": "2.6",
    "licence": "Apache-2.0",
    "copyright": []
   },
