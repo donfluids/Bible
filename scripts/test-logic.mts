@@ -7,7 +7,7 @@
 //   npx tsx scripts/test-logic.mts
 import assert from 'node:assert/strict';
 import { groupForms, isTaBaseForm, taStem } from './lib/forms.mjs';
-import { addPoint, decodeInk, encodeInk, pageHeight, parseInk, strokePath, touchesStroke } from '../src/ink';
+import { addPoint, decodeInk, encodeInk, pageHeight, parseInk, pathOf, strokePath, touchesStroke } from '../src/ink';
 import { cleanLook, ownPhotoIn, savedCopyIn } from '../src/lookClean';
 import { malayalamPattern } from '../src/malayalamSearch';
 import { getBeside } from '../src/queries';
@@ -189,6 +189,20 @@ fast('a long search with spaces', () => parseReference(' '.repeat(400) + 'x', bo
 fast('a long search of words', () => parseReference('love '.repeat(1000) + 'x', books));
 fast('a long notebook page', () => findReferences('John 3:16 and some words 1 2 3 '.repeat(500), books));
 fast('a long handwritten page read back', () => parseInk(JSON.stringify(encodeInk({ strokes: [...Array(3000)].map((_, i) => ({ c: 0, w: 3, p: [...Array(100)].flatMap((__, j) => [j * 5 % 600, i + j]) })) }))));
+// A long handwritten page, once open: a new stroke, the save before it is written and an
+// eraser touch each cost a fraction of a millisecond (they took 3 to 50 ms when every
+// stroke was worked through again).
+{
+  const page = [...Array(3000)].map((_, i) => ({ c: i % 3, w: 3, p: [...Array(60)].flatMap((__, j) => [((i * 37) % 560) + (j % 30), Math.floor(i / 12) * 36 + (j % 7)]) }));
+  page.forEach(pathOf);
+  encodeInk({ strokes: page });
+  fast('a long handwritten page: paths, saving and the eraser after a new stroke', () => {
+    const next = [...page, { c: 0, w: 3, p: [1, 9000, 2, 9001] }];
+    next.forEach(pathOf);
+    encodeInk({ strokes: next });
+    next.filter((st) => touchesStroke(st, 300, 4000, 10));
+  }, 25);
+}
 fast('a long Malayalam search', () => new RegExp(malayalamPattern('ൻ്റ'.repeat(200))!.source).test('ന്റ'.repeat(5000)));
 
 if (failures.length) {

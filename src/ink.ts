@@ -42,20 +42,32 @@ const MAX_POINTS = 4000;
 
 export const emptyInk = (): Ink => ({ strokes: [] });
 
+// A finished stroke never changes, so what is worked out from it is kept with it: its
+// stored form, its SVG path and its bounds. A page of thousands of strokes then costs
+// only the new stroke's work when one is added.
+const storedForm = new WeakMap<Stroke, { c: number; w: number; d: number[] }>();
+const paths = new WeakMap<Stroke, string>();
+const bounds = new WeakMap<Stroke, [number, number, number, number]>();
+
 /** The stored form: each stroke's points as steps from the one before. */
 export function encodeInk(ink: Ink): unknown {
   return {
     v: 1,
     s: ink.strokes.map((s) => {
-      const d: number[] = [];
-      let x = 0;
-      let y = 0;
-      for (let i = 0; i + 1 < s.p.length; i += 2) {
-        d.push(s.p[i] - x, s.p[i + 1] - y);
-        x = s.p[i];
-        y = s.p[i + 1];
+      let form = storedForm.get(s);
+      if (!form) {
+        const d: number[] = [];
+        let x = 0;
+        let y = 0;
+        for (let i = 0; i + 1 < s.p.length; i += 2) {
+          d.push(s.p[i] - x, s.p[i + 1] - y);
+          x = s.p[i];
+          y = s.p[i + 1];
+        }
+        form = { c: s.c, w: s.w, d };
+        storedForm.set(s, form);
       }
-      return { c: s.c, w: s.w, d };
+      return form;
     }),
   };
 }
@@ -127,9 +139,37 @@ export function strokePath(p: number[]): string {
   return `${d}L${p[p.length - 2]} ${p[p.length - 1]}`;
 }
 
+/** A finished stroke's path, made once. */
+export function pathOf(s: Stroke): string {
+  let d = paths.get(s);
+  if (d === undefined) {
+    d = strokePath(s.p);
+    paths.set(s, d);
+  }
+  return d;
+}
+
+function boundsOf(s: Stroke): [number, number, number, number] {
+  let b = bounds.get(s);
+  if (!b) {
+    b = [Infinity, Infinity, -Infinity, -Infinity];
+    for (let i = 0; i + 1 < s.p.length; i += 2) {
+      if (s.p[i] < b[0]) b[0] = s.p[i];
+      if (s.p[i + 1] < b[1]) b[1] = s.p[i + 1];
+      if (s.p[i] > b[2]) b[2] = s.p[i];
+      if (s.p[i + 1] > b[3]) b[3] = s.p[i + 1];
+    }
+    bounds.set(s, b);
+  }
+  return b;
+}
+
 /** Whether the point (x, y) is within r of the stroke's line. */
 export function touchesStroke(s: Stroke, x: number, y: number, r: number): boolean {
   const reach = r + s.w / 2;
+  // Most strokes are nowhere near: their bounds say so without looking at their points.
+  const [x0, y0, x1, y1] = boundsOf(s);
+  if (x < x0 - reach || x > x1 + reach || y < y0 - reach || y > y1 + reach) return false;
   const p = s.p;
   if (p.length === 2) return Math.hypot(x - p[0], y - p[1]) <= reach;
   for (let i = 0; i + 3 < p.length; i += 2) {
@@ -149,7 +189,10 @@ function segmentDistance(x: number, y: number, ax: number, ay: number, bx: numbe
 /** The lowest point written on, in units. */
 export function lowestPoint(ink: Ink): number {
   let low = 0;
-  for (const s of ink.strokes) for (let i = 1; i < s.p.length; i += 2) if (s.p[i] > low) low = s.p[i];
+  for (const s of ink.strokes) {
+    const b = boundsOf(s)[3];
+    if (b > low) low = b;
+  }
   return low;
 }
 

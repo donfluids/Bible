@@ -29,6 +29,7 @@ import {
   lowestPoint,
   pageHeight,
   parseInk,
+  pathOf,
   strokePath,
   touchesStroke,
 } from '../ink';
@@ -55,25 +56,71 @@ const PEN_LABELS: StringKey[] = ['penBlack', 'penBlue', 'penRed'];
 const SCROLL_START_MS = 250;
 const UNDO_STEPS = 100;
 
-/** The finished strokes, drawn again only when they change, not while a stroke is written. */
+/** Strokes are drawn in groups of this many; a new stroke redraws only the last group. */
+const GROUP = 100;
+
+const sameStrokes = (a: { strokes: Stroke[]; dark: boolean }, b: { strokes: Stroke[]; dark: boolean }) =>
+  a.dark === b.dark && a.strokes.length === b.strokes.length && a.strokes.every((s, i) => s === b.strokes[i]);
+
+/** A group of finished strokes, drawn again only when one of them changes. */
+const StrokeGroup = memo(function StrokeGroup({ strokes, dark }: { strokes: Stroke[]; dark: boolean }) {
+  const ink = dark ? INK.dark : INK.light;
+  return (
+    <>
+      {strokes.map((s, i) => (
+        <Path key={i} d={pathOf(s)} stroke={s.c < 0 ? ink.highlighter : ink.pens[s.c]} strokeWidth={s.w} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      ))}
+    </>
+  );
+}, sameStrokes);
+
+const groups = (list: Stroke[]) => {
+  const out: Stroke[][] = [];
+  for (let i = 0; i < list.length; i += GROUP) out.push(list.slice(i, i + GROUP));
+  return out;
+};
+
+/** The finished strokes, not drawn again while a stroke is written. */
 const Strokes = memo(function Strokes({ strokes, dark }: { strokes: Stroke[]; dark: boolean }) {
   const ink = dark ? INK.dark : INK.light;
   // Highlighter under the pens, so it does not dull the writing.
-  const highlights = strokes.filter((s) => s.c < 0);
-  const pens = strokes.filter((s) => s.c >= 0);
+  const highlights = groups(strokes.filter((s) => s.c < 0));
+  const pens = groups(strokes.filter((s) => s.c >= 0));
   return (
     <>
       <G opacity={ink.highlighterOpacity}>
-        {highlights.map((s, i) => (
-          <Path key={`h${i}`} d={strokePath(s.p)} stroke={ink.highlighter} strokeWidth={s.w} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        {highlights.map((g, i) => (
+          <StrokeGroup key={i} strokes={g} dark={dark} />
         ))}
       </G>
-      {pens.map((s, i) => (
-        <Path key={`p${i}`} d={strokePath(s.p)} stroke={ink.pens[s.c]} strokeWidth={s.w} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      {pens.map((g, i) => (
+        <StrokeGroup key={i} strokes={g} dark={dark} />
       ))}
     </>
   );
 });
+
+/**
+ * The stroke being written. It has its state of its own, so a pen's movement redraws only
+ * this line, not the page and its tools.
+ */
+function LiveStroke({ setter, dark }: { setter: React.MutableRefObject<((s: Stroke | null) => void) | null>; dark: boolean }) {
+  const [live, setLive] = useState<Stroke | null>(null);
+  setter.current = setLive;
+  if (!live) return null;
+  const ink = dark ? INK.dark : INK.light;
+  return (
+    <Path
+      d={strokePath(live.p)}
+      stroke={live.c < 0 ? ink.highlighter : ink.pens[live.c]}
+      strokeOpacity={live.c < 0 ? ink.highlighterOpacity : 1}
+      strokeWidth={live.w}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+  );
+}
 
 const Lines = memo(function Lines({ height, colour }: { height: number; colour: string }) {
   const lines = [];
@@ -107,7 +154,9 @@ export function InkPageScreen({ id, onBack }: Props) {
   languageRef.current = settings.language;
   useEffect(() => tellLoadProblem(languageRef.current, loaded.source), [loaded]);
   const stored = useMemo(() => encodeInk(ink), [ink]);
-  useAutosave(key, stored, loaded.writable, 600, () => tellSaveFailed(languageRef.current));
+  // Written once the pen rests a moment (a long page takes a little while to write out),
+  // and at once when the app or the page is left.
+  useAutosave(key, stored, loaded.writable, 1500, () => tellSaveFailed(languageRef.current));
 
   // Undo and redo: the strokes as they were before each change.
   const past = useRef<Stroke[][]>([]);
@@ -141,8 +190,10 @@ export function InkPageScreen({ id, onBack }: Props) {
   const [size, setSize] = useState<PenSize>('thin');
   const paper = page?.ink?.paper ?? 'plain';
 
-  // The title, and the stroke count the notebook list shows, go to the notebook a moment
-  // after they change; at once when the app or the page is left.
+  // The title and the stroke count go to the notebook at once when the app or the page is
+  // left. While writing, only a new title, or the page's first stroke (a page with writing
+  // on it is kept), goes there a moment later: the notebook is shared by every screen, and
+  // telling it of every stroke would redraw the reader underneath.
   const [title, setTitle] = useState(page?.title ?? '');
   const latest = useRef({ page, title, count: ink.strokes.length });
   latest.current = { page, title, count: ink.strokes.length };
@@ -152,13 +203,17 @@ export function InkPageScreen({ id, onBack }: Props) {
     if (p.title === tt && p.ink?.strokes === count) return null;
     return { title: tt, ink: { paper: p.ink?.paper ?? 'plain', strokes: count } };
   }, []);
+  const hasWriting = ink.strokes.length > 0;
   useEffect(() => {
     const timer = setTimeout(() => {
-      const next = patch();
-      if (next) edit(id, next);
+      const { page: p, title: tt } = latest.current;
+      if (p && (p.title !== tt || (p.ink?.strokes ?? 0) > 0 !== hasWriting)) {
+        const next = patch();
+        if (next) edit(id, next);
+      }
     }, 800);
     return () => clearTimeout(timer);
-  }, [title, ink, edit, id, patch]);
+  }, [title, hasWriting, edit, id, patch]);
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'active') return;
@@ -185,10 +240,16 @@ export function InkPageScreen({ id, onBack }: Props) {
   const scale = pageWidth > 0 ? pageWidth / PAGE_WIDTH : 1;
   const [sharing, setSharing] = useState(false);
   // For a shared picture the page ends a little below the writing.
-  const heightUnits = sharing ? Math.max(LINE_GAP * 4, lowestPoint(ink) + LINE_GAP * 2) : pageHeight(ink, box.height / scale);
+  const heightUnits = useMemo(
+    () => (sharing ? Math.max(LINE_GAP * 4, lowestPoint(ink) + LINE_GAP * 2) : pageHeight(ink, box.height / scale)),
+    [sharing, ink, box.height, scale],
+  );
 
-  // The stroke being written, drawn on its own over the finished ones.
-  const [live, setLive] = useState<Stroke | null>(null);
+  // The stroke being written, drawn on its own over the finished ones (LiveStroke).
+  const liveSetter = useRef<((s: Stroke | null) => void) | null>(null);
+  const setLive = (s: Stroke | null) => liveSetter.current?.(s);
+  // Whether a stroke is being written, for the hint; changes twice a stroke, not on each move.
+  const [writing, setWriting] = useState(false);
   const liveRef = useRef<{ stroke: Stroke; touch: number; started: number } | null>(null);
   const erased = useRef<Set<Stroke> | null>(null);
   const mode = useRef<'none' | 'draw' | 'erase' | 'move'>('none');
@@ -226,6 +287,7 @@ export function InkPageScreen({ id, onBack }: Props) {
     const l = liveRef.current;
     liveRef.current = null;
     setLive(null);
+    setWriting(false);
     if (l) change([...inkRef.current.strokes, l.stroke]);
   };
   const eraseAt = (x: number, y: number) => {
@@ -253,6 +315,7 @@ export function InkPageScreen({ id, onBack }: Props) {
           if (Date.now() - l.started < SCROLL_START_MS || l.stroke.p.length < 12) {
             liveRef.current = null;
             setLive(null);
+            setWriting(false);
           } else finishStroke();
         }
         if (mode.current === 'erase') finishErase();
@@ -283,6 +346,7 @@ export function InkPageScreen({ id, onBack }: Props) {
       addPoint(stroke.p, touch.x / s, touch.y / s);
       liveRef.current = { stroke, touch: touch.id, started: Date.now() };
       setLive({ ...stroke, p: [...stroke.p] });
+      setWriting(true);
     },
     move: (e) => {
       if (mode.current === 'move') {
@@ -314,6 +378,7 @@ export function InkPageScreen({ id, onBack }: Props) {
     cancel: (manager) => {
       liveRef.current = null;
       setLive(null);
+      setWriting(false);
       if (mode.current === 'erase') finishErase();
       mode.current = 'none';
       manager.fail();
@@ -413,7 +478,7 @@ export function InkPageScreen({ id, onBack }: Props) {
   const iconTool = (key: string, label: string, icon: IconName, selected: boolean, onPress: () => void, color?: string, disabled = false) =>
     toolButton(key, label, selected, onPress, <Icon name={icon} size={22} color={color ?? theme.text} />, disabled);
 
-  const empty = ink.strokes.length === 0 && !live;
+  const empty = ink.strokes.length === 0 && !writing;
   const hint = notice ?? (empty && !penMode ? t('inkHint') : null);
   const titleFont = scriptureFont(scriptOf(title) ?? uiScript, settings.serif, true);
 
@@ -476,17 +541,7 @@ export function InkPageScreen({ id, onBack }: Props) {
                   <Svg width={pageWidth} height={heightUnits * scale} viewBox={`0 0 ${PAGE_WIDTH} ${heightUnits}`}>
                     {paper === 'lined' ? <Lines height={heightUnits} colour={lineColour(theme)} /> : null}
                     <Strokes strokes={ink.strokes} dark={theme.dark} />
-                    {live ? (
-                      <Path
-                        d={strokePath(live.p)}
-                        stroke={live.c < 0 ? colours.highlighter : colours.pens[live.c]}
-                        strokeOpacity={live.c < 0 ? colours.highlighterOpacity : 1}
-                        strokeWidth={live.w}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        fill="none"
-                      />
-                    ) : null}
+                    <LiveStroke setter={liveSetter} dark={theme.dark} />
                   </Svg>
                 </View>
               </GestureDetector>

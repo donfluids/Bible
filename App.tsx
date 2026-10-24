@@ -31,7 +31,6 @@ import { SearchScreen } from './src/screens/SearchScreen';
 import { LicencesScreen } from './src/screens/LicencesScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { NotebookScreen } from './src/screens/NotebookScreen';
-import { InkPageScreen } from './src/screens/InkPageScreen';
 import { NotePageScreen } from './src/screens/NotePageScreen';
 import { CardScreen } from './src/screens/CardScreen';
 import { switchTab } from './src/components/TabBar';
@@ -423,7 +422,11 @@ function NotePageRoute({ navigation, route }: Props<'NotePage'>) {
   // A handwritten page stays one when it is opened again.
   const notebook = useNotebook();
   const [handwritten] = useState(() => !!route.params.handwritten || !!notebook.page(route.params.id)?.ink);
-  if (handwritten) return <InkPageScreen id={route.params.id} onBack={() => navigation.goBack()} />;
+  if (handwritten) {
+    // Loaded the first time a handwritten page opens, with its drawing library, not at start.
+    const { InkPageScreen } = require('./src/screens/InkPageScreen') as typeof import('./src/screens/InkPageScreen');
+    return <InkPageScreen id={route.params.id} onBack={() => navigation.goBack()} />;
+  }
   return <NotePageScreen id={route.params.id} isNew={route.params.isNew} books={books} onOpenRef={openRef} onBack={() => navigation.goBack()} />;
 }
 
