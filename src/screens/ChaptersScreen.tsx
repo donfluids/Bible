@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-n
 import { Pressable } from '../components/Pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from '../components/Header';
+import { Icon } from '../components/Icon';
 import { useT } from '../i18n';
 import { useSettings } from '../settings';
 import { useTheme } from '../theme';
@@ -13,10 +14,12 @@ interface Props {
   book: Book;
   current?: number;
   onPick: (chapter: number) => void;
+  /** Opens the book's introduction, from a row above the chapters. */
+  onOpenIntro: () => void;
   onBack: () => void;
 }
 
-export function ChaptersScreen({ book, current, onPick, onBack }: Props) {
+export function ChaptersScreen({ book, current, onPick, onOpenIntro, onBack }: Props) {
   const theme = useTheme();
   // Lists run under the system navigation bar; the last row must clear it.
   const insets = useSafeAreaInsets();
@@ -34,6 +37,16 @@ export function ChaptersScreen({ book, current, onPick, onBack }: Props) {
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Header title={title} onBack={onBack} backLabel={t('back')} />
       <ScrollView contentContainerStyle={[styles.grid, { paddingBottom: insets.bottom + 24 }]}>
+        <Pressable
+          onPress={onOpenIntro}
+          android_ripple={{ color: theme.accentSoft }}
+          style={({ pressed }) => [styles.intro, { width: inner, borderColor: theme.border, backgroundColor: pressed ? theme.accentSoft : theme.card }]}
+          accessibilityRole="button"
+        >
+          <Icon name="info" size={22} color={theme.accent} />
+          <Text style={[styles.introText, { color: theme.text }]}>{t('aboutBook')}</Text>
+          <Icon name="chevron_right" size={22} color={theme.muted} />
+        </Pressable>
         {chapters.map((c) => {
           const active = c === current;
           return (
@@ -73,5 +86,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  intro: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 12, overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth, paddingHorizontal: 14, paddingVertical: 12 },
+  introText: { flex: 1, fontSize: 16, fontWeight: '600' },
   cellText: { fontSize: 18, fontWeight: '600', fontVariant: ['tabular-nums'] },
 });

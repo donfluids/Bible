@@ -42,9 +42,10 @@ with `node --no-warnings scripts/check-intros.mjs`, and put in the databases wit
 
 ## Tamil
 
-- The LORD is கர்த்தர் throughout, the word most church members use; the IRV text itself
-  has யெகோவா almost everywhere. Ezekiel 48:35 keeps யேகோவா ஷம்மா. If the introductions
-  should match the IRV, this is a search and replace across the files.
+- The LORD is யெகோவா in the Old Testament books, as in the IRV text (and as the Malayalam
+  has യഹോവ); "Lord" in the New Testament books is கர்த்தர். Many churches say கர்த்தர் for
+  both, after the older Bible Society version; if the reviewer prefers that, it is a
+  search and replace in books 1-39.
 - God is தேவன், as in the IRV.
 - Silvanus: சில்வான் (2 Thessalonians) and சில்வானு (1 Peter), each as that book has it, with
   (சீலா). John Mark: மாற்கு என்னும் யோவான் (Acts 12:12). John the Baptist: யோவான்ஸ்நானன்.

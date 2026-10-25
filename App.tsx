@@ -387,6 +387,7 @@ function ChaptersRoute({ navigation, route }: Props<'Chapters'>) {
         moveMainReader({ book: book.id, chapter });
         navigation.popToTop();
       }}
+      onOpenIntro={() => navigation.push('Intro', { book: book.id })}
       onBack={() => navigation.goBack()}
     />
   );

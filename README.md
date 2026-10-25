@@ -340,7 +340,8 @@ npm run smoke        # every main screen of each app in a browser, at four sizes
   (`data/intros`, see `data/intros/GUIDE.md`; checked by `scripts/check-intros.mjs`): who
   wrote each book, when and for whom, what it is about, its themes, an outline and key
   verses, giving the church's traditional view of authorship and dates. The reader's
-  info button opens the one for the book being read.
+  info button opens the one for the book being read, and so does About this book above a
+  book's chapter numbers.
 - **Interlinear Hebrew and Greek**: Translators Amalgamated Hebrew OT (TAHOT) and
   Greek NT (TAGNT) by [STEPBible](https://github.com/STEPBible/STEPBible-Data),
   Tyndale House Cambridge, CC BY 4.0. Their licence permits bundling the data in

@@ -61,5 +61,7 @@ people, places and books exactly as the app's Bible spells them (Sathyavedapusth
 for Malayalam, the Indian Revised Version for Tamil): look them up in the database
 (`assets/db/bible-ml.db`, `bible-ta.db`, table verses, translation MAL or TAM). Modern
 spelling and plain words for everything else. Keep the JSON keys and the references as
-they are; translate only the text values. Dates: "ഏകദേശം എ.ഡി. 55–65" / "ஏறக்குறைய கி.பி.
+they are; translate only the text values. The LORD (the divine name) is യഹോവ / யெகோவா, as
+both Bibles print it; "Lord" (Jesus, and the New Testament) is കർത്താവ് / கர்த்தர். God is
+ദൈവം / தேவன். Pronouns for God and Jesus are the respectful അവിടുന്ന് / அவர். Dates: "ഏകദേശം എ.ഡി. 55–65" / "ஏறக்குறைய கி.பி.
 55–65" style, "ബി.സി." / "கி.மு." for BC.
