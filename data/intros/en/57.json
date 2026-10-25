@@ -1,0 +1,39 @@
+{
+  "book": 57,
+  "name": "Philemon",
+  "facts": {
+    "author": "The apostle Paul, writing as a prisoner, with Timothy (1:1). He wrote at least part of it with his own hand (1:19).",
+    "date": "About AD 60–62",
+    "audience": "Philemon, a Christian at Colossae, together with Apphia, Archippus and the church that met in his house"
+  },
+  "about": [
+    "Philemon is Paul's shortest letter, a personal note written from prison, very likely in Rome. Philemon was a believer whose home was a meeting place for the church. His servant Onesimus had run away, and perhaps had stolen from him as well. In the city Onesimus met Paul, heard the gospel and became a Christian (1:10).",
+    "Now Paul sends Onesimus back to his master with this letter. He does not command Philemon, though he could, but appeals to him in love. He asks him to receive Onesimus no longer only as a servant but as a dearly loved brother, and to welcome him as he would welcome Paul himself (1:16-17). Paul even promises to pay back anything that Onesimus owes.",
+    "The name Onesimus means \"useful\", and Paul gently plays on it: once useless, he is now useful to them both (1:11). The letter shows how the gospel changes people and their relationships, making master and servant brothers in Christ."
+  ],
+  "themes": [
+    {
+      "title": "Forgiveness",
+      "text": "Paul asks Philemon to forgive and receive the one who wronged him, as Christ has received us."
+    },
+    {
+      "title": "Brothers in Christ",
+      "text": "In Christ a runaway servant and his master become brothers, equal in the family of God."
+    },
+    {
+      "title": "Love that pleads",
+      "text": "Paul chooses to ask in love rather than to give orders, leaving Philemon free to do what is right."
+    },
+    {
+      "title": "Standing in another's place",
+      "text": "Paul offers to pay what Onesimus owes, a picture of how Christ took our debt upon Himself."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "1:3", "title": "Greeting to Philemon and the church in his house" },
+    { "from": "1:4", "to": "1:7", "title": "Thanks for Philemon's love and faith" },
+    { "from": "1:8", "to": "1:21", "title": "Paul's appeal for Onesimus: receive him as a brother" },
+    { "from": "1:22", "to": "1:25", "title": "A request for lodging, and greetings" }
+  ],
+  "keyVerses": ["1:6", "1:16", "1:17-18"]
+}

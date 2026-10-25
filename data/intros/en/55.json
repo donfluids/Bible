@@ -1,0 +1,41 @@
+{
+  "book": 55,
+  "name": "2 Timothy",
+  "facts": {
+    "author": "The apostle Paul, as the letter itself says (1:1), writing from prison in Rome.",
+    "date": "About AD 66–67",
+    "audience": "Timothy, Paul's dearly loved son in the faith, who was caring for the church, very likely at Ephesus"
+  },
+  "about": [
+    "This is the last letter Paul wrote. He is a prisoner in Rome again, this time in chains, and he knows that his death is near (4:6). Many have left him; only Luke is with him (4:11). He longs to see Timothy and asks him to come quickly, bringing his cloak, his books and the parchments.",
+    "Paul remembers the sincere faith of Timothy, which lived first in his grandmother Lois and his mother Eunice (1:5). He urges him not to be ashamed of the gospel, to stir up God's gift and to be strong in grace like a good soldier of Jesus Christ. Hard times will come in the last days, and many will turn from the truth, so Timothy must hold on to the Scriptures he has known from childhood, which are inspired by God (3:15-16), and preach the word at all times.",
+    "Paul ends with calm confidence. He has fought the good fight and kept the faith, and the Lord will give him a crown of righteousness."
+  ],
+  "themes": [
+    {
+      "title": "Faithful to the end",
+      "text": "Paul has finished his race, and he calls Timothy to keep the faith and to pass it on to faithful men who will teach others (2:2)."
+    },
+    {
+      "title": "Not ashamed",
+      "text": "God has given a spirit of power, love and a sound mind, not of fear, so believers need not be ashamed of Christ or His suffering servants."
+    },
+    {
+      "title": "The Scriptures",
+      "text": "All Scripture is given by God and is useful for teaching and training, so that the man of God is ready for every good work."
+    },
+    {
+      "title": "Suffering for the gospel",
+      "text": "All who want to live a godly life in Christ will be persecuted, but the Lord stands with His servants and will bring them safely into His heavenly kingdom."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "1:5", "title": "Greeting and thanks for Timothy's sincere faith" },
+    { "from": "1:6", "to": "1:18", "title": "Stir up God's gift; do not be ashamed of the gospel" },
+    { "from": "2:1", "to": "2:26", "title": "Be strong in grace: soldier, athlete, farmer and workman" },
+    { "from": "3:1", "to": "3:17", "title": "Hard times in the last days; the God-given Scriptures" },
+    { "from": "4:1", "to": "4:8", "title": "Preach the word; Paul's race is finished" },
+    { "from": "4:9", "to": "4:22", "title": "Personal requests, news and greetings" }
+  ],
+  "keyVerses": ["1:7", "2:15", "3:16-17", "4:7"]
+}

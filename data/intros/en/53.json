@@ -1,0 +1,40 @@
+{
+  "book": 53,
+  "name": "2 Thessalonians",
+  "facts": {
+    "author": "The apostle Paul, writing with Silvanus (Silas) and Timothy. He signed the letter with his own hand (3:17).",
+    "date": "About AD 51–52",
+    "audience": "The young church at Thessalonica in Macedonia, which Paul had founded a short time before"
+  },
+  "about": [
+    "Paul wrote this second letter to the Thessalonians from Corinth, only a few months after the first. The church was still suffering for its faith, and Paul thanks God that their faith and love keep growing. He comforts them: when the Lord Jesus comes from heaven, God will give rest to His troubled people and judge those who trouble them (1:7).",
+    "Some in the church had been told that the day of the Lord had already come, and they were shaken and afraid. Paul explains that first there must be a falling away and the man of sin must be revealed, but the Lord Jesus will destroy him at His coming (2:3-8). Meanwhile they are to stand firm and hold on to what they were taught.",
+    "Some believers had stopped working and lived off others while they waited. Paul reminds them how he worked with his own hands among them and tells them to work quietly and earn their own bread."
+  ],
+  "themes": [
+    {
+      "title": "God's justice and comfort",
+      "text": "Those who suffer for Christ are not forgotten; God will repay those who trouble them and give His people rest."
+    },
+    {
+      "title": "The day of the Lord",
+      "text": "Christ's coming is certain, but it will not come before the man of sin is revealed, so believers should not be deceived or alarmed."
+    },
+    {
+      "title": "Standing firm",
+      "text": "God chose and called them to salvation, so they are to hold fast to the teaching they received."
+    },
+    {
+      "title": "Faithful daily work",
+      "text": "Waiting for the Lord is no excuse for idleness; believers should work, earn their own living and never tire of doing good."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "1:12", "title": "Greeting, thanks for their faith, and God's righteous judgment" },
+    { "from": "2:1", "to": "2:12", "title": "The day of the Lord and the man of sin" },
+    { "from": "2:13", "to": "3:5", "title": "Chosen by God: stand firm, and pray for us" },
+    { "from": "3:6", "to": "3:15", "title": "Warning against idleness: work quietly" },
+    { "from": "3:16", "to": "3:18", "title": "Peace and a greeting in Paul's own hand" }
+  ],
+  "keyVerses": ["1:7", "2:15", "3:3", "3:13"]
+}

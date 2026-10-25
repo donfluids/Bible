@@ -1,0 +1,43 @@
+{
+  "book": 13,
+  "name": "1 Chronicles",
+  "facts": {
+    "author": "The author is not named. Jewish tradition holds that Ezra the priest and scribe wrote 1 and 2 Chronicles, which were once one book.",
+    "date": "About 450–430 BC",
+    "audience": "The Jews who had returned from exile in Babylon, to remind them of their roots and of God's promises to David"
+  },
+  "about": [
+    "1 Chronicles retells the history of Israel for the people who came back from exile. It begins with nine chapters of family lists, from Adam through the tribes of Israel down to those who returned to Jerusalem. In the middle of these lists is the short prayer of Jabez, whom God blessed (4:10).",
+    "After a brief account of Saul's death (10:13-14), the book turns to David. It tells of his mighty men, of his bringing the ark of God to Jerusalem with music and praise, and of God's promise that David's son would build Him a house and that his throne would last for ever (17:11-14). It says little of David's sins and much about his care for worship.",
+    "David is not allowed to build the temple himself, but he buys the threshing floor of Ornan for it, gathers the materials, arranges the priests, Levites and singers, and gives Solomon the plans. The book ends with the people giving gladly, David's great prayer of praise (29:10-13) and Solomon becoming king."
+  ],
+  "themes": [
+    {
+      "title": "God's people have a history",
+      "text": "The family lists show the returned exiles that they still belong to God's people and His purposes."
+    },
+    {
+      "title": "The covenant with David",
+      "text": "God's promise of an everlasting throne for David's son gives hope for the coming King."
+    },
+    {
+      "title": "True worship",
+      "text": "The ark, the temple, the priests and the singers show that worship of the Lord is at the centre of the nation's life."
+    },
+    {
+      "title": "Giving thanks to God",
+      "text": "David leads the people to thank the Lord, for He is good and His mercy lasts for ever (16:34)."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "9:44", "title": "Family lists from Adam to the return from exile" },
+    { "from": "10:1", "to": "12:40", "title": "The death of Saul; David made king" },
+    { "from": "13:1", "to": "16:43", "title": "The ark brought to Jerusalem" },
+    { "from": "17:1", "to": "17:27", "title": "God's covenant with David" },
+    { "from": "18:1", "to": "20:8", "title": "David's victories" },
+    { "from": "21:1", "to": "22:1", "title": "The census and the place for the temple" },
+    { "from": "22:2", "to": "27:34", "title": "Preparing for the temple: priests, Levites, singers and officers" },
+    { "from": "28:1", "to": "29:30", "title": "David's charge to Solomon, his prayer and his death" }
+  ],
+  "keyVerses": ["4:10", "16:34", "17:11-12", "29:11"]
+}

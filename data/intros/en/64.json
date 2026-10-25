@@ -1,0 +1,36 @@
+{
+  "book": 64,
+  "name": "3 John",
+  "facts": {
+    "author": "The apostle John, who calls himself the elder (1:1), as the early church held.",
+    "date": "About AD 85–95",
+    "audience": "Gaius, a dearly loved Christian friend of John and a member of a local church"
+  },
+  "about": [
+    "This is a personal letter from John to his friend Gaius. John prays that Gaius may be well in body just as he is well in soul (1:2), and says that nothing gives him greater joy than to hear that his children are walking in the truth (1:4).",
+    "Travelling preachers had gone out for the sake of Christ's name, taking nothing from the Gentiles. Gaius had welcomed them and helped them on their way, and John praises him for it, because in helping such men believers work together for the truth (1:5-8).",
+    "But in the same church a man named Diotrephes loved to be first. He refused to accept John's authority, spoke evil against him, would not welcome the travelling brothers, and even put out of the church those who did (1:9-10). John tells Gaius to follow what is good, not what is evil, and he commends Demetrius, of whom everyone speaks well. The letter shows us three men: one to copy, one to avoid, and one to trust."
+  ],
+  "themes": [
+    {
+      "title": "Walking in the truth",
+      "text": "John's greatest joy is to hear that those he has taught are living out the truth."
+    },
+    {
+      "title": "Hospitality",
+      "text": "Welcoming and supporting those who serve the Lord makes believers partners in the work of the gospel."
+    },
+    {
+      "title": "Pride in the church",
+      "text": "Diotrephes shows how love of power can harm a church; believers should imitate what is good, for whoever does good is of God (1:11)."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "1:4", "title": "Greeting and joy over Gaius walking in the truth" },
+    { "from": "1:5", "to": "1:8", "title": "Praise for Gaius's welcome to travelling preachers" },
+    { "from": "1:9", "to": "1:10", "title": "The proud behaviour of Diotrephes" },
+    { "from": "1:11", "to": "1:12", "title": "Follow what is good; a good word for Demetrius" },
+    { "from": "1:13", "to": "1:14", "title": "Hope of a visit, and greetings" }
+  ],
+  "keyVerses": ["1:4", "1:11"]
+}

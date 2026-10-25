@@ -1,0 +1,47 @@
+{
+  "book": 66,
+  "name": "Revelation",
+  "facts": {
+    "author": "The apostle John, who gives his name at the beginning of the book (1:1) and again at the end (22:8). He received these visions while in exile on the island of Patmos.",
+    "date": "About AD 95–96",
+    "audience": "Seven churches in the Roman province of Asia (1:11), and through them the whole church"
+  },
+  "about": [
+    "Revelation is the last book of the Bible. In it Jesus Christ shows His servant John what must soon take place (1:1). John was on Patmos because of the word of God when, on the Lord's day, he saw the risen Christ in glory among seven golden lampstands. Jesus gave him messages for seven churches, praising what was good, rebuking what was wrong and making promises to those who overcome.",
+    "Then John was taken up to see the throne of God in heaven. Only the Lamb who was slain, Jesus, was worthy to open the sealed book (5:9). There follow visions of seals, trumpets and bowls of judgment, of the dragon and the beasts who make war on God's people, and of the fall of Babylon the great.",
+    "The book is full of pictures and numbers, and Christians have understood its details in different ways, but its message is clear: Christ will win. He returns as King of kings, Satan is defeated, and the dead are judged. God makes a new heaven and a new earth, and in the New Jerusalem He lives with His people and wipes away every tear (21:1-4)."
+  ],
+  "themes": [
+    {
+      "title": "Jesus Christ the Lord of all",
+      "text": "Jesus is the First and the Last, who died and is alive for evermore and holds the keys of death and hell (1:17-18)."
+    },
+    {
+      "title": "God reigns",
+      "text": "Whatever happens on earth, God sits on His throne, and the kingdoms of this world will become the kingdom of our Lord and of His Christ (11:15)."
+    },
+    {
+      "title": "Faithful in suffering",
+      "text": "God's people may suffer and even die for their faith, but those who overcome will share in Christ's victory."
+    },
+    {
+      "title": "Judgment and salvation",
+      "text": "God will judge evil and all who refuse Him, and He will save all whose names are written in the Lamb's book of life."
+    },
+    {
+      "title": "All things made new",
+      "text": "The story that began in a garden ends in a city with the river and tree of life, where God lives with His people for ever."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "1:20", "title": "Introduction; John's vision of the risen Christ" },
+    { "from": "2:1", "to": "3:22", "title": "Letters to the seven churches of Asia" },
+    { "from": "4:1", "to": "8:1", "title": "The throne in heaven, the Lamb and the seven seals" },
+    { "from": "8:2", "to": "11:19", "title": "The seven trumpets and the two witnesses" },
+    { "from": "12:1", "to": "14:20", "title": "The woman, the dragon, the two beasts and the Lamb" },
+    { "from": "15:1", "to": "16:21", "title": "The seven bowls of God's wrath" },
+    { "from": "17:1", "to": "20:15", "title": "Babylon falls; Christ returns; the thousand years and the last judgment" },
+    { "from": "21:1", "to": "22:21", "title": "A new heaven and a new earth; Jesus is coming soon" }
+  ],
+  "keyVerses": ["1:8", "5:12", "11:15", "21:4"]
+}

@@ -1,0 +1,42 @@
+{
+  "book": 11,
+  "name": "1 Kings",
+  "facts": {
+    "author": "The author is not known. Jewish tradition holds that Jeremiah the prophet wrote 1 and 2 Kings, which were once one book, using the court records of the kings.",
+    "date": "About 560–540 BC",
+    "audience": "The people of Israel in exile in Babylon, to show why the kingdom fell and to call them back to God"
+  },
+  "about": [
+    "1 Kings begins with the old age of David and the crowning of his son Solomon. When God offers Solomon whatever he asks, he asks for an understanding heart to judge God's people well (3:9), and God makes him wiser than any other king. Solomon builds the temple in Jerusalem, and at its dedication he prays that God will hear His people from heaven, though the heavens cannot contain Him (8:27).",
+    "But Solomon marries many foreign wives, and in his old age they turn his heart to other gods. After his death the kingdom splits in two: ten tribes in the north follow Jeroboam, who sets up golden calves, while Judah stays with Rehoboam, Solomon's son. The book then follows the kings of both kingdoms, judging each one by whether he did right in the sight of the Lord.",
+    "The last part centres on the prophet Elijah, who stands against King Ahab and Queen Jezebel and their worship of Baal. On Mount Carmel God answers Elijah with fire, and the people cry out that the Lord is God (18:39)."
+  ],
+  "themes": [
+    {
+      "title": "Faithfulness brings blessing",
+      "text": "When the kings follow the Lord the nation is blessed; when they turn to idols, trouble and division follow."
+    },
+    {
+      "title": "The temple and God's presence",
+      "text": "The temple is the place where God puts His name, and where His people pray toward Him."
+    },
+    {
+      "title": "The Lord alone is God",
+      "text": "Elijah calls the people to stop wavering between two opinions and to follow the Lord, not Baal (18:21)."
+    },
+    {
+      "title": "God speaks through His prophets",
+      "text": "God sends prophets to warn the kings, and His word always comes true."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "2:46", "title": "Solomon becomes king after David" },
+    { "from": "3:1", "to": "4:34", "title": "Solomon's wisdom" },
+    { "from": "5:1", "to": "8:66", "title": "The temple built and dedicated" },
+    { "from": "9:1", "to": "11:43", "title": "Solomon's glory and his turning away" },
+    { "from": "12:1", "to": "16:34", "title": "The kingdom divided; kings of Israel and Judah" },
+    { "from": "17:1", "to": "19:21", "title": "Elijah: the drought, Mount Carmel and Horeb" },
+    { "from": "20:1", "to": "22:53", "title": "Ahab's wars, Naboth's vineyard and Ahab's death" }
+  ],
+  "keyVerses": ["3:9", "8:27", "18:21", "18:39"]
+}

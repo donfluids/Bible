@@ -1,0 +1,74 @@
+{
+  "book": 43,
+  "name": "John",
+  "facts": {
+    "author": "John the apostle, son of Zebedee, the disciple whom Jesus loved (21:20-24). The early church held that he wrote it in his old age at Ephesus.",
+    "date": "About AD 85–95",
+    "audience": "Believers and seekers everywhere, so that they may believe that Jesus is the Christ, the Son of God, and have life in His name"
+  },
+  "about": [
+    "John's Gospel is different from the other three. It opens before creation, with the Word who was with God and was God, and who became a man and lived among us (1:1-14). John tells us plainly why he wrote: so that readers may believe that Jesus is the Christ, the Son of God, and through believing have life (20:31).",
+    "John chooses seven signs, from turning water into wine at Cana (2:11) to raising Lazarus from the dead, and he records long talks in which Jesus explains who He is. Jesus says that He is the bread of life, the light of the world, the good shepherd, the resurrection and the life, the way, the truth and the life, and the true vine.",
+    "Almost half the book covers Jesus' last days. In the upper room He washes His disciples' feet, promises the Holy Spirit and prays for all who will believe. Then come the cross, the empty tomb, Thomas's confession of Jesus as Lord and God (20:28), and Peter restored by the lake."
+  ],
+  "themes": [
+    {
+      "title": "Jesus is God made man",
+      "text": "The eternal Word, who made all things, became flesh and showed us the Father."
+    },
+    {
+      "title": "Signs that lead to faith",
+      "text": "The miracles are signs that show Jesus' glory and call people to believe in Him."
+    },
+    {
+      "title": "Eternal life",
+      "text": "God gave His only Son so that whoever believes in Him should not perish but have everlasting life (3:16)."
+    },
+    {
+      "title": "Light and darkness",
+      "text": "Jesus is the light of the world, and people choose either to come to the light or to stay in darkness."
+    },
+    {
+      "title": "Love and the Holy Spirit",
+      "text": "Jesus commands His disciples to love one another and promises the Comforter, the Spirit of truth."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "1:18",
+      "title": "The Word who became flesh"
+    },
+    {
+      "from": "1:19",
+      "to": "4:54",
+      "title": "John's witness and the first signs"
+    },
+    {
+      "from": "5:1",
+      "to": "12:50",
+      "title": "Signs, teaching and growing unbelief"
+    },
+    {
+      "from": "13:1",
+      "to": "17:26",
+      "title": "In the upper room: washing feet, the promise of the Spirit, and Jesus' prayer"
+    },
+    {
+      "from": "18:1",
+      "to": "19:42",
+      "title": "The arrest, the trial and the cross"
+    },
+    {
+      "from": "20:1",
+      "to": "21:25",
+      "title": "The risen Lord appears to His disciples"
+    }
+  ],
+  "keyVerses": [
+    "1:14",
+    "3:16",
+    "11:25",
+    "20:31"
+  ]
+}

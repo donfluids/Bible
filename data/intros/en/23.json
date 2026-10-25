@@ -1,0 +1,84 @@
+{
+  "book": 23,
+  "name": "Isaiah",
+  "facts": {
+    "author": "Isaiah the son of Amoz, who prophesied in Jerusalem (1:1). He wrote the whole book.",
+    "date": "About 740–680 BC",
+    "audience": "The people of Judah and Jerusalem, and through them God's people in exile and in every later age"
+  },
+  "about": [
+    "Isaiah prophesied in Jerusalem in the days of Uzziah, Jotham, Ahaz and Hezekiah, kings of Judah. In the year King Uzziah died he saw the Lord on His throne, high and lifted up, and heard the seraphim cry that He is holy (6:1-3). From then on Isaiah often called God the Holy One of Israel.",
+    "The first part of the book warns Judah and the nations of God's judgement for their pride, idols and injustice. Yet it also promises a child to be born, the Mighty God and Prince of Peace, who will reign on David's throne for ever (9:6-7). In the middle stands the story of King Hezekiah, when the angel of the LORD struck down 185,000 Assyrians and Jerusalem was saved (37:36).",
+    "The last part begins with comfort (40:1). Looking ahead to the exile in Babylon, Isaiah shows God's power over idols and even names Cyrus, who will send the people home (44:28). He describes the Servant of the LORD, who is wounded for our sins and led like a lamb to the slaughter (53:5-7), and he ends with the promise of new heavens and a new earth (65:17)."
+  ],
+  "themes": [
+    {
+      "title": "The Holy One of Israel",
+      "text": "God is holy and great, far above the idols that people make with their own hands."
+    },
+    {
+      "title": "Judgement and mercy",
+      "text": "God punishes sin, but He calls His people to return to Him and promises to forgive."
+    },
+    {
+      "title": "The coming Messiah",
+      "text": "Isaiah foretells the virgin's son Immanuel (7:14), the King from David's family and the suffering Servant, all fulfilled in Jesus Christ."
+    },
+    {
+      "title": "Comfort and strength",
+      "text": "Those who wait on the LORD will renew their strength (40:31), and God will save a remnant of His people."
+    },
+    {
+      "title": "Light for the nations",
+      "text": "The Servant will be a light to the Gentiles, so that God's salvation reaches the ends of the earth (49:6)."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "6:13",
+      "title": "Judah's sin and Isaiah's call"
+    },
+    {
+      "from": "7:1",
+      "to": "12:6",
+      "title": "The sign of Immanuel and the promised King"
+    },
+    {
+      "from": "13:1",
+      "to": "27:13",
+      "title": "Judgement on the nations and on all the earth"
+    },
+    {
+      "from": "28:1",
+      "to": "35:10",
+      "title": "Woes on the faithless; the ransomed return to Zion"
+    },
+    {
+      "from": "36:1",
+      "to": "39:8",
+      "title": "King Hezekiah: Assyria defeated, his illness and healing"
+    },
+    {
+      "from": "40:1",
+      "to": "48:22",
+      "title": "Comfort for God's people: the LORD above all idols"
+    },
+    {
+      "from": "49:1",
+      "to": "57:21",
+      "title": "The Servant of the LORD and His sufferings"
+    },
+    {
+      "from": "58:1",
+      "to": "66:24",
+      "title": "True worship and the glory to come"
+    }
+  ],
+  "keyVerses": [
+    "6:8",
+    "9:6",
+    "40:31",
+    "53:5"
+  ]
+}

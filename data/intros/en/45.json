@@ -1,0 +1,79 @@
+{
+  "book": 45,
+  "name": "Romans",
+  "facts": {
+    "author": "The apostle Paul (1:1). Tertius wrote the letter down as Paul spoke it (16:22).",
+    "date": "About AD 57",
+    "audience": "The believers in Rome, both Jews and Gentiles, a church Paul had not yet visited"
+  },
+  "about": [
+    "Paul wrote to the Christians in Rome from Corinth, near the end of his third journey, as he was about to take a gift to the poor believers in Jerusalem (15:25). He hoped to visit Rome on his way to Spain, and he set out the gospel he preached more fully than in any other letter.",
+    "The theme is the gospel as the power of God to save everyone who believes (1:16-17). Paul shows that all people, Jews and Gentiles, have sinned and fall short of God's glory (3:23). Yet God puts sinners right with Himself freely by His grace through faith in Christ, who died for us while we were still sinners (5:8). Abraham himself was counted righteous by faith.",
+    "Paul then explains the new life of those who are joined to Christ and led by the Spirit, and he asks what God's plan is for Israel. He ends with practical teaching on living as a sacrifice to God, loving one another and bearing with the weak."
+  ],
+  "themes": [
+    {
+      "title": "All have sinned",
+      "text": "Both Jews and Gentiles stand guilty before God, and no one can be made right by keeping the law."
+    },
+    {
+      "title": "Righteous by faith",
+      "text": "God declares sinners righteous as a free gift through faith in Jesus Christ."
+    },
+    {
+      "title": "Life in the Spirit",
+      "text": "Those who are in Christ are set free from sin and death, and nothing can separate them from the love of God (8:38-39)."
+    },
+    {
+      "title": "God's faithful plan",
+      "text": "God has not forgotten Israel, and His mercy reaches both Jews and Gentiles."
+    },
+    {
+      "title": "A living sacrifice",
+      "text": "Because of God's mercy, believers offer their whole lives to Him and love one another (12:1)."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "1:17",
+      "title": "Greeting and the theme: the gospel is God's power to save"
+    },
+    {
+      "from": "1:18",
+      "to": "3:20",
+      "title": "All the world is guilty before God"
+    },
+    {
+      "from": "3:21",
+      "to": "5:21",
+      "title": "Made right with God through faith in Christ"
+    },
+    {
+      "from": "6:1",
+      "to": "8:39",
+      "title": "Freedom from sin and new life in the Spirit"
+    },
+    {
+      "from": "9:1",
+      "to": "11:36",
+      "title": "God's plan for Israel and the nations"
+    },
+    {
+      "from": "12:1",
+      "to": "15:13",
+      "title": "Living as a sacrifice to God and loving one another"
+    },
+    {
+      "from": "15:14",
+      "to": "16:27",
+      "title": "Paul's plans and greetings to friends"
+    }
+  ],
+  "keyVerses": [
+    "1:16",
+    "3:23-24",
+    "5:8",
+    "12:1"
+  ]
+}

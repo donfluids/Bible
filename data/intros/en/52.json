@@ -1,0 +1,73 @@
+{
+  "book": 52,
+  "name": "1 Thessalonians",
+  "facts": {
+    "author": "The apostle Paul, writing with Silvanus and Timothy (1:1).",
+    "date": "About AD 51",
+    "audience": "The young church at Thessalonica, a city in Macedonia, made up mostly of Gentiles who had turned from idols to God (1:9)"
+  },
+  "about": [
+    "This is one of the first letters Paul wrote. He had preached in Thessalonica after he was badly treated at Philippi (2:2), but he had to leave the city after only a short time because of opposition. Worried about the new believers, he sent Timothy back from Athens to strengthen them. When Timothy came back with good news of their faith and love (3:6), Paul wrote this letter, very likely from Corinth.",
+    "Paul gives thanks that the Thessalonians had turned from idols to serve the living God and to wait for His Son from heaven (1:9-10). He reminds them how he lived among them and how he longed to see them again. He calls them to holy and quiet lives.",
+    "Some believers had died, and the church was troubled about them. Paul comforts them: when the Lord comes down from heaven, the dead in Christ will rise first, and those still living will be caught up with them, to be with the Lord for ever (4:16-17)."
+  ],
+  "themes": [
+    {
+      "title": "Faith, love and hope",
+      "text": "The church is known for its work of faith, labour of love and patient hope in the Lord Jesus."
+    },
+    {
+      "title": "The coming of the Lord",
+      "text": "Jesus will come again, and every chapter of the letter looks forward to that day."
+    },
+    {
+      "title": "Comfort in sorrow",
+      "text": "Believers grieve, but not as those without hope, for the dead in Christ will rise."
+    },
+    {
+      "title": "A holy life",
+      "text": "God calls His people to be pure, to love one another and to work quietly."
+    },
+    {
+      "title": "Joy, prayer and thanks",
+      "text": "Believers are to rejoice always, pray without ceasing and give thanks in everything (5:16-18)."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "1:10",
+      "title": "Thanks for the faith of the Thessalonians"
+    },
+    {
+      "from": "2:1",
+      "to": "2:20",
+      "title": "How Paul lived and worked among them"
+    },
+    {
+      "from": "3:1",
+      "to": "3:13",
+      "title": "Timothy's visit and his good news"
+    },
+    {
+      "from": "4:1",
+      "to": "4:12",
+      "title": "A life that pleases God"
+    },
+    {
+      "from": "4:13",
+      "to": "5:11",
+      "title": "The coming of the Lord"
+    },
+    {
+      "from": "5:12",
+      "to": "5:28",
+      "title": "Final instructions and greetings"
+    }
+  ],
+  "keyVerses": [
+    "1:9-10",
+    "4:16-17",
+    "5:16-18"
+  ]
+}

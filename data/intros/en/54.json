@@ -1,0 +1,41 @@
+{
+  "book": 54,
+  "name": "1 Timothy",
+  "facts": {
+    "author": "The apostle Paul, as the letter itself says (1:1).",
+    "date": "About AD 62–64",
+    "audience": "Timothy, Paul's young helper, whom he loved like a son and had left to lead the church at Ephesus"
+  },
+  "about": [
+    "After his first imprisonment in Rome, Paul travelled again. He left Timothy at Ephesus to stop false teachers who were troubling the church with fables and endless arguments, and he wrote this letter to guide him (1:3-4). It is one of the three Pastoral Letters, written to men caring for churches.",
+    "Paul tells Timothy how people ought to behave in the house of God, which is the church (3:15). He asks for prayer for all people, including kings, because God wants everyone to be saved. He describes what kind of men should be overseers (bishops) and deacons, and he gives wise advice about widows, elders, servants and the rich.",
+    "Through the letter runs Paul's own story: he was once a blasphemer and persecutor, yet Christ showed him mercy, for Christ Jesus came into the world to save sinners (1:15). Timothy is to keep the faith, set an example in spite of his youth, and fight the good fight."
+  ],
+  "themes": [
+    {
+      "title": "Sound teaching",
+      "text": "False teaching leads to quarrels and empty talk, but the true gospel produces love from a pure heart, a good conscience and sincere faith."
+    },
+    {
+      "title": "Order in God's household",
+      "text": "The church is the household of the living God, and its leaders must be people of good character and faithful lives."
+    },
+    {
+      "title": "One God and one mediator",
+      "text": "There is one God and one mediator between God and men, Christ Jesus, who gave Himself as a ransom for all (2:5-6)."
+    },
+    {
+      "title": "Godliness and contentment",
+      "text": "Godliness with contentment is great gain, while the love of money leads many into ruin (6:6-10)."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "1:20", "title": "Greeting; warning against false teachers; Paul's thanks for mercy" },
+    { "from": "2:1", "to": "2:15", "title": "Prayer for all people, and conduct in worship" },
+    { "from": "3:1", "to": "3:16", "title": "Overseers and deacons; the mystery of godliness" },
+    { "from": "4:1", "to": "4:16", "title": "False teaching in the last times; a good minister of Christ" },
+    { "from": "5:1", "to": "6:2", "title": "Caring for widows, elders and servants" },
+    { "from": "6:3", "to": "6:21", "title": "False teachers and riches; fight the good fight of faith" }
+  ],
+  "keyVerses": ["1:15", "2:5", "3:16", "4:12"]
+}

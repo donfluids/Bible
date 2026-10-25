@@ -1,0 +1,83 @@
+{
+  "book": 18,
+  "name": "Job",
+  "facts": {
+    "author": "Not known. Jewish tradition says that Moses wrote it; others have suggested Job himself, Elihu or Solomon.",
+    "date": "Not known; Job lived in the time of the patriarchs, about 2000 BC",
+    "audience": "God's people of every age who suffer and ask why"
+  },
+  "about": [
+    "Job is a rich man in the land of Uz who is perfect and upright, fears God and turns away from evil (1:1). Satan claims that Job serves God only because God has blessed him. God allows Satan to test him. In one day Job loses his flocks, his herds, his servants and all ten of his children, and then he is struck with painful sores. Yet Job worships God and does not sin by blaming Him (1:20-22).",
+    "Three friends, Eliphaz, Bildad and Zophar, come to comfort him. After sitting with him in silence for seven days, they argue that Job must be suffering for some hidden sin. Job insists he is innocent and longs to bring his case before God, yet he holds on to the hope that his Redeemer lives (19:25). A younger man, Elihu, then speaks of God's greatness and of how God teaches people through suffering.",
+    "At last the LORD answers Job out of the whirlwind (38:1). He does not explain the reason for Job's suffering, but shows His wisdom and power in creation. Job humbly repents, God rebukes the three friends, and He gives Job twice as much as he had before (42:10)."
+  ],
+  "themes": [
+    {
+      "title": "Suffering and the righteous",
+      "text": "Suffering is not always punishment for a person's sin. Job's friends were wrong to say that it was."
+    },
+    {
+      "title": "The wisdom and power of God",
+      "text": "God's ways are far above ours. True wisdom is to fear the Lord and to turn away from evil (28:28)."
+    },
+    {
+      "title": "Faith in the dark",
+      "text": "Job complains bitterly but never turns away from God, and in the end God says that Job spoke rightly of Him (42:7)."
+    },
+    {
+      "title": "God rules over Satan",
+      "text": "Satan can do nothing without God's permission, and he cannot destroy the faith of one whom God holds."
+    },
+    {
+      "title": "A Redeemer who lives",
+      "text": "Job longs for someone to stand between him and God, and he trusts that he will see God for himself (19:25-27)."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "2:13",
+      "title": "Job tested in heaven and on earth"
+    },
+    {
+      "from": "3:1",
+      "to": "3:26",
+      "title": "Job curses the day of his birth"
+    },
+    {
+      "from": "4:1",
+      "to": "14:22",
+      "title": "First round of speeches with his friends"
+    },
+    {
+      "from": "15:1",
+      "to": "21:34",
+      "title": "Second round of speeches"
+    },
+    {
+      "from": "22:1",
+      "to": "31:40",
+      "title": "Third round; a poem on wisdom; Job's last defence"
+    },
+    {
+      "from": "32:1",
+      "to": "37:24",
+      "title": "Elihu speaks"
+    },
+    {
+      "from": "38:1",
+      "to": "42:6",
+      "title": "The LORD speaks out of the whirlwind; Job repents"
+    },
+    {
+      "from": "42:7",
+      "to": "42:17",
+      "title": "Job prays for his friends and is restored"
+    }
+  ],
+  "keyVerses": [
+    "1:21",
+    "19:25",
+    "42:5"
+  ]
+}

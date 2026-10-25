@@ -1,0 +1,83 @@
+{
+  "book": 24,
+  "name": "Jeremiah",
+  "facts": {
+    "author": "Jeremiah the son of Hilkiah, of the priests in Anathoth (1:1). His helper Baruch wrote down many of his words as Jeremiah spoke them (36:4). The last chapter, which closes the book with the fall of Jerusalem and the release of King Jehoiachin in Babylon, was added after his words were finished (51:64).",
+    "date": "About 627–580 BC; the last chapter about 560 BC",
+    "audience": "The people of Judah and Jerusalem in their last years before the exile, and those taken to Babylon"
+  },
+  "about": [
+    "God called Jeremiah as a young man in the thirteenth year of King Josiah, telling him that He had known him and set him apart before he was born (1:5). For about forty years, through the reigns of the last kings of Judah, Jeremiah warned the people to turn from their idols and from false trust in the temple, or Babylon would destroy Jerusalem.",
+    "His message made him many enemies. He was mocked, beaten, put in the stocks and let down into a muddy dungeon (38:6), and King Jehoiakim cut up and burned the scroll of his words (36:23). Jeremiah often wept for his people, and he is called the weeping prophet. Yet he also promised that after seventy years God would bring them home (29:10), and that God would make a new covenant, writing His law on their hearts (31:31-33).",
+    "Jerusalem fell to Nebuchadnezzar just as Jeremiah had said (39:1-2). Against his warning, the people who were left fled to Egypt and took him with them. The book closes with messages against the nations and a second account of the fall of the city."
+  ],
+  "themes": [
+    {
+      "title": "Return to the LORD",
+      "text": "Again and again God calls His unfaithful people to return to Him, and He promises mercy if they do."
+    },
+    {
+      "title": "Judgement on sin",
+      "text": "Because Judah refused to listen, God used Babylon to punish the nation, as He had warned."
+    },
+    {
+      "title": "God the Potter",
+      "text": "As a potter shapes the clay, so God has the right to shape nations as He wills (18:6)."
+    },
+    {
+      "title": "The new covenant",
+      "text": "God promises a new covenant in which He will forgive sin and write His law on the hearts of His people."
+    },
+    {
+      "title": "A faithful servant",
+      "text": "Jeremiah keeps speaking God's word though it costs him greatly, and God keeps His promise to be with him (1:19)."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "1:19",
+      "title": "Jeremiah's call"
+    },
+    {
+      "from": "2:1",
+      "to": "25:38",
+      "title": "Warnings to Judah and Jerusalem"
+    },
+    {
+      "from": "26:1",
+      "to": "29:32",
+      "title": "Jeremiah against the false prophets; his letter to the exiles"
+    },
+    {
+      "from": "30:1",
+      "to": "33:26",
+      "title": "The book of comfort: return and the new covenant"
+    },
+    {
+      "from": "34:1",
+      "to": "39:18",
+      "title": "The last days of Jerusalem and its fall"
+    },
+    {
+      "from": "40:1",
+      "to": "45:5",
+      "title": "After the fall: the people flee to Egypt"
+    },
+    {
+      "from": "46:1",
+      "to": "51:64",
+      "title": "Messages against the nations"
+    },
+    {
+      "from": "52:1",
+      "to": "52:34",
+      "title": "The fall of Jerusalem retold"
+    }
+  ],
+  "keyVerses": [
+    "1:5",
+    "29:11",
+    "31:33"
+  ]
+}

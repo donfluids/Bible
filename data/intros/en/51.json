@@ -1,0 +1,69 @@
+{
+  "book": 51,
+  "name": "Colossians",
+  "facts": {
+    "author": "The apostle Paul, writing with Timothy (1:1), while he was in prison.",
+    "date": "About AD 60–62",
+    "audience": "The believers at Colosse, a town in the province of Asia, whose church was begun by Epaphras (1:7)"
+  },
+  "about": [
+    "Paul had not visited Colosse himself. The church there had heard the gospel from Epaphras (1:7), who later came to Paul in prison with news of them. Paul sent this letter by Tychicus, together with Onesimus (4:7-9), at about the same time as Ephesians and Philemon.",
+    "False teachers were troubling the church. They mixed human ideas with rules about food and holy days, the worship of angels, and harsh treatment of the body, as if Christ alone were not enough. Paul answers by showing how great Christ is. He is the image of the invisible God, by whom all things were made, and He is the head of the church (1:15-18). In Him all the fulness of God lives in bodily form (2:9). Believers are complete in Him.",
+    "Because they have been raised with Christ, believers are to set their hearts on things above (3:1). Paul shows what this new life looks like in kindness, forgiveness and love, in the home, and in whatever they do in word or deed (3:17)."
+  ],
+  "themes": [
+    {
+      "title": "Christ above all",
+      "text": "Christ is the Creator and the head of the church, first in everything."
+    },
+    {
+      "title": "Complete in Christ",
+      "text": "Believers need nothing beyond Christ, for all the fulness of God is in Him."
+    },
+    {
+      "title": "Beware of empty teaching",
+      "text": "Human ideas and man-made rules cannot make anyone holy."
+    },
+    {
+      "title": "The new life",
+      "text": "Raised with Christ, believers put away the old ways and put on love, which binds all together."
+    },
+    {
+      "title": "Thankful hearts",
+      "text": "Thanksgiving runs through the letter, and all of life is to be lived with thanks to God."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "1:14",
+      "title": "Greeting, thanks and prayer"
+    },
+    {
+      "from": "1:15",
+      "to": "2:7",
+      "title": "The greatness of Christ and Paul's work"
+    },
+    {
+      "from": "2:8",
+      "to": "2:23",
+      "title": "Warnings against false teaching"
+    },
+    {
+      "from": "3:1",
+      "to": "4:6",
+      "title": "The new life in Christ, at home and in the world"
+    },
+    {
+      "from": "4:7",
+      "to": "4:18",
+      "title": "News and greetings"
+    }
+  ],
+  "keyVerses": [
+    "1:15-18",
+    "2:9",
+    "3:1-2",
+    "3:17"
+  ]
+}

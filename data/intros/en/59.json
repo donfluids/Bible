@@ -1,0 +1,47 @@
+{
+  "book": 59,
+  "name": "James",
+  "facts": {
+    "author": "James, the brother of the Lord Jesus and leader of the church in Jerusalem. He calls himself a servant of God and of the Lord Jesus Christ (1:1).",
+    "date": "About AD 45–50",
+    "audience": "Jewish Christians scattered outside the land of Israel, whom James calls the twelve tribes (1:1)"
+  },
+  "about": [
+    "James is a very practical letter, full of short, strong commands and pictures from everyday life: waves of the sea, a fading flower, a mirror, a horse's bit, a ship's rudder, a spark that sets a forest on fire. It is very likely one of the first New Testament books to be written.",
+    "James wants believers to show their faith in the way they live. They should welcome trials with joy, because trials produce patience (1:2-4). They must not only hear God's word but do it. They must not honour the rich and despise the poor. Faith that does nothing is dead; true faith shows itself in good works, as it did in Abraham and Rahab (2:17-26). James also warns about the tongue, which is small but can do great harm, and about pride, quarrels and the love of riches.",
+    "He ends by calling them to be patient until the Lord comes, and to pray, for the prayer of a righteous man is powerful, like the prayer of Elijah (5:16-17)."
+  ],
+  "themes": [
+    {
+      "title": "Faith that works",
+      "text": "Real faith is seen in what a person does; faith without works is dead."
+    },
+    {
+      "title": "Trials and wisdom",
+      "text": "Trials test and strengthen faith, and God gives wisdom generously to all who ask in faith (1:5)."
+    },
+    {
+      "title": "The power of words",
+      "text": "The tongue is hard to tame; believers should be quick to listen, slow to speak and slow to anger."
+    },
+    {
+      "title": "Rich and poor",
+      "text": "God has chosen the poor to be rich in faith, and He warns rich people who live in luxury and cheat their workers."
+    },
+    {
+      "title": "Humility and prayer",
+      "text": "God opposes the proud and is kind to the humble; when people come near to Him, He comes near to them."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "1:18", "title": "Greeting; joy in trials, wisdom, and where temptation comes from" },
+    { "from": "1:19", "to": "1:27", "title": "Be doers of the word, not hearers only" },
+    { "from": "2:1", "to": "2:13", "title": "Do not favour the rich over the poor" },
+    { "from": "2:14", "to": "2:26", "title": "Faith without works is dead" },
+    { "from": "3:1", "to": "3:18", "title": "Taming the tongue; wisdom from above" },
+    { "from": "4:1", "to": "4:17", "title": "Quarrels, pride and boasting; humble yourselves before God" },
+    { "from": "5:1", "to": "5:6", "title": "A warning to the selfish rich" },
+    { "from": "5:7", "to": "5:20", "title": "Patience until the Lord comes, and the prayer of faith" }
+  ],
+  "keyVerses": ["1:5", "1:22", "2:17", "4:8"]
+}

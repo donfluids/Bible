@@ -1,0 +1,64 @@
+{
+  "book": 47,
+  "name": "2 Corinthians",
+  "facts": {
+    "author": "The apostle Paul, writing with Timothy (1:1).",
+    "date": "About AD 56",
+    "audience": "The church at Corinth and all the believers in Achaia (1:1)"
+  },
+  "about": [
+    "Paul wrote this letter from Macedonia, a year or so after 1 Corinthians. He had been through great trouble and had written to the Corinthians with many tears (2:4). When Titus came and told him that most of them had turned back to him, Paul was greatly comforted (7:6).",
+    "This is Paul's most personal letter. He opens his heart about his sufferings and explains why he changed his travel plans. He describes the glory of the new covenant and says that God's servants carry this treasure in weak clay jars, so that the power is seen to be God's (4:7). Anyone who is in Christ is a new creation (5:17), and God has given His servants the work of calling people to be reconciled to Him.",
+    "Paul also asks the church to give generously to the poor believers in Jerusalem. In the last chapters he answers false apostles who were turning the church against him, and he tells how the Lord said His grace was enough, for His power is made perfect in weakness (12:9)."
+  ],
+  "themes": [
+    {
+      "title": "Comfort in trouble",
+      "text": "God comforts His people in all their troubles so that they can comfort others."
+    },
+    {
+      "title": "Strength in weakness",
+      "text": "God's power shows most clearly in human weakness, so believers can boast in their weakness."
+    },
+    {
+      "title": "The ministry of reconciliation",
+      "text": "Christ, who knew no sin, was made sin for us, so that we might be made right with God (5:21)."
+    },
+    {
+      "title": "Cheerful giving",
+      "text": "Believers give freely and gladly, following Christ who became poor for our sake."
+    },
+    {
+      "title": "True and false servants",
+      "text": "Paul's honest life and sufferings show him to be a true apostle, unlike the proud false teachers."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "2:13",
+      "title": "Comfort in suffering and Paul's change of plans"
+    },
+    {
+      "from": "2:14",
+      "to": "7:16",
+      "title": "The glory of the new covenant and the work of reconciliation"
+    },
+    {
+      "from": "8:1",
+      "to": "9:15",
+      "title": "The gift for the believers in Jerusalem"
+    },
+    {
+      "from": "10:1",
+      "to": "13:14",
+      "title": "Paul defends his work as an apostle"
+    }
+  ],
+  "keyVerses": [
+    "4:7",
+    "5:17",
+    "5:21",
+    "12:9"
+  ]
+}

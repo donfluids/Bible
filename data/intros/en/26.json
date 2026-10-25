@@ -1,0 +1,78 @@
+{
+  "book": 26,
+  "name": "Ezekiel",
+  "facts": {
+    "author": "Ezekiel the priest, the son of Buzi, who was taken to Babylon with King Jehoiachin and wrote down what God showed him (1:1-3).",
+    "date": "About 593–570 BC",
+    "audience": "The Jewish exiles in Babylon"
+  },
+  "about": [
+    "Ezekiel was a priest who lived among the Jewish exiles by the river Chebar in Babylon. In the fifth year of King Jehoiachin's captivity he saw a great vision of the glory of God, with living creatures, wheels full of eyes and a throne like sapphire (1:26-28). God sent him to a rebellious people and made him a watchman for Israel (3:17).",
+    "Before Jerusalem fell, Ezekiel warned that the city would be destroyed, often acting out his messages with signs. In a vision he saw idols worshipped in the temple and the glory of the LORD leaving it (10:18). When his wife died, he was told not to mourn, as a sign to the people (24:15-18). Then news came that the city had fallen (33:21).",
+    "After that his message turned to hope. God Himself would shepherd His people, give them a new heart and a new spirit (36:26), and bring them back to life like the dry bones that rose up as a great army (37:10). The book ends with a vision of a new temple, the glory of the LORD returning to it (43:4), and a city named The LORD is there (48:35)."
+  ],
+  "themes": [
+    {
+      "title": "The glory of God",
+      "text": "God's glory leaves the sinful temple and later returns, for His presence is the greatest gift to His people."
+    },
+    {
+      "title": "Each person answers to God",
+      "text": "Every soul belongs to God, and each one is responsible for his own sin; God takes no pleasure in the death of the wicked (18:32)."
+    },
+    {
+      "title": "Knowing the LORD",
+      "text": "Again and again God says that by His judgements and His saving acts people will know that He is the LORD."
+    },
+    {
+      "title": "A new heart and new life",
+      "text": "God promises to cleanse His people, put His Spirit within them and raise them to new life (37:14)."
+    },
+    {
+      "title": "The good Shepherd",
+      "text": "God will seek His lost sheep and set over them one shepherd, His servant David (34:23)."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "3:27",
+      "title": "Ezekiel's vision of God's glory and his call"
+    },
+    {
+      "from": "4:1",
+      "to": "11:25",
+      "title": "Signs of the siege; the glory leaves the temple"
+    },
+    {
+      "from": "12:1",
+      "to": "24:27",
+      "title": "More warnings until the siege of Jerusalem begins"
+    },
+    {
+      "from": "25:1",
+      "to": "32:32",
+      "title": "Messages against the nations"
+    },
+    {
+      "from": "33:1",
+      "to": "33:33",
+      "title": "The watchman and the news of Jerusalem's fall"
+    },
+    {
+      "from": "34:1",
+      "to": "39:29",
+      "title": "The Shepherd, a new heart, the dry bones and the defeat of Gog"
+    },
+    {
+      "from": "40:1",
+      "to": "48:35",
+      "title": "The new temple, the river from the temple and the land"
+    }
+  ],
+  "keyVerses": [
+    "33:11",
+    "36:26-27",
+    "37:5"
+  ]
+}

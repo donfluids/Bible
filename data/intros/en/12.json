@@ -1,0 +1,42 @@
+{
+  "book": 12,
+  "name": "2 Kings",
+  "facts": {
+    "author": "The author is not known. Jewish tradition holds that Jeremiah the prophet wrote 1 and 2 Kings, which were once one book, using the court records of the kings.",
+    "date": "About 560–540 BC",
+    "audience": "The people of Israel in exile in Babylon, to show why the kingdom fell and to call them back to God"
+  },
+  "about": [
+    "2 Kings continues the story of the two kingdoms. Elijah is taken up to heaven in a whirlwind (2:11), and Elisha carries on his work. Elisha does many miracles: he raises the Shunammite woman's son, and God heals Naaman the Syrian of leprosy when he washes in the Jordan.",
+    "Most kings of Israel do evil, and God sends prophet after prophet to warn them (17:13). In the end the Assyrians take Samaria and carry the northern tribes into exile (17:6). Judah lasts longer. Good kings such as Hezekiah, who trusts the Lord when Assyria attacks (18:5), and Josiah, who finds the book of the law and turns to the Lord with all his heart (23:25), bring times of reform. But wicked kings such as Manasseh lead the people far from God.",
+    "At last Nebuchadnezzar king of Babylon destroys Jerusalem and burns the temple, and the people are taken away. Yet the book ends with a small sign of hope: King Jehoiachin is set free from prison in Babylon (25:27)."
+  ],
+  "themes": [
+    {
+      "title": "Judgement for sin",
+      "text": "Both kingdoms are sent into exile because they forsook the Lord and would not listen to His prophets."
+    },
+    {
+      "title": "The power of God's word",
+      "text": "Through Elijah and Elisha God shows that He is the living God, and every word of His prophets comes true."
+    },
+    {
+      "title": "Trust and reform",
+      "text": "Kings who trust the Lord and keep His law, like Hezekiah and Josiah, see God's help."
+    },
+    {
+      "title": "Hope for David's line",
+      "text": "Even in exile, God keeps David's family alive, as He had promised."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "2:25", "title": "Elijah taken up to heaven; Elisha takes his place" },
+    { "from": "3:1", "to": "8:15", "title": "The miracles and ministry of Elisha" },
+    { "from": "8:16", "to": "10:36", "title": "Jehu destroys the house of Ahab" },
+    { "from": "11:1", "to": "17:41", "title": "Kings of Judah and Israel; the fall of Samaria" },
+    { "from": "18:1", "to": "21:26", "title": "Hezekiah, Manasseh and Amon" },
+    { "from": "22:1", "to": "23:30", "title": "Josiah finds the book of the law" },
+    { "from": "23:31", "to": "25:30", "title": "The last kings of Judah and the fall of Jerusalem" }
+  ],
+  "keyVerses": ["2:11", "17:13", "18:5", "23:25"]
+}

@@ -1,0 +1,43 @@
+{
+  "book": 7,
+  "name": "Judges",
+  "facts": {
+    "author": "The author is not named. Jewish tradition holds that Samuel the prophet wrote it.",
+    "date": "About 1050–1000 BC",
+    "audience": "The people of Israel in the early days of the kings, to show why they needed a king who followed God"
+  },
+  "about": [
+    "Judges covers the years between the death of Joshua and the rise of Samuel, a time of more than three hundred years. The tribes did not drive out all the people of Canaan, and soon they began to worship their gods.",
+    "The book tells the same story again and again. Israel does evil and serves the Baals; God gives them into the hands of their enemies; they cry out to Him; and He raises up a judge to save them (2:11-16). When the judge dies, the people turn back to their sin. Among the twelve judges are Othniel, Ehud, Deborah with Barak, Gideon with his three hundred men, Jephthah and Samson, who fought the Philistines.",
+    "Each cycle goes lower than the one before. The last chapters show how bad things became: a Levite serving a man-made idol, a terrible crime at Gibeah and a war that nearly destroyed the tribe of Benjamin. The book ends by saying that there was no king in Israel and each man did what was right in his own eyes (21:25)."
+  ],
+  "themes": [
+    {
+      "title": "The cycle of sin",
+      "text": "When Israel forgets the Lord, it falls into idolatry and trouble, and each time it sinks deeper."
+    },
+    {
+      "title": "God's patient mercy",
+      "text": "Again and again the Lord hears His people's cry and sends a deliverer, though they do not deserve it (2:16)."
+    },
+    {
+      "title": "Weak people, strong God",
+      "text": "God uses unlikely and imperfect people, such as Gideon, whose family was the poorest in Manasseh, to save Israel."
+    },
+    {
+      "title": "The need for a true king",
+      "text": "Without a godly leader, everyone does what seems right to himself, and the nation falls apart."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "2:5", "title": "The tribes fail to drive out the Canaanites" },
+    { "from": "2:6", "to": "3:6", "title": "The pattern of sin, oppression and rescue" },
+    { "from": "3:7", "to": "5:31", "title": "Othniel, Ehud, Shamgar, Deborah and Barak" },
+    { "from": "6:1", "to": "10:5", "title": "Gideon, Abimelech, Tola and Jair" },
+    { "from": "10:6", "to": "12:15", "title": "Jephthah, Ibzan, Elon and Abdon" },
+    { "from": "13:1", "to": "16:31", "title": "Samson and the Philistines" },
+    { "from": "17:1", "to": "18:31", "title": "Micah's idol and the tribe of Dan" },
+    { "from": "19:1", "to": "21:25", "title": "The crime at Gibeah and the war against Benjamin" }
+  ],
+  "keyVerses": ["2:11-12", "2:16", "21:25"]
+}

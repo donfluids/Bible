@@ -1,0 +1,46 @@
+{
+  "book": 60,
+  "name": "1 Peter",
+  "facts": {
+    "author": "The apostle Peter (1:1), with the help of Silvanus (Silas), who carried or wrote down the letter (5:12).",
+    "date": "About AD 62–64",
+    "audience": "Christians, Jews and Gentiles, scattered through Pontus, Galatia, Cappadocia, Asia and Bithynia, in what is now Turkey"
+  },
+  "about": [
+    "Peter wrote this letter from Rome, which he calls Babylon (5:13), to believers who were facing insults and suffering because they followed Christ. He calls them strangers and pilgrims in this world, whose true home is with God.",
+    "Peter begins with praise. Through the resurrection of Jesus, God has given His people new birth into a living hope and an inheritance that can never fade (1:3-4). Trials will come, but they test faith as fire tests gold. So believers are to be holy in all their conduct, love one another deeply, and grow like newborn babies who long for milk. Once they were not a people, but now they are God's own people, a royal priesthood (2:9-10).",
+    "Much of the letter teaches how to live among people who do not believe: to honour those in authority, for servants to respect their masters, for wives and husbands to honour each other, and for all to repay evil with blessing. Christ suffered for us and left us an example (2:21), and those who suffer as Christians should not be ashamed but trust their faithful Creator."
+  ],
+  "themes": [
+    {
+      "title": "A living hope",
+      "text": "Because Jesus rose from the dead, believers have a sure hope that holds them steady in every trial."
+    },
+    {
+      "title": "Suffering and glory",
+      "text": "Christ suffered first and then entered His glory, and those who share His sufferings will also share His glory."
+    },
+    {
+      "title": "Holy living",
+      "text": "God is holy, so His people are to be holy, living good lives that even unbelievers can see."
+    },
+    {
+      "title": "God's chosen people",
+      "text": "Believers are living stones built into a spiritual house, a people belonging to God to declare His praises."
+    },
+    {
+      "title": "Humble trust",
+      "text": "Believers are to humble themselves under God's mighty hand and bring all their worries to Him, for He cares for them (5:6-7)."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "1:12", "title": "Greeting; praise for a living hope and a great salvation" },
+    { "from": "1:13", "to": "2:10", "title": "Be holy; living stones and God's own people" },
+    { "from": "2:11", "to": "3:12", "title": "Good conduct among unbelievers: rulers, servants, wives and husbands" },
+    { "from": "3:13", "to": "4:11", "title": "Suffering for doing good, following Christ's example" },
+    { "from": "4:12", "to": "4:19", "title": "The fiery trial: rejoice to share Christ's sufferings" },
+    { "from": "5:1", "to": "5:11", "title": "Shepherds of God's flock; humility and standing firm" },
+    { "from": "5:12", "to": "5:14", "title": "Final greetings" }
+  ],
+  "keyVerses": ["1:3", "2:9", "2:24", "5:7"]
+}

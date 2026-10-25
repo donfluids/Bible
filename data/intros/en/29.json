@@ -1,0 +1,59 @@
+{
+  "book": 29,
+  "name": "Joel",
+  "facts": {
+    "author": "Joel the son of Pethuel (1:1). Nothing more is known of him, but he seems to have lived in Judah and to have known the temple well.",
+    "date": "Probably about 835–800 BC",
+    "audience": "The people, elders and priests of Judah and Jerusalem"
+  },
+  "about": [
+    "Joel was written after a terrible plague of locusts. Swarm after swarm had eaten the crops, the vines and the fig trees (1:4), and drought had followed. The grain offerings at the temple had stopped, and the people were in despair.",
+    "Joel saw in this disaster a warning of the day of the Lord, a day of judgement still greater. He called the people to turn to God with all their heart, with fasting and weeping, for the Lord is gracious and merciful (2:12-13). Then the Lord promises to pity His people, to drive the invader away and to restore the years the locusts had eaten.",
+    "More than that, God promises to pour out His Spirit on all people, young and old, men and women (2:28-29), and everyone who calls on the name of the Lord will be saved (2:32). The apostle Peter preached from these words on the day of Pentecost. The book ends with the judgement of the nations and a picture of the Lord dwelling in Zion."
+  ],
+  "themes": [
+    {
+      "title": "The day of the Lord",
+      "text": "The locust plague points to a greater day when God will judge all the nations."
+    },
+    {
+      "title": "True repentance",
+      "text": "God wants hearts that are torn in sorrow for sin, not only torn clothes (2:13)."
+    },
+    {
+      "title": "The Spirit poured out",
+      "text": "God promises His Spirit to all His people, not only to a few prophets and kings."
+    },
+    {
+      "title": "Restoration",
+      "text": "The Lord will give back what was lost and will live among His people in Zion."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "1:20",
+      "title": "The plague of locusts and the drought"
+    },
+    {
+      "from": "2:1",
+      "to": "2:17",
+      "title": "The day of the Lord is near: a call to repent"
+    },
+    {
+      "from": "2:18",
+      "to": "2:32",
+      "title": "The Lord restores His land and pours out His Spirit"
+    },
+    {
+      "from": "3:1",
+      "to": "3:21",
+      "title": "The nations judged; blessing for Judah and Jerusalem"
+    }
+  ],
+  "keyVerses": [
+    "2:12-13",
+    "2:28",
+    "2:32"
+  ]
+}

@@ -326,8 +326,21 @@ npm run smoke        # every main screen of each app in a browser, at four sizes
 - **Cross references**, [OpenBible.info](https://www.openbible.info/labs/cross-references/),
   CC BY, drawn from the Treasury of Scripture Knowledge and ranked by readers' votes. Up to
   ten per verse, the most voted first, in every edition (`scripts/lib/crossrefs.mjs`;
-  `node --no-warnings scripts/add-crossrefs.mjs` renews them in built databases). Hold a
-  verse → Cross references.
+  `node --no-warnings scripts/add-study-data.mjs` renews them, the parallel passages and
+  the book introductions in built databases). Hold a verse → Cross references.
+- **Parallel passages**, the United Bible Societies'
+  [Parallel Passages Database](https://github.com/ubsicap/ubs-open-license/tree/main/parallel%20passages),
+  © 2023 United Bible Societies, CC BY-SA 4.0: the same event or words in another place,
+  verse by verse (the Gospels with each other, Kings with Chronicles, a psalm found twice).
+  Only parallels within one Testament are kept, and the source's Hebrew and Greek verse
+  numbers are turned into the KJV's with the STEPBible files (`scripts/lib/parallels.mjs`).
+  The `parallels` table made from it is offered under the same licence, CC BY-SA 4.0.
+  Hold a verse → Parallel passages.
+- **Book introductions**, written for these apps in English, Malayalam and Tamil
+  (`data/intros`, see `data/intros/GUIDE.md`; checked by `scripts/check-intros.mjs`): who
+  wrote each book, when and for whom, what it is about, its themes, an outline and key
+  verses, giving the church's traditional view of authorship and dates. The reader's
+  info button opens the one for the book being read.
 - **Interlinear Hebrew and Greek**: Translators Amalgamated Hebrew OT (TAHOT) and
   Greek NT (TAGNT) by [STEPBible](https://github.com/STEPBible/STEPBible-Data),
   Tyndale House Cambridge, CC BY 4.0. Their licence permits bundling the data in

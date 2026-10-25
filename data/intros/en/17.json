@@ -1,0 +1,69 @@
+{
+  "book": 17,
+  "name": "Esther",
+  "facts": {
+    "author": "Not known. Some have suggested Mordecai, who wrote down these events (9:20); others have suggested Ezra or Nehemiah.",
+    "date": "About 470–450 BC",
+    "audience": "The Jews living in the Persian Empire, to explain the feast of Purim"
+  },
+  "about": [
+    "Esther is set in Shushan, the capital of Persia, in the days of King Ahasuerus, who ruled over 127 provinces from India to Ethiopia (1:1). Many Jews still lived there after the exile. When Queen Vashti refuses to come at the king's command, a young Jewish orphan named Esther, brought up by her cousin Mordecai, is chosen to be queen. She keeps her people a secret.",
+    "Haman, the king's chief minister, hates Mordecai because he will not bow to him. He casts lots, called Pur, and persuades the king to order that every Jew in the empire be killed on one day (3:7-13). Mordecai tells Esther that she may have come to the kingdom for such a time as this (4:14). She fasts, risks her life by going to the king unasked, and uncovers Haman's plot at a banquet. Haman is hanged on the gallows he made for Mordecai, and the Jews are allowed to defend themselves.",
+    "The name of God does not appear in the book, yet His hidden hand is seen everywhere, from a night when the king cannot sleep (6:1) to the turning of sorrow into joy."
+  ],
+  "themes": [
+    {
+      "title": "God's hidden care",
+      "text": "Though God is not named, events work together to save His people. He rules even when He seems silent."
+    },
+    {
+      "title": "Courage at the right time",
+      "text": "Esther risks her life for her people, ready to perish if she must (4:16)."
+    },
+    {
+      "title": "Pride brought low",
+      "text": "Haman seeks honour for himself and death for others, but he falls into his own trap, while Mordecai is lifted up."
+    },
+    {
+      "title": "The feast of Purim",
+      "text": "Purim remembers how the Jews' sorrow was turned to gladness, and it is kept to this day (9:22)."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "1:22",
+      "title": "The king's feast; Queen Vashti set aside"
+    },
+    {
+      "from": "2:1",
+      "to": "2:23",
+      "title": "Esther becomes queen; Mordecai saves the king's life"
+    },
+    {
+      "from": "3:1",
+      "to": "4:17",
+      "title": "Haman's plot against the Jews; Esther's decision"
+    },
+    {
+      "from": "5:1",
+      "to": "7:10",
+      "title": "Esther's banquets; Mordecai honoured and Haman hanged"
+    },
+    {
+      "from": "8:1",
+      "to": "9:19",
+      "title": "A new decree; the Jews defend themselves"
+    },
+    {
+      "from": "9:20",
+      "to": "10:3",
+      "title": "The feast of Purim and the greatness of Mordecai"
+    }
+  ],
+  "keyVerses": [
+    "4:14",
+    "4:16",
+    "9:22"
+  ]
+}

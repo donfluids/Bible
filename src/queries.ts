@@ -401,7 +401,15 @@ export async function getBeside(db: SQLiteDatabase, from: TranslationId, to: Tra
   return out;
 }
 
-/** A cross reference, in the numbering of the Bible being read: a verse or a range. */
+/**
+ * The verses linked to a verse: its cross references (OpenBible.info's list, from the
+ * Treasury of Scripture Knowledge), or its parallel passages (the United Bible Societies'
+ * list: the same event or words elsewhere, as Mark 5:1-3 for Matthew 8:28). Both tables
+ * hold KJV-numbered verses in the same layout.
+ */
+export type LinkKind = 'crossrefs' | 'parallels';
+
+/** A cross reference or parallel passage, in the numbering of the Bible being read: a verse or a range. */
 export interface CrossRef {
   start: Ref;
   end: Ref;
@@ -428,16 +436,16 @@ function decodeCrossRefs(blob: Uint8Array): [Ref, Ref][] {
   return out;
 }
 
-/** How many cross references a verse of `translation` has (for the verse menu). */
-export async function countCrossRefs(db: SQLiteDatabase, translation: TranslationId, ref: Ref): Promise<number> {
-  return (await crossRefTargets(db, translation, ref)).length;
+/** How many cross references (or parallel passages) a verse of `translation` has (for the verse menu). */
+export async function countCrossRefs(db: SQLiteDatabase, translation: TranslationId, ref: Ref, kind: LinkKind = 'crossrefs'): Promise<number> {
+  return (await crossRefTargets(db, translation, ref, kind)).length;
 }
 
-async function crossRefTargets(db: SQLiteDatabase, translation: TranslationId, ref: Ref): Promise<[Ref, Ref][]> {
+async function crossRefTargets(db: SQLiteDatabase, translation: TranslationId, ref: Ref, kind: LinkKind): Promise<[Ref, Ref][]> {
   const seen = new Set<string>();
   const out: [Ref, Ref][] = [];
   for (const kjv of await toKjvRefs(db, translation, ref)) {
-    const row = await db.getFirstAsync<{ refs: Uint8Array }>('SELECT refs FROM crossrefs WHERE book = ? AND chapter = ? AND verse = ?', kjv.book, kjv.chapter, kjv.verse);
+    const row = await db.getFirstAsync<{ refs: Uint8Array }>(`SELECT refs FROM ${kind === 'parallels' ? 'parallels' : 'crossrefs'} WHERE book = ? AND chapter = ? AND verse = ?`, kjv.book, kjv.chapter, kjv.verse);
     if (!row) continue;
     for (const pair of decodeCrossRefs(new Uint8Array(row.refs))) {
       const key = `${pair[0].book}:${pair[0].chapter}:${pair[0].verse}-${pair[1].chapter}:${pair[1].verse}`;
@@ -450,14 +458,13 @@ async function crossRefTargets(db: SQLiteDatabase, translation: TranslationId, r
 }
 
 /**
- * The cross references of a verse of `translation` (OpenBible.info's list, from the
- * Treasury of Scripture Knowledge; the strongest first), each with the first verses of its
- * range in `translation`. The list is in KJV numbering; a Bible that numbers verses
- * differently has them mapped both ways.
+ * The cross references of a verse of `translation` (the strongest first), or its parallel
+ * passages (in Bible order), each with the first verses of its range in `translation`. The
+ * lists are in KJV numbering; a Bible that numbers verses differently has them mapped both ways.
  */
-export async function getCrossRefs(db: SQLiteDatabase, translation: TranslationId, ref: Ref): Promise<CrossRef[]> {
+export async function getCrossRefs(db: SQLiteDatabase, translation: TranslationId, ref: Ref, kind: LinkKind = 'crossrefs'): Promise<CrossRef[]> {
   const out: CrossRef[] = [];
-  for (const [start, end] of await crossRefTargets(db, translation, ref)) {
+  for (const [start, end] of await crossRefTargets(db, translation, ref, kind)) {
     // The KJV verses of the range, which may run into the next chapter.
     const range = await db.getAllAsync<Ref>(
       "SELECT book, chapter, verse FROM verses WHERE translation = 'KJV' AND verse > 0 AND book = ? AND (chapter, verse) >= (?, ?) AND (chapter, verse) <= (?, ?) ORDER BY chapter, verse",
@@ -622,4 +629,30 @@ export async function searchLexicon(db: SQLiteDatabase, query: string, limit: nu
 export async function getMeta(db: SQLiteDatabase): Promise<Record<string, string>> {
   const rows = await db.getAllAsync<{ key: string; value: string }>('SELECT key, value FROM meta');
   return Object.fromEntries(rows.map((r) => [r.key, r.value]));
+}
+
+/** A book's introduction (data/intros, written for these apps), as stored in the database. */
+export interface BookIntro {
+  book: number;
+  facts: { author: string; date: string; audience: string };
+  about: string[];
+  themes: { title: string; text: string }[];
+  /** Sections of the book in KJV numbering, "chapter:verse". */
+  outline: { from: string; to: string; title: string }[];
+  /** "chapter:verse" or a range, "3:16-17", in KJV numbering. */
+  keyVerses: string[];
+}
+
+/**
+ * A book's introduction in `language`, or in English when the database has none in it;
+ * null when there is none at all (a database built before the introductions).
+ */
+export async function getIntro(db: SQLiteDatabase, book: number, language: string): Promise<BookIntro | null> {
+  try {
+    const rows = await db.getAllAsync<{ lang: string; data: string }>('SELECT lang, data FROM intros WHERE book = ? AND lang IN (?, ?)', book, language, 'en');
+    const row = rows.find((r) => r.lang === language) ?? rows.find((r) => r.lang === 'en');
+    return row ? (JSON.parse(row.data) as BookIntro) : null;
+  } catch {
+    return null;
+  }
 }

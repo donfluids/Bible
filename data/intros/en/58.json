@@ -1,0 +1,47 @@
+{
+  "book": 58,
+  "name": "Hebrews",
+  "facts": {
+    "author": "Not known; the letter does not give the writer's name. Many in the early church held that Paul wrote it, and others suggested Barnabas, Apollos or Luke. The writer knew Timothy well (13:23).",
+    "date": "Before AD 70, probably about AD 64–69, while the temple in Jerusalem was still standing",
+    "audience": "Jewish Christians who were suffering and were tempted to turn back from Christ to the old ways of the law"
+  },
+  "about": [
+    "Hebrews is more like a sermon than a letter; the writer calls it a word of encouragement (13:22). It was written to Jewish believers who had stood firm through hard times, but who were now growing weary and were tempted to leave Christ and go back to the temple, the priests and the sacrifices of the old covenant.",
+    "The writer shows that Jesus is better than everything that came before. God spoke in the past through the prophets, but now He has spoken by His Son (1:1-2). Jesus is greater than the angels and greater than Moses. He is the great High Priest after the order of Melchisedec, who offered Himself once for all and brings a better covenant. The old sacrifices were only shadows; His blood truly takes away sin.",
+    "So the readers must not drift away. With serious warnings and warm encouragement, the writer calls them to draw near to God, to hold fast, and to run with patience, looking to Jesus, like the men and women of faith of long ago (11:1-40)."
+  ],
+  "themes": [
+    {
+      "title": "Christ is better",
+      "text": "Jesus, the Son of God, is above the angels, Moses and the priests of Aaron, and His covenant is better than the old."
+    },
+    {
+      "title": "Our great High Priest",
+      "text": "Jesus understands our weakness, for He was tempted in every way yet without sin (4:15), and He lives for ever to pray for His people (7:25)."
+    },
+    {
+      "title": "One perfect sacrifice",
+      "text": "Christ offered Himself once for all, so no other offering for sin is needed (10:12-18)."
+    },
+    {
+      "title": "Faith that endures",
+      "text": "Faith trusts God for what is hoped for and not yet seen, as Abel, Noah, Abraham, Moses and many others did (11:1)."
+    },
+    {
+      "title": "Do not turn back",
+      "text": "The writer warns against drifting away and calls believers to hold firmly to their hope until the end."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "2:18", "title": "God's final word in His Son, who is greater than the angels" },
+    { "from": "3:1", "to": "4:13", "title": "Jesus is greater than Moses; entering God's rest" },
+    { "from": "4:14", "to": "7:28", "title": "Jesus our great High Priest after the order of Melchisedec" },
+    { "from": "8:1", "to": "10:18", "title": "A better covenant, a better sanctuary and a better sacrifice" },
+    { "from": "10:19", "to": "10:39", "title": "Draw near and hold fast; a warning and a hope" },
+    { "from": "11:1", "to": "11:40", "title": "The men and women of faith" },
+    { "from": "12:1", "to": "12:29", "title": "Run the race looking to Jesus; God's loving discipline" },
+    { "from": "13:1", "to": "13:25", "title": "Living to please God; blessing and greetings" }
+  ],
+  "keyVerses": ["1:1-2", "4:15-16", "11:1", "12:2"]
+}

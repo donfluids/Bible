@@ -1,0 +1,68 @@
+{
+  "book": 15,
+  "name": "Ezra",
+  "facts": {
+    "author": "Ezra, a priest and a skilled scribe in the law of Moses, who tells part of the story in his own words. Jewish tradition holds that he wrote the book.",
+    "date": "About 450–440 BC",
+    "audience": "The Jews who had returned from Babylon to Jerusalem and Judah"
+  },
+  "about": [
+    "Ezra continues where 2 Chronicles ends. In his first year Cyrus king of Persia allows the Jews to go home and rebuild the temple of the LORD in Jerusalem (1:1-4). Nearly fifty thousand people return, led by Zerubbabel and Jeshua the priest.",
+    "They build the altar and lay the foundation of the temple. The people shout for joy, while old men who had seen the first temple weep aloud (3:11-13). Enemies stop the work for many years, but the prophets Haggai and Zechariah stir up the people, and the temple is finished in the sixth year of King Darius (6:15).",
+    "About sixty years later Ezra himself comes from Babylon with a second group, sent by King Artaxerxes. He had set his heart to study the law of the LORD, to obey it and to teach it (7:10). When he learns that many have married women from the nations around who worship idols, he mourns and prays, and the people confess their sin and put it right."
+  ],
+  "themes": [
+    {
+      "title": "God keeps His word",
+      "text": "The return happens as the LORD had promised through Jeremiah, and God moves the hearts of Persian kings to help His people (1:1)."
+    },
+    {
+      "title": "Worship comes first",
+      "text": "The first work of the returned exiles is to build the altar and the temple, so that they can worship God as the law of Moses commands."
+    },
+    {
+      "title": "Faith under opposition",
+      "text": "Enemies accuse and hinder the builders, but the eye of their God is on them and the work is finished (5:5)."
+    },
+    {
+      "title": "The word of God",
+      "text": "Ezra studies, obeys and teaches the law, and calls the people to live by it."
+    },
+    {
+      "title": "A holy people",
+      "text": "The returned exiles must keep themselves from the idol worship that had led to the exile."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "2:70",
+      "title": "Cyrus's decree and the first return under Zerubbabel"
+    },
+    {
+      "from": "3:1",
+      "to": "3:13",
+      "title": "The altar built and the foundation of the temple laid"
+    },
+    {
+      "from": "4:1",
+      "to": "6:22",
+      "title": "Opposition; the temple finished and dedicated"
+    },
+    {
+      "from": "7:1",
+      "to": "8:36",
+      "title": "Ezra comes to Jerusalem with a second group"
+    },
+    {
+      "from": "9:1",
+      "to": "10:44",
+      "title": "Ezra's prayer; the people turn from their unlawful marriages"
+    }
+  ],
+  "keyVerses": [
+    "3:11",
+    "7:10",
+    "8:22"
+  ]
+}

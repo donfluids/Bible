@@ -1,0 +1,64 @@
+{
+  "book": 35,
+  "name": "Habakkuk",
+  "facts": {
+    "author": "Habakkuk the prophet (1:1, 3:1). Little else is known of him; the music notes in chapter 3 suggest he may have been linked with the temple singers.",
+    "date": "About 609–605 BC",
+    "audience": "The people of Judah in the years just before the Babylonians invaded"
+  },
+  "about": [
+    "Habakkuk is different from most of the prophets. Instead of bringing God's word to the people, he brings his questions to God. He sees violence and injustice in Judah and asks how long God will let it go on (1:2-4).",
+    "God answers that He is raising up the Chaldeans, the Babylonians, to punish Judah (1:6). This troubles Habakkuk even more: how can a holy God use a nation more wicked than Judah? He waits on his watchtower for the answer (2:1). God tells him to write the vision down. The proud will fall, but the just will live by his faith (2:4), and one day the earth will be filled with the knowledge of the Lord's glory (2:14).",
+    "The book ends with a prayer and song. Habakkuk remembers God's mighty acts in the past and decides that, even if the fig tree does not blossom and the fields give no food, he will still rejoice in the God of his salvation (3:17-18)."
+  ],
+  "themes": [
+    {
+      "title": "Honest questions",
+      "text": "Habakkuk brings his doubts and complaints to God, and God answers him."
+    },
+    {
+      "title": "Living by faith",
+      "text": "The righteous person lives by trusting God, even when His ways are hard to understand."
+    },
+    {
+      "title": "God judges the proud",
+      "text": "Five woes announce that the greedy and violent Babylonians will be judged in their turn (2:6-20)."
+    },
+    {
+      "title": "Joy in hard times",
+      "text": "Habakkuk learns to rejoice in God Himself when everything else fails."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "1:4",
+      "title": "Habakkuk's first question: why does God allow injustice?"
+    },
+    {
+      "from": "1:5",
+      "to": "1:11",
+      "title": "God's answer: the Babylonians are coming"
+    },
+    {
+      "from": "1:12",
+      "to": "2:1",
+      "title": "Habakkuk's second question: why use a wicked nation?"
+    },
+    {
+      "from": "2:2",
+      "to": "2:20",
+      "title": "God's answer: the just shall live by faith; woes on the proud"
+    },
+    {
+      "from": "3:1",
+      "to": "3:19",
+      "title": "Habakkuk's prayer and song of trust"
+    }
+  ],
+  "keyVerses": [
+    "2:4",
+    "2:14",
+    "3:17-18"
+  ]
+}

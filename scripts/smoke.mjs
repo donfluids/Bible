@@ -176,6 +176,15 @@ for (const edition of EDITIONS) {
       await snap();
       await closeSheet();
     });
+    await step('about-book', async (snap) => {
+      await vis(page.getByLabel(t.aboutBook)).click();
+      await wait(2000);
+      // The introduction has loaded when its outline heading shows.
+      await shows(t.introOutline);
+      await snap();
+      await vis(page.getByLabel(t.back)).click();
+      await wait(1500);
+    });
     await step('card', async (snap) => {
       await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', '3') })).click();
       await wait(1200);

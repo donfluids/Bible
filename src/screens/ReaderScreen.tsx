@@ -31,7 +31,7 @@ import { pageName, useNotebook } from '../notebook';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
 import { noteLetter, VerseText } from '../components/VerseText';
 import { countCrossRefs, getBeside, getChapter, getCrossRefs, getInterlinear, getNotes, mapRef } from '../queries';
-import type { CrossRef } from '../queries';
+import type { CrossRef, LinkKind } from '../queries';
 import type { ChapterData } from '../queries';
 import { FONT_SIZES, useSettings } from '../settings';
 import type { Settings } from '../settings';
@@ -59,6 +59,8 @@ interface Props {
   /** Open a notebook page; `isNew` for one just made from a verse. */
   onOpenNotePage: (id: string, isNew?: boolean) => void;
   onOpenCard: (ref: Ref, translation: TranslationId) => void;
+  /** Opens the introduction to a book. */
+  onOpenIntro: (book: number) => void;
   /** Open a verse in a reader of its own; `from` names where it was opened from, for going back. */
   onOpenRef: (ref: Ref, from: string) => void;
   onWord: (pick: WordPick) => void;
@@ -195,7 +197,7 @@ function KeepAwake() {
   return null;
 }
 
-export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onOpenNotePage, onOpenCard, onOpenRef, onWord, tabs = false }: Props) {
+export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onOpenNotePage, onOpenCard, onOpenIntro, onOpenRef, onWord, tabs = false }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const t = useT();
@@ -257,27 +259,27 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
   const [actions, setActions] = useState<VerseRow | null>(null);
   const [wordsFor, setWordsFor] = useState<VerseRow | null>(null);
   const [compare, setCompare] = useState<Ref | null>(null);
-  // Cross references: how many the verse in the menu has, and the list once opened.
-  const [crossCount, setCrossCount] = useState<{ key: string; n: number } | null>(null);
-  const [cross, setCross] = useState<{ verse: VerseRow; list: CrossRef[] | null } | null>(null);
+  // Cross references and parallel passages: how many the verse in the menu has, and the list once opened.
+  const [crossCount, setCrossCount] = useState<{ key: string; n: number; parallels: number } | null>(null);
+  const [cross, setCross] = useState<{ verse: VerseRow; kind: LinkKind; list: CrossRef[] | null } | null>(null);
   useEffect(() => {
     if (!actions) return;
     let cancelled = false;
     const key = bookmarkKey(actions);
-    countCrossRefs(db, translation, actions)
-      .then((n) => !cancelled && setCrossCount({ key, n }))
+    Promise.all([countCrossRefs(db, translation, actions).catch(() => 0), countCrossRefs(db, translation, actions, 'parallels').catch(() => 0)])
+      .then(([n, parallels]) => !cancelled && setCrossCount({ key, n, parallels }))
       .catch(() => undefined);
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [actions, db, translation]);
-  const openCross = (verse: VerseRow) => {
+  const openCross = (verse: VerseRow, kind: LinkKind) => {
     setActions(null);
-    setCross({ verse, list: null });
-    getCrossRefs(db, translation, verse)
-      .then((list) => setCross((c) => (c && c.verse === verse ? { verse, list } : c)))
-      .catch(() => setCross((c) => (c && c.verse === verse ? { verse, list: [] } : c)));
+    setCross({ verse, kind, list: null });
+    getCrossRefs(db, translation, verse, kind)
+      .then((list) => setCross((c) => (c && c.verse === verse && c.kind === kind ? { verse, kind, list } : c)))
+      .catch(() => setCross((c) => (c && c.verse === verse && c.kind === kind ? { verse, kind, list: [] } : c)));
   };
   const [noteEditor, setNoteEditor] = useState<{ verse: VerseRow; text: string } | null>(null);
   // The verse being added to the notebook, while its page is chosen.
@@ -1231,6 +1233,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         }
         right={
           <>
+            <HeaderIconButton icon="info" onPress={() => onOpenIntro(position.book)} accessibilityLabel={t('aboutBook')} />
             <HeaderIconButton icon="volume_up" onPress={() => startReading()} accessibilityLabel={t('readAloud')} />
             <HeaderIconButton icon="search" onPress={onOpenSearch} accessibilityLabel={t('search')} />
             <HeaderIconButton icon="settings" onPress={onOpenSettings} accessibilityLabel={t('settings')} />
@@ -1494,7 +1497,10 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
               }}
             />
             {crossCount && crossCount.key === bookmarkKey(actions) && crossCount.n > 0 ? (
-              <SheetAction icon="link" label={t('crossReferences')} detail={t('crossReferencesDetail', { n: crossCount.n })} onPress={() => openCross(actions)} />
+              <SheetAction icon="link" label={t('crossReferences')} detail={t('crossReferencesDetail', { n: crossCount.n })} onPress={() => openCross(actions, 'crossrefs')} />
+            ) : null}
+            {crossCount && crossCount.key === bookmarkKey(actions) && crossCount.parallels > 0 ? (
+              <SheetAction icon="view_column" label={t('parallelPassages')} detail={t('parallelPassagesDetail', { n: crossCount.parallels })} onPress={() => openCross(actions, 'parallels')} />
             ) : null}
             {actions.tags ? (
               <SheetAction
@@ -1511,7 +1517,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         ) : null}
       </SimpleSheet>
 
-      <SimpleSheet visible={!!cross} title={cross ? `${t('crossReferences')} · ${formatRef(books, cross.verse, translation)}` : ''} onClose={() => setCross(null)}>
+      <SimpleSheet visible={!!cross} title={cross ? `${t(cross.kind === 'parallels' ? 'parallelPassages' : 'crossReferences')} · ${formatRef(books, cross.verse, translation)}` : ''} onClose={() => setCross(null)}>
         {cross ? (
           <View>
             {cross.list === null ? <Text style={[styles.crossLoading, { color: theme.muted }]}>…</Text> : null}
@@ -1541,7 +1547,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                 </Pressable>
               );
             })}
-            {cross.list ? <Text style={[styles.crossSource, { color: theme.muted }]}>{t('crossReferencesSource')}</Text> : null}
+            {cross.list ? <Text style={[styles.crossSource, { color: theme.muted }]}>{t(cross.kind === 'parallels' ? 'parallelPassagesSource' : 'crossReferencesSource')}</Text> : null}
           </View>
         ) : null}
       </SimpleSheet>

@@ -1,0 +1,69 @@
+{
+  "book": 19,
+  "name": "Psalms",
+  "facts": {
+    "author": "Many writers. David wrote about half of the psalms, as their titles show. Others are by Asaph, the sons of Korah, Solomon, Heman, Ethan and Moses, and some do not name a writer.",
+    "date": "About 1440–450 BC, most in the time of David (about 1000 BC)",
+    "audience": "God's people Israel, for worship in the temple and for private prayer, and believers of every age"
+  },
+  "about": [
+    "The Psalms are 150 songs and prayers, the hymn book of Israel. They were sung in the temple, and God's people still pray them today. Many were written by David, the shepherd who became king, and they come from every part of his life: danger from enemies, sin and forgiveness (51:10), and quiet trust in the LORD as his shepherd (23:1).",
+    "The psalms speak to God as well as about Him. There are songs of praise and thanksgiving, cries for help in trouble, prayers of confession, songs about God's law and His creation, and psalms about the king. The writers pour out their fear, sorrow and even anger honestly before God, and many of them end in trust and praise.",
+    "The book is arranged in five books, each ending with a blessing of the LORD (41:13), and it closes by calling everything that has breath to praise Him (150:6). Some psalms look forward to the Messiah: God's Son and King (2:7), His sufferings (22:16-18) and His victory (110:1)."
+  ],
+  "themes": [
+    {
+      "title": "Worship and praise",
+      "text": "God is worthy of praise for who He is and for all He has done in creation and for His people."
+    },
+    {
+      "title": "Honest prayer",
+      "text": "The psalms teach us to bring every feeling to God, in trouble and in joy."
+    },
+    {
+      "title": "The word of God",
+      "text": "The blessed person delights in God's law (1:2), and the longest psalm speaks of His word in almost every verse."
+    },
+    {
+      "title": "God the King and Shepherd",
+      "text": "The LORD reigns over all the earth, yet He cares for each of His people as a shepherd cares for his sheep."
+    },
+    {
+      "title": "The coming Messiah",
+      "text": "Some psalms speak of a King from David's family, and the New Testament shows them fulfilled in Jesus Christ."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "41:13",
+      "title": "Book 1 (Psalms 1–41): mostly psalms of David"
+    },
+    {
+      "from": "42:1",
+      "to": "72:20",
+      "title": "Book 2 (Psalms 42–72): psalms of the sons of Korah, David and others"
+    },
+    {
+      "from": "73:1",
+      "to": "89:52",
+      "title": "Book 3 (Psalms 73–89): mostly psalms of Asaph and the sons of Korah"
+    },
+    {
+      "from": "90:1",
+      "to": "106:48",
+      "title": "Book 4 (Psalms 90–106): from the prayer of Moses to songs of the LORD who reigns"
+    },
+    {
+      "from": "107:1",
+      "to": "150:6",
+      "title": "Book 5 (Psalms 107–150): thanksgiving, the songs of going up and the great praises"
+    }
+  ],
+  "keyVerses": [
+    "1:1-2",
+    "23:1",
+    "119:105",
+    "150:6"
+  ]
+}

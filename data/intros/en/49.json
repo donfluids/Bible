@@ -1,0 +1,73 @@
+{
+  "book": 49,
+  "name": "Ephesians",
+  "facts": {
+    "author": "The apostle Paul (1:1), who wrote while he was a prisoner (3:1).",
+    "date": "About AD 60–62",
+    "audience": "The believers at Ephesus, and very likely other churches in the province of Asia as well"
+  },
+  "about": [
+    "Paul wrote Ephesians while he was in prison, probably in Rome, and sent it by Tychicus (6:21). Paul had worked in Ephesus for about three years, but this letter does not deal with problems. It lifts the reader's eyes to God's great plan in Christ.",
+    "The first half tells what God has done. Before the world began, the Father chose His people in Christ, the Son redeemed them by His blood, and the Holy Spirit sealed them (1:3-14). They were dead in sin, but God made them alive; they are saved by grace through faith, as His gift and not by works (2:8-9). Jews and Gentiles are now one body in Christ, one new people, a temple where God lives.",
+    "The second half shows how to live worthy of this calling (4:1): keeping unity, using the gifts Christ gives, putting off the old life and putting on the new, and living in love as husbands and wives, children and parents, servants and masters. Last of all, believers are to put on the whole armour of God (6:11)."
+  ],
+  "themes": [
+    {
+      "title": "Every blessing in Christ",
+      "text": "God has blessed His people with every spiritual blessing in Christ, by His own choice and grace."
+    },
+    {
+      "title": "Saved by grace",
+      "text": "Salvation is God's free gift, received by faith, and it leads to good works."
+    },
+    {
+      "title": "One body, the church",
+      "text": "Christ has broken down the wall between Jews and Gentiles and made them one in His church."
+    },
+    {
+      "title": "A new way of life",
+      "text": "Believers put off the old self and walk in love, light and wisdom."
+    },
+    {
+      "title": "Strong in the Lord",
+      "text": "In the spiritual battle, believers stand firm in the strength and armour that God provides."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "1:14",
+      "title": "Greeting and praise for every blessing in Christ"
+    },
+    {
+      "from": "1:15",
+      "to": "2:22",
+      "title": "Alive in Christ and made one people"
+    },
+    {
+      "from": "3:1",
+      "to": "3:21",
+      "title": "The mystery of the gospel and Paul's prayer"
+    },
+    {
+      "from": "4:1",
+      "to": "5:21",
+      "title": "Living worthy of God's calling"
+    },
+    {
+      "from": "5:22",
+      "to": "6:9",
+      "title": "Christ in the home"
+    },
+    {
+      "from": "6:10",
+      "to": "6:24",
+      "title": "The armour of God and final greetings"
+    }
+  ],
+  "keyVerses": [
+    "2:8-10",
+    "4:1",
+    "6:11"
+  ]
+}

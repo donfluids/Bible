@@ -19,6 +19,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { INTRO_LANGUAGES } from './lib/intros.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 // CHECK_DB_DIR checks copies elsewhere (the self-test breaks a copy on purpose).
@@ -53,6 +54,7 @@ const decodeRefs = (blob) => {
 for (const file of readdirSync(DB_DIR).filter((f) => /^bible-\w+\.db$/.test(f)).sort()) {
   const db = new DatabaseSync(join(DB_DIR, file), { readOnly: true });
   const label = file.replace(/\.db$/, '');
+  const edition = label.replace('bible-', '');
   const all = (sql, ...args) => db.prepare(sql).all(...args);
 
   const books = all('SELECT id, chapters FROM books ORDER BY id');
@@ -150,9 +152,9 @@ for (const file of readdirSync(DB_DIR).filter((f) => /^bible-\w+\.db$/.test(f)).
   // has, a range running forwards within its book.
   const kjv = verseKeys.get('KJV');
   const badCross = [];
-  for (const r of all('SELECT book, chapter, verse, refs FROM crossrefs')) {
-    const at = `${r.book}:${r.chapter}:${r.verse}`;
-    if (!kjv?.has(at)) badCross.push(`from ${at}: no such KJV verse`);
+  for (const r of all("SELECT 'crossrefs' AS t, book, chapter, verse, refs FROM crossrefs UNION ALL SELECT 'parallels', book, chapter, verse, refs FROM parallels")) {
+    const at = `${r.t} ${r.book}:${r.chapter}:${r.verse}`;
+    if (!kjv?.has(`${r.book}:${r.chapter}:${r.verse}`)) badCross.push(`from ${at}: no such KJV verse`);
     const blob = r.refs;
     if (blob.length === 0 || blob.length % 6 !== 0) badCross.push(`${at}: ${blob.length} bytes`);
     for (let i = 0; i + 5 < blob.length; i += 6) {
@@ -162,7 +164,13 @@ for (const file of readdirSync(DB_DIR).filter((f) => /^bible-\w+\.db$/.test(f)).
       else if (blob[i + 3] !== blob[i] || blob[i + 4] * 1000 + blob[i + 5] < blob[i + 1] * 1000 + blob[i + 2]) badCross.push(`${at} -> ${a}-${b}: range runs backwards or across books`);
     }
   }
-  report(errors, `${label}: cross references`, badCross);
+  report(errors, `${label}: cross references and parallel passages`, badCross);
+  // Book introductions (scripts/lib/intros.mjs checks them when they are added): one per
+  // book in each language the edition's interface offers.
+  const introLangs = INTRO_LANGUAGES[edition] ?? ['en'];
+  const intros = all('SELECT book, lang FROM intros').map((r) => `${r.lang}:${r.book}`);
+  const missingIntros = introLangs.flatMap((l) => Array.from({ length: 66 }, (_, i) => `${l}:${i + 1}`)).filter((k) => !intros.includes(k));
+  report(errors, `${label}: book introductions missing`, missingIntros);
   const orphanLexicon = all('SELECT id FROM lexicon').filter((r) => !strongs.has(r.id)).map((r) => r.id);
   report(errors, `${label}: lexicon entries for a missing Strong's entry`, orphanLexicon);
   const interlinear = all('SELECT COUNT(*) AS n FROM interlinear')[0].n;

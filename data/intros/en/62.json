@@ -1,0 +1,43 @@
+{
+  "book": 62,
+  "name": "1 John",
+  "facts": {
+    "author": "The apostle John, son of Zebedee. The letter does not give his name, but the early church held firmly that John wrote it, and he speaks as one who heard, saw and touched the Lord (1:1).",
+    "date": "About AD 85–95",
+    "audience": "Churches that John cared for, very likely in and around Ephesus, whom he lovingly calls his little children"
+  },
+  "about": [
+    "John wrote this letter in his old age to believers he loved like a father. Some false teachers had left the church and were denying that Jesus is the Christ (2:19-22) and that He came in the flesh (4:2-3). Their teaching troubled the believers and made them unsure of their salvation.",
+    "John answers by going back to the beginning: he and the other apostles heard, saw and touched the Word of life, Jesus Christ, so that we might share their fellowship with the Father and the Son (1:1-3). He gives clear tests of true faith: those who know God walk in the light, keep His commandments, love their brothers and believe that Jesus is the Son of God. When we sin, we may confess it, and God will forgive us (1:9), for Jesus Christ the righteous speaks for us before the Father (2:1).",
+    "Above all John speaks of love. God is love (4:8), and He showed it by sending His Son to die for our sins. He wrote, he says, so that those who believe in the Son may know that they have eternal life (5:13)."
+  ],
+  "themes": [
+    {
+      "title": "God is light",
+      "text": "Those who have fellowship with God walk in the light, honestly confessing their sins and being cleansed by the blood of Jesus."
+    },
+    {
+      "title": "God is love",
+      "text": "God loved us first and sent His Son; those who are born of God love one another, not only in words but in deeds."
+    },
+    {
+      "title": "Jesus came in the flesh",
+      "text": "Jesus is the Christ, the Son of God, who truly became man; whoever denies this does not have the Father."
+    },
+    {
+      "title": "Assurance",
+      "text": "Believers can know that they belong to God and have eternal life, for whoever has the Son has life (5:12)."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "1:4", "title": "The Word of life whom the apostles saw and touched" },
+    { "from": "1:5", "to": "2:2", "title": "Walking in the light and confessing sin" },
+    { "from": "2:3", "to": "2:17", "title": "Keeping His commandments; do not love the world" },
+    { "from": "2:18", "to": "2:29", "title": "Antichrists, and remaining in the truth" },
+    { "from": "3:1", "to": "3:24", "title": "Children of God who do right and love one another" },
+    { "from": "4:1", "to": "4:21", "title": "Testing the spirits; God is love" },
+    { "from": "5:1", "to": "5:12", "title": "Faith that overcomes the world; God's witness to His Son" },
+    { "from": "5:13", "to": "5:21", "title": "Knowing we have eternal life; confidence in prayer" }
+  ],
+  "keyVerses": ["1:9", "3:1", "4:10", "5:13"]
+}

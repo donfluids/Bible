@@ -1,0 +1,64 @@
+{
+  "book": 25,
+  "name": "Lamentations",
+  "facts": {
+    "author": "The book does not name its writer. Jewish and Christian tradition holds that Jeremiah the prophet wrote it.",
+    "date": "About 586 BC, soon after Jerusalem fell",
+    "audience": "The people of Judah who had lived through the destruction of Jerusalem"
+  },
+  "about": [
+    "Lamentations is a book of five sorrowful poems over the fall of Jerusalem to the Babylonians. The city that was once full of people sits alone like a widow (1:1). The temple is burned, the king and the priests are gone, the people are taken into exile, and those left behind are starving.",
+    "The poems are carefully made. In the first four, the verses begin with the letters of the Hebrew alphabet in order, and in the third poem each letter begins three verses. The writer does not hide that the city fell because of its sin, and that it was the LORD who brought this judgement.",
+    "Yet in the very middle of the book hope shines out. It is because of the LORD's mercies that His people are not destroyed; His compassion never fails, it is new every morning, and His faithfulness is great (3:22-23). The book ends with a prayer that God would turn His people back to Himself and renew their days as of old (5:21)."
+  ],
+  "themes": [
+    {
+      "title": "Sorrow over sin",
+      "text": "The book teaches us to grieve honestly over sin and its terrible results."
+    },
+    {
+      "title": "God's righteous judgement",
+      "text": "The fall of Jerusalem was not chance: the LORD did what He had warned He would do."
+    },
+    {
+      "title": "Hope in God's mercy",
+      "text": "Even in the darkest time God's love remains, and He will not cast off for ever (3:31-32)."
+    },
+    {
+      "title": "Waiting and returning",
+      "text": "It is good to wait quietly for the LORD, to search our ways and to turn back to Him (3:26)."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "1:22",
+      "title": "Jerusalem sits alone and weeps"
+    },
+    {
+      "from": "2:1",
+      "to": "2:22",
+      "title": "The Lord's anger against Zion"
+    },
+    {
+      "from": "3:1",
+      "to": "3:66",
+      "title": "Affliction and hope: His mercies are new every morning"
+    },
+    {
+      "from": "4:1",
+      "to": "4:22",
+      "title": "The horrors of the siege"
+    },
+    {
+      "from": "5:1",
+      "to": "5:22",
+      "title": "A prayer for mercy and renewal"
+    }
+  ],
+  "keyVerses": [
+    "3:22-23",
+    "3:40",
+    "5:21"
+  ]
+}

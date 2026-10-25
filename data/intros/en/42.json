@@ -1,0 +1,79 @@
+{
+  "book": 42,
+  "name": "Luke",
+  "facts": {
+    "author": "Luke, the doctor and faithful companion of Paul on his journeys. The early church held that he wrote both this Gospel and the book of Acts.",
+    "date": "About AD 59–62",
+    "audience": "Theophilus, a man of high standing (1:3), and through him Gentile readers who wanted a careful, ordered account"
+  },
+  "about": [
+    "Luke tells us at the start that he studied everything with care and wrote an orderly account, so that Theophilus might be sure of what he had been taught (1:1-4). His Gospel is the longest of the four and the first part of a two-part work that goes on in Acts.",
+    "Luke gives the fullest story of the births of John the Baptist and of Jesus, with the songs of Mary, Zacharias and Simeon, and the shepherds who hear that a Saviour is born (2:11). In Nazareth Jesus announces that the Spirit of the Lord has sent Him to bring good news to the poor (4:18). From 9:51 He sets His face toward Jerusalem, and on the way He tells parables found only in Luke, such as the good Samaritan, the lost sheep and the lost son (chapter 15).",
+    "The book ends with the cross, the empty tomb, the walk to Emmaus, and Jesus being taken up into heaven."
+  ],
+  "themes": [
+    {
+      "title": "A Saviour for all people",
+      "text": "Jesus came to seek and to save the lost (19:10), and the good news is for Jews and Gentiles alike."
+    },
+    {
+      "title": "Mercy for the outsider",
+      "text": "Luke shows Jesus' care for the poor, the sick, women, Samaritans, tax collectors and sinners."
+    },
+    {
+      "title": "The Holy Spirit and prayer",
+      "text": "The Spirit is at work from the birth of Jesus onward, and Jesus is often seen praying."
+    },
+    {
+      "title": "Joy and praise",
+      "text": "The book begins and ends with praise to God, and heaven rejoices over one sinner who repents."
+    },
+    {
+      "title": "A true and careful record",
+      "text": "Luke wrote from those who were eyewitnesses, so that readers may know the truth with certainty."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "2:52",
+      "title": "The births of John and Jesus, and Jesus as a boy"
+    },
+    {
+      "from": "3:1",
+      "to": "4:13",
+      "title": "John the Baptist; Jesus is baptised and tempted"
+    },
+    {
+      "from": "4:14",
+      "to": "9:50",
+      "title": "Jesus preaches and heals in Galilee"
+    },
+    {
+      "from": "9:51",
+      "to": "19:27",
+      "title": "The journey to Jerusalem: parables and teaching"
+    },
+    {
+      "from": "19:28",
+      "to": "21:38",
+      "title": "Jesus enters Jerusalem and teaches in the temple"
+    },
+    {
+      "from": "22:1",
+      "to": "23:56",
+      "title": "The Last Supper, the arrest, the trial and the cross"
+    },
+    {
+      "from": "24:1",
+      "to": "24:53",
+      "title": "The risen Lord appears and is taken up into heaven"
+    }
+  ],
+  "keyVerses": [
+    "2:11",
+    "4:18",
+    "19:10",
+    "24:46-47"
+  ]
+}

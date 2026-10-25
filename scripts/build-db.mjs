@@ -70,6 +70,8 @@ import { deflateRawSync, inflateRawSync } from 'node:zlib';
 import { textHash } from './lib/tokens.mjs';
 import { abbottSmith, bdbGlosses } from './lib/lexicons.mjs';
 import { addCrossRefs } from './lib/crossrefs.mjs';
+import { addIntros } from './lib/intros.mjs';
+import { addParallels } from './lib/parallels.mjs';
 import { recordDatabase } from './lib/dbfiles.mjs';
 import { readFileSync, readdirSync, mkdirSync, rmSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -1037,6 +1039,8 @@ function buildEdition(edition) {
   for (const k of kjv) if (!have.has(k)) missing++;
   stats.interlinear = { ...interlinear, versesNotInKjv: unmatched, kjvVersesWithoutOriginal: missing };
   stats.crossrefs = addCrossRefs(db, RAW);
+  stats.parallels = addParallels(db, RAW);
+  stats.intros = addIntros(db, ROOT, edition);
   db.exec('VACUUM');
   db.close();
 

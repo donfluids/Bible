@@ -1,0 +1,43 @@
+{
+  "book": 3,
+  "name": "Leviticus",
+  "facts": {
+    "author": "Moses. Again and again the book says that the Lord spoke these words to Moses at Mount Sinai (27:34), and the Jewish people and the early church held that Moses wrote it.",
+    "date": "About 1445–1406 BC",
+    "audience": "The people of Israel and their priests, the family of Aaron from the tribe of Levi"
+  },
+  "about": [
+    "Leviticus takes its name from the tribe of Levi, from which the priests came. Exodus ended with God coming to live in the tabernacle; Leviticus tells how a sinful people can come near to a holy God and live with Him among them. Almost all of it is God speaking to Moses while Israel was camped at Mount Sinai.",
+    "The book explains the offerings: the burnt offering, the grain offering, the peace offering, the sin offering and the trespass offering. It tells how Aaron and his sons were made priests, and how two of his sons died for offering strange fire. It gives laws about clean and unclean food and sickness, and describes the great Day of Atonement, when the high priest made atonement for all the sins of the people (16:30).",
+    "The second half calls Israel to be holy because God is holy (19:2), in worship, in family life and in love for their neighbour (19:18). The sacrifices point forward to the one perfect sacrifice of Christ."
+  ],
+  "themes": [
+    {
+      "title": "The holiness of God",
+      "text": "God is holy, and He calls His people to be holy in every part of their lives."
+    },
+    {
+      "title": "Atonement through sacrifice",
+      "text": "Sin brings death, but God gives the blood of the sacrifice on the altar to make atonement for the life of the sinner (17:11)."
+    },
+    {
+      "title": "Priests who stand between",
+      "text": "The priests offer sacrifices and pray for the people, showing the need for someone to bring sinners near to God."
+    },
+    {
+      "title": "A life of worship",
+      "text": "The sabbath, the yearly feasts and the year of jubilee teach Israel to remember God's goodness and to trust Him."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "7:38", "title": "Laws about the offerings" },
+    { "from": "8:1", "to": "10:20", "title": "Aaron and his sons made priests; Nadab and Abihu" },
+    { "from": "11:1", "to": "15:33", "title": "Clean and unclean: food, childbirth, skin disease" },
+    { "from": "16:1", "to": "16:34", "title": "The Day of Atonement" },
+    { "from": "17:1", "to": "22:33", "title": "A holy people and holy priests" },
+    { "from": "23:1", "to": "25:55", "title": "The sabbath, the feasts and the year of jubilee" },
+    { "from": "26:1", "to": "26:46", "title": "Blessings for obedience, warnings for disobedience" },
+    { "from": "27:1", "to": "27:34", "title": "Vows and gifts given to the Lord" }
+  ],
+  "keyVerses": ["16:30", "17:11", "19:2", "19:18"]
+}

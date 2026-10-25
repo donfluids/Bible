@@ -1,0 +1,42 @@
+{
+  "book": 5,
+  "name": "Deuteronomy",
+  "facts": {
+    "author": "Moses. The book says that Moses wrote this law and gave it to the priests (31:9). The account of his death in the last chapter was added after him, traditionally by Joshua.",
+    "date": "About 1406 BC",
+    "audience": "The new generation of Israel on the plains of Moab, about to enter the promised land"
+  },
+  "about": [
+    "Deuteronomy means \"second law\". It is not a new law but the law given again by Moses to the children of those who left Egypt. In the fortieth year, as Israel waits on the plains of Moab to cross the Jordan, Moses speaks to the people for the last time (1:3).",
+    "In his speeches Moses reminds them of all that God did for them in the wilderness. He repeats the Ten Commandments and calls them to love the Lord their God with all their heart, soul and strength (6:4-5). He explains God's laws for worship, for justice and for daily life in the land, and sets before them blessing if they obey and curses if they turn away. He urges them to choose life (30:19).",
+    "Moses then hands the leadership to Joshua, sings a song and blesses the tribes. The book ends with Moses viewing the land from Mount Nebo and dying there, aged a hundred and twenty years."
+  ],
+  "themes": [
+    {
+      "title": "Love the Lord",
+      "text": "The heart of the law is to love the one true God with all one's being and to walk in His ways (10:12)."
+    },
+    {
+      "title": "Remember",
+      "text": "Israel must not forget how God brought them out of Egypt and cared for them in the wilderness."
+    },
+    {
+      "title": "The covenant and the choice",
+      "text": "Obedience brings blessing and disobedience brings judgement, so the people must choose whom they will serve."
+    },
+    {
+      "title": "A prophet like Moses",
+      "text": "God promises to raise up a Prophet like Moses whom the people must hear (18:15)."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "4:43", "title": "Moses' first speech: looking back on the journey" },
+    { "from": "4:44", "to": "11:32", "title": "The Ten Commandments and the call to love God" },
+    { "from": "12:1", "to": "26:19", "title": "Laws for life in the promised land" },
+    { "from": "27:1", "to": "28:68", "title": "Blessings and curses" },
+    { "from": "29:1", "to": "30:20", "title": "The covenant renewed in Moab: choose life" },
+    { "from": "31:1", "to": "33:29", "title": "Joshua appointed; the song and blessing of Moses" },
+    { "from": "34:1", "to": "34:12", "title": "The death of Moses" }
+  ],
+  "keyVerses": ["6:4-5", "10:12", "18:15", "30:19"]
+}

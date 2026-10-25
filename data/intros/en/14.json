@@ -1,0 +1,83 @@
+{
+  "book": 14,
+  "name": "2 Chronicles",
+  "facts": {
+    "author": "The book does not name its writer. Jewish tradition holds that Ezra the priest and scribe wrote 1 and 2 Chronicles, which were first a single book.",
+    "date": "About 450–430 BC",
+    "audience": "The Jews who had come back to Judah from exile in Babylon"
+  },
+  "about": [
+    "2 Chronicles continues the story of 1 Chronicles. It begins with King Solomon, who asks God for wisdom and builds the temple in Jerusalem. When the temple is dedicated, fire comes down from heaven and the glory of the LORD fills the house (7:1). God promises to hear His people when they humble themselves, pray and turn from their wicked ways (7:14).",
+    "After Solomon the kingdom divides, and the book follows the kings of Judah, the family of David, from Rehoboam to Zedekiah. It says little about the northern kingdom of Israel. Each king is measured by whether he sought the LORD. Good kings such as Asa, Jehoshaphat, Hezekiah and Josiah remove the idols, repair the temple and lead the people back to God, and God gives them peace and victory. Others turn away and bring trouble on the nation.",
+    "At last Jerusalem and the temple are burned and the people are carried away to Babylon. Yet the book ends with hope: Cyrus king of Persia allows the people to go home and build the house of God again (36:22-23)."
+  ],
+  "themes": [
+    {
+      "title": "Seeking the LORD",
+      "text": "Kings who seek God with all their heart are blessed, and those who forsake Him are forsaken. The book shows this again and again."
+    },
+    {
+      "title": "The temple and true worship",
+      "text": "The temple stands at the centre of the book: its building, its priests and singers, and its cleansing and repair under faithful kings."
+    },
+    {
+      "title": "Humility and repentance",
+      "text": "God forgives those who humble themselves. Even wicked Manasseh is heard when he prays to God in his distress (33:12-13)."
+    },
+    {
+      "title": "God keeps His promise to David",
+      "text": "Through good kings and bad, God keeps a son of David on the throne until the exile, and His promise is not forgotten."
+    },
+    {
+      "title": "Hope after judgement",
+      "text": "The exile comes because the people would not listen to God's prophets, but God brings them home again, as He had promised (36:21-23)."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "7:22",
+      "title": "Solomon's wisdom; the temple built and dedicated"
+    },
+    {
+      "from": "8:1",
+      "to": "9:31",
+      "title": "Solomon's greatness, the queen of Sheba and his death"
+    },
+    {
+      "from": "10:1",
+      "to": "12:16",
+      "title": "Rehoboam: the kingdom divides"
+    },
+    {
+      "from": "13:1",
+      "to": "20:37",
+      "title": "Abijah, Asa and Jehoshaphat seek the LORD"
+    },
+    {
+      "from": "21:1",
+      "to": "28:27",
+      "title": "From Jehoram to Ahaz: kings who rise and fall"
+    },
+    {
+      "from": "29:1",
+      "to": "32:33",
+      "title": "Hezekiah cleanses the temple and is saved from Assyria"
+    },
+    {
+      "from": "33:1",
+      "to": "35:27",
+      "title": "Manasseh's sin and repentance; Josiah's reforms"
+    },
+    {
+      "from": "36:1",
+      "to": "36:23",
+      "title": "The last kings, the fall of Jerusalem and the decree of Cyrus"
+    }
+  ],
+  "keyVerses": [
+    "7:14",
+    "16:9",
+    "20:15"
+  ]
+}

@@ -30,6 +30,7 @@ import { ReaderScreen, preloadChapter } from './src/screens/ReaderScreen';
 import { SearchScreen } from './src/screens/SearchScreen';
 import { LicencesScreen } from './src/screens/LicencesScreen';
 import { WhyScreen } from './src/screens/WhyScreen';
+import { IntroScreen } from './src/screens/IntroScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { NotebookScreen } from './src/screens/NotebookScreen';
 import { NotePageScreen } from './src/screens/NotePageScreen';
@@ -295,6 +296,7 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
           <Stack.Screen name="Settings" component={SettingsRoute} />
           <Stack.Screen name="Licences" component={LicencesRoute} />
           <Stack.Screen name="Why" component={WhyRoute} />
+          <Stack.Screen name="Intro" component={IntroRoute} />
           <Stack.Screen name="Notebook" component={NotebookRoute} options={TAB_SCREEN} />
           <Stack.Screen name="NotePage" component={NotePageRoute} />
           <Stack.Screen name="Card" component={CardRoute} />
@@ -349,6 +351,7 @@ function ReaderRoute({ navigation, route }: Props<'Reader'>) {
       onOpenSettings={() => navigation.navigate('Settings')}
       onOpenNotePage={(id, isNew) => navigation.push('NotePage', { id, isNew })}
       onOpenCard={(ref, translation) => navigation.push('Card', { ref, translation })}
+      onOpenIntro={(book) => navigation.push('Intro', { book })}
       onOpenRef={(ref, back) => navigation.push('Reader', { from: back, ref: { book: ref.book, chapter: ref.chapter, verse: ref.verse } })}
       onWord={onWord}
     />
@@ -442,6 +445,13 @@ function WhyRoute({ navigation }: Props<'Why'>) {
   const t = useT();
   const openRef = useOpenRef(navigation, t('whyThisBible'));
   return <WhyScreen onBack={() => navigation.goBack()} onOpenRef={openRef} />;
+}
+
+function IntroRoute({ navigation, route }: Props<'Intro'>) {
+  const t = useT();
+  const { books } = useApp();
+  const openRef = useOpenRef(navigation, t('aboutBook'));
+  return <IntroScreen book={route.params.book} books={books} onBack={() => navigation.goBack()} onOpenRef={openRef} />;
 }
 
 function LicencesRoute({ navigation }: Props<'Licences'>) {

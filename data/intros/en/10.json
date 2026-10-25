@@ -1,0 +1,41 @@
+{
+  "book": 10,
+  "name": "2 Samuel",
+  "facts": {
+    "author": "The author is not named. Jewish tradition holds that the prophets Nathan and Gad completed the story begun by Samuel, since 1 and 2 Samuel were once one book.",
+    "date": "About 970–930 BC",
+    "audience": "The people of Israel, to show God's covenant with David and the cost of sin"
+  },
+  "about": [
+    "2 Samuel tells the story of David's forty years as king. After mourning Saul and Jonathan, David reigns over Judah at Hebron for seven and a half years, and then over all Israel (5:4-5). He takes Jerusalem and makes it his capital, brings the ark of God there with great joy, and defeats Israel's enemies.",
+    "When David wants to build a house for God, the Lord promises instead to build a house for David: a son will build the temple, and David's throne and kingdom will last for ever (7:12-16). This promise points to Jesus Christ, the Son of David.",
+    "Then David falls into sin with Bathsheba and has her husband Uriah killed. When Nathan the prophet faces him, David confesses, and God forgives him (12:13), but trouble follows in his family. His son Amnon wrongs Tamar, Absalom kills Amnon and later rebels against his father, and David weeps for Absalom when he dies. The book closes with David's songs of praise and an altar built on the threshing floor of Araunah."
+  ],
+  "themes": [
+    {
+      "title": "God's covenant with David",
+      "text": "God promises David a house, a kingdom and a throne for ever, fulfilled in Christ."
+    },
+    {
+      "title": "Sin, confession and forgiveness",
+      "text": "David's great sin is forgiven when he confesses it, yet its painful results remain in his family."
+    },
+    {
+      "title": "A king after God's heart",
+      "text": "With all his failures David loves the Lord, seeks Him, worships Him and turns back to Him."
+    },
+    {
+      "title": "God's perfect way",
+      "text": "David praises God as his rock and shield, whose way is perfect and whose word is true (22:31)."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "4:12", "title": "David king over Judah; war with the house of Saul" },
+    { "from": "5:1", "to": "10:19", "title": "David king over all Israel: Jerusalem, the ark, God's covenant" },
+    { "from": "11:1", "to": "12:31", "title": "David's sin with Bathsheba and Nathan's rebuke" },
+    { "from": "13:1", "to": "18:33", "title": "Amnon, Absalom and Absalom's rebellion" },
+    { "from": "19:1", "to": "20:26", "title": "David returns to Jerusalem; the revolt of Sheba" },
+    { "from": "21:1", "to": "24:25", "title": "David's songs, his mighty men and the census" }
+  ],
+  "keyVerses": ["7:12-13", "7:16", "12:13", "22:31"]
+}

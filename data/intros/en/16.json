@@ -1,0 +1,73 @@
+{
+  "book": 16,
+  "name": "Nehemiah",
+  "facts": {
+    "author": "Nehemiah, cupbearer to the Persian king Artaxerxes and later governor of Judah, who tells most of the story in his own words (1:1). Ezra and Nehemiah were first counted as one book, and Jewish tradition also links Ezra with it.",
+    "date": "About 430–420 BC",
+    "audience": "The Jews in Jerusalem and Judah after the return from exile"
+  },
+  "about": [
+    "Nehemiah serves as cupbearer to King Artaxerxes in the palace at Shushan. When he hears that the wall of Jerusalem is broken down and its gates burned, he weeps, fasts and prays (1:4). The king gives him leave and letters to go and rebuild the city.",
+    "In Jerusalem Nehemiah encourages the people, and each family repairs a part of the wall. Sanballat, Tobiah and Geshem mock, threaten and plot, and some Jews are oppressing their poor brothers, but Nehemiah prays, sets guards and deals with every problem. The wall is finished in only fifty-two days (6:15).",
+    "Then Ezra reads the law of God to all the people, and the Levites explain its meaning (8:8). The people weep, then rejoice and keep the feast of tabernacles. They confess their sins and make a covenant to obey God. Later Nehemiah returns from the king's court and corrects those who had broken that promise (13:6-7)."
+  ],
+  "themes": [
+    {
+      "title": "Prayer and work together",
+      "text": "Nehemiah prays often, even in a moment before the king (2:4), and he also plans, builds and keeps watch."
+    },
+    {
+      "title": "Courage against opposition",
+      "text": "Mockery, threats and lies do not stop the work, because the people trust that God will fight for them (4:14)."
+    },
+    {
+      "title": "The joy of the LORD",
+      "text": "When the law is read, the people are told not to mourn, for the joy of the LORD is their strength (8:10)."
+    },
+    {
+      "title": "A faithful leader",
+      "text": "Nehemiah refuses the governor's food allowance, cares for the poor and works beside the people (5:14-18)."
+    },
+    {
+      "title": "Keeping the covenant",
+      "text": "God's people are to keep His Sabbath, support His house and stay faithful to Him alone."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "2:20",
+      "title": "Nehemiah's prayer and his journey to Jerusalem"
+    },
+    {
+      "from": "3:1",
+      "to": "6:19",
+      "title": "The wall rebuilt in spite of enemies"
+    },
+    {
+      "from": "7:1",
+      "to": "7:73",
+      "title": "The city guarded; the list of those who returned"
+    },
+    {
+      "from": "8:1",
+      "to": "10:39",
+      "title": "The law read, sins confessed and the covenant made"
+    },
+    {
+      "from": "11:1",
+      "to": "12:47",
+      "title": "New people for Jerusalem; the wall dedicated"
+    },
+    {
+      "from": "13:1",
+      "to": "13:31",
+      "title": "Nehemiah's second visit and his reforms"
+    }
+  ],
+  "keyVerses": [
+    "2:20",
+    "4:14",
+    "8:10"
+  ]
+}

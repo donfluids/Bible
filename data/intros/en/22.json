@@ -1,0 +1,68 @@
+{
+  "book": 22,
+  "name": "Song of Solomon",
+  "facts": {
+    "author": "Solomon, the son of David and king of Israel (1:1).",
+    "date": "About 965 BC, early in Solomon's reign",
+    "audience": "God's people Israel, to honour the gift of married love"
+  },
+  "about": [
+    "The Song of Solomon, also called the Song of Songs, is a love poem. A bride, called the Shulamite, and her beloved, King Solomon, speak to each other with joy and longing. Their words are full of pictures from gardens, vineyards, flowers, spices and the hills of Israel, and the daughters of Jerusalem join in like a chorus.",
+    "The couple long for each other and meet; there is a royal wedding; they are parted for a time and then find each other again. Three times the bride warns that love must not be stirred up before its time (2:7). At the end she declares that love is as strong as death, and that many waters cannot put it out (8:6-7).",
+    "The Song celebrates the love between husband and wife as a good gift of God the Creator. Jewish teachers saw in it a picture of the LORD's love for Israel, and Christians have long read it as a picture of the love between Christ and His church."
+  ],
+  "themes": [
+    {
+      "title": "Love as God's gift",
+      "text": "Married love, with its delight and faithfulness, is good and pure in the sight of God who made us."
+    },
+    {
+      "title": "Faithful love",
+      "text": "The bride and her beloved belong to each other alone (2:16), and true love cannot be bought (8:7)."
+    },
+    {
+      "title": "Waiting for the right time",
+      "text": "Love is not to be awakened before its proper time."
+    },
+    {
+      "title": "A picture of God's love",
+      "text": "The deep love in the Song points beyond itself to the love of the Lord for His people."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "2:7",
+      "title": "The bride and her beloved long for each other"
+    },
+    {
+      "from": "2:8",
+      "to": "3:5",
+      "title": "The beloved comes in springtime; the bride searches for him"
+    },
+    {
+      "from": "3:6",
+      "to": "5:1",
+      "title": "The royal procession and the wedding"
+    },
+    {
+      "from": "5:2",
+      "to": "6:13",
+      "title": "The bride loses her beloved and finds him again"
+    },
+    {
+      "from": "7:1",
+      "to": "8:4",
+      "title": "The couple delight in each other"
+    },
+    {
+      "from": "8:5",
+      "to": "8:14",
+      "title": "Love as strong as death"
+    }
+  ],
+  "keyVerses": [
+    "2:16",
+    "8:6-7"
+  ]
+}

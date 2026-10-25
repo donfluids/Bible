@@ -1,0 +1,83 @@
+{
+  "book": 20,
+  "name": "Proverbs",
+  "facts": {
+    "author": "Mainly Solomon, the son of David and king of Israel (1:1). Some sayings come from other wise men, and the book ends with the words of Agur (30:1) and of King Lemuel (31:1).",
+    "date": "About 970–700 BC",
+    "audience": "The young people of Israel, and all who want to live wisely before God"
+  },
+  "about": [
+    "Proverbs is a book of wisdom for everyday life. God gave Solomon great wisdom, and he spoke thousands of proverbs, many of which are gathered here. The book's purpose is to give wisdom, understanding and good sense to the simple and the young (1:2-4).",
+    "The first nine chapters are a father's teaching to his son. Wisdom is pictured as a woman calling in the streets and inviting all to come and live, while the foolish woman leads her guests down to death. Then come hundreds of short sayings about work and laziness, the tongue, money, friendship, marriage, anger, pride and justice. A later collection was copied out by the men of King Hezekiah (25:1).",
+    "The book closes with a picture of the virtuous woman who fears the LORD (31:10-31). Its foundation is laid at the start: the fear of the LORD is the beginning of knowledge (1:7)."
+  ],
+  "themes": [
+    {
+      "title": "The fear of the LORD",
+      "text": "True wisdom begins with reverence for God and with trusting Him rather than our own understanding (3:5-6)."
+    },
+    {
+      "title": "Two ways",
+      "text": "The way of wisdom leads to life, and the way of folly leads to ruin."
+    },
+    {
+      "title": "Wisdom for daily life",
+      "text": "God cares how we work, speak, use money, treat the poor and live in our homes."
+    },
+    {
+      "title": "The power of words",
+      "text": "The tongue can bring healing or harm, so the wise person thinks before speaking."
+    },
+    {
+      "title": "Wisdom with God from the beginning",
+      "text": "Wisdom says she was with the LORD before the world was made (8:22-31), and Christians have seen in this a picture of Christ."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "1:7",
+      "title": "The purpose of the book: the fear of the LORD"
+    },
+    {
+      "from": "1:8",
+      "to": "9:18",
+      "title": "A father's teaching: wisdom and folly call out"
+    },
+    {
+      "from": "10:1",
+      "to": "22:16",
+      "title": "The proverbs of Solomon"
+    },
+    {
+      "from": "22:17",
+      "to": "24:34",
+      "title": "The words of the wise"
+    },
+    {
+      "from": "25:1",
+      "to": "29:27",
+      "title": "Solomon's proverbs copied by Hezekiah's men"
+    },
+    {
+      "from": "30:1",
+      "to": "30:33",
+      "title": "The words of Agur"
+    },
+    {
+      "from": "31:1",
+      "to": "31:9",
+      "title": "The words of King Lemuel"
+    },
+    {
+      "from": "31:10",
+      "to": "31:31",
+      "title": "The virtuous woman"
+    }
+  ],
+  "keyVerses": [
+    "1:7",
+    "3:5-6",
+    "9:10"
+  ]
+}

@@ -41,6 +41,11 @@ fetch bdbglosses.zip https://www.crosswire.org/ftpmirror/pub/sword/packages/rawz
 # and ranked by readers' votes; KJV verse numbering.
 fetch cross-references.zip https://a.openbible.info/data/cross-references.zip
 
+# Parallel passages from the United Bible Societies' Parallel Passages Database
+# (© 2023 United Bible Societies, CC BY-SA 4.0); Hebrew and Greek verse numbering.
+mkdir -p ubs
+fetch ubs/ParallelPassages.xml "https://raw.githubusercontent.com/ubsicap/ubs-open-license/main/parallel%20passages/ParallelPassages.xml"
+
 # STEPBible Translators Amalgamated Hebrew OT and Greek NT (CC BY 4.0), Tyndale House Cambridge.
 # Their licence permits bundling in software but asks that the files themselves are not redistributed.
 mkdir -p step

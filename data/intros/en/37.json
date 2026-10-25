@@ -1,0 +1,64 @@
+{
+  "book": 37,
+  "name": "Haggai",
+  "facts": {
+    "author": "Haggai the prophet (1:1). He was one of the Jews who had returned from exile in Babylon, and he worked together with the prophet Zechariah.",
+    "date": "520 BC",
+    "audience": "Zerubbabel the governor of Judah, Joshua the high priest, and the people who had returned to Jerusalem"
+  },
+  "about": [
+    "About eighteen years before Haggai preached, King Cyrus of Persia had let the Jews go home from Babylon to rebuild the temple. They laid the foundation, but enemies opposed them and the work stopped. The people built fine houses for themselves while God's house lay in ruins (1:4).",
+    "In the second year of King Darius, God gave Haggai four messages within less than four months, each one dated. First he told the people that their poor harvests came because they had put their own houses first, and he called them to bring wood and build (1:8). Zerubbabel, Joshua and all the people obeyed, and the work began again (1:12-15).",
+    "Later Haggai encouraged those who thought the new temple was nothing compared with Solomon's. God promised to fill this house with glory, a glory greater than the former (2:9). He promised to bless them from that day, and He chose Zerubbabel, of the family of David, as His signet ring (2:23)."
+  ],
+  "themes": [
+    {
+      "title": "Put God first",
+      "text": "When God's people neglect His work for their own comfort, they find no lasting blessing."
+    },
+    {
+      "title": "Obedience brings God's presence",
+      "text": "When the people obeyed, God promised to be with them and stirred up their spirits to work (1:13-14)."
+    },
+    {
+      "title": "Greater glory to come",
+      "text": "God promised that the glory of this humble temple would be greater than the glory of Solomon's."
+    },
+    {
+      "title": "God keeps David's line",
+      "text": "Zerubbabel, a descendant of David, is God's chosen signet, a sign that the promise of a King still stands."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "1:11",
+      "title": "First message: consider your ways and build the house"
+    },
+    {
+      "from": "1:12",
+      "to": "1:15",
+      "title": "The people obey and the work begins"
+    },
+    {
+      "from": "2:1",
+      "to": "2:9",
+      "title": "Second message: the glory of the latter house"
+    },
+    {
+      "from": "2:10",
+      "to": "2:19",
+      "title": "Third message: from this day I will bless you"
+    },
+    {
+      "from": "2:20",
+      "to": "2:23",
+      "title": "Fourth message: Zerubbabel, the Lord's signet"
+    }
+  ],
+  "keyVerses": [
+    "1:4",
+    "1:8",
+    "2:9"
+  ]
+}

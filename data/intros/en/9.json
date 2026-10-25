@@ -1,0 +1,42 @@
+{
+  "book": 9,
+  "name": "1 Samuel",
+  "facts": {
+    "author": "The author is not named. Jewish tradition holds that Samuel wrote the first part and that the prophets Nathan and Gad completed 1 and 2 Samuel, which were once one book.",
+    "date": "About 970–930 BC",
+    "audience": "The people of Israel, to show how God gave them a king and chose David's family to rule"
+  },
+  "about": [
+    "1 Samuel tells how Israel changed from being led by judges to being ruled by kings. It begins with Hannah, who prays for a son and gives him to the Lord. The boy Samuel grows up serving Eli the priest at Shiloh, and God speaks to him (3:10). When Israel carries the ark into battle with Eli's wicked sons, the Philistines capture it, but God brings it back, and Samuel leads Israel as prophet and judge.",
+    "In Samuel's old age the people ask for a king like the other nations. God gives them Saul, tall and impressive, but Saul does not obey God, and Samuel tells him that obeying is better than sacrifice (15:22). God then sends Samuel to anoint the young shepherd David, for the Lord looks on the heart (16:7).",
+    "David kills Goliath, trusting that the battle is the Lord's (17:47). Saul becomes jealous and hunts him for years, but David twice refuses to harm the Lord's anointed. The book ends with Saul and his sons dying in battle on Mount Gilboa."
+  ],
+  "themes": [
+    {
+      "title": "God is the true King",
+      "text": "In asking for a king, Israel rejected God as King (8:7), yet He gave them a king and still ruled over them."
+    },
+    {
+      "title": "Obedience from the heart",
+      "text": "God wants obedience more than offerings, and He chooses people by their hearts, not their looks."
+    },
+    {
+      "title": "God raises the humble",
+      "text": "God lifts up Hannah, the boy Samuel and the shepherd David, and brings down the proud, as Hannah sings in her prayer."
+    },
+    {
+      "title": "Waiting for God's time",
+      "text": "David has been anointed king, but he waits for God to give him the throne rather than taking it by force."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "3:21", "title": "Hannah's prayer; the birth and call of Samuel" },
+    { "from": "4:1", "to": "7:17", "title": "The ark captured and returned; Samuel judges Israel" },
+    { "from": "8:1", "to": "12:25", "title": "Israel asks for a king; Saul is made king" },
+    { "from": "13:1", "to": "15:35", "title": "Saul disobeys and is rejected" },
+    { "from": "16:1", "to": "17:58", "title": "David anointed; David and Goliath" },
+    { "from": "18:1", "to": "26:25", "title": "Saul hunts David; David's friendship with Jonathan" },
+    { "from": "27:1", "to": "31:13", "title": "David among the Philistines; the death of Saul" }
+  ],
+  "keyVerses": ["12:24", "15:22", "16:7", "17:47"]
+}

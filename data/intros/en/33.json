@@ -1,0 +1,65 @@
+{
+  "book": 33,
+  "name": "Micah",
+  "facts": {
+    "author": "Micah the Morasthite, from the small town of Moresheth in the lowlands of Judah (1:1). He lived at the same time as Isaiah.",
+    "date": "About 735–700 BC",
+    "audience": "The people of Judah and Israel, and especially their rulers, priests and prophets in Jerusalem and Samaria"
+  },
+  "about": [
+    "Micah preached in the days of Jotham, Ahaz and Hezekiah, kings of Judah (1:1). He spoke against both capitals, Samaria in the north and Jerusalem in the south. Their leaders took fields and houses from the poor, judges took bribes, and prophets preached for money. Micah warned that Samaria would become a heap of ruins and that even Zion would be ploughed like a field (3:12).",
+    "Yet Micah's message moves back and forth between judgement and hope. In the last days the mountain of the Lord's house will be raised up, the nations will come to learn His ways, and they will beat their swords into ploughshares (4:1-3). From little Bethlehem will come a ruler whose origins are from everlasting (5:2), the promised Messiah.",
+    "In the end Micah sums up what God asks of His people: to do justly, to love mercy and to walk humbly with Him (6:8). The book closes with praise to the God who delights in mercy and throws His people's sins into the depths of the sea (7:18-19)."
+  ],
+  "themes": [
+    {
+      "title": "Justice and mercy",
+      "text": "God hates the oppression of the poor and asks His people to live justly and kindly."
+    },
+    {
+      "title": "Judgement on false leaders",
+      "text": "Rulers, priests and prophets who use their place for gain will bring ruin on the nation."
+    },
+    {
+      "title": "The ruler from Bethlehem",
+      "text": "God promises a King from David's town who will shepherd His people in the strength of the Lord."
+    },
+    {
+      "title": "A God who pardons",
+      "text": "No one is like the Lord, who forgives sin and keeps His promises to Abraham and Jacob."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "2:13",
+      "title": "Judgement on Samaria and Judah; a remnant gathered"
+    },
+    {
+      "from": "3:1",
+      "to": "3:12",
+      "title": "Against the rulers, prophets and priests"
+    },
+    {
+      "from": "4:1",
+      "to": "5:15",
+      "title": "The coming kingdom and the ruler from Bethlehem"
+    },
+    {
+      "from": "6:1",
+      "to": "7:7",
+      "title": "The Lord's case against His people"
+    },
+    {
+      "from": "7:8",
+      "to": "7:20",
+      "title": "Hope in the God who pardons"
+    }
+  ],
+  "keyVerses": [
+    "4:3",
+    "5:2",
+    "6:8",
+    "7:18"
+  ]
+}

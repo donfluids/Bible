@@ -1,0 +1,65 @@
+{
+  "book": 28,
+  "name": "Hosea",
+  "facts": {
+    "author": "Hosea the son of Beeri, a prophet in the northern kingdom of Israel (1:1).",
+    "date": "About 755–715 BC",
+    "audience": "The people of the northern kingdom of Israel, often called Ephraim, in the years before Assyria destroyed it"
+  },
+  "about": [
+    "Hosea preached in Israel in the days of King Jeroboam the son of Joash and the kings who came after him, a time of wealth that soon turned to disorder. The people worshipped Baal and the golden calves, trusted in Egypt and Assyria, and forgot the Lord who had brought them out of Egypt.",
+    "God told Hosea to marry a woman named Gomer, who was unfaithful to him. Hosea's broken marriage became a living picture of Israel's unfaithfulness to God. Yet when Gomer had gone after other lovers, God told Hosea to love her again and bring her back (3:1), just as the Lord still loved Israel.",
+    "The rest of the book warns that judgement is coming because there is no truth, mercy or knowledge of God in the land. But again and again God's love breaks through: He cannot give His people up (11:8). The book ends with a call to return and a promise that God will heal them and love them freely (14:4)."
+  ],
+  "themes": [
+    {
+      "title": "God's faithful love",
+      "text": "Like a husband who takes back an unfaithful wife, and like a father who taught his son to walk (11:1-4), God keeps loving His people."
+    },
+    {
+      "title": "Unfaithfulness to God",
+      "text": "Worshipping idols and trusting other nations is spiritual adultery, a betrayal of the covenant."
+    },
+    {
+      "title": "Knowing God",
+      "text": "God's people are destroyed for lack of knowledge (4:6); He wants mercy and the knowledge of God more than sacrifices (6:6)."
+    },
+    {
+      "title": "Return and be healed",
+      "text": "Judgement is real, but God calls Israel to come back, and He promises to heal and restore them."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "3:5",
+      "title": "Hosea's marriage to Gomer: a picture of God and Israel"
+    },
+    {
+      "from": "4:1",
+      "to": "7:16",
+      "title": "The Lord's case against Israel's sin"
+    },
+    {
+      "from": "8:1",
+      "to": "10:15",
+      "title": "Israel will reap what it has sown"
+    },
+    {
+      "from": "11:1",
+      "to": "13:16",
+      "title": "God's love for His wayward son, and the judgement to come"
+    },
+    {
+      "from": "14:1",
+      "to": "14:9",
+      "title": "A call to return, and the promise of healing"
+    }
+  ],
+  "keyVerses": [
+    "3:1",
+    "6:6",
+    "11:8",
+    "14:4"
+  ]
+}

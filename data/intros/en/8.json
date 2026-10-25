@@ -1,0 +1,39 @@
+{
+  "book": 8,
+  "name": "Ruth",
+  "facts": {
+    "author": "The author is not named. Jewish tradition holds that Samuel the prophet wrote it.",
+    "date": "About 1030–1000 BC",
+    "audience": "The people of Israel, showing God's care in the family line of King David"
+  },
+  "about": [
+    "Ruth is a short story set in the days when the judges ruled (1:1). Because of a famine, Elimelech and his wife Naomi leave Bethlehem with their two sons and go to Moab. The sons marry Moabite women, Orpah and Ruth, but then Elimelech and both sons die. Naomi decides to return home, and Ruth will not leave her. She promises to go where Naomi goes and to take Naomi's people as her people and Naomi's God as her God (1:16).",
+    "In Bethlehem Ruth gathers grain in the field of Boaz, a rich relative of Elimelech. Boaz is kind to her because of her loyalty to Naomi and her trust in the God of Israel (2:12). As a near kinsman he redeems the family land and marries Ruth. Their son Obed becomes the grandfather of King David (4:17).",
+    "In a dark and faithless time, this book shows faithful love, and shows God bringing a foreign woman into His people and into the line of the Messiah."
+  ],
+  "themes": [
+    {
+      "title": "Faithful love",
+      "text": "Ruth's loyalty to Naomi and Boaz's kindness to Ruth show the steadfast love that God Himself shows."
+    },
+    {
+      "title": "The kinsman-redeemer",
+      "text": "Boaz pays the price to buy back the family's land and to give the dead a name, a picture of Christ who redeems His people."
+    },
+    {
+      "title": "God's quiet care",
+      "text": "God is rarely seen acting openly, yet He guides each step, turning Naomi's emptiness into joy."
+    },
+    {
+      "title": "A welcome for the nations",
+      "text": "Ruth, a woman of Moab, finds shelter under the wings of the God of Israel and becomes an ancestor of David."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "1:22", "title": "Naomi's loss and Ruth's loyalty" },
+    { "from": "2:1", "to": "2:23", "title": "Ruth gleans in the field of Boaz" },
+    { "from": "3:1", "to": "3:18", "title": "Ruth asks Boaz to redeem the family" },
+    { "from": "4:1", "to": "4:22", "title": "Boaz marries Ruth; the line of David" }
+  ],
+  "keyVerses": ["1:16", "2:12", "4:14", "4:17"]
+}

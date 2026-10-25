@@ -42,6 +42,14 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
 - [ ] Hold a verse: the menu opens. Try copy, share, bookmark, a highlight colour, a
       note, "Mark text" (drag over a few words), Compare.
 - [ ] Add a verse to the notebook from that menu.
+- [ ] Hold John 3:16 → Cross references: the list opens with the verses quoted; tap one
+      and it opens, Back returns.
+- [ ] Hold Matthew 8:28 → Parallel passages: Mark 5:1-3 and Luke 8:26-27, quoted. Also try
+      1 Kings 10:1 (2 Chronicles 9) and Psalm 18:1 (2 Samuel 22).
+- [ ] The (i) button in the reader's top bar opens About this book for the book being read,
+      in the app's language: who wrote it, when, the outline and key verses. Tap an outline
+      section and a key verse: each opens at the right verse. Try Genesis, Psalms, Mark and
+      Revelation. In the Malayalam and Tamil apps, switch the language to English and back.
 
 ## 4. Listen (read aloud)
 

@@ -1,0 +1,35 @@
+{
+  "book": 63,
+  "name": "2 John",
+  "facts": {
+    "author": "The apostle John, who calls himself simply the elder (1:1), as the early church held.",
+    "date": "About AD 85–95",
+    "audience": "The elect lady and her children: either a Christian woman and her family, or a local church and its members"
+  },
+  "about": [
+    "This short letter, one of the shortest books in the Bible, was written by John to a dear friend in the faith, whom he calls the elect lady. Many believe this is a way of speaking of a church and its members; others think she was a real Christian woman and her family.",
+    "John rejoices that some of her children are walking in the truth (1:4). He reminds them of the commandment they had from the beginning: to love one another. Love, he explains, means living by God's commandments (1:5-6).",
+    "Then he gives a warning. Many deceivers have gone out into the world who do not confess that Jesus Christ came in the flesh (1:7). Travelling teachers depended on the hospitality of believers, so John tells them not to welcome such false teachers into their homes or wish them well, for that would share in their evil work. He hopes to visit soon and speak with them face to face."
+  ],
+  "themes": [
+    {
+      "title": "Truth",
+      "text": "The truth lives in believers and will be with them for ever, and they are to walk in it."
+    },
+    {
+      "title": "Love",
+      "text": "The old commandment still stands: love one another, and show it by obeying God."
+    },
+    {
+      "title": "Guarding against error",
+      "text": "Those who do not hold to the teaching of Christ do not have God, and believers must not support their work."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "1:3", "title": "Greeting to the elect lady and her children" },
+    { "from": "1:4", "to": "1:6", "title": "Walking in truth and love" },
+    { "from": "1:7", "to": "1:11", "title": "A warning against deceivers" },
+    { "from": "1:12", "to": "1:13", "title": "Hope of a visit, and greetings" }
+  ],
+  "keyVerses": ["1:6", "1:9"]
+}

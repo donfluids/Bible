@@ -1,0 +1,69 @@
+{
+  "book": 50,
+  "name": "Philippians",
+  "facts": {
+    "author": "The apostle Paul, writing with Timothy (1:1).",
+    "date": "About AD 61–62",
+    "audience": "The church at Philippi, the first church Paul founded in Europe, with its overseers and deacons (1:1)"
+  },
+  "about": [
+    "Paul wrote this warm letter from prison, very likely in Rome, where even the palace guard heard of Christ through him (1:13). The believers at Philippi had sent Epaphroditus with a gift to help him (4:18), and Paul wrote to thank them and to tell them how he was.",
+    "Though Paul was in chains and did not know if he would live or die, joy runs through the whole letter. For him, to live is Christ and to die is gain (1:21). He urges the church to be of one mind and humble, following the example of Christ, who left His glory, became a servant and was obedient even to death on the cross, and whom God has now raised to the highest place (2:5-11).",
+    "Paul warns against those who trust in the law, and counts everything as loss compared with knowing Christ. He presses on toward the goal and tells the believers to rejoice in the Lord always (4:4), to pray about everything, and to trust that the Lord will give them strength for every situation (4:13)."
+  ],
+  "themes": [
+    {
+      "title": "Joy in the Lord",
+      "text": "Paul rejoices in prison and calls believers to rejoice in the Lord at all times."
+    },
+    {
+      "title": "The humble mind of Christ",
+      "text": "Christ humbled Himself to the cross, and believers are to think of others before themselves."
+    },
+    {
+      "title": "Knowing Christ",
+      "text": "All other gain is loss compared with knowing Christ and being found in Him."
+    },
+    {
+      "title": "Partners in the gospel",
+      "text": "The Philippians shared in Paul's work by their prayers and gifts."
+    },
+    {
+      "title": "Peace and contentment",
+      "text": "God's peace guards the hearts of those who pray, and Christ gives strength in plenty and in need."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "1:11",
+      "title": "Greeting, thanks and prayer"
+    },
+    {
+      "from": "1:12",
+      "to": "1:30",
+      "title": "Paul's chains help the gospel; to live is Christ"
+    },
+    {
+      "from": "2:1",
+      "to": "2:30",
+      "title": "The humble mind of Christ; Timothy and Epaphroditus"
+    },
+    {
+      "from": "3:1",
+      "to": "3:21",
+      "title": "Knowing Christ and pressing on to the goal"
+    },
+    {
+      "from": "4:1",
+      "to": "4:23",
+      "title": "Rejoice in the Lord; thanks for the gift"
+    }
+  ],
+  "keyVerses": [
+    "1:21",
+    "2:5-8",
+    "4:4",
+    "4:13"
+  ]
+}

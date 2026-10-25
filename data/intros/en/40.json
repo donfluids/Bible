@@ -1,0 +1,84 @@
+{
+  "book": 40,
+  "name": "Matthew",
+  "facts": {
+    "author": "Matthew, also called Levi, the tax collector whom Jesus called to be one of the twelve apostles (9:9). The early church held firmly that he wrote this Gospel.",
+    "date": "About AD 50–65",
+    "audience": "Jewish believers first of all, to show them that Jesus is the promised Messiah, and through them the whole church"
+  },
+  "about": [
+    "Matthew stands first in the New Testament and is the bridge from the Old. It begins with the family line of Jesus, the son of David and the son of Abraham (1:1), and again and again it shows how His life fulfilled what the prophets had written.",
+    "Matthew gathers the teaching of Jesus into five great talks: the Sermon on the Mount (chapters 5–7), the sending of the twelve, the parables of the kingdom, teaching on life together in the church, and the warnings about the end of the age. Between them come His miracles, the growing opposition of the religious leaders, and Peter's confession that Jesus is the Christ, the Son of the living God (16:16).",
+    "The book ends with the cross, the empty tomb and the risen Lord on a mountain in Galilee. He sends His disciples to make disciples of all nations and promises to be with them always (28:19-20)."
+  ],
+  "themes": [
+    {
+      "title": "Jesus the promised King",
+      "text": "Jesus is the Son of David and the Messiah, and His birth, life and death fulfil the words of the prophets."
+    },
+    {
+      "title": "The kingdom of heaven",
+      "text": "Jesus preaches that the kingdom of heaven has come near, and His parables show how it grows from small beginnings."
+    },
+    {
+      "title": "True righteousness",
+      "text": "Jesus came not to set aside the law but to fulfil it (5:17), and He calls for an obedience that comes from the heart."
+    },
+    {
+      "title": "God with us",
+      "text": "At His birth Jesus is named Emmanuel, God with us (1:23), and at the end He promises to be with His people to the end of the world."
+    },
+    {
+      "title": "Good news for all nations",
+      "text": "Wise men from the east worship the child, and the risen Lord sends His disciples to every nation."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "4:11",
+      "title": "The birth of Jesus; John the Baptist; Jesus is baptised and tempted"
+    },
+    {
+      "from": "4:12",
+      "to": "7:29",
+      "title": "Jesus begins to preach; the Sermon on the Mount"
+    },
+    {
+      "from": "8:1",
+      "to": "11:1",
+      "title": "Miracles of healing, and the sending of the twelve"
+    },
+    {
+      "from": "11:2",
+      "to": "13:58",
+      "title": "Growing opposition and the parables of the kingdom"
+    },
+    {
+      "from": "14:1",
+      "to": "18:35",
+      "title": "Feeding the crowds, Peter's confession, the transfiguration and life in the church"
+    },
+    {
+      "from": "19:1",
+      "to": "25:46",
+      "title": "The road to Jerusalem, conflict in the temple and teaching about the end"
+    },
+    {
+      "from": "26:1",
+      "to": "27:66",
+      "title": "The Last Supper, the arrest, the trial and the cross"
+    },
+    {
+      "from": "28:1",
+      "to": "28:20",
+      "title": "The risen Lord sends His disciples to all nations"
+    }
+  ],
+  "keyVerses": [
+    "1:21",
+    "16:16",
+    "20:28",
+    "28:19-20"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "book": 4,
+  "name": "Numbers",
+  "facts": {
+    "author": "Moses. The book says that Moses wrote down the stages of Israel's journey (33:2), and the Jewish people and the early church held that he wrote the whole book.",
+    "date": "About 1445–1406 BC",
+    "audience": "The people of Israel, especially the new generation about to enter the promised land"
+  },
+  "about": [
+    "Numbers is named after the two times the people were counted, at the start of the book and near its end. It covers the forty years between Mount Sinai and the plains of Moab, beside the river Jordan.",
+    "The book opens with Israel ordered as a camp around the tabernacle, ready to march. But on the way the people complain, and when they reach the edge of Canaan they believe the bad report of ten of the twelve spies and refuse to go in. Only Joshua and Caleb trust God (14:24). So God says that the whole generation will wander in the wilderness for forty years until they have died. Even Moses and Aaron fail to honour God at the waters of Meribah and may not enter the land.",
+    "Yet God stays faithful. He gives water and food, heals those who look at the serpent of brass (21:8-9), and turns Balaam's curses into blessings. At the end a new generation is counted and made ready to take the land."
+  ],
+  "themes": [
+    {
+      "title": "Unbelief and its cost",
+      "text": "Because the people would not trust God, a whole generation lost the land He had promised them."
+    },
+    {
+      "title": "God's faithfulness",
+      "text": "God is not like a man who lies or changes His mind; what He has promised He will do (23:19)."
+    },
+    {
+      "title": "God leads His people",
+      "text": "The cloud over the tabernacle shows Israel when to move and when to stay, and God goes with them all the way."
+    },
+    {
+      "title": "Blessing from God",
+      "text": "God gives the priests words to bless the people, asking the Lord to keep them and give them peace (6:24-26)."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "10:10", "title": "At Sinai: the first census and the order of the camp" },
+    { "from": "10:11", "to": "12:16", "title": "From Sinai to Paran: the people complain" },
+    { "from": "13:1", "to": "14:45", "title": "The twelve spies and Israel's refusal to enter Canaan" },
+    { "from": "15:1", "to": "19:22", "title": "Laws; Korah's rebellion and Aaron's rod that budded" },
+    { "from": "20:1", "to": "25:18", "title": "Journey to Moab: water from the rock, the serpent of brass, Balaam" },
+    { "from": "26:1", "to": "30:16", "title": "The second census; Joshua chosen to follow Moses" },
+    { "from": "31:1", "to": "36:13", "title": "Preparing to enter the land: victory, tribes east of Jordan, borders" }
+  ],
+  "keyVerses": ["6:24-26", "14:24", "21:8", "23:19"]
+}

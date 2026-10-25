@@ -1,0 +1,83 @@
+{
+  "book": 46,
+  "name": "1 Corinthians",
+  "facts": {
+    "author": "The apostle Paul, writing with Sosthenes (1:1).",
+    "date": "About AD 55",
+    "audience": "The church at Corinth, a busy Greek city, which Paul himself had founded"
+  },
+  "about": [
+    "Paul wrote this letter from Ephesus (16:8) to a young church with many problems. Members of Chloe's household had told him of quarrels (1:11), and the church had also sent him questions in a letter (7:1).",
+    "Corinth was a rich trading city, full of idols and loose living, and some of its ways had come into the church. The believers were split into groups behind their favourite teachers, they took one another to court, and they put up with shameful sin. Paul answers their questions about marriage, food offered to idols, worship, the Lord's Supper and the gifts of the Spirit. He reminds them that the message of the cross looks foolish to the world but is the power of God (1:18).",
+    "In chapter 13 Paul shows that love is greater than every gift. In chapter 15 he gives the heart of the gospel: Christ died for our sins, was buried and rose on the third day (15:3-4), and because He rose, believers too will be raised."
+  ],
+  "themes": [
+    {
+      "title": "Unity in Christ",
+      "text": "Believers belong to Christ, not to human leaders, and they are one body with many members."
+    },
+    {
+      "title": "Holy living",
+      "text": "The body is a temple of the Holy Spirit, and believers have been bought at a price to honour God."
+    },
+    {
+      "title": "Love above all",
+      "text": "Gifts without love are worth nothing; faith, hope and love remain, and love is the greatest (13:13)."
+    },
+    {
+      "title": "Order in worship",
+      "text": "Worship should build up the church and be done in a fitting and orderly way."
+    },
+    {
+      "title": "The resurrection",
+      "text": "Christ is truly risen, and His resurrection is the promise that His people will rise too."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "1:9",
+      "title": "Greeting and thanks"
+    },
+    {
+      "from": "1:10",
+      "to": "4:21",
+      "title": "Divisions in the church and the wisdom of the cross"
+    },
+    {
+      "from": "5:1",
+      "to": "6:20",
+      "title": "Sin in the church and going to court"
+    },
+    {
+      "from": "7:1",
+      "to": "7:40",
+      "title": "Questions about marriage"
+    },
+    {
+      "from": "8:1",
+      "to": "11:1",
+      "title": "Food offered to idols and Christian freedom"
+    },
+    {
+      "from": "11:2",
+      "to": "14:40",
+      "title": "Worship, the Lord's Supper, spiritual gifts and love"
+    },
+    {
+      "from": "15:1",
+      "to": "15:58",
+      "title": "The resurrection of Christ and of believers"
+    },
+    {
+      "from": "16:1",
+      "to": "16:24",
+      "title": "The collection for Jerusalem and final greetings"
+    }
+  ],
+  "keyVerses": [
+    "1:18",
+    "13:13",
+    "15:3-4"
+  ]
+}

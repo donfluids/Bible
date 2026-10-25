@@ -1,0 +1,83 @@
+{
+  "book": 44,
+  "name": "Acts",
+  "facts": {
+    "author": "Luke, the doctor and companion of Paul, who also wrote the Gospel of Luke. In some passages he writes \"we\", because he was there himself (16:10).",
+    "date": "About AD 62",
+    "audience": "Theophilus (1:1), and through him all who wanted to know how the gospel spread from Jerusalem to Rome"
+  },
+  "about": [
+    "Acts is the second part of Luke's work. His Gospel told what Jesus began to do and teach; Acts tells what He went on doing through His apostles by the Holy Spirit. Before He is taken up into heaven, Jesus promises that they will receive power and be His witnesses in Jerusalem, in Judea and Samaria, and to the ends of the earth (1:8). The book follows that plan.",
+    "At Pentecost the Holy Spirit comes and the church is born in Jerusalem. Peter and John heal and preach, and Stephen becomes the first martyr. Persecution scatters the believers, and the gospel reaches Samaria. Saul, who once hunted Christians, meets the risen Lord on the road to Damascus, and Peter sees that God accepts Gentiles too when Cornelius believes.",
+    "From chapter 13 the story follows Paul on three missionary journeys, then his arrest in Jerusalem and his voyage to Rome. The book ends with Paul in Rome, preaching the kingdom of God openly (28:31)."
+  ],
+  "themes": [
+    {
+      "title": "The Holy Spirit at work",
+      "text": "The Spirit gives power to the believers, guides the church and opens new doors for the gospel."
+    },
+    {
+      "title": "Witnesses to the risen Lord",
+      "text": "The apostles preach that God raised Jesus from the dead and that salvation is found in no other name (4:12)."
+    },
+    {
+      "title": "The gospel for every nation",
+      "text": "The good news goes from Jews to Samaritans and to Gentiles, and God makes them one people."
+    },
+    {
+      "title": "Faithful in suffering",
+      "text": "Believers are beaten, jailed and killed, yet the word of God keeps spreading."
+    },
+    {
+      "title": "The life of the church",
+      "text": "The first Christians share their goods, pray, break bread together and care for one another."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "2:47",
+      "title": "The ascension of Jesus and the coming of the Holy Spirit"
+    },
+    {
+      "from": "3:1",
+      "to": "8:3",
+      "title": "The church in Jerusalem; Stephen is killed"
+    },
+    {
+      "from": "8:4",
+      "to": "12:25",
+      "title": "The gospel spreads to Samaria and the Gentiles; Saul is converted"
+    },
+    {
+      "from": "13:1",
+      "to": "15:35",
+      "title": "Paul's first journey and the council at Jerusalem"
+    },
+    {
+      "from": "15:36",
+      "to": "18:22",
+      "title": "Paul's second journey: Philippi, Thessalonica, Athens and Corinth"
+    },
+    {
+      "from": "18:23",
+      "to": "21:16",
+      "title": "Paul's third journey: Ephesus and the road back to Jerusalem"
+    },
+    {
+      "from": "21:17",
+      "to": "26:32",
+      "title": "Paul is arrested and speaks before rulers and kings"
+    },
+    {
+      "from": "27:1",
+      "to": "28:31",
+      "title": "The voyage and shipwreck, and Paul preaching in Rome"
+    }
+  ],
+  "keyVerses": [
+    "1:8",
+    "2:38",
+    "4:12"
+  ]
+}

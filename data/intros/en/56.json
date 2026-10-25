@@ -1,0 +1,40 @@
+{
+  "book": 56,
+  "name": "Titus",
+  "facts": {
+    "author": "The apostle Paul, as the letter itself says (1:1).",
+    "date": "About AD 63–65",
+    "audience": "Titus, a Greek believer and trusted helper of Paul, whom Paul had left on the island of Crete"
+  },
+  "about": [
+    "Paul and Titus had preached on Crete, and new churches had begun in its towns. Paul left Titus there to set things in order and to appoint elders in every city (1:5). This short letter tells him how to do it.",
+    "The people of Crete had a poor name even among themselves, and false teachers were upsetting whole families for money. So the leaders of the church must be blameless men who hold firmly to the true word and can correct those who oppose it. Paul then tells Titus what to teach older men, older women, young women, young men and servants, so that their lives make the teaching of God attractive.",
+    "At the heart of the letter is the grace of God. That grace has appeared, bringing salvation to all people, and teaches us to say no to ungodliness while we wait for the appearing of our great God and Saviour Jesus Christ (2:11-13). God saved us not because of our good works but by His mercy, through the washing of new birth and the renewing of the Holy Spirit (3:5)."
+  ],
+  "themes": [
+    {
+      "title": "Godly leaders",
+      "text": "Elders must be blameless in their homes and lives and hold fast to sound teaching."
+    },
+    {
+      "title": "Grace that teaches",
+      "text": "God's grace not only saves but also trains believers to live sober, upright and godly lives."
+    },
+    {
+      "title": "Saved by mercy",
+      "text": "Salvation is not earned by works; it is the kindness and love of God our Saviour, poured out through Jesus Christ."
+    },
+    {
+      "title": "Good works",
+      "text": "Those who believe in God should be careful to do good works, which are good and useful to everyone (3:8)."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "1:4", "title": "Greeting to Titus" },
+    { "from": "1:5", "to": "1:16", "title": "Appointing elders and silencing false teachers on Crete" },
+    { "from": "2:1", "to": "2:15", "title": "Sound teaching for every group, and the grace of God" },
+    { "from": "3:1", "to": "3:11", "title": "Doing good, saved by God's mercy; avoid foolish quarrels" },
+    { "from": "3:12", "to": "3:15", "title": "Travel plans and greetings" }
+  ],
+  "keyVerses": ["2:11-13", "3:5", "3:8"]
+}

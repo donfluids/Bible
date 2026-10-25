@@ -1,0 +1,65 @@
+{
+  "book": 30,
+  "name": "Amos",
+  "facts": {
+    "author": "Amos, a herdsman from Tekoa in Judah and a gatherer of sycamore fruit, whom God sent to prophesy to Israel (1:1, 7:14-15).",
+    "date": "About 760–750 BC",
+    "audience": "The northern kingdom of Israel in the days of King Jeroboam the son of Joash"
+  },
+  "about": [
+    "Amos was not a professional prophet. He was a farmer from the hills of Judah, but God called him to go north and preach to Israel, two years before a great earthquake (1:1). Israel was rich and at peace. The wealthy lived in fine houses and held religious feasts, but they cheated the poor, took bribes and crushed the needy.",
+    "Amos begins by announcing God's judgement on the nations around Israel for their cruelty, and then turns to Judah and finally to Israel itself (2:6). Because God chose Israel, He will hold them to account (3:2). Their worship means nothing to Him without justice and righteousness (5:24).",
+    "Amos sees five visions of judgement, and when Amaziah the priest of Bethel tells him to go home, he stands firm (7:10-17). Yet the book ends with hope: God will raise up the fallen house of David and bring His people back to a land of plenty (9:11-15)."
+  ],
+  "themes": [
+    {
+      "title": "Justice for the poor",
+      "text": "God sees how the rich treat the poor, and He will judge those who oppress them."
+    },
+    {
+      "title": "Worship that pleases God",
+      "text": "Feasts and offerings are hateful to God when the worshippers live unjust lives."
+    },
+    {
+      "title": "Privilege brings responsibility",
+      "text": "Israel had been specially chosen, so its sin was all the more serious."
+    },
+    {
+      "title": "The Lord of all nations",
+      "text": "God judges every nation for its wickedness, and in the end He will restore David's kingdom."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "2:16",
+      "title": "Judgement on the nations, on Judah and on Israel"
+    },
+    {
+      "from": "3:1",
+      "to": "4:13",
+      "title": "Israel is called to account: prepare to meet your God"
+    },
+    {
+      "from": "5:1",
+      "to": "6:14",
+      "title": "A lament for Israel; seek the Lord and live"
+    },
+    {
+      "from": "7:1",
+      "to": "9:10",
+      "title": "Five visions of judgement; Amos and Amaziah"
+    },
+    {
+      "from": "9:11",
+      "to": "9:15",
+      "title": "The house of David restored"
+    }
+  ],
+  "keyVerses": [
+    "3:2",
+    "4:12",
+    "5:24",
+    "9:11"
+  ]
+}

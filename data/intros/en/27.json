@@ -1,0 +1,79 @@
+{
+  "book": 27,
+  "name": "Daniel",
+  "facts": {
+    "author": "Daniel, a young man of Judah taken to Babylon, who served at the royal court for about seventy years. The book speaks of him by name and in the later chapters he tells his visions in his own words (9:2).",
+    "date": "About 536–530 BC",
+    "audience": "The Jews in exile in Babylon, and God's people in every age who live under powerful foreign rulers"
+  },
+  "about": [
+    "Daniel was taken from Jerusalem to Babylon as a youth when King Nebuchadnezzar first attacked the city (1:1). There he and his three friends, Hananiah, Mishael and Azariah, stayed faithful to God in a foreign land. The first six chapters tell their stories: the king's dream of a great statue, the burning fiery furnace, Nebuchadnezzar's madness, the writing on the wall at Belshazzar's feast, and Daniel in the den of lions.",
+    "The last six chapters record visions that God gave to Daniel. Great empires rise and fall like wild beasts, but one like the Son of man receives a kingdom that will never end (7:13-14). Daniel prays for his people at the end of the seventy years of exile, and he is told of the coming of the Messiah (9:25). The book closes with the promise that the dead will rise (12:2). Its message is simple: God rules over the kings of the earth, and His kingdom will last for ever."
+  ],
+  "themes": [
+    {
+      "title": "God rules over all kingdoms",
+      "text": "Kings as mighty as Nebuchadnezzar learn that the Most High rules and gives power to whom He will."
+    },
+    {
+      "title": "Faithful in a foreign land",
+      "text": "Daniel and his friends refuse to defile themselves or to worship idols, even when it could cost them their lives (3:17-18)."
+    },
+    {
+      "title": "Prayer",
+      "text": "Daniel prays three times a day, even when it is forbidden, and he confesses the sins of his people before God."
+    },
+    {
+      "title": "The everlasting kingdom",
+      "text": "The God of heaven will set up a kingdom that will never be destroyed (2:44), given to the Son of man and to His saints."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "1:21",
+      "title": "Daniel and his friends at the court of Babylon"
+    },
+    {
+      "from": "2:1",
+      "to": "2:49",
+      "title": "Nebuchadnezzar's dream of the great statue"
+    },
+    {
+      "from": "3:1",
+      "to": "3:30",
+      "title": "The golden image and the burning fiery furnace"
+    },
+    {
+      "from": "4:1",
+      "to": "4:37",
+      "title": "Nebuchadnezzar is humbled and praises God"
+    },
+    {
+      "from": "5:1",
+      "to": "6:28",
+      "title": "The writing on the wall; Daniel in the den of lions"
+    },
+    {
+      "from": "7:1",
+      "to": "8:27",
+      "title": "Visions of four beasts, and of a ram and a goat"
+    },
+    {
+      "from": "9:1",
+      "to": "9:27",
+      "title": "Daniel's prayer and the seventy weeks"
+    },
+    {
+      "from": "10:1",
+      "to": "12:13",
+      "title": "The last vision: kings to come, and the end of days"
+    }
+  ],
+  "keyVerses": [
+    "2:44",
+    "3:17-18",
+    "7:13-14",
+    "12:2-3"
+  ]
+}

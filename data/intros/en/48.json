@@ -1,0 +1,64 @@
+{
+  "book": 48,
+  "name": "Galatians",
+  "facts": {
+    "author": "The apostle Paul (1:1), who wrote the end of the letter in his own hand (6:11).",
+    "date": "About AD 49–55",
+    "audience": "The churches of Galatia (1:2), in the Roman province of that name in Asia Minor, which Paul had founded"
+  },
+  "about": [
+    "Galatians is a short and urgent letter. Soon after Paul had preached in Galatia, teachers came who said that Gentile believers must be circumcised and keep the law of Moses to be truly saved. Paul was amazed that the believers were so quickly turning to another gospel, which is no gospel at all.",
+    "Paul first shows that his gospel came to him from Jesus Christ Himself, not from men, and tells how he even stood up to Peter at Antioch. Then he explains that a person is made right with God by faith in Christ, not by the works of the law (2:16). Abraham was counted righteous because he believed God, and all who believe are his children. The law was a guardian until Christ came.",
+    "In the last part Paul calls the believers to stand firm in the freedom Christ has given (5:1). That freedom is not a reason to sin, but to serve one another in love, walking by the Spirit, who produces His fruit in their lives (5:22-23)."
+  ],
+  "themes": [
+    {
+      "title": "One true gospel",
+      "text": "There is only one gospel, and no one may add anything to it."
+    },
+    {
+      "title": "Faith, not the law",
+      "text": "No one is made right with God by keeping the law, but only by faith in Christ."
+    },
+    {
+      "title": "Christ lives in me",
+      "text": "The believer has been crucified with Christ, and now Christ lives in him (2:20)."
+    },
+    {
+      "title": "Freedom in Christ",
+      "text": "Christ has set believers free from the burden of the law, and they must not go back to it."
+    },
+    {
+      "title": "The fruit of the Spirit",
+      "text": "Those who walk by the Spirit show love, joy, peace and goodness, not the works of the flesh."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "1:10",
+      "title": "Greeting, and a warning against another gospel"
+    },
+    {
+      "from": "1:11",
+      "to": "2:21",
+      "title": "Paul's gospel came from Christ"
+    },
+    {
+      "from": "3:1",
+      "to": "4:31",
+      "title": "Made right with God by faith, not by the law"
+    },
+    {
+      "from": "5:1",
+      "to": "6:18",
+      "title": "Living in freedom by the Spirit"
+    }
+  ],
+  "keyVerses": [
+    "2:16",
+    "2:20",
+    "5:1",
+    "5:22-23"
+  ]
+}

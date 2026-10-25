@@ -1,0 +1,45 @@
+{
+  "book": 1,
+  "name": "Genesis",
+  "facts": {
+    "author": "Moses. The Jewish people and the early church held that Moses wrote Genesis and the four books after it, drawing on the history of his people handed down from the fathers.",
+    "date": "About 1446–1406 BC",
+    "audience": "The people of Israel in the wilderness, on their way to the land God had promised to their fathers"
+  },
+  "about": [
+    "Genesis means \"beginning\". It tells how God made the heavens and the earth and everything in them, and made man and woman in His own image. It then tells how sin came into the world when Adam and Eve disobeyed God, and how sin spread until God sent the flood and saved Noah and his family in the ark.",
+    "From chapter 12 the book follows one family. God calls Abram to leave his home and promises to make him a great nation, to give his children the land of Canaan, and to bless all the families of the earth through him (12:2-3). The promise passes to Isaac, then to Jacob, whose twelve sons become the twelve tribes of Israel. The book ends with Joseph, sold by his brothers as a slave, rising to rule in Egypt and saving his family from famine.",
+    "Genesis lays the foundation for the whole Bible: God the Creator, the problem of sin, and God's plan to bring blessing to the world through the family of Abraham."
+  ],
+  "themes": [
+    {
+      "title": "God the Creator",
+      "text": "God made all things by His word, and everything He made was good. Man and woman are made in His image."
+    },
+    {
+      "title": "Sin and its spread",
+      "text": "Adam and Eve's disobedience brings death and trouble into the world, yet God promises that the woman's offspring will crush the serpent's head (3:15)."
+    },
+    {
+      "title": "God's covenant promise",
+      "text": "God chooses Abraham and promises him a land, many descendants and blessing for all nations, and He keeps that promise through Isaac and Jacob."
+    },
+    {
+      "title": "Faith counted as righteousness",
+      "text": "Abraham believed God, and God counted his faith as righteousness (15:6)."
+    },
+    {
+      "title": "God rules over all",
+      "text": "Even when people do evil, God works it for good, as Joseph tells his brothers (50:20)."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "2:25", "title": "God creates the world and the first man and woman" },
+    { "from": "3:1", "to": "5:32", "title": "The fall into sin; Cain and Abel; from Adam to Noah" },
+    { "from": "6:1", "to": "11:9", "title": "The flood, God's covenant with Noah and the tower of Babel" },
+    { "from": "11:10", "to": "25:18", "title": "Abraham: God's call, His covenant and the birth of Isaac" },
+    { "from": "25:19", "to": "36:43", "title": "Isaac, Jacob and Esau; Jacob's twelve sons" },
+    { "from": "37:1", "to": "50:26", "title": "Joseph in Egypt and Jacob's family saved from famine" }
+  ],
+  "keyVerses": ["1:1", "12:2-3", "15:6", "50:20"]
+}

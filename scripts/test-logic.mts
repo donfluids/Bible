@@ -12,7 +12,7 @@ import { cleanLook, ownPhotoIn, savedCopyIn } from '../src/lookClean';
 import { makeBackup, mergePages, readBackup } from '../src/notebookBackup';
 import { inkPageHtml, typedPageHtml } from '../src/pagePdf';
 import { malayalamPattern } from '../src/malayalamSearch';
-import { countCrossRefs, getBeside, getCrossRefs } from '../src/queries';
+import { countCrossRefs, getBeside, getCrossRefs, getIntro } from '../src/queries';
 import { findReferences, parseReference } from '../src/refs';
 import { newTestamentFirst, refInScope, scopeCounts } from '../src/searchScope';
 import { cleanSettings } from '../src/settingsClean';
@@ -201,6 +201,27 @@ for (const [ed, native] of [['ml', 'MAL'], ['ta', 'TAM']] as const) {
     assert.ok(range && range.verses.length === Math.min(3, range.end.verse - range.start.verse + 1));
   });
   test(`${ed} the count in the verse menu matches the list`, async () => assert.equal(await countCrossRefs(db, native, { book: 43, chapter: 3, verse: 16 }), john316.length));
+  // Parallel passages: Matthew 8:28 (the Gadarenes) is told in Mark 5 and Luke 8; Psalm 18,
+  // numbered from its title in the source, meets 2 Samuel 22 at the same verses.
+  const gadarenes = await getCrossRefs(db, native, { book: 40, chapter: 8, verse: 28 }, 'parallels');
+  test(`${ed} parallel passages of Matthew 8:28: Mark 5:1-3 and Luke 8:26-27`, () =>
+    assert.deepEqual(gadarenes.map((c) => [c.start, c.end]), [
+      [{ book: 41, chapter: 5, verse: 1 }, { book: 41, chapter: 5, verse: 3 }],
+      [{ book: 42, chapter: 8, verse: 26 }, { book: 42, chapter: 8, verse: 27 }],
+    ]));
+  test(`${ed} parallel passages of Psalm 18:2 in KJV numbering: 2 Samuel 22:2-3`, async () => {
+    const psalm = await getCrossRefs(db, 'KJV', { book: 19, chapter: 18, verse: 2 }, 'parallels');
+    assert.deepEqual(psalm.map((c) => [c.start.book, c.start.chapter, c.start.verse, c.end.verse]), [[10, 22, 2, 3]]);
+  });
+  // Book introductions: in the interface language, English when asked for another.
+  test(`${ed} the introduction to Mark in ${ed === 'ml' ? 'Malayalam' : 'Tamil'} and in English`, async () => {
+    const own = await getIntro(db, 41, ed);
+    const english = await getIntro(db, 41, 'en');
+    const script = ed === 'ml' ? /[\u0D00-\u0D7F]/ : /[\u0B80-\u0BFF]/;
+    assert.ok(own && script.test(own.about[0]) && english && /^[\x00-\u2100]*$/.test(english.about.join(' ')));
+    assert.deepEqual(own.outline.map((s) => s.from), english.outline.map((s) => s.from));
+    assert.equal((await getIntro(db, 41, 'xx'))?.about[0], english.about[0]);
+  });
 }
 
 // --- Notebook backup and restore (src/notebookBackup.ts), page PDFs (src/pagePdf.ts) ---

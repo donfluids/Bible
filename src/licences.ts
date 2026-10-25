@@ -135,6 +135,15 @@ const CROSS_REFERENCES: Source = {
   modifications: 'Up to ten links per verse kept, the most voted first, links with no votes left out; a range running on into the next book kept as its first verse; links to verses the KJV does not number left out.',
 };
 
+const PARALLELS: Source = {
+  title: 'Parallel passages',
+  notice: 'UBS Parallel Passages Database, \u00a9 2023 United Bible Societies.',
+  licence: CC_BY_SA,
+  source: [{ label: 'github.com/ubsicap/ubs-open-license', url: 'https://github.com/ubsicap/ubs-open-license/tree/main/parallel%20passages' }],
+  modifications:
+    'Word-level match markings dropped; only parallels within one Testament kept (Old Testament quotations in the New left out); Hebrew and Greek verse numbers converted to KJV numbering with the STEPBible data; pieces of one book a verse apart joined into one passage. The modified data is distributed under CC BY-SA 4.0.',
+};
+
 const FONTS = (edition: EditionId): Source => ({
   title: 'Fonts',
   notice:
@@ -188,7 +197,7 @@ export function sectionsFor(edition: EditionId): Section[] {
   return [
     { heading: 'Scripture texts', sources: texts },
     { heading: 'Hebrew and Greek data', sources: [STEPBIBLE, STRONGS] },
-    { heading: 'Dictionaries and cross references', sources: [ABBOTT_SMITH, BDB, CROSS_REFERENCES] },
+    { heading: 'Dictionaries, cross references and parallels', sources: [ABBOTT_SMITH, BDB, CROSS_REFERENCES, PARALLELS] },
     { heading: 'Fonts, icons and pictures', sources: [FONTS(edition), ICONS, FLUENT, ROSE] },
     { heading: 'Software', sources: [APP(edition)] },
   ];

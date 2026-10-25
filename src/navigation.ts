@@ -16,6 +16,8 @@ export type RootStackParamList = {
   Settings: undefined;
   Licences: undefined;
   Why: undefined;
+  /** A book's introduction. */
+  Intro: { book: number };
   Notebook: undefined;
   /** `isNew` opens a page just made, ready for writing. */
   NotePage: { id: string; isNew?: boolean; handwritten?: boolean };

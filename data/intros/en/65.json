@@ -1,0 +1,40 @@
+{
+  "book": 65,
+  "name": "Jude",
+  "facts": {
+    "author": "Jude, the servant of Jesus Christ and brother of James (1:1). The early church held that he was one of the brothers of the Lord Jesus.",
+    "date": "About AD 65–80",
+    "audience": "Believers who had been called and were loved by God and kept by Jesus Christ, very likely Jewish Christians"
+  },
+  "about": [
+    "Jude meant to write a happy letter about the salvation that all believers share. Instead he had to write urging them to fight hard for the faith that God had given to His people once for all (1:3). Ungodly men had crept into the church unnoticed. They turned God's grace into an excuse for immoral living and denied the Lord Jesus Christ (1:4).",
+    "Jude reminds his readers that God judges such people. He destroyed the Israelites who did not believe after the Exodus, He keeps in chains the angels who left their place, and He punished Sodom and Gomorrah. The false teachers are like Cain, Balaam and Core; they are clouds without water and wandering stars. Enoch, the seventh from Adam, had long ago prophesied that the Lord would come with thousands of His holy ones to judge the ungodly (1:14-15).",
+    "But the believers are to build themselves up in their most holy faith, pray in the Holy Spirit, keep themselves in God's love and show mercy to those who doubt. The letter ends with one of the most beautiful praises in the Bible, to God who is able to keep His people from falling (1:24-25)."
+  ],
+  "themes": [
+    {
+      "title": "Contending for the faith",
+      "text": "The faith was given once for all, and believers must defend it against those who would change it."
+    },
+    {
+      "title": "God's certain judgment",
+      "text": "History shows that God judges ungodliness, and He will do so again when the Lord comes."
+    },
+    {
+      "title": "Kept by God",
+      "text": "Believers are kept by Jesus Christ, and God is able to keep them from falling and present them without fault before Him."
+    },
+    {
+      "title": "Mercy to others",
+      "text": "While standing firm, believers should have compassion on those who waver and try to rescue those in danger."
+    }
+  ],
+  "outline": [
+    { "from": "1:1", "to": "1:2", "title": "Greeting" },
+    { "from": "1:3", "to": "1:4", "title": "Why Jude wrote: contend for the faith" },
+    { "from": "1:5", "to": "1:16", "title": "The false teachers and God's judgment on the ungodly" },
+    { "from": "1:17", "to": "1:23", "title": "How believers should stand firm and help others" },
+    { "from": "1:24", "to": "1:25", "title": "Praise to God who keeps His people from falling" }
+  ],
+  "keyVerses": ["1:3", "1:20-21", "1:24-25"]
+}

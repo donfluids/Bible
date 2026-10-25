@@ -1,0 +1,75 @@
+{
+  "book": 21,
+  "name": "Ecclesiastes",
+  "facts": {
+    "author": "Solomon, who calls himself the Preacher, the son of David and king in Jerusalem (1:1). This is the view of Jewish and Christian tradition.",
+    "date": "About 935 BC, late in Solomon's life",
+    "audience": "God's people, and all who search for the meaning of life"
+  },
+  "about": [
+    "In Ecclesiastes the Preacher looks at life under the sun, that is, life seen only from this world. He tries everything: wisdom and learning, pleasure and laughter, great building works, gardens, riches and hard work (2:1-11). All of it, he finds, is vanity, like a breath that quickly passes, and like chasing the wind.",
+    "He sees that the wise and the foolish both die, that the wicked often prosper, and that no one can understand all the work of God. Yet God has made everything beautiful in its time (3:11). So the Preacher tells us to receive food, work and family with joy as gifts from God's hand, to work with all our might, and to remember our Creator while we are young (12:1).",
+    "The book ends with its conclusion: fear God and keep His commandments, for God will bring every work into judgement (12:13-14). Only in God does life find its true meaning."
+  ],
+  "themes": [
+    {
+      "title": "Life under the sun",
+      "text": "Without God, even the best things of this world cannot satisfy, and they soon pass away."
+    },
+    {
+      "title": "God's gifts to enjoy",
+      "text": "Food, work, love and life itself are good gifts from God, to be enjoyed with thanks (5:18-19)."
+    },
+    {
+      "title": "A time for everything",
+      "text": "God has appointed a time for every event under heaven, and what He does lasts for ever (3:14)."
+    },
+    {
+      "title": "The fear of God",
+      "text": "The wise answer to life's riddles is to honour God, keep His commandments and remember that He will judge."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "1:11",
+      "title": "All is vanity: the endless round of life"
+    },
+    {
+      "from": "1:12",
+      "to": "2:26",
+      "title": "The Preacher's search in wisdom, pleasure and work"
+    },
+    {
+      "from": "3:1",
+      "to": "5:20",
+      "title": "A time for everything; injustice, worship and riches"
+    },
+    {
+      "from": "6:1",
+      "to": "8:17",
+      "title": "What is good for man? Wisdom for an uncertain life"
+    },
+    {
+      "from": "9:1",
+      "to": "11:6",
+      "title": "One end comes to all; live and work wisely"
+    },
+    {
+      "from": "11:7",
+      "to": "12:8",
+      "title": "Enjoy your youth and remember your Creator"
+    },
+    {
+      "from": "12:9",
+      "to": "12:14",
+      "title": "The conclusion: fear God and keep His commandments"
+    }
+  ],
+  "keyVerses": [
+    "3:1",
+    "3:11",
+    "12:1",
+    "12:13"
+  ]
+}

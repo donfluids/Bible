@@ -1,0 +1,64 @@
+{
+  "book": 36,
+  "name": "Zephaniah",
+  "facts": {
+    "author": "Zephaniah the son of Cushi, a great-great-grandson of Hizkiah, very likely King Hezekiah (1:1).",
+    "date": "About 640–620 BC",
+    "audience": "The people of Judah and Jerusalem in the days of King Josiah"
+  },
+  "about": [
+    "Zephaniah preached in the days of King Josiah (1:1), probably before the king's great reform. After the long and wicked reigns of Manasseh and Amon, Judah was full of idols. People worshipped Baal and the stars, swore by false gods, and thought that the Lord would do neither good nor evil.",
+    "Zephaniah's great theme is the day of the Lord. That day is near, a day of anger, darkness and trouble on Judah (1:14-18). The nations around, Philistia, Moab, Ammon, Ethiopia and Assyria, will also be judged, and Nineveh will become a desert (2:13). Jerusalem herself, with her wicked rulers, priests and prophets, will not escape. Yet the humble are called to seek the Lord and may be hidden in that day (2:3).",
+    "The book ends in joy. God will purify the nations so that they call on His name, and He will save a humble remnant. The Lord will be in the midst of His people, and He will rejoice over them with singing (3:17)."
+  ],
+  "themes": [
+    {
+      "title": "The day of the Lord",
+      "text": "A day of judgement is coming on Judah and on all the nations because of their sin."
+    },
+    {
+      "title": "Seek the Lord",
+      "text": "The meek and humble are called to seek the Lord, righteousness and humility before it is too late."
+    },
+    {
+      "title": "A humble remnant",
+      "text": "God will leave a poor and humble people who trust in His name and do no wrong."
+    },
+    {
+      "title": "God's joy over His people",
+      "text": "After judgement, the Lord will live among His people and delight in them."
+    }
+  ],
+  "outline": [
+    {
+      "from": "1:1",
+      "to": "1:18",
+      "title": "The day of the Lord against Judah"
+    },
+    {
+      "from": "2:1",
+      "to": "2:3",
+      "title": "A call to seek the Lord"
+    },
+    {
+      "from": "2:4",
+      "to": "2:15",
+      "title": "Judgement on the nations around"
+    },
+    {
+      "from": "3:1",
+      "to": "3:8",
+      "title": "Woe to Jerusalem, the rebellious city"
+    },
+    {
+      "from": "3:9",
+      "to": "3:20",
+      "title": "The nations purified and Israel restored with joy"
+    }
+  ],
+  "keyVerses": [
+    "1:14",
+    "2:3",
+    "3:17"
+  ]
+}
