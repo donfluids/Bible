@@ -302,10 +302,21 @@ Words chosen for the app's own features, used throughout:
 | save | Save | சேமி | |
 | remove | Remove | நீக்கு | |
 | footnote | Footnote | அடிக்குறிப்பு | |
-| crossReference | Cross reference | இணை வசனம் | |
-| crossReferences | Cross references | இணை வசனங்கள் | |
+| crossReference | Cross reference | தொடர்புடைய வசனம் | |
+| crossReferences | Cross references | தொடர்புடைய வசனங்கள் | |
 | crossReferencesDetail | {n} related passages, the strongest first | தொடர்புடைய {n} பகுதிகள், மிக நெருக்கமானவை முதலில் | |
 | crossReferencesSource | Treasury of Scripture Knowledge, via OpenBible.info (CC BY) | Treasury of Scripture Knowledge, OpenBible.info வழியாக (CC BY) | |
+| parallelPassages | Parallel passages | இணைப் பகுதிகள் | |
+| parallelPassagesDetail | {n} places with the same event or words | இதே நிகழ்வு அல்லது வார்த்தைகள் உள்ள {n} பகுதிகள் | |
+| parallelPassagesSource | Parallel Passages Database © 2023 United Bible Societies (CC BY-SA 4.0) | Parallel Passages Database © 2023 United Bible Societies (CC BY-SA 4.0) | |
+| aboutBook | About this book | இந்தப் புத்தகத்தைப் பற்றி | |
+| introAuthor | Written by | எழுதியவர் | |
+| introDate | When | காலம் | |
+| introAudience | Written for | யாருக்காக | |
+| introThemes | Main themes | முக்கிய கருப்பொருள்கள் | |
+| introOutline | Outline | உள்ளடக்கம் | |
+| introKeyVerses | Key verses | முக்கிய வசனங்கள் | |
+| introNone | There is no introduction to this book yet. | இந்தப் புத்தகத்திற்கு இன்னும் முன்னுரை இல்லை. | |
 | omitted | Omitted in this translation. | இந்த மொழிபெயர்ப்பில் இல்லை. | |
 | nothingSavedTitle | Nothing saved yet | இன்னும் எதுவும் சேமிக்கப்படவில்லை | |
 | nothingSaved | Hold a verse in the reader to bookmark it, highlight it or add a note. They will be listed here. | வாசிக்கும்போது ஒரு வசனத்தை அழுத்திப் பிடித்து அடையாளக்குறி இடலாம், ஹைலைட் செய்யலாம், வசனக் குறிப்பு சேர்க்கலாம். அவை இங்கே தெரியும். | |
