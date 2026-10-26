@@ -544,8 +544,9 @@ export function InkPageScreen({ id, onBack }: Props) {
   };
   const setPaper = (next: 'plain' | 'lined') => edit(id, { ink: { paper: next, strokes: ink.strokes.length } });
 
-  // Ten tools in a row: 48 points each where they fit, a little less (with the same reach) on a narrow phone.
-  const toolSize = windowWidth >= 10 * 48 + 24 ? 48 : Math.max(40, Math.floor((windowWidth - 24) / 10));
+  // Nine tools and a divider in a row: 48 points each where they fit, less on a narrow phone,
+  // where each keeps a 48-point reach (hitSlop) so they stay as easy to tap.
+  const toolSize = Math.max(34, Math.min(48, Math.floor((windowWidth - 16 - 13) / 9)));
   const toolButton = (key: string, label: string, selected: boolean, onPress: () => void, content: React.ReactNode, disabled = false, toggle = false) => (
     <Pressable
       key={key}
