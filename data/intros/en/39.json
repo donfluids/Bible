@@ -9,12 +9,12 @@
   "about": [
     "Malachi is the last book of the Old Testament. The temple had been rebuilt for many years, but the people had grown cold. The priests offered blind and sick animals, men divorced the wives of their youth, and the people kept back their tithes. Many asked whether it was any use to serve God.",
     "The book is written as a conversation. God makes a statement, the people answer with a question, such as asking how He has loved them (1:2), and God replies. In this way He shows them their sin and calls them to return to Him, promising to return to them (3:7).",
-    "Malachi also looks ahead. God will send His messenger to prepare the way, and the Lord will suddenly come to His temple (3:1). For those who fear His name, the Sun of righteousness will rise with healing (4:2). The book ends with the promise that Elijah the prophet will come before the great day of the Lord (4:5). After that came about four hundred years of silence, until John the Baptist came to prepare the way of the Lord."
+    "Malachi also looks ahead. God will send His messenger to prepare the way, and the Lord will suddenly come to His temple (3:1). For those who fear His name, the Sun of righteousness will rise with healing (4:2). The book ends with the promise that Elijah the prophet will come before the great day of the LORD (4:5). After that came about four hundred years of silence, until John the Baptist came to prepare the way of the LORD."
   ],
   "themes": [
     {
       "title": "God's unchanging love",
-      "text": "The Lord has loved His people and does not change (3:6), even when they doubt Him."
+      "text": "The LORD has loved His people and does not change (3:6), even when they doubt Him."
     },
     {
       "title": "Honouring God with our best",
@@ -25,7 +25,7 @@
       "text": "God hates divorce and treachery against the wife of one's youth (2:14-16)."
     },
     {
-      "title": "The coming of the Lord",
+      "title": "The coming of the LORD",
       "text": "A messenger will prepare the way, and the Lord will come to judge and to heal."
     }
   ],
@@ -33,7 +33,7 @@
     {
       "from": "1:1",
       "to": "1:5",
-      "title": "The Lord's love for Israel"
+      "title": "The LORD's love for Israel"
     },
     {
       "from": "1:6",
@@ -48,7 +48,7 @@
     {
       "from": "2:17",
       "to": "3:6",
-      "title": "The messenger and the coming of the Lord"
+      "title": "The messenger and the coming of the LORD"
     },
     {
       "from": "3:7",
@@ -58,7 +58,7 @@
     {
       "from": "3:13",
       "to": "4:6",
-      "title": "Those who fear the Lord; the great day and Elijah"
+      "title": "Those who fear the LORD; the great day and Elijah"
     }
   ],
   "keyVerses": [

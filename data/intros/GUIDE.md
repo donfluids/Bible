@@ -51,6 +51,9 @@ book), in the interface language.
 
 ## English
 
+The divine name is "the LORD" in capitals in the Old Testament books, as the KJV prints it
+(Hebrew YHWH); "Lord" is for Adonai (Isaiah 6:1, Malachi 3:1) and in the New Testament.
+
 Plain, warm, simple sentences that a reader with school English follows easily. British
 spelling (baptised, honour). Names as in the KJV (Elijah, Hezekiah, Nebuchadnezzar).
 

@@ -45,9 +45,9 @@ const PARAGRAPHS: Record<'en' | 'ml' | 'ta', Piece[][]> = {
       'To help with that, the Hebrew and Greek words are here to help you understand the text. But more than understanding, it is the Holy Spirit who lights up a life. That is His ministry.',
     ],
     [
-      'And to know Him is life itself: “This is eternal life, to know the Father, the only true God, and Jesus Christ whom He has sent” (',
+      'And to know Him is life itself: “And this is life eternal, that they might know thee the only true God, and Jesus Christ, whom thou hast sent” (',
       { text: 'John 17:3', ref: JOHN_17_3 },
-      '). May the Holy Spirit be with you on that journey and, like a fire, burn away your troubles, so that they no longer weigh on you, for it is He who carries them, not we. And may we give to that fire not only our burdens but our old life, on the altar of God, so that, as Paul says, our old self is crucified with Christ (',
+      '). May the Holy Spirit be with you on that journey and, like a fire, burn away your troubles, so that they no longer weigh on you, for it is He who carries them, not we. And may we give to that fire not only our burdens but our old life, on the altar of God, so that, as Paul says, we are crucified with Christ, and it is no longer we who live but Christ who lives in us (',
       { text: 'Galatians 2:20', ref: GALATIANS_2_20 },
       '), and we find new life wholly in the Lord Jesus, living in His glory every moment, for ever.',
     ],
@@ -73,7 +73,7 @@ const PARAGRAPHS: Record<'en' | 'ml' | 'ta', Piece[][]> = {
     [
       'അവിടുത്തെ അറിയുന്നതുതന്നെയാണ് ജീവൻ: “ഏകസത്യദൈവമായ നിന്നെയും നീ അയച്ചിരിക്കുന്ന യേശുക്രിസ്തുവിനെയും അറിയുന്നതു തന്നേ നിത്യജീവൻ ആകുന്നു” (',
       { text: 'യോഹന്നാൻ 17:3', ref: JOHN_17_3 },
-      '). ആ യാത്രയിൽ പരിശുദ്ധാത്മാവ് നിങ്ങളോടുകൂടെ ഉണ്ടായിരിക്കട്ടെ; ഒരു അഗ്നിപോലെ അവിടുന്ന് നിങ്ങളുടെ ക്ലേശങ്ങളെ ദഹിപ്പിച്ചുകളയട്ടെ; അവ ഇനി നിങ്ങൾക്കു ഭാരമാകാതിരിക്കട്ടെ, കാരണം അവയെ വഹിക്കുന്നതു നാമല്ല, അവിടുന്നാണ്. നമ്മുടെ ഭാരങ്ങൾ മാത്രമല്ല, നമ്മുടെ പഴയ ജീവിതവും ദൈവത്തിന്റെ യാഗപീഠത്തിൽ ആ അഗ്നിക്കു സമർപ്പിക്കുവാൻ നമുക്കു കഴിയട്ടെ; അങ്ങനെ, പൗലൊസ് പറയുന്നതുപോലെ, നമ്മുടെ പഴയ മനുഷ്യൻ ക്രിസ്തുവിനോടുകൂടെ ക്രൂശിക്കപ്പെട്ട് (',
+      '). ആ യാത്രയിൽ പരിശുദ്ധാത്മാവ് നിങ്ങളോടുകൂടെ ഉണ്ടായിരിക്കട്ടെ; ഒരു അഗ്നിപോലെ അവിടുന്ന് നിങ്ങളുടെ ക്ലേശങ്ങളെ ദഹിപ്പിച്ചുകളയട്ടെ; അവ ഇനി നിങ്ങൾക്കു ഭാരമാകാതിരിക്കട്ടെ, കാരണം അവയെ വഹിക്കുന്നതു നാമല്ല, അവിടുന്നാണ്. നമ്മുടെ ഭാരങ്ങൾ മാത്രമല്ല, നമ്മുടെ പഴയ ജീവിതവും ദൈവത്തിന്റെ യാഗപീഠത്തിൽ ആ അഗ്നിക്കു സമർപ്പിക്കുവാൻ നമുക്കു കഴിയട്ടെ; അങ്ങനെ, പൗലൊസ് പറയുന്നതുപോലെ, നാം ക്രിസ്തുവിനോടുകൂടെ ക്രൂശിക്കപ്പെട്ടവരായി, ഇനി ജീവിക്കുന്നതു നാമല്ല, ക്രിസ്തുവത്രേ നമ്മിൽ ജീവിക്കുന്നത് എന്ന നിലയിലെത്തി (',
       { text: 'ഗലാത്യർ 2:20', ref: GALATIANS_2_20 },
       '), കർത്താവായ യേശുവിൽ നാം പൂർണ്ണമായി പുതുജീവൻ കണ്ടെത്തി, എന്നേക്കും ഓരോ നിമിഷവും അവിടുത്തെ മഹത്വത്തിൽ ജീവിക്കുമാറാകട്ടെ.',
     ],
@@ -84,7 +84,7 @@ const PARAGRAPHS: Record<'en' | 'ml' | 'ta', Piece[][]> = {
       'தேவனுடைய வார்த்தை தேவைப்படுகிற அனைவருக்கும் அது எட்டும்படி இந்த வேதாகமம் உருவாக்கப்பட்டது. மற்றவர்கள் அளித்த வேதாகமங்களே இதற்குத் தூண்டுதலாக இருந்தன; நமக்கு முன்சென்ற பலருடைய உழைப்பின்மேல் இது கட்டப்பட்டிருக்கிறது.',
     ],
     [
-      'இதை அளிப்பதில் நாங்கள் கர்த்தராகிய இயேசுவைப் பின்பற்றுகிறோம். அவர் பன்னிரண்டு சீஷர்களை அனுப்பியபோது (',
+      'இதை அளிப்பதில் நாங்கள் கர்த்தராகிய இயேசுவைப் பின்பற்றுகிறோம். அவர் பன்னிரண்டு சீடர்களை அனுப்பியபோது (',
       { text: 'மத்தேயு 10:5–10', ref: MATTHEW_10_5 },
       '), எதையும் எடுத்துச்செல்ல வேண்டாம் என்று அவர்களிடம் சொன்னார்; அவருக்காக ஊழியம் செய்கிறவர்களுக்குத் தேவையானது கொடுக்கப்படும். அவர் சொன்னார்: “இலவசமாகப் பெற்றீர்கள், இலவசமாகக் கொடுங்கள்” (',
       { text: 'மத்தேயு 10:8', ref: MATTHEW_10_8 },
@@ -99,7 +99,7 @@ const PARAGRAPHS: Record<'en' | 'ml' | 'ta', Piece[][]> = {
     [
       'அவரை அறிவதே ஜீவன்: “ஒன்றான உண்மை தேவனாகிய உம்மையும் நீர் அனுப்பினவராகிய இயேசுகிறிஸ்துவையும் அறிவதே நித்தியஜீவன்” (',
       { text: 'யோவான் 17:3', ref: JOHN_17_3 },
-      '). அந்தப் பயணத்தில் பரிசுத்த ஆவியானவர் உங்களோடு இருப்பாராக; ஒரு அக்கினியைப்போல அவர் உங்கள் துன்பங்களைச் சுட்டெரிப்பாராக; அவற்றைச் சுமப்பவர் நாமல்ல, அவரே; ஆகவே அவை இனி உங்களுக்குப் பாரமாக இருக்காது. நம்முடைய பாரங்களை மட்டுமல்ல, நம்முடைய பழைய வாழ்க்கையையும் தேவனுடைய பலிபீடத்தில் அந்த அக்கினிக்கு ஒப்புக்கொடுப்போமாக; அப்பொழுது, பவுல் சொல்லுகிறபடி, நம்முடைய பழைய மனுஷன் கிறிஸ்துவோடு சிலுவையில் அறையப்பட்டு (',
+      '). அந்தப் பயணத்தில் பரிசுத்த ஆவியானவர் உங்களோடு இருப்பாராக; ஒரு அக்கினியைப்போல அவர் உங்கள் துன்பங்களைச் சுட்டெரிப்பாராக; அவற்றைச் சுமப்பவர் நாமல்ல, அவரே; ஆகவே அவை இனி உங்களுக்குப் பாரமாக இருக்காது. நம்முடைய பாரங்களை மட்டுமல்ல, நம்முடைய பழைய வாழ்க்கையையும் தேவனுடைய பலிபீடத்தில் அந்த அக்கினிக்கு ஒப்புக்கொடுப்போமாக; அப்பொழுது, பவுல் சொல்லுகிறபடி, நாம் கிறிஸ்துவோடு சிலுவையில் அறையப்பட்டு, இனி நாம் அல்ல, கிறிஸ்துவே நமக்குள் பிழைத்திருக்கிறார் என்ற நிலையை அடைந்து (',
       { text: 'கலாத்தியர் 2:20', ref: GALATIANS_2_20 },
       '), கர்த்தராகிய இயேசுவுக்குள் நாம் முழுமையாகப் புதிய ஜீவனைக் கண்டடைந்து, ஒவ்வொரு கணமும் என்றென்றும் அவருடைய மகிமையில் வாழ்வோமாக.',
     ],
@@ -114,7 +114,7 @@ export function WhyScreen({ onBack, onOpenRef }: Props) {
   const { settings } = useSettings();
   const language = settings.language === 'ml' || settings.language === 'ta' ? settings.language : 'en';
   const font = scriptureFont(languageScript(language), settings.serif) ?? theme.font;
-  const size = Math.min(settings.fontSize, 22);
+  const size = settings.fontSize;
   return (
     <>
       <Header title={t('whyThisBible')} onBack={onBack} />

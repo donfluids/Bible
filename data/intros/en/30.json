@@ -2,7 +2,7 @@
   "book": 30,
   "name": "Amos",
   "facts": {
-    "author": "Amos, a herdsman from Tekoa in Judah and a gatherer of sycamore fruit, whom God sent to prophesy to Israel (1:1, 7:14-15).",
+    "author": "Amos, a herdsman from Tekoa in Judah and a gatherer of sycamore fruit (1:1), whom God sent to prophesy to Israel (7:14-15).",
     "date": "About 760–750 BC",
     "audience": "The northern kingdom of Israel in the days of King Jeroboam the son of Joash"
   },
@@ -25,7 +25,7 @@
       "text": "Israel had been specially chosen, so its sin was all the more serious."
     },
     {
-      "title": "The Lord of all nations",
+      "title": "The LORD of all nations",
       "text": "God judges every nation for its wickedness, and in the end He will restore David's kingdom."
     }
   ],
@@ -43,7 +43,7 @@
     {
       "from": "5:1",
       "to": "6:14",
-      "title": "A lament for Israel; seek the Lord and live"
+      "title": "A lament for Israel; seek the LORD and live"
     },
     {
       "from": "7:1",

@@ -2,7 +2,7 @@
   "book": 3,
   "name": "Leviticus",
   "facts": {
-    "author": "Moses. Again and again the book says that the Lord spoke these words to Moses at Mount Sinai (27:34), and the Jewish people and the early church held that Moses wrote it.",
+    "author": "Moses. Again and again the book says that the LORD spoke these words to Moses at Mount Sinai (27:34), and the Jewish people and the early church held that Moses wrote it.",
     "date": "About 1445–1406 BC",
     "audience": "The people of Israel and their priests, the family of Aaron from the tribe of Levi"
   },
@@ -37,7 +37,7 @@
     { "from": "17:1", "to": "22:33", "title": "A holy people and holy priests" },
     { "from": "23:1", "to": "25:55", "title": "The sabbath, the feasts and the year of jubilee" },
     { "from": "26:1", "to": "26:46", "title": "Blessings for obedience, warnings for disobedience" },
-    { "from": "27:1", "to": "27:34", "title": "Vows and gifts given to the Lord" }
+    { "from": "27:1", "to": "27:34", "title": "Vows and gifts given to the LORD" }
   ],
   "keyVerses": ["16:30", "17:11", "19:2", "19:18"]
 }
