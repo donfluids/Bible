@@ -343,8 +343,8 @@ npm run smoke        # every main screen of each app in a browser, at four sizes
 - **Book introductions**, written for these apps in English, Malayalam and Tamil
   (`data/intros`, see `data/intros/GUIDE.md`; checked by `scripts/check-intros.mjs`): who
   wrote each book, when and for whom, what it is about, its themes, an outline and key
-  verses, giving the church's traditional view of authorship and dates. The reader's
-  info button opens the one for the book being read, and so does About this book above a
+  verses, giving the church's traditional view of authorship and dates. A line above a
+  book's first chapter opens its introduction, and so does About this book above the
   book's chapter numbers.
 - **Interlinear Hebrew and Greek**: Translators Amalgamated Hebrew OT (TAHOT) and
   Greek NT (TAGNT) by [STEPBible](https://github.com/STEPBible/STEPBible-Data),

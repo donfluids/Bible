@@ -1196,13 +1196,29 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
             </Pressable>
           </View>
         )}
+        {/* The book's introduction, offered where a book is begun (it is also above the chapter numbers). */}
+        {position.chapter === 1 && !marking ? (
+          <Pressable
+            onPress={() => onOpenIntro(position.book)}
+            android_ripple={{ color: theme.accentSoft }}
+            accessibilityRole="link"
+            accessibilityLabel={t('aboutBook')}
+            style={({ pressed }) => [styles.aboutRow, { opacity: pressed ? 0.6 : 1 }]}
+          >
+            <Icon name="info" size={18} color={theme.accent} />
+            <Text style={[styles.aboutText, { color: theme.accent, fontFamily: scriptureFont(scriptOf(bookName(books, position.book, translation)), settings.serif) ?? theme.font }]}>
+              {t('aboutBookNamed', { book: bookName(books, position.book, translation) })}
+            </Text>
+            <Icon name="chevron_right" size={18} color={theme.accent} />
+          </Pressable>
+        ) : null}
         {!marking && interlinear && interlinearMode === 'tap' ? (
           <Text style={[styles.modeHint, { color: theme.muted }]}>{t('tapVerseNumber', { lang: book?.testament === 'OT' ? t('hebrew') : t('greek') })}</Text>
         ) : null}
       </>
     ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [tipSeen, theme, translation, t, update, marking, interlinear, interlinearMode, book?.testament],
+    [tipSeen, theme, translation, t, update, marking, interlinear, interlinearMode, book?.testament, position.chapter, position.book, books, settings.serif, onOpenIntro],
   );
   const onScrollToIndexFailed = useCallback((info: { index: number; averageItemLength: number }) => {
     // The row is not measured yet: get near it, then retry with the same placement.
@@ -1240,8 +1256,6 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         }
         right={
           <>
-            {/* On a narrow phone with Back shown the title needs the room; About this book is also above the chapter numbers. */}
-            {onBack && windowWidth < 400 ? null : <HeaderIconButton icon="info" onPress={() => onOpenIntro(position.book)} accessibilityLabel={t('aboutBook')} />}
             <HeaderIconButton icon="volume_up" onPress={() => startReading()} accessibilityLabel={t('readAloud')} />
             <HeaderIconButton icon="search" onPress={onOpenSearch} accessibilityLabel={t('search')} />
             <HeaderIconButton icon="settings" onPress={onOpenSettings} accessibilityLabel={t('settings')} />
@@ -1960,6 +1974,8 @@ const styles = StyleSheet.create({
   tipText: { fontSize: 15, lineHeight: 21 },
   tipDismiss: { fontSize: 15, fontWeight: '700', marginTop: 8, alignSelf: 'flex-end' },
   modeHint: { fontSize: 12, marginBottom: 6 },
+  aboutRow: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, marginBottom: 4 },
+  aboutText: { fontSize: 15, fontWeight: '600' },
   pill: { minHeight: 36, justifyContent: 'center', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 999, borderWidth: 1 },
   pillText: { fontSize: 14, fontWeight: '600' },
   heading: { fontWeight: '700', letterSpacing: 1, marginTop: 14, marginBottom: 2 },
