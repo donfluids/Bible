@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import { Header, HeaderIconButton } from '../components/Header';
 import { Icon } from '../components/Icon';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
 import type { Paper } from '../ink';
 import { useEdition } from '../edition';
-import { restoreBackup, saveBackup } from '../notebookFiles';
+import { InkUnreadable, restoreBackup, saveBackup } from '../notebookFiles';
 import { TabBar } from '../components/TabBar';
 import { scriptOf, scriptureFont } from '../fonts';
 import { useT } from '../i18n';
@@ -20,6 +20,8 @@ interface Props {
 }
 
 /** The notebook's pages, the most recently edited first. A new page is typed or handwritten. */
+const APP_NAMES: Record<string, string> = { en: 'Bible', ml: 'വേദപുസ്തകം', ta: 'வேதாகமம்' };
+
 export function NotebookScreen({ onOpenPage }: Props) {
   const theme = useTheme();
   const t = useT();
@@ -39,19 +41,29 @@ export function NotebookScreen({ onOpenPage }: Props) {
     setBusy(true);
     try {
       await saveBackup(pages, edition.id, t('saveBackup'));
-    } catch {
-      Alert.alert(t('backupFailed'));
+    } catch (e) {
+      if (e instanceof InkUnreadable) Alert.alert(t('backupInkUnreadable', { page: pageName(e.page, t('untitled')) }));
+      else Alert.alert(t('backupFailed'));
     } finally {
       setBusy(false);
     }
   };
+  // A backup made in another of the apps (named as each app is named): restored only when the reader says so.
+  const askOtherEdition = (from: string) =>
+    new Promise<boolean>((resolve) =>
+      Alert.alert(t('restoreOtherEdition', { app: APP_NAMES[from] ?? from }), undefined, [
+        { text: t('cancel'), style: 'cancel', onPress: () => resolve(false) },
+        { text: t('restoreBackup'), onPress: () => resolve(true) },
+      ], { cancelable: true, onDismiss: () => resolve(false) }),
+    );
   const restore = async () => {
     setBackupSheet(false);
     setBusy(true);
     try {
-      const outcome = await restoreBackup(pages, edition.id);
+      const outcome = await restoreBackup(pages, edition.id, (from) => askOtherEdition(from));
       if (outcome.kind === 'tooLarge') Alert.alert(t('restoreTooLarge'));
       else if (outcome.kind === 'notBackup') Alert.alert(t('restoreNotBackup'));
+      else if (outcome.kind === 'failed') Alert.alert(t('restoreFailed'));
       else if (outcome.kind === 'done') {
         replaceAll(outcome.pages);
         Alert.alert(t('restoreDone', { added: outcome.added, updated: outcome.updated, kept: outcome.kept }));
@@ -74,7 +86,13 @@ export function NotebookScreen({ onOpenPage }: Props) {
         title={t('notebook')}
         right={
           <>
-            <HeaderIconButton icon="download" onPress={() => !busy && setBackupSheet(true)} accessibilityLabel={t('backupRestore')} />
+            {busy ? (
+              <View style={styles.busy} accessible accessibilityLabel={t('backupRestore')} accessibilityState={{ busy: true }}>
+                <ActivityIndicator color={theme.accent} />
+              </View>
+            ) : (
+              <HeaderIconButton icon="settings_backup_restore" onPress={() => setBackupSheet(true)} accessibilityLabel={t('backupRestore')} />
+            )}
             <HeaderIconButton icon="note_add" onPress={newPage} accessibilityLabel={t('newPage')} />
           </>
         }
@@ -127,13 +145,13 @@ export function NotebookScreen({ onOpenPage }: Props) {
         />
       )}
       <SimpleSheet visible={choosing} title={t('newPage')} onClose={() => setChoosing(false)}>
-        <SheetAction icon="edit_note" label={t('pageTyped')} detail={t('pageTypedDetail')} onPress={() => start()} />
-        <SheetAction icon="draw" label={t('pageHandLined')} detail={t('pageHandDetail')} onPress={() => start('lined')} />
-        <SheetAction icon="draw" label={t('pageHandPlain')} detail={t('pageHandDetail')} onPress={() => start('plain')} />
+        <SheetAction icon="edit_note" label={t('pageTyped')} detail={t('pageTypedDetail')} onPress={() => start()} detailLines={0} />
+        <SheetAction icon="draw" label={t('pageHandLined')} detail={t('pageHandDetail')} onPress={() => start('lined')} detailLines={0} />
+        <SheetAction icon="gesture" label={t('pageHandPlain')} detail={t('pageHandDetail')} onPress={() => start('plain')} detailLines={0} />
       </SimpleSheet>
       <SimpleSheet visible={backupSheet} title={t('backupRestore')} onClose={() => setBackupSheet(false)}>
-        <SheetAction icon="download" label={t('saveBackup')} detail={t('saveBackupDetail')} onPress={backUp} />
-        <SheetAction icon="upload" label={t('restoreBackup')} detail={t('restoreBackupDetail')} onPress={restore} />
+        <SheetAction icon="backup" label={t('saveBackup')} detail={t('saveBackupDetail')} onPress={backUp} detailLines={0} />
+        <SheetAction icon="history" label={t('restoreBackup')} detail={t('restoreBackupDetail')} onPress={restore} detailLines={0} />
       </SimpleSheet>
       <TabBar current="Notebook" />
     </View>
@@ -141,6 +159,7 @@ export function NotebookScreen({ onOpenPage }: Props) {
 }
 
 const styles = StyleSheet.create({
+  busy: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center' },
   screen: { flex: 1 },
   list: { alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
   row: { paddingHorizontal: 18, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth, gap: 3 },
@@ -152,6 +171,6 @@ const styles = StyleSheet.create({
   emptyIcon: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
   emptyTitle: { fontSize: 20, fontWeight: '500', marginBottom: 8, textAlign: 'center' },
   empty: { fontSize: 15, lineHeight: 22, textAlign: 'center', maxWidth: 340 },
-  newButton: { marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 6, paddingLeft: 16, paddingRight: 20, minHeight: 44, borderRadius: 22 },
+  newButton: { marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 6, paddingLeft: 16, paddingRight: 20, minHeight: 48, borderRadius: 22 },
   newButtonText: { fontSize: 16, fontWeight: '600' },
 });

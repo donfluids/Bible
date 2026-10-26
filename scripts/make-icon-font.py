@@ -35,6 +35,7 @@ ICONS = [
     'volume_up', 'stop_circle', 'image', 'play_arrow', 'pause', 'skip_previous', 'skip_next', 'chevron_left',
     'draw', 'undo', 'redo', 'line_weight', 'format_line_spacing', 'stylus',
     'link', 'download', 'upload', 'picture_as_pdf', 'view_column',
+    'backup', 'settings_backup_restore', 'gesture', 'touch_app',
 ]
 
 

@@ -38,9 +38,16 @@ export interface Ink {
   strokes: Stroke[];
 }
 
-/** Limits on what is read back, so a damaged entry cannot stall the page. */
-const MAX_STROKES = 20000;
+/**
+ * Limits on what is read back, so a damaged entry cannot stall the page. A page takes at
+ * most PAGE_STROKES strokes when written (src/screens/InkPageScreen.tsx says so when it is
+ * full), well under what is read back, so nothing written is ever cut on reading.
+ */
+export const PAGE_STROKES = 20000;
+const MAX_STROKES = 50000;
 const MAX_POINTS = 4000;
+/** How far down a page may run, in units (about 5,500 lines): points below it are not read. */
+export const PAGE_MAX_Y = 200000;
 
 export const emptyInk = (): Ink => ({ strokes: [] });
 
@@ -144,7 +151,7 @@ export function decodeInk(raw: unknown): Ink {
       y += steps[i + 1];
       p.push(Math.round(x), Math.round(y));
     }
-    if (p.some((v, i) => (i % 2 === 0 ? v < -50 || v > PAGE_WIDTH + 50 : v < -50 || v > 1e6))) continue;
+    if (p.some((v, i) => (i % 2 === 0 ? v < -50 || v > PAGE_WIDTH + 50 : v < -50 || v > PAGE_MAX_Y))) continue;
     const stroke = { c, w, p };
     strokes.push(stroke);
   }
@@ -194,7 +201,8 @@ export function pathOf(s: Stroke): string {
   return d;
 }
 
-function boundsOf(s: Stroke): [number, number, number, number] {
+/** A stroke's left, top, right and bottom, in units (kept for each stroke). */
+export function boundsOf(s: Stroke): [number, number, number, number] {
   let b = bounds.get(s);
   if (!b) {
     b = [Infinity, Infinity, -Infinity, -Infinity];

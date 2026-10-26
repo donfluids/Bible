@@ -1,4 +1,4 @@
-import { LINE_GAP, PAGE_WIDTH, lowestPoint, pathOf } from './ink';
+import { LINE_GAP, PAGE_WIDTH, boundsOf, lowestPoint, pathOf } from './ink';
 import type { Ink, Paper } from './ink';
 
 /**
@@ -57,15 +57,23 @@ const PEN_COLOURS = ['#1E1B16', '#1F4FB4', '#C0392B'];
 export function inkPageHtml(title: string, ink: Ink, paper: Paper): string {
   const height = Math.max(LINE_GAP * 4, lowestPoint(ink) + LINE_GAP);
   const sheets: string[] = [];
+  // Each stroke's path is made once; a sheet carries only the strokes that cross it, so a
+  // long page's PDF grows with its length, not with its length times its strokes.
+  const drawn = ink.strokes.map((s) => {
+    const [, top, , bottom] = boundsOf(s);
+    const colour = s.c < 0 ? '#FFD400' : (PEN_COLOURS[s.c] ?? PEN_COLOURS[0]);
+    return { highlight: s.c < 0, top: top - s.w / 2, bottom: bottom + s.w / 2, svg: `<path d="${pathOf(s)}" stroke="${colour}" stroke-width="${s.w}"/>` };
+  });
   // Pieces end on a ruled line, so a cut falls between lines of writing, not through one.
   // The first piece is shorter by the title above it, so it still fits on the first page.
   const lineFit = (room: number) => Math.floor(room / LINE_GAP) * LINE_GAP;
   for (let top = 0, size = lineFit(title ? SHEET_HEIGHT - TITLE_HEIGHT : SHEET_HEIGHT); top < height; top += size, size = lineFit(SHEET_HEIGHT)) {
     const lines = [];
     if (paper === 'lined') for (let y = LINE_GAP * 2; y < top + size; y += LINE_GAP) if (y >= top) lines.push(`<line x1="0" x2="${PAGE_WIDTH}" y1="${y}" y2="${y}" stroke="#DCD3C3" stroke-width="1"/>`);
+    const here = drawn.filter((d) => d.bottom >= top && d.top <= top + size);
     // Highlighter under the pens, as on the screen.
-    const highlights = ink.strokes.filter((s) => s.c < 0).map((s) => `<path d="${pathOf(s)}" stroke="#FFD400" stroke-width="${s.w}"/>`);
-    const pens = ink.strokes.filter((s) => s.c >= 0).map((s) => `<path d="${pathOf(s)}" stroke="${PEN_COLOURS[s.c] ?? PEN_COLOURS[0]}" stroke-width="${s.w}"/>`);
+    const highlights = here.filter((d) => d.highlight).map((d) => d.svg);
+    const pens = here.filter((d) => !d.highlight).map((d) => d.svg);
     sheets.push(
       `<svg class="sheet" xmlns="http://www.w3.org/2000/svg" viewBox="0 ${top} ${PAGE_WIDTH} ${size}" preserveAspectRatio="xMidYMin meet">${lines.join('')}` +
         `<g fill="none" stroke-linecap="round" stroke-linejoin="round"><g opacity="0.45">${highlights.join('')}</g>${pens.join('')}</g></svg>`,

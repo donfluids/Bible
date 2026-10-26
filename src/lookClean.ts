@@ -29,9 +29,10 @@ export function savedCopyIn(uri: string, photoDir: string): boolean {
 
 /**
  * A photo a look may use: the app's own copy, or the picker's copy in the app's cache;
- * never a path with "..", nor a file anywhere else. (The web preview's picker gives a
- * blob: address, which is not a file.)
+ * never a path with "..", a file anywhere else, nor a web or content address (a saved
+ * look read back must not make the phone fetch anything). The web preview's picker gives a
+ * blob: address, which is let through.
  */
 export function ownPhotoIn(uri: string, photoDir: string, cacheDir: string): boolean {
-  return !uri.includes('..') && (savedCopyIn(uri, photoDir) || uri.startsWith(cacheDir) || !uri.startsWith('file:'));
+  return !uri.includes('..') && (savedCopyIn(uri, photoDir) || uri.startsWith(cacheDir) || uri.startsWith('blob:'));
 }

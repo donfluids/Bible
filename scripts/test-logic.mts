@@ -260,6 +260,26 @@ test('a long handwritten page runs on over several PDF pages', () => {
   assert.ok((inkPageHtml('T', long, 'lined').match(/<svg class="sheet"/g) ?? []).length >= 3);
   assert.equal((inkPageHtml('', handInk, 'plain').match(/<svg class="sheet"/g) ?? []).length, 1);
 });
+test('a PDF sheet carries only the strokes that cross it', () => {
+  // 40 lines of writing a sheet apart from each other: each sheet has its own, not all 40.
+  const lines = { strokes: [...Array(40)].map((_, i) => ({ c: 0, w: 3, p: [10, i * 900 + 50, 300, i * 900 + 60] })) };
+  const html = inkPageHtml('', lines, 'plain');
+  const sheets = (html.match(/<svg class="sheet"/g) ?? []).length;
+  assert.ok(sheets >= 35, `${sheets} sheets`);
+  assert.ok((html.match(/<path /g) ?? []).length <= 80, 'each stroke on one or two sheets');
+});
+test('restored times are no later than now, and a page with none is the oldest', () => {
+  const b = readBackup(JSON.stringify({ kind: 'riversresearch-notebook', edition: 'ta', pages: [{ id: 'fut1', title: 'Future', updated: 99999999999999 }, { id: 'none1', title: 'No time' }] }));
+  assert.ok(b.pages[0].updated <= Date.now());
+  assert.equal(b.pages[1].updated, 1);
+  assert.equal(b.edition, 'ta');
+  const m = mergePages([{ id: 'none1', title: 'Newer here', body: '', created: 5, updated: 5 }], b.pages);
+  assert.equal(m.pages.find((p) => p.id === 'none1')!.title, 'Newer here');
+});
+test('a saved card look never points at a web or content address', () => {
+  for (const p of ['https://example.com/a.jpg', 'content://media/external/images/1', 'http://x/y.jpg'])
+    assert.equal(cleanLook({ design: 'paper', photo: p } as never, known, own)!.photo, undefined, p);
+});
 
 // --- Patterns that must stay fast on long text ---
 const books = [{ id: 43, osis: 'John', name: 'John', testament: 'NT', chapters: 21, names: {} }] as Book[];
@@ -287,7 +307,8 @@ fast('a long handwritten page read back', () => parseInk(JSON.stringify(encodeIn
     next.forEach(pathOf);
     encodeInk({ strokes: next });
     next.filter((st) => touchesStroke(st, 300, 4000, 10));
-  }, 25);
+    // The slow way took 3 to 50 ms on this machine; the limit leaves room for a busy one.
+  }, 150);
 }
 fast('a long Malayalam search', () => new RegExp(malayalamPattern('ൻ്റ'.repeat(200))!.source).test('ന്റ'.repeat(5000)));
 

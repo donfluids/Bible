@@ -57,5 +57,9 @@
  "download": 57399,
  "upload": 57400,
  "picture_as_pdf": 57401,
- "view_column": 57402
+ "view_column": 57402,
+ "backup": 57403,
+ "settings_backup_restore": 57404,
+ "gesture": 57405,
+ "touch_app": 57406
 }

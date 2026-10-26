@@ -10,13 +10,15 @@ import type { NotePage } from './notebook';
 export const BACKUP_KIND = 'riversresearch-notebook';
 export const BACKUP_VERSION = 1;
 /** Larger files are refused before they are read into memory. */
-export const MAX_BACKUP_BYTES = 40 * 1024 * 1024;
+export const MAX_BACKUP_BYTES = 25 * 1024 * 1024;
 const MAX_PAGES = 5000;
 const MAX_TITLE = 500;
 const MAX_BODY = 500_000;
 const ID = /^[a-z0-9]{1,24}$/;
 
 export interface Backup {
+  /** The edition the backup was made in ('en', 'ml', 'ta'), or null if the file does not say. */
+  edition: string | null;
   pages: NotePage[];
   /** The strokes of the handwritten pages, by page id. */
   ink: Map<string, Ink>;
@@ -62,8 +64,12 @@ export function readBackup(text: string): Backup {
     if (typeof p.id !== 'string' || !ID.test(p.id) || seen.has(p.id)) continue;
     const title = typeof p.title === 'string' ? p.title.slice(0, MAX_TITLE) : '';
     const body = typeof p.body === 'string' ? p.body.slice(0, MAX_BODY) : '';
-    const updated = isTime(p.updated) ? p.updated : Date.now();
-    const page: NotePage = { id: p.id, title, body, created: isTime(p.created) ? p.created : updated, updated };
+    // Times from the file are kept no later than now, and a page with none counts as the
+    // oldest, so a page from the file never replaces a newer one here by its date alone.
+    const now = Date.now();
+    const created = isTime(p.created) ? Math.min(p.created, now) : 1;
+    const updated = isTime(p.updated) ? Math.min(p.updated, now) : created;
+    const page: NotePage = { id: p.id, title, body, created, updated };
     if (p.ink && typeof p.ink === 'object') {
       const strokes = decodeInk(p.inkData);
       page.ink = { paper: (p.ink as { paper?: unknown }).paper === 'lined' ? 'lined' : 'plain', strokes: strokes.strokes.length };
@@ -73,7 +79,8 @@ export function readBackup(text: string): Backup {
     seen.add(p.id);
     pages.push(page);
   }
-  return { pages, ink };
+  const edition = (raw as { edition?: unknown }).edition;
+  return { edition: typeof edition === 'string' && /^[a-z]{2}$/.test(edition) ? edition : null, pages, ink };
 }
 
 export interface MergeResult {

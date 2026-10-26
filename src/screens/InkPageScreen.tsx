@@ -25,6 +25,7 @@ import {
   PAGE_WIDTH,
   PEN_COLOURS,
   PEN_WIDTHS,
+  PAGE_STROKES,
   addPoint,
   emptyInk,
   encodeInk,
@@ -198,12 +199,17 @@ export function InkPageScreen({ id, onBack }: Props) {
   // on it is kept), goes there a moment later: the notebook is shared by every screen, and
   // telling it of every stroke would redraw the reader underneath.
   const [title, setTitle] = useState(page?.title ?? '');
-  const latest = useRef({ page, title, count: ink.strokes.length });
-  latest.current = { page, title, count: ink.strokes.length };
+  // Any change of strokes since the notebook was last told (an erased stroke and a new one
+  // leave the count as it was) is sent too, so the page's edited time is right and a
+  // restore elsewhere takes the newer copy.
+  const latest = useRef({ page, title, count: ink.strokes.length, strokes: ink.strokes });
+  latest.current = { page, title, count: ink.strokes.length, strokes: ink.strokes };
+  const told = useRef(ink.strokes);
   const patch = useCallback(() => {
-    const { page: p, title: tt, count } = latest.current;
+    const { page: p, title: tt, count, strokes } = latest.current;
     if (!p) return null;
-    if (p.title === tt && p.ink?.strokes === count) return null;
+    if (p.title === tt && p.ink?.strokes === count && strokes === told.current) return null;
+    told.current = strokes;
     return { title: tt, ink: { paper: p.ink?.paper ?? 'plain', strokes: count } };
   }, []);
   const hasWriting = ink.strokes.length > 0;
@@ -291,7 +297,10 @@ export function InkPageScreen({ id, onBack }: Props) {
     liveRef.current = null;
     setLive(null);
     setWriting(false);
-    if (l) change([...inkRef.current.strokes, l.stroke]);
+    if (!l) return;
+    // A full page takes no more strokes (and says so), so nothing written is lost on reading.
+    if (inkRef.current.strokes.length >= PAGE_STROKES) setNotice(t('inkPageFull'));
+    else change([...inkRef.current.strokes, l.stroke]);
   };
   const eraseAt = (x: number, y: number) => {
     const { scale: s } = settingsRef.current;
@@ -464,9 +473,12 @@ export function InkPageScreen({ id, onBack }: Props) {
         text: t('delete'),
         style: 'destructive',
         onPress: () => {
-          latest.current = { page: undefined, title: '', count: 0 };
-          remove(page.id);
+          latest.current = { page: undefined, title: '', count: 0, strokes: [] };
           onBack();
+          // Removed once the page has closed, after its last strokes are written out on
+          // leaving, so they are not written back after the page is gone.
+          const gone = page.id;
+          setTimeout(() => remove(gone), 0);
         },
       },
     ]);

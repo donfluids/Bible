@@ -60,10 +60,11 @@ function SheetBody({ title, onClose, children }: Omit<Props, 'visible'>) {
   const translateY = Animated.add(shown.interpolate({ inputRange: [0, 1], outputRange: [0, 600] }), drag);
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
-      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={t('close')} />
+      {/* The backdrop closes the sheet with a tap; screen readers use the close button instead. */}
+      <Pressable style={styles.backdrop} onPress={onClose} importantForAccessibility="no" accessibilityElementsHidden />
       {/* Lifted above the keyboard while a note is typed: the app draws edge to edge, so Android does not resize it. */}
       <KeyboardAvoidingView behavior="padding" style={styles.lift} pointerEvents="box-none">
-        <Animated.View style={[styles.sheet, short && styles.sheetShort, { backgroundColor: theme.card, borderColor: theme.border, paddingBottom: insets.bottom + 12, transform: [{ translateY }] }]}>
+        <Animated.View onAccessibilityEscape={onClose} style={[styles.sheet, short && styles.sheetShort, { backgroundColor: theme.card, borderColor: theme.border, paddingBottom: insets.bottom + 12, transform: [{ translateY }] }]}>
           <View {...pan.panHandlers}>
             <View style={styles.gripHit}>
               <View style={[styles.grip, { backgroundColor: theme.border }]} />
@@ -90,10 +91,12 @@ interface ActionProps {
   icon?: IconName;
   onPress: () => void;
   destructive?: boolean;
+  /** Lines of the detail shown (three by default); 0 shows all of it, for a detail that must be read whole. */
+  detailLines?: number;
 }
 
 /** A row in a sheet: an icon, a label and an optional line under it. */
-export function SheetAction({ label, detail, icon, onPress, destructive }: ActionProps) {
+export function SheetAction({ label, detail, icon, onPress, destructive, detailLines = 3 }: ActionProps) {
   const theme = useTheme();
   const color = destructive ? theme.error : theme.text;
   return (
@@ -107,7 +110,7 @@ export function SheetAction({ label, detail, icon, onPress, destructive }: Actio
       <View style={styles.actionTexts}>
         <Text style={[styles.actionText, { color }]}>{label}</Text>
         {detail ? (
-          <Text style={[styles.actionDetail, { color: theme.muted }]} numberOfLines={2}>
+          <Text style={[styles.actionDetail, { color: theme.muted }]} numberOfLines={detailLines || undefined}>
             {detail}
           </Text>
         ) : null}
