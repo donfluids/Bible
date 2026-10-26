@@ -54,6 +54,17 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Header title={t('settings')} onBack={onBack} backLabel={t('back')} />
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}>
+        <Label text={t('studyTools')} />
+        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <View style={styles.row}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.rowTitle, { color: theme.text }]}>{t('studyTools')}</Text>
+              <Text style={[styles.rowSub, { color: theme.muted }]}>{t('studyToolsDetail')}</Text>
+            </View>
+            <AppSwitch value={settings.study} onValueChange={(v) => update({ study: v })} />
+          </View>
+        </View>
+
         <Label text={t('appearance')} />
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           {EDITION.languages.length > 1 ? (

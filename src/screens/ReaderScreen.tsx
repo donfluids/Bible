@@ -213,8 +213,8 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
   const {
     translation,
     fontSize,
-    underlineWords,
-    interlinear,
+    underlineWords: underlineSetting,
+    interlinear: interlinearSetting,
     interlinearMode,
     showTranslit,
     hideCantillation,
@@ -244,6 +244,11 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
   // verse by verse (Settings: side by side). Marker mode keeps one column.
   const nativeBible = nativeTranslation(edition);
   const sideBySide = !!nativeBible && settings.sideBySide && windowWidth >= SIDE_BY_SIDE_MIN_WIDTH && !marking;
+  // A plain reader without the study tools: no tappable words, no Hebrew or Greek, and the
+  // verse menu without cross references, parallels, Compare and Words in this verse.
+  const study = settings.study;
+  const interlinear = study && interlinearSetting;
+  const underlineWords = study && underlineSetting;
   // The words being marked while a finger is down, and whether one is (the list then holds still).
   const [selection, setSelection] = useState<{ from: TextPoint; to: TextPoint } | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -1043,6 +1048,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
     toggle: toggleExpanded,
   };
   const onRowWord = useCallback((pick: WordPick) => rowActions.current.word(pick), []);
+  const wordTap = study ? onRowWord : undefined;
 
   const renderItem = useCallback(
     ({ item }: { item: Item }) => {
@@ -1067,7 +1073,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                   <ParaVerse
                     verse={v}
                     fontSize={fontSize}
-                    onWord={onRowWord}
+                    onWord={wordTap}
                     actions={rowActions}
                     numberLabel={t('verseActions', { n: v.verse })}
                     notes={notes.get(v.verse)}
@@ -1138,7 +1144,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
           hideCantillation={hideCantillation}
           numberLabel={t('verseActions', { n: v.verse })}
           tapLabel={`${v.verse}, ${t('tapVerseNumber', { lang: originalLanguage(v) })}`}
-          onWord={onRowWord}
+          onWord={wordTap}
           actions={rowActions}
         />
       );
@@ -1156,7 +1162,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                   key={`${e.book}:${e.chapter}:${e.verse}`}
                   verse={e}
                   fontSize={fontSize}
-                  onWord={onRowWord}
+                  onWord={wordTap}
                   onLongPress={() => rowActions.current.actions(v)}
                   underline={underlineWords && !interlinear}
                   onHighlight={!!mark && !flashing}
@@ -1173,7 +1179,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
       );
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [sideBySide, besideVerses, theme, fontSize, onRowWord, underlineWords, flash, readingVerse, interlinear, interlinearMode, expanded, originalWords, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, translation, t, scriptFont, verseMarks, marking, markTool, selection, registerWord],
+    [sideBySide, besideVerses, theme, fontSize, wordTap, onRowWord, underlineWords, flash, readingVerse, interlinear, interlinearMode, expanded, originalWords, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, translation, t, scriptFont, verseMarks, marking, markTool, selection, registerWord],
   );
 
   // The list's own props stay the same objects between renders, so a change elsewhere on
@@ -1197,7 +1203,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
           </View>
         )}
         {/* The book's introduction, offered where a book is begun (it is also above the chapter numbers). */}
-        {position.chapter === 1 && !marking ? (
+        {study && position.chapter === 1 && !marking ? (
           <Pressable
             onPress={() => onOpenIntro(position.book)}
             android_ripple={{ color: theme.accentSoft }}
@@ -1218,7 +1224,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
       </>
     ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [tipSeen, theme, translation, t, update, marking, interlinear, interlinearMode, book?.testament, position.chapter, position.book, books, settings.serif, onOpenIntro],
+    [tipSeen, theme, translation, t, update, marking, interlinear, interlinearMode, book?.testament, position.chapter, position.book, books, settings.serif, onOpenIntro, study],
   );
   const onScrollToIndexFailed = useCallback((info: { index: number; averageItemLength: number }) => {
     // The row is not measured yet: get near it, then retry with the same placement.
@@ -1399,9 +1405,22 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
             </Text>
           </Pressable>
           )}
+          {/* In the plain reader the second pill switches the study tools back on. */}
+          {!study ? (
+            <Pressable
+              android_ripple={{ color: theme.accentSoft }}
+              onPress={() => update({ study: true })}
+              hitSlop={6}
+              accessibilityRole="button"
+              accessibilityLabel={t('studyToolsOn')}
+              style={({ pressed }) => [styles.pill, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
+            >
+              <Text style={[styles.pillText, { color: theme.muted }]}>{t('studyPill')}</Text>
+            </Pressable>
+          ) : (
           <Pressable
             android_ripple={{ color: theme.accentSoft }}
-            onPress={() => update({ interlinear: !interlinear })}
+            onPress={() => update({ interlinear: !interlinearSetting })}
             hitSlop={6}
             accessibilityRole="switch"
             accessibilityState={{ checked: interlinear }}
@@ -1414,6 +1433,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
               {book?.testament === 'OT' ? t('hebrewInterlinear') : t('greekInterlinear')}
             </Text>
           </Pressable>
+          )}
         </View>
         <ChapterArrow icon="chevron_right" onPress={() => go(1)} disabled={atEnd} accessibilityLabel={t('nextChapter')} />
       </View>
@@ -1509,6 +1529,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
             />
             <SheetAction icon="volume_up" label={t('readFromHere')} detail={t('readFromHereDetail')} onPress={() => startReading(actions.verse)} />
             <SheetAction icon="ink_highlighter" label={t('markText')} detail={t('markTextDetail')} onPress={() => startMarking(actions)} />
+            {study ? (
             <SheetAction
               icon="compare_arrows"
               label={t('compare')}
@@ -1518,8 +1539,9 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                 setCompare({ book: actions.book, chapter: actions.chapter, verse: actions.verse });
               }}
             />
+            ) : null}
             {/* Shown once their counts are known; last, so their coming moves nothing under them. */}
-            {actions.tags ? (
+            {study && actions.tags ? (
               <SheetAction
                 icon="translate"
                 label={t('wordsInVerse')}
@@ -1530,10 +1552,10 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                 }}
               />
             ) : null}
-            {crossCount && crossCount.key === bookmarkKey(actions) && crossCount.n > 0 ? (
+            {study && crossCount && crossCount.key === bookmarkKey(actions) && crossCount.n > 0 ? (
               <SheetAction icon="link" label={t('crossReferences')} detail={t('crossReferencesDetail', { n: crossCount.n })} onPress={() => openCross(actions, 'crossrefs')} />
             ) : null}
-            {crossCount && crossCount.key === bookmarkKey(actions) && crossCount.parallels > 0 ? (
+            {study && crossCount && crossCount.key === bookmarkKey(actions) && crossCount.parallels > 0 ? (
               <SheetAction icon="view_column" label={t('parallelPassages')} detail={t('parallelPassagesDetail', { n: crossCount.parallels })} onPress={() => openCross(actions, 'parallels')} />
             ) : null}
           </>
@@ -1762,7 +1784,8 @@ const ParaVerse = memo(function ParaVerse({
 }: {
   verse: VerseRow;
   fontSize: number;
-  onWord: (pick: WordPick) => void;
+  /** Absent in the plain reader, where words are not tapped. */
+  onWord?: (pick: WordPick) => void;
   actions: React.RefObject<RowActions>;
   numberLabel: string;
   notes: Note[] | undefined;
@@ -1842,7 +1865,7 @@ const ReaderVerse = memo(function ReaderVerse({
   hideCantillation: boolean;
   numberLabel: string;
   tapLabel: string;
-  onWord: (pick: WordPick) => void;
+  onWord?: (pick: WordPick) => void;
   actions: React.RefObject<RowActions>;
 }) {
   const cb = useVerseCallbacks(v, actions);
@@ -1919,7 +1942,7 @@ const ReaderVerse = memo(function ReaderVerse({
           selectionTranslation={translation}
         />
       )}
-      {words && words.length > 0 ? (
+      {words && words.length > 0 && onWord ? (
         <InterlinearVerse words={words} hebrew={v.book <= 39} fontSize={fontSize} onWord={onWord} showTranslit={showTranslit} hideCantillation={hideCantillation} highlighted={onMark} />
       ) : null}
     </View>

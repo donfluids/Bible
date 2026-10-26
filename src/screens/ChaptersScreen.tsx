@@ -37,6 +37,7 @@ export function ChaptersScreen({ book, current, onPick, onOpenIntro, onBack }: P
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Header title={title} onBack={onBack} backLabel={t('back')} />
       <ScrollView contentContainerStyle={[styles.grid, { paddingBottom: insets.bottom + 24 }]}>
+        {settings.study ? (
         <Pressable
           onPress={onOpenIntro}
           android_ripple={{ color: theme.accentSoft }}
@@ -47,6 +48,7 @@ export function ChaptersScreen({ book, current, onPick, onOpenIntro, onBack }: P
           <Text style={[styles.introText, { color: theme.text }]}>{t('aboutBook')}</Text>
           <Icon name="chevron_right" size={22} color={theme.muted} />
         </Pressable>
+        ) : null}
         {chapters.map((c) => {
           const active = c === current;
           return (

@@ -116,6 +116,11 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
 
 ## 7. Settings and display
 
+- [ ] Settings → Study tools off: words lose their underlines and do nothing when tapped,
+      the bottom bar shows Study instead of Hebrew/Greek, the verse menu has no Compare,
+      Cross references, Parallel passages or Words in this verse, and the chapter list has
+      no About this book row. Tap Study in the bottom bar: everything comes back.
+
 - [ ] Each theme (Light, Sepia, Dark, follow the phone); Fluorescent highlights in dark.
 - [ ] **With the app open on a chapter**, switch the phone's own dark mode on and off
       (quick settings): the whole screen changes, the title included.

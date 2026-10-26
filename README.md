@@ -77,6 +77,10 @@ rendering counts all work in Malayalam.
   share sheet, to Drive, Files or another phone. Restore picks such a file and adds its
   pages: a page already in the notebook is replaced only by a newer copy of itself, and
   nothing is deleted (src/notebookBackup.ts, src/notebookFiles.ts, src/pagePdf.ts).
+- Settings → Study tools switches the study side of the app off and on: off, words are not
+  tapped, the Hebrew or Greek pill becomes a Study pill that switches them back on, the
+  verse menu loses Compare, cross references, parallels and Words in this verse, and the
+  introductions are not offered; highlights, notes and the notebook stay. On by default.
 - A verse opened from search, Saved or a word's verse list opens in a reader of its own;
   Back returns to the list and then to the chapter you were reading.
 - The search box also searches the dictionary: an English meaning ("love"), a
