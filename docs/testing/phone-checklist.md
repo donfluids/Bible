@@ -116,6 +116,8 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
 
 ## 7. Settings and display
 
+- [ ] Settings → How to use: each topic opens and closes; the text is in the app's
+      language and follows the text size. The reader's first tip has a How to use link.
 - [ ] Settings → Study tools off: words lose their underlines and do nothing when tapped,
       the bottom bar shows Study instead of Hebrew/Greek, the verse menu has no Compare,
       Cross references, Parallel passages or Words in this verse, and the chapter list has

@@ -77,6 +77,9 @@ rendering counts all work in Malayalam.
   share sheet, to Drive, Files or another phone. Restore picks such a file and adds its
   pages: a page already in the notebook is replaced only by a newer copy of itself, and
   nothing is deleted (src/notebookBackup.ts, src/notebookFiles.ts, src/pagePdf.ts).
+- Settings → How to use is a page of short topics (reading, the verse menu, words, marking,
+  notebook, handwriting, backup, listening, study tools, cards), in the interface
+  language; the reader's first-time tip links to it too (src/screens/HowToScreen.tsx).
 - Settings → Study tools switches the study side of the app off and on: off, words are not
   tapped, the Hebrew or Greek pill becomes a Study pill that switches them back on, the
   verse menu loses Compare, cross references, parallels and Words in this verse, and the

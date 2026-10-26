@@ -273,6 +273,20 @@ for (const edition of EDITIONS) {
       await wait(1200);
       await vis(page.getByRole('link').first()).waitFor({ timeout: 8000 });
     });
+    await step('how-to', async (snap) => {
+      await vis(page.getByLabel(t.settings)).click();
+      await wait(1200);
+      await vis(page.getByText(t.howTo, { exact: true })).click();
+      await wait(1200);
+      await vis(page.getByText(t.howTopic8, { exact: true })).click();
+      await wait(800);
+      await shows(t.howText8.slice(0, 40));
+      await snap();
+      await vis(page.getByLabel(t.back)).click();
+      await wait(800);
+      await vis(page.getByLabel(t.back)).click();
+      await wait(1200);
+    });
     await step('dark', async (snap) => {
       await page.emulateMedia({ colorScheme: 'dark' });
       await wait(1200);

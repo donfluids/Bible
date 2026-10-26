@@ -310,6 +310,7 @@ Words chosen for the app's own features, used throughout:
 | parallelPassagesDetail | {n} places with the same event or words | இதே நிகழ்வு அல்லது வார்த்தைகள் உள்ள {n} பகுதிகள் | |
 | parallelPassagesSource | Parallel Passages Database © 2023 United Bible Societies (CC BY-SA 4.0) | Parallel Passages Database © 2023 United Bible Societies (CC BY-SA 4.0) | |
 | aboutBook | About this book | இந்தப் புத்தகத்தைப் பற்றி | |
+| aboutBookNamed | About {book} | {book}: இந்தப் புத்தகத்தைப் பற்றி | |
 | introAuthor | Written by | எழுதியவர் | |
 | introDate | When | எழுதப்பட்ட காலம் | |
 | introAudience | Written for | யாருக்காக | |
@@ -415,6 +416,10 @@ Words chosen for the app's own features, used throughout:
 | keepAwakeDetail | While the app is open | செயலி திறந்திருக்கும் வரை | |
 | sideBySide | Side by side | அருகருகே | |
 | sideBySideDetail | {native} and English verses together on a tablet or a phone turned sideways | டேப்லெட்டில் அல்லது தொலைபேசியைச் சாய்த்துப் பிடிக்கும்போது தமிழும் ஆங்கிலமும் ஒன்றாக | |
+| studyTools | Study tools | படிப்புக் கருவிகள் | |
+| studyToolsDetail | Tap a word for its Hebrew or Greek, the original words under each verse, cross references, parallel passages, Compare, and an introduction to each book. Off, the app is a plain Bible for reading; your highlights, notes and notebook stay. | ஒரு வார்த்தையைத் தொட்டால் அதன் எபிரெய / கிரேக்க மூலச்சொல், ஒவ்வொரு வசனத்தின் கீழும் மூல மொழி வார்த்தைகள், தொடர்புடைய வசனங்கள், இணையான பகுதிகள், ஒப்பீடு, ஒவ்வொரு புத்தகத்துக்கும் முன்னுரை. அணைத்தால் வாசிப்பதற்கான சாதாரண வேதாகமம்; ஹைலைட்டுகள், குறிப்புகள், குறிப்பேடு அப்படியே இருக்கும். | |
+| studyPill | Study | படிப்பு | |
+| studyToolsOn | Switch the study tools on | படிப்புக் கருவிகளை இயக்கு | |
 | language | Interface language | செயலியின் மொழி | |
 | translation | Translation | மொழிபெயர்ப்பு | |
 | textSize | Text size | எழுத்தளவு | |
@@ -438,6 +443,34 @@ Words chosen for the app's own features, used throughout:
 | aboutTexts | About the texts | உரைகளைப் பற்றி | |
 | sourcesLicences | Sources and licences | மூலங்களும் உரிமங்களும் | |
 | whyThisBible | Why this Bible | இந்த வேதாகமம் ஏன் | |
+| howTo | How to use | எப்படிப் பயன்படுத்துவது | |
+| howToIntro | Tap a topic to open it. | ஒரு தலைப்பைத் தொட்டால் திறக்கும். | |
+| howTopic1 | Reading a chapter | ஒரு அதிகாரத்தை வாசிக்க | |
+| howText1 | Turn the chapter with the arrows at the foot of the page, or swipe. Tap the book name at the top to pick another book and chapter; the Books tab lists them all, with the chapters you read last. Spread two fingers to make the text larger, or set the size in Settings. | பக்கத்தின் அடியிலுள்ள அம்புகளாலோ ஸ்வைப் செய்தோ அதிகாரத்தை மாற்றலாம். மேலே புத்தகத்தின் பெயரைத் தொட்டால் வேறு புத்தகமும் அதிகாரமும் தேர்ந்தெடுக்கலாம்; புத்தகங்கள் தாவலில் எல்லாம், கடைசியாக வாசித்த அதிகாரங்களோடு. இரண்டு விரல்களை விரித்தால் எழுத்து பெரிதாகும்; அமைப்புகளிலும் அளவை மாற்றலாம். | |
+| howTopic2 | Switching Bibles | வேதாகமத்தை மாற்ற | |
+| howText2 | The button at the foot of the page switches to the other Bible. On a tablet, or a phone turned on its side, both Bibles can be read together (Settings → Side by side). | பக்கத்தின் அடியிலுள்ள பொத்தான் மற்ற வேதாகமத்துக்கு மாற்றும். டேப்லெட்டிலோ தொலைபேசியைச் சாய்த்துப் பிடிக்கும்போதோ இரண்டு வேதாகமங்களையும் சேர்த்து வாசிக்கலாம் (அமைப்புகள் → அருகருகே). | |
+| howTopic3 | A verse's menu | வசனத்தின் பட்டி | |
+| howText3 | Hold a verse to open its menu: copy, share, bookmark, a highlight colour, a note, a picture card, add to the notebook, read aloud from here, mark part of the verse, compare the Bibles, cross references and parallel passages. | ஒரு வசனத்தை அழுத்திப் பிடித்தால் அதன் பட்டி திறக்கும்: நகல், பகிர், அடையாளக்குறி, ஹைலைட் நிறம், குறிப்பு, பட அட்டை, குறிப்பேட்டில் சேர், இங்கிருந்து வாசிக்கச் செய், வசனத்தின் ஒரு பகுதியைக் குறி, வேதாகமங்களை ஒப்பிடு, தொடர்புடைய வசனங்கள், இணையான பகுதிகள். | |
+| howTopic4 | Words and their Hebrew or Greek | வார்த்தைகளும் அவற்றின் எபிரெய / கிரேக்க மூலச்சொல்லும் | |
+| howText4 | Tap an underlined word to see the Hebrew or Greek word behind it, with its meaning, pronunciation and every verse it is used in. The Hebrew or Greek button at the foot of the page shows the whole verse in the original language, word by word. | அடிக்கோடிட்ட வார்த்தையைத் தொட்டால் அதன் பின்னுள்ள எபிரெய அல்லது கிரேக்க வார்த்தை, பொருள், உச்சரிப்பு, அது வரும் எல்லா வசனங்களும் தெரியும். பக்கத்தின் அடியிலுள்ள எபிரெய / கிரேக்கப் பொத்தான் முழு வசனத்தையும் மூல மொழியில் வார்த்தை வார்த்தையாகக் காட்டும். | |
+| howTopic5 | Highlighting part of a verse | வசனத்தின் ஒரு பகுதியை ஹைலைட் செய்ய | |
+| howText5 | Hold a verse and choose Mark text. Hold a word still, drag to the last word and let go. The bar at the foot picks the colour and has an eraser; tap Done when finished. Everything marked is listed under Saved. | வசனத்தை அழுத்திப் பிடித்து, உரையைக் குறி என்பதைத் தேர்ந்தெடுங்கள். ஒரு வார்த்தையை அழுத்திப் பிடித்து, கடைசி வார்த்தை வரை இழுத்து விடுங்கள். அடியிலுள்ள பட்டையில் நிறமும் அழிப்பானும்; முடிந்ததும் முடிந்தது என்பதைத் தொடுங்கள். குறித்தவை எல்லாம் சேமித்தவையில் இருக்கும். | |
+| howTopic6 | Saved | சேமித்தவை | |
+| howText6 | The Saved tab lists your bookmarks, highlights, marked text and notes. Tap one to open its verse. | சேமித்தவை தாவலில் அடையாளக்குறிகள், ஹைலைட்டுகள், குறித்த உரை, குறிப்புகள். ஒன்றைத் தொட்டால் அந்த வசனம் திறக்கும். | |
+| howTopic7 | Search | தேடல் | |
+| howText7 | Type a word, or a reference such as John 3:16 or Psalm 23, in the search box. Results start in the New Testament; the buttons narrow them to a Testament or a book. | தேடல் பெட்டியில் ஒரு வார்த்தையையோ யோவான் 3:16, சங்கீதம் 23 போன்ற குறிப்பையோ தட்டச்சு செய்யுங்கள். முடிவுகள் புதிய ஏற்பாட்டிலிருந்து தொடங்கும்; பொத்தான்கள் ஒரு ஏற்பாட்டுக்கோ புத்தகத்துக்கோ சுருக்கும். | |
+| howTopic8 | Notebook | குறிப்பேடு | |
+| howText8 | The Notebook tab holds typed pages for sermon notes or a study. A reference typed on a page, such as John 3:16, becomes a link with the verse shown beneath. Hold a verse and choose Add to notebook to put it on a page. A page can be shared as text or as a PDF. | குறிப்பேடு தாவலில் பிரசங்கக் குறிப்புகளுக்கோ படிப்புக்கோ தட்டச்சுப் பக்கங்கள். பக்கத்தில் தட்டச்சு செய்யும் யோவான் 3:16 போன்ற குறிப்பு இணைப்பாகும்; வசனம் கீழே தெரியும். வசனத்தை அழுத்திப் பிடித்து குறிப்பேட்டில் சேர் என்பதைத் தேர்ந்தெடுத்தால் அது பக்கத்தில் வரும். பக்கத்தை உரையாகவோ PDF-ஆகவோ பகிரலாம். | |
+| howTopic9 | Handwritten pages | கையால் எழுதும் பக்கங்கள் | |
+| howText9 | New page → Handwritten gives a page to write on with a pen or a finger, on plain or lined paper: three pens, a highlighter, an eraser, undo and redo. Two fingers move the page. With a stylus, the pen-only switch lets your hand rest on the screen. The page is shared as a picture or a PDF. | புதிய பக்கம் → கையெழுத்து என்பது பேனாவாலோ விரலாலோ எழுதும் பக்கத்தைத் தரும், வெற்றுத் தாளிலோ கோடிட்ட தாளிலோ: மூன்று பேனாக்கள், ஹைலைட்டர், அழிப்பான், செயல்தவிர், மீண்டும் செய். இரண்டு விரல்களால் பக்கத்தை நகர்த்தலாம். ஸ்டைலஸ் இருந்தால், பேனா மட்டும் எழுதும் சுவிட்ச் கையைத் திரையில் வைக்க அனுமதிக்கும். பக்கத்தைப் படமாகவோ PDF-ஆகவோ பகிரலாம். | |
+| howTopic10 | Backing up the notebook | குறிப்பேட்டின் காப்புப்பிரதி | |
+| howText10 | In the Notebook, tap the backup button to save every page to one file, and keep it in Drive, Files or a chat. Restore from a backup adds the file's pages back; a page already here is replaced only by a newer copy of itself, and nothing is deleted. | குறிப்பேட்டில் காப்புப்பிரதிப் பொத்தானைத் தொட்டால் எல்லாப் பக்கங்களும் ஒரே கோப்பில் சேமிக்கப்படும்; Drive, Files அல்லது ஒரு அரட்டையில் வைக்கலாம். காப்புப்பிரதியிலிருந்து மீட்டெடுக்கும்போது கோப்பின் பக்கங்கள் சேர்க்கப்படும்; இங்குள்ள ஒரு பக்கம் அதன் புதிய பதிப்பால் மட்டுமே மாற்றப்படும், எதுவும் நீக்கப்படாது. | |
+| howTopic11 | Listening | கேட்க | |
+| howText11 | Tap the speaker in the top bar to hear the chapter read in your phone's voice, verse by verse; the verse being read is marked, and reading goes on to the next chapter. The player sets the speed and moves between verses. | மேலுள்ள ஸ்பீக்கரைத் தொட்டால் தொலைபேசியின் குரலில் அதிகாரம் வசனம் வசனமாக வாசிக்கப்படும்; வாசிக்கப்படும் வசனம் குறிக்கப்படும், அடுத்த அதிகாரத்துக்குத் தொடரும். பிளேயரில் வேகத்தை மாற்றலாம், வசனங்களுக்கிடையே நகரலாம். | |
+| howTopic12 | Study tools and book introductions | படிப்புக் கருவிகளும் புத்தக முன்னுரைகளும் | |
+| howText12 | Settings → Study tools switches the study side of the app off, for plain reading, and on again; the Study button at the foot of the page also switches it on. With it on, About this book at the top of a book's first chapter (and above its chapter numbers) tells who wrote the book, when and for whom, its themes and outline, and key verses. | அமைப்புகள் → படிப்புக் கருவிகள் செயலியின் படிப்புப் பகுதியை அணைக்கும் (வெறும் வாசிப்புக்கு), மீண்டும் இயக்கும்; பக்கத்தின் அடியிலுள்ள படிப்புப் பொத்தானும் இயக்கும். இயங்கும்போது, புத்தகத்தின் முதல் அதிகாரத்தின் மேலுள்ள (அதிகார எண்களுக்கு மேலும் உள்ள) இந்தப் புத்தகத்தைப் பற்றி, யார் எழுதினார், எப்போது, யாருக்காக, முக்கிய கருப்பொருள்கள், பொருளடக்கம், முக்கிய வசனங்கள் ஆகியவற்றைச் சொல்லும். | |
+| howTopic13 | Picture cards | பட அட்டைகள் | |
+| howText13 | Hold a verse and choose Share as card to put it on a picture, for a birthday, a wedding or any day, with a message of your own and your own photo if you like. A design you make can be saved for next time. | வசனத்தை அழுத்திப் பிடித்து அட்டையாகப் பகிர் என்பதைத் தேர்ந்தெடுத்தால், பிறந்தநாள், திருமணம் அல்லது எந்த நாளுக்கும் ஒரு படத்தில் வசனம், உங்கள் செய்தியோடும், விரும்பினால் உங்கள் சொந்தப் புகைப்படத்தோடும். நீங்கள் உருவாக்கும் வடிவமைப்பை அடுத்த முறைக்குச் சேமிக்கலாம். | |
 | privacy | Privacy | தனியுரிமை | |
 | aboutEnglish | Bibles: the King James Version (1769), the Berean Standard Bible and the World English Bible. The translators' footnotes appear as small letters in the text; tap one to read it. | வேதாகமங்கள்: கிங் ஜேம்ஸ் வெர்ஸன் (1769), பெரியன் ஸ்டாண்டர்டு பைபிள், வேர்ல்டு இங்கிலீஷ் பைபிள். மொழிபெயர்ப்பாளர்களின் அடிக்குறிப்புகள் சிறிய எழுத்துகளாகத் தெரியும்; தொட்டால் படிக்கலாம். | |
 | aboutMalayalam | Bibles: the Sathyavedapusthakam 1910 (Malayalam), in a revised edition in contemporary orthography, and the King James Version (1769). The links from Malayalam words to the Hebrew and Greek are machine-generated and not fully reviewed. | வேதாகமங்கள்: மலையாள சத்தியவேதபுஸ்தகம் 1910 (இன்றைய எழுத்துமுறையில் திருத்தப்பட்ட பதிப்பு), கிங் ஜேம்ஸ் வெர்ஸன் (1769). மலையாள வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திரத்தால் உருவாக்கப்பட்டவை; முழுமையாகச் சரிபார்க்கப்படவில்லை. | |

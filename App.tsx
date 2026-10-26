@@ -33,6 +33,7 @@ import { LicencesScreen } from './src/screens/LicencesScreen';
 import { WhyScreen } from './src/screens/WhyScreen';
 import { IntroScreen } from './src/screens/IntroScreen';
 import { PrivacyScreen } from './src/screens/PrivacyScreen';
+import { HowToScreen } from './src/screens/HowToScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { NotebookScreen } from './src/screens/NotebookScreen';
 import { NotePageScreen } from './src/screens/NotePageScreen';
@@ -315,6 +316,7 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
           <Stack.Screen name="Why" component={WhyRoute} />
           <Stack.Screen name="Intro" component={IntroRoute} />
           <Stack.Screen name="Privacy" component={PrivacyRoute} />
+          <Stack.Screen name="HowTo" component={HowToRoute} />
           <Stack.Screen name="Notebook" component={NotebookRoute} options={TAB_SCREEN} />
           <Stack.Screen name="NotePage" component={NotePageRoute} />
           <Stack.Screen name="Card" component={CardRoute} />
@@ -367,6 +369,7 @@ function ReaderRoute({ navigation, route }: Props<'Reader'>) {
       tabs={!from}
       onOpenSearch={() => navigation.navigate('Search')}
       onOpenSettings={() => navigation.navigate('Settings')}
+      onOpenHowTo={() => navigation.navigate('HowTo')}
       onOpenNotePage={(id, isNew) => navigation.push('NotePage', { id, isNew })}
       onOpenCard={(ref, translation) => navigation.push('Card', { ref, translation })}
       onOpenIntro={(book) => navigation.push('Intro', { book })}
@@ -433,7 +436,7 @@ function ConcordanceRoute({ navigation, route }: Props<'Concordance'>) {
 }
 
 function SettingsRoute({ navigation }: Props<'Settings'>) {
-  return <SettingsScreen onBack={() => navigation.goBack()} onOpenLicences={() => navigation.navigate('Licences')} onOpenWhy={() => navigation.navigate('Why')} onOpenPrivacy={() => navigation.navigate('Privacy')} />;
+  return <SettingsScreen onBack={() => navigation.goBack()} onOpenLicences={() => navigation.navigate('Licences')} onOpenWhy={() => navigation.navigate('Why')} onOpenPrivacy={() => navigation.navigate('Privacy')} onOpenHowTo={() => navigation.navigate('HowTo')} />;
 }
 
 function NotebookRoute({ navigation }: Props<'Notebook'>) {
@@ -471,6 +474,10 @@ function IntroRoute({ navigation, route }: Props<'Intro'>) {
   const { books } = useApp();
   const openRef = useOpenRef(navigation, t('aboutBook'));
   return <IntroScreen book={route.params.book} books={books} onBack={() => navigation.goBack()} onOpenRef={openRef} />;
+}
+
+function HowToRoute({ navigation }: Props<'HowTo'>) {
+  return <HowToScreen onBack={() => navigation.goBack()} />;
 }
 
 function PrivacyRoute({ navigation }: Props<'Privacy'>) {

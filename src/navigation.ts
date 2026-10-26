@@ -17,6 +17,7 @@ export type RootStackParamList = {
   Licences: undefined;
   Why: undefined;
   Privacy: undefined;
+  HowTo: undefined;
   /** A book's introduction. */
   Intro: { book: number };
   Notebook: undefined;

@@ -56,6 +56,8 @@ interface Props {
   onOpenBooks: () => void;
   onOpenSearch: () => void;
   onOpenSettings: () => void;
+  /** Opens the How to use page (from the first-time tip). */
+  onOpenHowTo: () => void;
   /** Open a notebook page; `isNew` for one just made from a verse. */
   onOpenNotePage: (id: string, isNew?: boolean) => void;
   onOpenCard: (ref: Ref, translation: TranslationId) => void;
@@ -200,7 +202,7 @@ function KeepAwake() {
 /** Highlight colours as TalkBack says them, in the interface language. */
 const COLOUR_NAMES = { yellow: 'colourYellow', green: 'colourGreen', blue: 'colourBlue', pink: 'colourPink' } as const;
 
-export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onOpenNotePage, onOpenCard, onOpenIntro, onOpenRef, onWord, tabs = false }: Props) {
+export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onOpenHowTo, onOpenNotePage, onOpenCard, onOpenIntro, onOpenRef, onWord, tabs = false }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const t = useT();
@@ -1197,9 +1199,14 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         {tipSeen ? null : (
           <View style={[styles.tip, { backgroundColor: theme.accentSoft, borderColor: theme.border }]}>
             <Text style={[styles.tipText, { color: theme.text }]}>{translationInfo(translation).tagged ? t('tip') : t('tipNoTags')}</Text>
-            <Pressable onPress={() => update({ tipSeen: true })} hitSlop={8} accessibilityRole="button">
-              <Text style={[styles.tipDismiss, { color: theme.accent }]}>{t('gotIt')}</Text>
-            </Pressable>
+            <View style={styles.tipButtons}>
+              <Pressable onPress={onOpenHowTo} hitSlop={8} accessibilityRole="button">
+                <Text style={[styles.tipDismiss, { color: theme.accent }]}>{t('howTo')}</Text>
+              </Pressable>
+              <Pressable onPress={() => update({ tipSeen: true })} hitSlop={8} accessibilityRole="button">
+                <Text style={[styles.tipDismiss, { color: theme.accent }]}>{t('gotIt')}</Text>
+              </Pressable>
+            </View>
           </View>
         )}
         {/* The book's introduction, offered where a book is begun (it is also above the chapter numbers). */}
@@ -1224,7 +1231,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
       </>
     ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [tipSeen, theme, translation, t, update, marking, interlinear, interlinearMode, book?.testament, position.chapter, position.book, books, settings.serif, onOpenIntro, study],
+    [tipSeen, theme, translation, t, update, marking, interlinear, interlinearMode, book?.testament, position.chapter, position.book, books, settings.serif, onOpenIntro, study, onOpenHowTo],
   );
   const onScrollToIndexFailed = useCallback((info: { index: number; averageItemLength: number }) => {
     // The row is not measured yet: get near it, then retry with the same placement.
@@ -1995,7 +2002,8 @@ const styles = StyleSheet.create({
   verseBookmarked: { borderLeftWidth: 3, paddingLeft: 8, marginLeft: -11 },
   tip: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, padding: 14, marginBottom: 10 },
   tipText: { fontSize: 15, lineHeight: 21 },
-  tipDismiss: { fontSize: 15, fontWeight: '700', marginTop: 8, alignSelf: 'flex-end' },
+  tipButtons: { flexDirection: 'row', justifyContent: 'flex-end', gap: 24, marginTop: 8 },
+  tipDismiss: { fontSize: 15, fontWeight: '700' },
   modeHint: { fontSize: 12, marginBottom: 6 },
   aboutRow: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, marginBottom: 4 },
   aboutText: { fontSize: 15, fontWeight: '600' },

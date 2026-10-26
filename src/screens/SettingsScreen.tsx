@@ -25,9 +25,10 @@ interface Props {
   onOpenLicences: () => void;
   onOpenWhy: () => void;
   onOpenPrivacy: () => void;
+  onOpenHowTo: () => void;
 }
 
-export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivacy }: Props) {
+export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivacy, onOpenHowTo }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   // Lists run under the system navigation bar; the last row must clear it.
@@ -224,6 +225,10 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
           <Text style={[styles.rowSub, { color: theme.muted, marginTop: 4 }]} selectable>
             {t('appVersion', { version: `${Constants.expoConfig?.version ?? '?'} (${Constants.expoConfig?.android?.versionCode ?? Constants.expoConfig?.ios?.buildNumber ?? '?'})` })}
           </Text>
+          <Pressable onPress={onOpenHowTo} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>
+            <Text style={[styles.rowTitle, { color: theme.accent, flex: 1 }]}>{t('howTo')}</Text>
+            <Icon name="chevron_right" color={theme.accent} />
+          </Pressable>
           <Pressable onPress={onOpenWhy} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>
             <Text style={[styles.rowTitle, { color: theme.accent, flex: 1 }]}>{t('whyThisBible')}</Text>
             <Icon name="chevron_right" color={theme.accent} />
