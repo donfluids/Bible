@@ -1,12 +1,13 @@
 # Bible
 
-Two phone apps from one codebase, built with Expo and React Native for iOS and
+Three phone apps from one codebase, built with Expo and React Native for iOS and
 Android. All text ships inside each app, so they work without a connection.
 
 | Edition | App name | Texts | Interface |
 | --- | --- | --- | --- |
 | `en` | Bible | King James Version, World English Bible, Hebrew and Greek interlinear | English |
 | `ml` | വേദപുസ്തകം | Malayalam Sathyavedapusthakam 1910, King James Version, Hebrew and Greek interlinear | Malayalam (English available) |
+| `ta` | வேதாகமம் | Tamil Indian Revised Version, King James Version, Hebrew and Greek interlinear | Tamil (English available) |
 
 The edition is chosen at build time with `BIBLE_EDITION=en` (default) or
 `BIBLE_EDITION=ml`; see `src/edition.ts`, `app.config.js` and `metro.config.js`.
@@ -50,13 +51,13 @@ rendering counts all work in Malayalam.
   compare the KJV and WEB side by side with the Hebrew or Greek, list its linked words,
   copy it, share it, or bookmark it. Bookmarks, highlights and notes are listed under
   Saved on the Books screen, with the chapters read most recently.
-- To highlight part of a verse, or a passage running over several verses, tap the
-  marker in the top bar (or Mark text in the verse sheet). Hold a word still, drag to the
+- To highlight part of a verse, or a passage running over several verses, hold a verse
+  and choose Mark text. Hold a word still, drag to the
   last word and let go; the bottom bar picks the colour, has an eraser for taking marks
   off, and Done. Scrolling still works as usual, and dragging to the top or bottom edge
   scrolls on. Marks belong to the Bible they were made in and are listed under Saved as
   Marked text.
-- The Notebook (കുറിപ്പുകൾ in the Malayalam app), under the Books screen, holds pages
+- The Notebook (നോട്ട്ബുക്ക് in the Malayalam app, குறிப்பேடு in the Tamil), under the Books screen, holds pages
   of free writing: sermon notes, a study, a list of verses. A reference typed on a page
   ("യോഹന്നാൻ 3:16", "1 കൊരി 13:4-7", "Ps 23:1", "Romans 8") becomes a link to the verse,
   and the verse text (up to eight verses of a range) shows under the line, in the Bible
@@ -314,6 +315,9 @@ npm run smoke        # every main screen of each app in a browser, at four sizes
   copyright © 2015 The Free Bible Foundation, from
   [eBible.org](https://ebible.org/find/details.php?id=mal2015), CC BY-SA 4.0.
   Bundled in the Malayalam edition only.
+- **Tamil Indian Revised Version**, © 2017, 2019 Bridge Connectivity Solutions, from
+  [eBible.org](https://ebible.org/find/details.php?id=tam2017), CC BY-SA 4.0. Section
+  headings are left out and eight stray zero-width non-joiners removed. Tamil edition only.
 - **Strong's Hebrew and Greek dictionaries**, digital edition by
   [Open Scriptures](https://github.com/openscriptures/strongs), CC BY-SA.
 - **Abbott-Smith**, *A Manual Greek Lexicon of the New Testament* (1922), public domain,
@@ -375,6 +379,9 @@ node scripts/notices.mjs /tmp/map/_expo/static/js/android/index-*.map /tmp/deps.
 ```
 
 Run it again when dependencies change; it stops on a licence it does not recognise.
+Native libraries that list cannot see (C++ libraries compiled into React Native, libwebp,
+and the CocoaPods of an iPhone build) are kept by hand in `src/nativeNotices.ts`; an iPhone
+build shows those instead of the Android list.
 
 ### Licences of the data
 
@@ -383,6 +390,11 @@ Run it again when dependencies change; it stops on a licence it does not recogni
   `data/overrides/` are adapted from the CC BY-SA 4.0 Malayalam text (and CC BY 4.0
   STEPBible data), so they are shared under **CC BY-SA 4.0**. The Malayalam word links
   are machine-made; only 33 well-known verses were checked by hand.
+- `assets/db/bible-ta.db` and `data/align/tam/` adapt the CC BY-SA 4.0 Tamil text, so
+  they are shared under **CC BY-SA 4.0**; its word links are machine-made and not reviewed.
+- Each database as a whole is offered under **CC BY-SA 4.0**; each text and data set in it
+  keeps its own licence given here, and the public-domain and CC BY parts may be reused
+  on those terms. The databases and the scripts that build them are in this repository.
 - The `strongs` table in both databases adapts Open Scriptures' CC BY-SA dictionary
   (adding short meanings from STEPBible), and is shared under **CC BY-SA 4.0**.
 - The interlinear data in both databases adapts STEPBible's CC BY 4.0 data. Changes:
@@ -447,7 +459,9 @@ Wikisource's transcription joins and splits a few compound words differently fro
 eBible's, so these two chapters may differ slightly in spacing from the rest.
 Seven transcription slips in the Wikisource text (one a vowel sign doubled so that it
 rendered as a dotted circle) are corrected to the spelling used elsewhere in this
-Bible; the corrections file lists them.
+Bible; the corrections file lists them. Twelve misspelt words in the eBible text itself
+(each occurring once, for example ക്ഷിമിച്ചിരിക്കുന്നതുപോലെ in Matthew 6:12) are
+corrected to the spelling used elsewhere; the same file lists them.
 
 The eBible source also carries five illustration captions (`\fig`) inside verses, for
 example after Genesis 5:5; the build drops them.

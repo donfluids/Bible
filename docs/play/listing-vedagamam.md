@@ -31,6 +31,8 @@ except that Tamil search does not match spelling variants, so that claim is left
 • அந்த மூலச்சொல் வரும் எல்லா வசனங்களும், IRV அதை எந்தெந்த வார்த்தைகளால் மொழிபெயர்க்கிறது என்பதும்.
 • எபிரெய / கிரேக்க வார்த்தைகள்: பழைய ஏற்பாட்டின் ஒவ்வொரு வசனத்தின் எபிரெய உரையும் புதிய ஏற்பாட்டின் கிரேக்க உரையும் வார்த்தை வார்த்தையாக, உச்சரிப்பும் பொருளும் சேர்த்து.
 • தமிழிலும் ஆங்கிலத்திலும் தேடலாம். சங்கீதம் 23, யோவான் 3:16 என்று தட்டச்சு செய்து நேராக அங்கே செல்லலாம்.
+• ஒவ்வொரு புத்தகத்துக்கும் முன்னுரை: எழுதியவர், எழுதப்பட்ட காலம், யாருக்காக, முக்கிய கருப்பொருள்கள், பொருளடக்கம், முக்கிய வசனங்கள்.
+• ஒவ்வொரு வசனத்துக்கும் தொடர்புடைய வசனங்கள்; அதே நிகழ்வைச் சொல்லும் இணையான பகுதிகள் (சுவிசேஷங்கள், ராஜாக்கள்/நாளாகமம் முதலியவை).
 • ஒரு வசனத்தைத் தமிழிலும் KJV-யிலும் எபிரெய அல்லது கிரேக்க உரையுடன் ஒப்பிடலாம்.
 • முழு வசனத்தையோ சில வார்த்தைகளையோ பல வசனங்கள் நீளும் ஒரு பகுதியையோ நான்கு நிறங்களில் ஹைலைட் செய்யலாம். அடையாளக்குறிகளும் வசனக் குறிப்புகளும் வைக்கலாம்.
 • குறிப்பேடு: பிரசங்கக் குறிப்புகளோ பாடமோ எழுதலாம். யோவான் 3:16 போல எழுதும் வசனக்குறிப்பு அந்த வசனத்துக்கான இணைப்பாகும்; வசனமும் கீழே தெரியும். வாசிக்கும்போதே ஒரு வசனத்தைப் பக்கத்தில் சேர்க்கலாம்; பக்கத்தை அதன் வசனங்களுடன் பகிரலாம்.
@@ -41,7 +43,7 @@ except that Tamil search does not match spelling variants, so that claim is left
 
 தமிழ் வார்த்தைகளுக்கும் எபிரெய, கிரேக்க வார்த்தைகளுக்கும் இடையிலான இணைப்புகள் கணினி உதவியுடன் உருவாக்கப்பட்டவை; சில இடங்களில் தவறுகள் இருக்கலாம்.
 
-மூலங்கள்: இண்டியன் ரிவைஸ்டு வெர்ஸன் (IRV) தமிழ், © 2017, 2019 Bridge Connectivity Solutions, eBible.org (CC BY-SA 4.0); கிங் ஜேம்ஸ் வெர்ஸன் 1769 (ஐக்கிய இராச்சியத்திற்கு வெளியே பொதுவுடைமை); எபிரெய, கிரேக்க உரையும் பொருள்களும் STEPBible.org, Tyndale House Cambridge (CC BY 4.0); ஸ்ட்ராங் அகராதி, Open Scriptures (CC BY-SA). விவரங்கள் செயலியில் "மூலங்களும் உரிமங்களும்" பகுதியில்.
+மூலங்கள்: இண்டியன் ரிவைஸ்டு வெர்ஸன் (IRV) தமிழ், © 2017, 2019 Bridge Connectivity Solutions, eBible.org (CC BY-SA 4.0); கிங் ஜேம்ஸ் வெர்ஸன் 1769 (ஐக்கிய இராச்சியத்திற்கு வெளியே பொதுவுடைமை); எபிரெய, கிரேக்க உரையும் பொருள்களும் STEPBible.org, Tyndale House Cambridge (CC BY 4.0); ஸ்ட்ராங் அகராதி, Open Scriptures (CC BY-SA); தொடர்புடைய வசனங்கள் OpenBible.info (CC BY 4.0); இணையான பகுதிகள் UBS Parallel Passages Database, © 2023 United Bible Societies (CC BY-SA 4.0). விவரங்கள் செயலியில் "மூலங்களும் உரிமங்களும்" பகுதியில்.
 ```
 
 ## English (translation)
@@ -68,6 +70,8 @@ A Tamil-English Bible: read the Tamil Indian Revised Version (IRV) and the King 
 • Every verse where that root word stands, and the Tamil words the IRV uses for it.
 • Hebrew and Greek words: the Hebrew of every Old Testament verse and the Greek of every New Testament verse, word by word, with transliteration and a short meaning.
 • Search in Tamil or English. Type a reference such as சங்கீதம் 23 or John 3:16 to go straight there.
+• An introduction to each book: who wrote it, when and for whom, its themes, an outline and key verses.
+• Cross references for every verse, and parallel passages where the same event or words are told again (the Gospels, Kings and Chronicles).
 • Compare a verse in Tamil and the KJV side by side with the Hebrew (Old Testament) or Greek (New Testament).
 • Highlight a whole verse, a few words, or a passage running over several verses, in four colours. Keep bookmarks and notes.
 • Notebook: write sermon notes or a study. A reference such as John 3:16 becomes a link to the verse, with its text shown beneath. Add a verse to a page straight from the reader, and share a page with its verses.
@@ -80,5 +84,5 @@ No internet needed: the whole text is inside the app. No ads, no account, and no
 
 The links between Tamil words and the Hebrew and Greek were made with computer help and may be wrong in places.
 
-Sources: Tamil Indian Revised Version (IRV), © 2017, 2019 Bridge Connectivity Solutions, from eBible.org (CC BY-SA 4.0); King James Version 1769 (public domain outside the United Kingdom); Hebrew and Greek text and meanings from STEPBible.org, Tyndale House Cambridge (CC BY 4.0); Strong's dictionary from Open Scriptures (CC BY-SA). Details are under Sources and licences in the app.
+Sources: Tamil Indian Revised Version (IRV), © 2017, 2019 Bridge Connectivity Solutions, from eBible.org (CC BY-SA 4.0); King James Version 1769 (public domain outside the United Kingdom); Hebrew and Greek text and meanings from STEPBible.org, Tyndale House Cambridge (CC BY 4.0); Strong's dictionary from Open Scriptures (CC BY-SA); cross references from OpenBible.info (CC BY 4.0); parallel passages from the UBS Parallel Passages Database, © 2023 United Bible Societies (CC BY-SA 4.0). Details are under Sources and licences in the app.
 ```

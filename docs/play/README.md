@@ -81,6 +81,11 @@ Uninstalling removes the bookmarks and notes on that phone.
       only through Android's own system backup, which the user controls. Declaring
       "no data collected" is the usual reading for that case; check Play's Data safety
       help if you want to be sure.
+      The notebook backup file, page PDFs and the file picker do not change this: in
+      Play's words, "'Collect' means transmitting data from your app off a user's
+      device", and a user who sends their own file to their own drive or chat is not
+      collection; user-initiated sharing is exempt from "sharing". Do not tick "Files
+      and docs". (Data safety help: support.google.com/googleplay/android-developer/answer/10787469)
 - [ ] **Government apps**: No. **Financial features**: None. **Health**: None.
       **News app**: No.
 

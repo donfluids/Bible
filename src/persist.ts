@@ -57,7 +57,18 @@ export function loadEntry<T>(key: string, parse: (raw: string) => T, fallback: T
  * Refresh "<key>.bak" from a good entry, at most once a day. Written in the background so
  * it does not hold up the first page; the time is recorded only once the copy is in.
  */
+/**
+ * Entries larger than this (long handwritten pages) get no daily copy: Android backs up an
+ * app's data only while it is under 25 MB, and copies of big pages would push it over,
+ * leaving bookmarks and notes without a backup. The notebook's own backup file keeps them.
+ */
+const MAX_DAILY_COPY = 256 * 1024;
+
 function keepBackup(key: string, raw: string): void {
+  if (raw.length > MAX_DAILY_COPY) {
+    Storage.removeItem(`${key}.bak`).catch(() => undefined);
+    return;
+  }
   try {
     const at = Number(Storage.getItemSync(`${key}.bak.time`) ?? 0);
     if (Date.now() - at < DAY) return;

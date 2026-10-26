@@ -485,16 +485,51 @@ export async function getCrossRefs(db: SQLiteDatabase, translation: TranslationI
   return out;
 }
 
+interface MapRow {
+  book: number;
+  chapter: number;
+  verse: number;
+  n: number;
+  obook: number;
+  ochapter: number;
+  overse: number;
+}
+
+/**
+ * A Bible's verse map (a few dozen rows: the verses it numbers differently from the KJV),
+ * read once and kept, so mapping a list of cross references does not ask the database
+ * about each verse in it.
+ */
+const verseMaps = new WeakMap<SQLiteDatabase, Map<TranslationId, Promise<{ byVerse: Map<string, MapRow[]>; byKjv: Map<string, MapRow[]> }>>>();
+function verseMap(db: SQLiteDatabase, translation: TranslationId) {
+  let forDb = verseMaps.get(db);
+  if (!forDb) verseMaps.set(db, (forDb = new Map()));
+  let found = forDb.get(translation);
+  if (!found) {
+    found = db
+      .getAllAsync<MapRow>('SELECT book, chapter, verse, n, obook, ochapter, overse FROM verse_map WHERE translation = ? ORDER BY book, chapter, verse, n', translation)
+      .then((rows) => {
+        const byVerse = new Map<string, MapRow[]>();
+        const byKjv = new Map<string, MapRow[]>();
+        for (const r of rows) {
+          const v = `${r.book}:${r.chapter}:${r.verse}`;
+          const k = `${r.obook}:${r.ochapter}:${r.overse}`;
+          byVerse.set(v, [...(byVerse.get(v) ?? []), r]);
+          byKjv.set(k, [...(byKjv.get(k) ?? []), r]);
+        }
+        return { byVerse, byKjv };
+      });
+    // A failed read is tried again next time.
+    found.catch(() => forDb!.delete(translation));
+    forDb.set(translation, found);
+  }
+  return found;
+}
+
 /** The KJV-numbered verses that a verse of `translation` corresponds to (usually itself). */
 export async function toKjvRefs(db: SQLiteDatabase, translation: TranslationId, ref: Ref): Promise<Ref[]> {
-  const rows = await db.getAllAsync<{ obook: number; ochapter: number; overse: number }>(
-    'SELECT obook, ochapter, overse FROM verse_map WHERE translation = ? AND book = ? AND chapter = ? AND verse = ? ORDER BY n',
-    translation,
-    ref.book,
-    ref.chapter,
-    ref.verse,
-  );
-  return rows.length ? rows.map((r) => ({ book: r.obook, chapter: r.ochapter, verse: r.overse })) : [ref];
+  const rows = (await verseMap(db, translation)).byVerse.get(`${ref.book}:${ref.chapter}:${ref.verse}`);
+  return rows?.length ? rows.map((r) => ({ book: r.obook, chapter: r.ochapter, verse: r.overse })) : [ref];
 }
 
 /**
@@ -504,20 +539,20 @@ export async function toKjvRefs(db: SQLiteDatabase, translation: TranslationId, 
  * it gives at 14:24).
  */
 async function fromKjv(db: SQLiteDatabase, to: TranslationId, kjv: Ref): Promise<Ref | null> {
-  const [remapped, row] = await Promise.all([
-    db.getFirstAsync<{ x: number }>('SELECT 1 AS x FROM verse_map WHERE translation = ? AND book = ? AND chapter = ? AND verse = ?', to, kjv.book, kjv.chapter, kjv.verse),
-    db.getFirstAsync<{ omitted: number }>('SELECT omitted FROM verses WHERE translation = ? AND book = ? AND chapter = ? AND verse = ?', to, kjv.book, kjv.chapter, kjv.verse),
-  ]);
-  if (!remapped && row && !row.omitted) return kjv;
-  const moved = await db.getFirstAsync<Ref>(
-    'SELECT book, chapter, verse FROM verse_map WHERE translation = ? AND obook = ? AND ochapter = ? AND overse = ? ORDER BY book, chapter, verse LIMIT 1',
-    to,
-    kjv.book,
-    kjv.chapter,
-    kjv.verse,
-  );
-  if (moved) return moved;
-  return !remapped && row ? kjv : null;
+  const map = await verseMap(db, to);
+  const remapped = map.byVerse.has(`${kjv.book}:${kjv.chapter}:${kjv.verse}`);
+  const movedRow = map.byKjv.get(`${kjv.book}:${kjv.chapter}:${kjv.verse}`)?.[0];
+  const moved = movedRow ? { book: movedRow.book, chapter: movedRow.chapter, verse: movedRow.verse } : null;
+  // A verse no map row names is in its place, unless the Bible leaves it out.
+  if (!remapped && !moved) {
+    const row = await db.getFirstAsync<{ omitted: number }>('SELECT omitted FROM verses WHERE translation = ? AND book = ? AND chapter = ? AND verse = ?', to, kjv.book, kjv.chapter, kjv.verse);
+    return row ? kjv : null;
+  }
+  if (!remapped) {
+    const row = await db.getFirstAsync<{ omitted: number }>('SELECT omitted FROM verses WHERE translation = ? AND book = ? AND chapter = ? AND verse = ?', to, kjv.book, kjv.chapter, kjv.verse);
+    if (row && !row.omitted) return kjv;
+  }
+  return moved;
 }
 
 /**

@@ -53,7 +53,7 @@ const BSB: Source = {
 
 const WEB: Source = {
   title: 'World English Bible',
-  notice: 'Public domain.',
+  notice: 'Public domain. “World English Bible” is a trademark of eBible.org, used for this unchanged text.',
   source: [{ label: 'eBible.org (engwebp)', url: 'https://ebible.org/find/details.php?id=engwebp' }],
   modifications: "Text unchanged. The Strong's numbers of the source are not used.",
 };
@@ -67,7 +67,7 @@ const MALAYALAM: Source = {
     { label: 'Malayalam Wikisource', url: 'https://ml.wikisource.org/wiki/സത്യവേദപുസ്തകം' },
   ],
   modifications:
-    'Titus 2–3, duplicated from Titus 1 in the source, restored from the 1910 text (Malayalam Wikisource, public domain); 19 spelling errors corrected; extraneous text at Titus 1:1 and five illustration captions removed. The modified text is distributed under CC BY-SA 4.0.',
+    'Titus 2–3, duplicated from Titus 1 in the source, restored from the 1910 text (Malayalam Wikisource, public domain); 19 spelling errors corrected; extraneous text at Titus 1:1, five illustration captions and two section headings removed. The modified text is distributed under CC BY-SA 4.0.',
 };
 
 const MALAYALAM_LINKS: Source = {
@@ -82,7 +82,7 @@ const TAMIL: Source = {
   notice: '© 2017, 2019 Bridge Connectivity Solutions.',
   licence: CC_BY_SA,
   source: [{ label: 'eBible.org (tam2017)', url: 'https://ebible.org/find/details.php?id=tam2017' }],
-  modifications: "Text unchanged. Book names taken from each book's running head. Distributed under CC BY-SA 4.0.",
+  modifications: "Section headings omitted; eight stray zero-width non-joiners removed; book names taken from each book's running head. The modified text is distributed under CC BY-SA 4.0.",
 };
 
 const TAMIL_LINKS: Source = {
@@ -97,14 +97,18 @@ const STEPBIBLE: Source = {
   notice:
     'STEPBible.org, Tyndale House, Cambridge. Hebrew text: Westminster Leningrad Codex 4.20, via Open Scriptures. English glosses of the Greek based on the Berean Study Bible, used with permission.',
   licence: CC_BY,
-  source: [{ label: 'github.com/STEPBible/STEPBible-Data', url: 'https://github.com/STEPBible/STEPBible-Data' }],
+  source: [
+    { label: 'STEPBible.org', url: 'https://www.stepbible.org' },
+    { label: 'github.com/STEPBible/STEPBible-Data', url: 'https://github.com/STEPBible/STEPBible-Data' },
+  ],
   modifications:
     'Greek words found only in the Nestle-Aland editions omitted; readings of the Textus Receptus and the Byzantine text shown where they differ, with the Nestle-Aland reading noted; Hebrew paragraph marks pe (פ) and samekh (ס) removed; verses mapped to the KJV versification.',
 };
 
 const STRONGS: Source = {
   title: "Strong's Hebrew and Greek Dictionaries (1890)",
-  notice: 'James Strong. Public domain. Digital edition by Open Scriptures.',
+  notice:
+    'James Strong (1890, 1894). Public domain. Digital edition \u00a9 2009\u20132010 Open Scriptures, CC BY-SA (from XML by Ulrik Petersen (Greek) and David Instone-Brewer, edited by David Troidl (Hebrew)). The adapted table is distributed under CC BY-SA 4.0.',
   licence: CC_BY_SA,
   source: [{ label: 'github.com/openscriptures/strongs', url: 'https://github.com/openscriptures/strongs' }],
   modifications: 'Short glosses (from the STEPBible data) and unaccented search forms added.',
@@ -181,7 +185,8 @@ const APP_NAME: Record<EditionId, string> = { en: 'Bible', ml: 'വേദപു�
 
 const APP = (edition: EditionId): Source => ({
   title: APP_NAME[edition],
-  notice: '© 2026 Rivers Research. The licence covers the source code of the app; the texts, data, fonts and pictures keep the licences given above.',
+  notice:
+    '\u00a9 2026 Rivers Research. The licence covers the source code of the app; the texts, data, fonts and pictures keep the licences given above. The databases inside the app are offered as a whole under CC BY-SA 4.0; each text and data set in them keeps its own licence given above, and the public-domain and CC BY parts may be reused on those terms. The databases and the scripts that build them are at github.com/donfluids/Bible. Nothing in a store\u2019s terms restricts what these licences allow.',
   licence: MIT,
   source: [{ label: 'github.com/donfluids/Bible', url: 'https://github.com/donfluids/Bible' }],
 });

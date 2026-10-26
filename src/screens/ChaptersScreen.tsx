@@ -40,7 +40,7 @@ export function ChaptersScreen({ book, current, onPick, onOpenIntro, onBack }: P
         <Pressable
           onPress={onOpenIntro}
           android_ripple={{ color: theme.accentSoft }}
-          style={({ pressed }) => [styles.intro, { width: inner, borderColor: theme.border, backgroundColor: pressed ? theme.accentSoft : theme.card }]}
+          style={({ pressed }) => [styles.intro, { width: inner, borderColor: theme.accent, backgroundColor: theme.accentSoft, opacity: pressed ? 0.7 : 1 }]}
           accessibilityRole="button"
         >
           <Icon name="info" size={22} color={theme.accent} />
@@ -61,6 +61,7 @@ export function ChaptersScreen({ book, current, onPick, onOpenIntro, onBack }: P
               ]}
               accessibilityRole="button"
               accessibilityLabel={`${title} ${c}`}
+              accessibilityState={{ selected: active }}
             >
               <Text style={[styles.cellText, { color: active ? theme.onAccent : theme.text }]}>{c}</Text>
             </Pressable>

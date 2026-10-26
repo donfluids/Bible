@@ -24,9 +24,10 @@ interface Props {
   onBack: () => void;
   onOpenLicences: () => void;
   onOpenWhy: () => void;
+  onOpenPrivacy: () => void;
 }
 
-export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy }: Props) {
+export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivacy }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   // Lists run under the system navigation bar; the last row must clear it.
@@ -214,6 +215,10 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy }: Props) {
           </Text>
           <Pressable onPress={onOpenWhy} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>
             <Text style={[styles.rowTitle, { color: theme.accent, flex: 1 }]}>{t('whyThisBible')}</Text>
+            <Icon name="chevron_right" color={theme.accent} />
+          </Pressable>
+          <Pressable onPress={onOpenPrivacy} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>
+            <Text style={[styles.rowTitle, { color: theme.accent, flex: 1 }]}>{t('privacy')}</Text>
             <Icon name="chevron_right" color={theme.accent} />
           </Pressable>
           <Pressable onPress={onOpenLicences} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>

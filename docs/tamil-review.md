@@ -306,15 +306,15 @@ Words chosen for the app's own features, used throughout:
 | crossReferences | Cross references | தொடர்புடைய வசனங்கள் | |
 | crossReferencesDetail | {n} related passages, the strongest first | தொடர்புடைய {n} பகுதிகள், மிக நெருக்கமானவை முதலில் | |
 | crossReferencesSource | Treasury of Scripture Knowledge, via OpenBible.info (CC BY) | Treasury of Scripture Knowledge, OpenBible.info வழியாக (CC BY) | |
-| parallelPassages | Parallel passages | இணைப் பகுதிகள் | |
+| parallelPassages | Parallel passages | இணையான பகுதிகள் | |
 | parallelPassagesDetail | {n} places with the same event or words | இதே நிகழ்வு அல்லது வார்த்தைகள் உள்ள {n} பகுதிகள் | |
 | parallelPassagesSource | Parallel Passages Database © 2023 United Bible Societies (CC BY-SA 4.0) | Parallel Passages Database © 2023 United Bible Societies (CC BY-SA 4.0) | |
 | aboutBook | About this book | இந்தப் புத்தகத்தைப் பற்றி | |
 | introAuthor | Written by | எழுதியவர் | |
-| introDate | When | காலம் | |
+| introDate | When | எழுதப்பட்ட காலம் | |
 | introAudience | Written for | யாருக்காக | |
 | introThemes | Main themes | முக்கிய கருப்பொருள்கள் | |
-| introOutline | Outline | உள்ளடக்கம் | |
+| introOutline | Outline | பொருளடக்கம் | |
 | introKeyVerses | Key verses | முக்கிய வசனங்கள் | |
 | introNone | There is no introduction to this book yet. | இந்தப் புத்தகத்திற்கு இன்னும் முன்னுரை இல்லை. | |
 | omitted | Omitted in this translation. | இந்த மொழிபெயர்ப்பில் இல்லை. | |
@@ -342,7 +342,7 @@ Words chosen for the app's own features, used throughout:
 | all | All | எல்லாம் | |
 | notInTranslation | Not in this translation. | இந்த மொழிபெயர்ப்பில் இல்லை. | |
 | notTagged | Not tagged in the {translation} | {in} இந்தச் சொல்லோடு இணைக்கப்பட்ட வார்த்தை இல்லை | |
-| noEntry | No dictionary entry for {id}. | {id} க்கு அகராதிப் பதிவு இல்லை. | |
+| noEntry | No dictionary entry for {id}. | {id}-க்கு அகராதிப் பதிவு இல்லை. | |
 | noStrongs | This word has no Strong's number. | இந்த வார்த்தைக்கு ஸ்ட்ராங் எண் இல்லை. | |
 | marksQuestion | What do the marks mean? | இந்தக் குறிகளின் பொருள் என்ன? | |
 | marksHide | Hide the key to the marks | குறிகளின் விளக்கத்தை மறை | |
@@ -438,12 +438,13 @@ Words chosen for the app's own features, used throughout:
 | aboutTexts | About the texts | உரைகளைப் பற்றி | |
 | sourcesLicences | Sources and licences | மூலங்களும் உரிமங்களும் | |
 | whyThisBible | Why this Bible | இந்த வேதாகமம் ஏன் | |
+| privacy | Privacy | தனியுரிமை | |
 | aboutEnglish | Bibles: the King James Version (1769), the Berean Standard Bible and the World English Bible. The translators' footnotes appear as small letters in the text; tap one to read it. | வேதாகமங்கள்: கிங் ஜேம்ஸ் வெர்ஸன் (1769), பெரியன் ஸ்டாண்டர்டு பைபிள், வேர்ல்டு இங்கிலீஷ் பைபிள். மொழிபெயர்ப்பாளர்களின் அடிக்குறிப்புகள் சிறிய எழுத்துகளாகத் தெரியும்; தொட்டால் படிக்கலாம். | |
-| aboutMalayalam | Bibles: the Sathyavedapusthakam 1910 (Malayalam), in a revised edition in contemporary orthography, and the King James Version (1769). The links from Malayalam words to the Hebrew and Greek are machine-generated and not fully reviewed. | வேதாகமங்கள்: மலையாள சத்தியவேதபுஸ்தகம் 1910, கிங் ஜேம்ஸ் வெர்ஸன் (1769). | |
+| aboutMalayalam | Bibles: the Sathyavedapusthakam 1910 (Malayalam), in a revised edition in contemporary orthography, and the King James Version (1769). The links from Malayalam words to the Hebrew and Greek are machine-generated and not fully reviewed. | வேதாகமங்கள்: மலையாள சத்தியவேதபுஸ்தகம் 1910 (இன்றைய எழுத்துமுறையில் திருத்தப்பட்ட பதிப்பு), கிங் ஜேம்ஸ் வெர்ஸன் (1769). மலையாள வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திரத்தால் உருவாக்கப்பட்டவை; முழுமையாகச் சரிபார்க்கப்படவில்லை. | |
 | aboutTamil | Bibles: the Indian Revised Version (Tamil) and the King James Version (1769). The links from Tamil words to the Hebrew and Greek are machine-generated and not reviewed. | வேதாகமங்கள்: இண்டியன் ரிவைஸ்டு வெர்ஸன் (IRV) தமிழ், கிங் ஜேம்ஸ் வெர்ஸன் (1769). தமிழ் வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திர உதவியுடன் உருவாக்கப்பட்டவை; சரிபார்க்கப்படவில்லை. | |
 | aboutStrongs | Dictionaries: Strong's Hebrew and Greek Dictionaries (1890), Abbott-Smith's Greek lexicon (1922) and the Brown–Driver–Briggs Hebrew lexicon (1906). | அகராதிகள்: ஸ்ட்ராங் எபிரெய, கிரேக்க அகராதிகள் (1890), Abbott-Smith கிரேக்க அகராதி (1922), Brown–Driver–Briggs எபிரெய அகராதி (1906). | |
-| aboutInterlinear | The Hebrew (Leningrad Codex) and Greek words, with transliteration, glosses and grammar are from the Translators Amalgamated Hebrew OT and Greek NT of STEPBible.org (Tyndale House, Cambridge). The Greek is spelled as in the Nestle-Aland 28th edition and has every word of the Textus Receptus and the Byzantine text; where those texts have a different word from Nestle-Aland, their word is shown. Words not in the Nestle-Aland editions have a line beneath; tap one to see which texts have it. | எபிரெய (லெனின்கிராட் கோடெக்ஸ்), கிரேக்க வார்த்தைகள், ஒலிபெயர்ப்பு, பொருள், இலக்கணத்துடன், STEPBible.org (Tyndale House Cambridge) தயாரித்த Translators Amalgamated Hebrew OT and Greek NT-இலிருந்து. கிரேக்கம் நெஸ்ட்லே-ஆலந்து 28-ஆம் பதிப்பின் எழுத்துக்கூட்டலில் உள்ளது; டெக்ஸ்டஸ் ரிசெப்டஸ், பைசாந்திய பாடங்களின் ஒவ்வொரு வார்த்தையும் அதில் உண்டு. அவற்றில் வேறு வார்த்தை இருக்கும் இடத்தில் அந்த வார்த்தை காட்டப்படுகிறது. நெஸ்ட்லே-ஆலந்து பதிப்புகளில் இல்லாத வார்த்தைகளுக்குக் கீழே கோடு இருக்கும்; எந்தப் பாடங்களில் அது உள்ளது என்று அறியத் தொடுங்கள். | |
-| aboutWeb | The World English Bible is shown as plain text: the Strong's numbers in its source file are attached to the wrong words too often to use. Word lookups and verse lists use the King James Version; to tap the original words while reading the WEB, switch on Hebrew words or Greek words. | வேர்ல்டு இங்கிலீஷ் பைபிள் வெறும் உரையாக மட்டுமே காட்டப்படுகிறது: அதன் மூலக் கோப்பில் உள்ள ஸ்ட்ராங் எண்கள் அடிக்கடி தவறான வார்த்தைகளில் உள்ளன. சொல் விவரமும் வசனப் பட்டியலும் KJV-ஐப் பயன்படுத்துகின்றன. | |
+| aboutInterlinear | The Hebrew (Leningrad Codex) and Greek words, with transliteration, glosses and grammar are from the Translators Amalgamated Hebrew OT and Greek NT of STEPBible.org (Tyndale House, Cambridge). The Greek is spelled as in the Nestle-Aland 28th edition and has every word of the Textus Receptus and the Byzantine text; where those texts have a different word from Nestle-Aland, their word is shown. Words not in the Nestle-Aland editions have a line beneath; tap one to see which texts have it. | எபிரெய (லெனின்கிராட் கோடெக்ஸ்), கிரேக்க வார்த்தைகள், ஒலிபெயர்ப்பு, பொருள், இலக்கணத்துடன், STEPBible.org (Tyndale House Cambridge) தயாரித்த Translators Amalgamated Hebrew OT and Greek NT-இலிருந்து. கிரேக்கம் நெஸ்லே-ஆலந்து 28-ஆம் பதிப்பின் எழுத்துக்கூட்டலில் உள்ளது; டெக்ஸ்டஸ் ரிசெப்டஸ், பைசாந்திய பாடங்களின் ஒவ்வொரு வார்த்தையும் அதில் உண்டு. அவற்றில் வேறு வார்த்தை இருக்கும் இடத்தில் அந்த வார்த்தை காட்டப்படுகிறது. நெஸ்லே-ஆலந்து பதிப்புகளில் இல்லாத வார்த்தைகளுக்குக் கீழே கோடு இருக்கும்; எந்தப் பாடங்களில் அது உள்ளது என்று அறியத் தொடுங்கள். | |
+| aboutWeb | The World English Bible is shown as plain text: the Strong's numbers in its source file are attached to the wrong words too often to use. Word lookups and verse lists use the King James Version; to tap the original words while reading the WEB, switch on Hebrew words or Greek words. | வேர்ல்டு இங்கிலீஷ் பைபிள் வெறும் உரையாக மட்டுமே காட்டப்படுகிறது: அதன் மூலக் கோப்பில் உள்ள ஸ்ட்ராங் எண்கள் அடிக்கடி தவறான வார்த்தைகளில் உள்ளன. சொல் விவரமும் வசனப் பட்டியலும் KJV-ஐப் பயன்படுத்துகின்றன; WEB-ஐ வாசிக்கும்போது மூல வார்த்தைகளைத் தொட, எபிரெய / கிரேக்க வார்த்தைகளை இயக்குங்கள். | |
 | databaseBuilt | Database built {date} | தரவுத்தளம் உருவாக்கப்பட்டது {date} | |
 | appVersion | Version {version} | பதிப்பு {version} | |
 | previewText | In the beginning | ஆதியிலே | |
@@ -461,7 +462,7 @@ Words chosen for the app's own features, used throughout:
 | sharePage | Share page | பக்கத்தைப் பகிர் | |
 | backupRestore | Back up or restore | காப்புப்பிரதியும் மீட்டெடுப்பும் | |
 | saveBackup | Save a backup | காப்புப்பிரதி சேமி | |
-| saveBackupDetail | Every page, typed and handwritten, in one file to keep in Drive or Files, or to bring to another phone | தட்டச்சு, கையெழுத்து எல்லாப் பக்கங்களும் ஒரே கோப்பில்; Drive அல்லது Files-இல் வைக்கலாம், வேறு போனுக்குக் கொண்டுசெல்லலாம் | |
+| saveBackupDetail | Every page, typed and handwritten, in one file to keep in Drive or Files, or to bring to another phone | தட்டச்சு, கையால் எழுதிய எல்லாப் பக்கங்களும் ஒரே கோப்பில்; Drive அல்லது Files-இல் வைக்கலாம், வேறு தொலைபேசிக்குக் கொண்டுசெல்லலாம் | |
 | restoreBackup | Restore from a backup | காப்புப்பிரதியிலிருந்து மீட்டெடு | |
 | restoreBackupDetail | Pages in the file are added; a page here is replaced only by a newer copy of itself. Nothing is deleted. | கோப்பிலுள்ள பக்கங்கள் சேர்க்கப்படும்; இங்குள்ள ஒரு பக்கம் அதன் புதிய பதிப்பால் மட்டுமே மாற்றப்படும். எதுவும் நீக்கப்படாது. | |
 | backupEmpty | The notebook has no pages yet. | குறிப்பேட்டில் இன்னும் பக்கங்கள் இல்லை. | |
@@ -470,18 +471,22 @@ Words chosen for the app's own features, used throughout:
 | restoreTooLarge | This file is too large to be a notebook backup. | குறிப்பேட்டுக் காப்புப்பிரதியாக இருக்க இந்தக் கோப்பு மிகப் பெரியது. | |
 | restoreDone | Restored: {added} new, {updated} updated, {kept} already here. | மீட்டெடுக்கப்பட்டது: {added} புதியவை, {updated} புதுப்பிக்கப்பட்டவை, {kept} ஏற்கெனவே இருந்தவை. | |
 | shareAsText | Share as text | உரையாகப் பகிர் | |
-| shareAsPdf | Share as PDF | PDF ஆகப் பகிர் | |
+| shareAsPdf | Share as PDF | PDF-ஆகப் பகிர் | |
 | shareAsPicture | Share as picture | படமாகப் பகிர் | |
-| pdfFailed | The PDF could not be made. | PDF உருவாக்க முடியவில்லை. | |
+| pdfFailed | The PDF could not be made. | PDF-ஐ உருவாக்க முடியவில்லை. | |
+| inkPageFull | This page is full. Start a new page to go on writing. | இந்தப் பக்கம் நிறைந்துவிட்டது. தொடர்ந்து எழுத புதிய பக்கத்தைத் தொடங்குங்கள். | |
+| restoreFailed | The backup could not be restored. Nothing was changed. | காப்புப்பிரதியை மீட்டெடுக்க முடியவில்லை. எதுவும் மாற்றப்படவில்லை. | |
+| backupInkUnreadable | The writing on “{page}” cannot be read, so no backup was made. Open the page to check it, then try again. | “{page}” பக்கத்தின் எழுத்தைப் படிக்க முடியவில்லை, ஆகவே காப்புப்பிரதி எடுக்கப்படவில்லை. பக்கத்தைத் திறந்து பார்த்துவிட்டு மீண்டும் முயலுங்கள். | |
+| restoreOtherEdition | This backup was made in the {app} app. Its verses are quoted from that Bible. Restore it here? | இந்தக் காப்புப்பிரதி {app} செயலியில் எடுக்கப்பட்டது. அதிலுள்ள வசனங்கள் அந்த வேதாகமத்திலிருந்து எடுக்கப்பட்டவை. இங்கே மீட்டெடுக்கவா? | |
 | pageTyped | Typed page | தட்டச்சுப் பக்கம் | |
 | pageTypedDetail | References such as John 3:16 link to the verse | யோவான் 3:16 போன்ற குறிப்புகள் வசனத்துக்கு இணைப்பாகும் | |
-| pageHandPlain | Handwritten, plain paper | கையெழுத்து, வெற்றுத் தாள் | |
-| pageHandLined | Handwritten, lined paper | கையெழுத்து, கோடிட்ட தாள் | |
+| pageHandPlain | Handwritten, plain paper | கையெழுத்துப் பக்கம், வெற்றுத் தாள் | |
+| pageHandLined | Handwritten, lined paper | கையெழுத்துப் பக்கம், கோடிட்ட தாள் | |
 | pageHandDetail | Write with a pen or your finger | பேனாவாலோ விரலாலோ எழுதலாம் | |
-| handwritten | Handwritten | கையெழுத்து | |
-| penBlack | Black pen | கருப்பு பேனா | |
-| penBlue | Blue pen | நீல பேனா | |
-| penRed | Red pen | சிவப்பு பேனா | |
+| handwritten | Handwritten | கையால் எழுதியது | |
+| penBlack | Black pen | கருப்புப் பேனா | |
+| penBlue | Blue pen | நீலப் பேனா | |
+| penRed | Red pen | சிவப்புப் பேனா | |
 | highlighterYellow | Yellow highlighter | மஞ்சள் ஹைலைட்டர் | |
 | penThin | Thin pen | மெல்லிய பேனா | |
 | penThick | Thick pen | தடித்த பேனா | |
@@ -491,6 +496,15 @@ Words chosen for the app's own features, used throughout:
 | plainPaper | Plain paper | வெற்றுத் தாள் | |
 | inkHint | Write with one finger or a pen. Move the page with two fingers. | ஒரு விரலாலோ பேனாவாலோ எழுதுங்கள். இரண்டு விரல்களால் பக்கத்தை நகர்த்தலாம். | |
 | inkPenFound | Pen found: now a finger moves the page and only the pen writes. | பேனா கண்டறியப்பட்டது: இனி விரல் பக்கத்தை நகர்த்தும், பேனா மட்டும் எழுதும். | |
+| inkPenOnly | Only the pen writes | பேனா மட்டும் எழுதும் | |
+| inkPenOnlyOn | Only the pen writes now; a finger moves the page. | இனி பேனா மட்டும் எழுதும்; விரல் பக்கத்தை நகர்த்தும். | |
+| inkPenOnlyOff | A finger writes again; two fingers move the page. | விரலும் இனி எழுதும்; இரண்டு விரல்களால் பக்கத்தை நகர்த்தலாம். | |
+| inkMovePen | One finger moves the page. | ஒரு விரலால் பக்கத்தை நகர்த்தலாம். | |
+| inkMoveFingers | Two fingers move the page. | இரண்டு விரல்களால் பக்கத்தை நகர்த்தலாம். | |
+| colourYellow | yellow | மஞ்சள் | |
+| colourGreen | green | பச்சை | |
+| colourBlue | blue | நீலம் | |
+| colourPink | pink | இளஞ்சிவப்பு | |
 | inkShareFailed | The page could not be shared. | பக்கத்தைப் பகிர முடியவில்லை. | |
 | notebookEmptyTitle | No pages yet | இன்னும் பக்கங்கள் இல்லை | |
 | notebookEmpty | Write sermon notes, a study or a list of verses. Tap + to start a page, or hold a verse in the reader and choose Add to notebook. | பிரசங்கக் குறிப்புகள், வேத ஆய்வு, வசனப் பட்டியல் எழுதலாம். புதிய பக்கம் தொடங்க + ஐத் தொடுங்கள், அல்லது வாசிப்பில் ஒரு வசனத்தை அழுத்திப் பிடித்து “குறிப்பேட்டில் சேர்” என்பதைத் தேர்ந்தெடுங்கள். | |
@@ -504,7 +518,7 @@ Words chosen for the app's own features, used throughout:
 | saveFailedTitle | Not saved | சேமிக்கப்படவில்லை | |
 | saveFailed | Your latest changes could not be saved. The phone may be out of storage space. The app will keep trying while it is open. | கடைசியாகச் செய்த மாற்றங்களைச் சேமிக்க முடியவில்லை. தொலைபேசியில் இடம் தீர்ந்திருக்கலாம். செயலி திறந்திருக்கும் வரை மீண்டும் முயலும். | |
 | readFailedTitle | Saved data could not be read | சேமித்தவற்றைப் படிக்க முடியவில்லை | |
-| readFailed | Your bookmarks, notes or notebook could not be read this time. They are left untouched; changes made now will not be saved. Close the app fully and open it again. | உங்கள் அடையாளக்குறிகளையோ குறிப்புகளையோ இந்த முறை படிக்க முடியவில்லை. அவை மாற்றப்படவில்லை; இப்போது செய்யும் மாற்றங்கள் சேமிக்கப்படாது. செயலியை முழுவதுமாக மூடி மீண்டும் திறங்கள். | |
+| readFailed | Your bookmarks, notes or notebook could not be read this time. They are left untouched; changes made now will not be saved. Close the app fully and open it again. | உங்கள் அடையாளக்குறிகளையோ குறிப்புகளையோ குறிப்பேட்டையோ இந்த முறை படிக்க முடியவில்லை. அவை மாற்றப்படவில்லை; இப்போது செய்யும் மாற்றங்கள் சேமிக்கப்படாது. செயலியை முழுவதுமாக மூடி மீண்டும் திறங்கள். | |
 | restoredBackupTitle | Restored from a backup | பழைய நகலிலிருந்து மீட்கப்பட்டது | |
 | restoredBackup | Some saved data was damaged, so an earlier copy was used. Recent changes may be missing. | சேமித்திருந்த சில தகவல்கள் சேதமடைந்ததால் முந்தைய நகல் பயன்படுத்தப்பட்டது. சமீபத்திய மாற்றங்கள் இல்லாமல் இருக்கலாம். | |
 

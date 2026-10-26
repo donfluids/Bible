@@ -10,13 +10,19 @@ or the address chosen when it was first published). This task replaces the page'
 
 Compared with the version dated 20 October 2026:
 
-- Effective date **23 October 2026**.
-- "Copying and sharing" now also covers a photo the user puts on a card: it is chosen in
-  the phone's own photo picker, the app sees only that photo and sends it nowhere, and a
-  saved card design keeps a copy on the phone, outside the phone's backup.
+- Effective date **26 October 2026**.
+- "Copying and sharing" also covers a photo the user puts on a card: it is chosen in the
+  phone's own photo picker, the app sees only that photo and sends it nowhere, and a saved
+  card design keeps a copy on the phone (outside Android's backup, inside iCloud backup).
+- A new section, "Notebook backup and PDFs": the notebook can be saved to a backup file and
+  a page shared as a PDF or picture, through the share menu; a backup is restored from a
+  file the user picks, and only that file is read.
+- The summary and "What the apps do not do" now say that data leaves the phone only when
+  the user shares, copies, exports or prints it, and that a file is opened only when the
+  user picks it.
 
-Nothing else changed. If the page still shows an older version (dated 20 October 2026 or
-earlier), replace it all the same: the text below is the whole current policy.
+If the page shows an older version (dated 20 or 23 October 2026, or earlier), replace it
+all the same: the text below is the whole current policy.
 
 This privacy page is the only change the website needs for these app updates.
 
@@ -45,7 +51,7 @@ This privacy page is the only change the website needs for these app updates.
 
 - `curl -sI https://riversresearch.org/bible/privacy` (or the page's address) returns
   status 200 with `Content-Type: text/html`.
-- The page shows "Effective 23 October 2026", "Reading aloud", "picture card", "photo picker", "வேதாகமம்", "for Android and iPhone" and
+- The page shows "Effective 26 October 2026", "Reading aloud", "picture card", "photo picker", "Notebook backup", "வேதாகமம்", "for Android and iPhone" and
   "iCloud", plus "Rivers Research LLC", all three package names and dond@riversresearch.org.
 - It opens on a phone without signing in.
 
@@ -59,9 +65,9 @@ The page's address, and that the text now reads as below.
 
 # Privacy policy
 
-Bible (org.riversresearch.bible), വേദപുസ്തകം (org.riversresearch.bible.malayalam) and வேதாகமம் (org.riversresearch.bible.tamil), for Android and iPhone, published by Rivers Research LLC. Effective 23 October 2026.
+Bible (org.riversresearch.bible), വേദപുസ്തകം (org.riversresearch.bible.malayalam) and வேதாகமம் (org.riversresearch.bible.tamil), for Android and iPhone, published by Rivers Research LLC. Effective 26 October 2026.
 
-> The apps collect no personal data and send nothing anywhere. They do not connect to the internet. Everything you save in them stays on your phone.
+> The apps collect no personal data and send nothing to us or to anyone else. They do not connect to the internet. What you save in them stays on your phone, and leaves it only when you share, copy, export or print it yourself, to the place you choose.
 
 ## What the apps keep, and where
 
@@ -73,7 +79,11 @@ If backup is switched on in your phone's settings, your phone can include the ap
 
 ## Copying and sharing
 
-When you copy or share a verse or a notebook page, or share a verse as a picture card, the text or picture goes to the clipboard or to the app you choose, and only when you ask for it. A card, with any heading and message you type on it, is made on your phone, and the apps keep no copy of it. If you put one of your own photos on a card, you choose it in your phone's own photo picker: the app sees only that photo, uses it on your phone and sends it nowhere. A card design you save keeps its own copy of the photo on your phone, left out of the phone's backup; removing the design deletes the copy.
+When you copy or share a verse or a notebook page, or share a verse as a picture card, the text or picture goes to the clipboard or to the app you choose, and only when you ask for it. A card, with any heading and message you type on it, is made on your phone, and the apps keep no copy of it. If you put one of your own photos on a card, you choose it in your phone's own photo picker: the app sees only that photo, uses it on your phone and sends it nowhere. A card design you save keeps its own copy of the photo on your phone (left out of Android's backup; on iPhone it is included in iCloud backup); removing the design deletes the copy.
+
+## Notebook backup and PDFs
+
+You can save your notebook as a backup file, or a notebook page as a PDF or a picture. The file is made on your phone and goes only where you send it in your phone's share menu (for example Files, Google Drive or a chat); it is a plain file that anyone you give it to can read. To restore, you pick a backup file in your phone's own file picker: the app reads only that file, adds its pages to your notebook and sends nothing anywhere. We never receive these files.
 
 ## Reading aloud
 
@@ -88,9 +98,9 @@ The Sources and licences screen has links to the websites the texts come from. T
 - No accounts or sign-in.
 - No advertising.
 - No analytics, tracking or crash reporting.
-- No access to your contacts, location, camera, microphone or files.
+- No access to your contacts, location, camera or microphone. The apps open a file only when you pick it yourself (see Notebook backup and PDFs), and see only that file.
 
-On Android, the only permission the apps use is vibration, for the light ticks you feel when you hold a verse, mark text, save a highlight or change the text size. On iPhone the apps ask for no permissions; the same ticks use the phone's haptics, which need none.
+On Android, the only permission the apps use is vibration, for the light ticks you feel when you hold a verse, mark text, save a highlight or change the text size. On iPhone the apps ask for no permissions; the same ticks use the phone's haptics, which need none, and the photo and file pickers are the phone's own, which show only what you choose.
 
 ## Children
 

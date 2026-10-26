@@ -1,7 +1,7 @@
 name: Android APK
 
 # Builds a release APK on every push to the main development branch, on manual
-# request, and on version tags. Tags also get a GitHub release with both APKs attached.
+# request, and on version tags. Tags also get a GitHub release with the APKs attached.
 #
 # Signing: add these repository secrets so builds are signed with the release key
 # (Settings > Secrets and variables > Actions):
@@ -32,8 +32,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # en = Bible (KJV, WEB); ml = വേദപുസ്തകം (Malayalam, KJV). See src/edition.ts.
-        edition: [en, ml]
+        # en = Bible (KJV, BSB, WEB); ml = വേദപുസ്തകം (Malayalam, KJV); ta = வேதாகமம் (Tamil, KJV). See src/edition.ts.
+        edition: [en, ml, ta]
     env:
       BIBLE_EDITION: ${{ matrix.edition }}
       # A step's own env is not available to its `if`, so the secret's presence is
@@ -61,26 +61,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Typecheck
-        run: npx tsc --noEmit
+      - name: Tests (types, references, logic against the built databases)
+        run: npm test
 
       - name: Restore release keystore
         if: env.HAS_KEYSTORE == 'true'
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        # Values go through the environment, not ${{ }} in the script, so quotes or $ in a
-        # password cannot break the shell.
+        # Only the keystore's path goes to later steps; the passwords are given to the one
+        # step that signs (below), so no other step can see them.
         run: |
           echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
-          {
-            echo "BIBLE_KEYSTORE_PATH=$RUNNER_TEMP/release.jks"
-            echo "BIBLE_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
-            echo "BIBLE_KEY_ALIAS=$KEY_ALIAS"
-            echo "BIBLE_KEY_PASSWORD=$KEY_PASSWORD"
-          } >> "$GITHUB_ENV"
+          echo "BIBLE_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
 
       - name: Generate the Android project
         env:
@@ -91,11 +83,16 @@ jobs:
       - name: Build release APK
         env:
           BIBLE_VERSION_CODE: ${{ github.run_number }}
+          # Values go through the environment, not ${{ }} in the script, so quotes or $ in a
+          # password cannot break the shell. Empty without the secrets (debug signing).
+          BIBLE_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          BIBLE_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          BIBLE_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           cd android
           ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --no-daemon
           VERSION=$(node -p "require('../app.json').expo.version")
-          NAME=$([ "$BIBLE_EDITION" = ml ] && echo Vedapusthakam || echo Bible)
+          NAME=$(case "$BIBLE_EDITION" in ml) echo Vedapusthakam ;; ta) echo Vedagamam ;; *) echo Bible ;; esac)
           cp app/build/outputs/apk/release/app-release.apk "../$NAME-$VERSION-build${{ github.run_number }}.apk"
           echo "APK=$NAME-$VERSION-build${{ github.run_number }}.apk" >> "$GITHUB_ENV"
 
@@ -116,7 +113,7 @@ jobs:
           path: ${{ env.APK }}
           retention-days: 90
 
-  # Tags get a GitHub release with both APKs. This is the only job that may write to the
+  # Tags get a GitHub release with the APKs. This is the only job that may write to the
   # repository, and it never sees the signing secrets: it only takes the built APKs.
   release:
     if: startsWith(github.ref, 'refs/tags/v')

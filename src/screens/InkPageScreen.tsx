@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, AppState, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { AccessibilityInfo, Alert, AppState, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector, PointerType } from 'react-native-gesture-handler';
 import type { GestureTouchEvent } from 'react-native-gesture-handler';
@@ -27,6 +27,7 @@ import {
   PEN_WIDTHS,
   PAGE_STROKES,
   addPoint,
+  boundsOf,
   emptyInk,
   encodeInk,
   inkKey,
@@ -106,31 +107,80 @@ const Strokes = memo(function Strokes({ strokes, dark }: { strokes: Stroke[]; da
 
 /**
  * The stroke being written. It has its state of its own, so a pen's movement redraws only
- * this line, not the page and its tools.
+ * this line, not the page and its tools; and it is drawn on a layer only as tall as the
+ * part of the page on screen (`view`: its top and height, in points), not the whole page.
  */
-function LiveStroke({ setter, dark }: { setter: React.MutableRefObject<((s: Stroke | null) => void) | null>; dark: boolean }) {
+function LiveStroke({
+  setter,
+  dark,
+  width,
+  scale,
+  view,
+}: {
+  setter: React.MutableRefObject<((s: Stroke | null) => void) | null>;
+  dark: boolean;
+  width: number;
+  scale: number;
+  view: () => { top: number; height: number };
+}) {
   const [live, setLive] = useState<Stroke | null>(null);
   setter.current = setLive;
   if (!live) return null;
   const ink = dark ? INK.dark : INK.light;
+  const { top, height } = view();
   return (
-    <Path
-      d={strokePath(live.p)}
-      stroke={live.c < 0 ? ink.highlighter : ink.pens[live.c]}
-      strokeOpacity={live.c < 0 ? ink.highlighterOpacity : 1}
-      strokeWidth={live.w}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill="none"
-    />
+    <Svg style={[StyleSheet.absoluteFill, { top, height }]} width={width} height={height} viewBox={`0 ${top / scale} ${PAGE_WIDTH} ${height / scale}`} pointerEvents="none">
+      <Path
+        d={strokePath(live.p)}
+        stroke={live.c < 0 ? ink.highlighter : ink.pens[live.c]}
+        strokeOpacity={live.c < 0 ? ink.highlighterOpacity : 1}
+        strokeWidth={live.w}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </Svg>
   );
 }
 
-const Lines = memo(function Lines({ height, colour }: { height: number; colour: string }) {
+const Lines = memo(function Lines({ from, to, colour }: { from: number; to: number; colour: string }) {
   const lines = [];
-  for (let y = LINE_GAP * 2; y < height; y += LINE_GAP) lines.push(<Line key={y} x1={0} x2={PAGE_WIDTH} y1={y} y2={y} stroke={colour} strokeWidth={1} />);
+  for (let y = LINE_GAP * 2; y < to; y += LINE_GAP) if (y >= from) lines.push(<Line key={y} x1={0} x2={PAGE_WIDTH} y1={y} y2={y} stroke={colour} strokeWidth={1} />);
   return <>{lines}</>;
 });
+
+/**
+ * Pages are drawn in tiles this tall (in units), each a picture of its own: Android draws a
+ * picture whole, so one for a long page would grow past what it can hold and slow each
+ * redraw; a tile is redrawn only when a stroke on it changes.
+ */
+const TILE = 1800;
+
+const Tile = memo(
+  function Tile({ top, height, strokes, dark, width, scale, lines }: { top: number; height: number; strokes: Stroke[]; dark: boolean; width: number; scale: number; lines: string | null }) {
+    return (
+      <Svg style={[StyleSheet.absoluteFill, { top: top * scale, height: height * scale }]} width={width} height={height * scale} viewBox={`0 ${top} ${PAGE_WIDTH} ${height}`}>
+        {lines ? <Lines from={top} to={top + height} colour={lines} /> : null}
+        <Strokes strokes={strokes} dark={dark} />
+      </Svg>
+    );
+  },
+  (a, b) => a.top === b.top && a.height === b.height && a.width === b.width && a.scale === b.scale && a.lines === b.lines && sameStrokes(a, b),
+);
+
+/** The finished strokes, in tiles down the page; a stroke across two tiles is in both. */
+function InkTiles({ strokes, dark, width, scale, height, lines }: { strokes: Stroke[]; dark: boolean; width: number; scale: number; height: number; lines: string | null }) {
+  const tiles = [];
+  for (let top = 0; top < height; top += TILE) {
+    const h = Math.min(TILE, height - top);
+    const here = strokes.filter((st) => {
+      const [, t, , b] = boundsOf(st);
+      return b + st.w >= top && t - st.w <= top + h;
+    });
+    tiles.push(<Tile key={top} top={top} height={h} strokes={here} dark={dark} width={width} scale={scale} lines={lines} />);
+  }
+  return <>{tiles}</>;
+}
 
 /**
  * A handwritten notebook page: a title typed at the top and a page to write on with a
@@ -245,7 +295,9 @@ export function InkPageScreen({ id, onBack }: Props) {
   // The page's size on screen: the reading width at most, PAGE_WIDTH units across.
   const [box, setBox] = useState({ width: 0, height: 0 });
   const onLayout = (e: LayoutChangeEvent) => setBox({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height });
-  const pageWidth = Math.min(box.width, MAX_CONTENT_WIDTH);
+  // The page fills a tablet's width (it is drawn in PAGE_WIDTH units, so wider is only
+  // larger), with a little room at the sides; on a phone it is the screen's width.
+  const pageWidth = Math.min(box.width > MAX_CONTENT_WIDTH ? box.width - 24 : box.width, 1200);
   const scale = pageWidth > 0 ? pageWidth / PAGE_WIDTH : 1;
   const [sharing, setSharing] = useState(false);
   // For a shared picture the page ends a little below the writing.
@@ -270,7 +322,8 @@ export function InkPageScreen({ id, onBack }: Props) {
   const [notice, setNotice] = useState<string | null>(null);
   useEffect(() => {
     if (!notice) return;
-    const timer = setTimeout(() => setNotice(null), 3500);
+    AccessibilityInfo.announceForAccessibility(notice);
+    const timer = setTimeout(() => setNotice(null), 6000);
     return () => clearTimeout(timer);
   }, [notice]);
 
@@ -463,6 +516,11 @@ export function InkPageScreen({ id, onBack }: Props) {
     };
   }, [sharing]); // eslint-disable-line react-hooks/exhaustive-deps
   const titleHeight = useRef(0);
+  // The part of the page on screen, in points from the page's top, for the stroke being written.
+  const liveView = useCallback(() => {
+    const pageTop = Math.max(0, scrollY.current - titleHeight.current);
+    return { top: pageTop, height: Math.max(1, Math.min(viewHeight.current || 800, heightUnits * scale - pageTop)) };
+  }, [heightUnits, scale]);
 
   if (!page) return <View style={[styles.screen, { backgroundColor: theme.bg }]}><Header title={t('notebook')} onBack={onBack} /></View>;
 
@@ -485,24 +543,31 @@ export function InkPageScreen({ id, onBack }: Props) {
   };
   const setPaper = (next: 'plain' | 'lined') => edit(id, { ink: { paper: next, strokes: ink.strokes.length } });
 
-  const toolButton = (key: string, label: string, selected: boolean, onPress: () => void, content: React.ReactNode, disabled = false) => (
+  const toolButton = (key: string, label: string, selected: boolean, onPress: () => void, content: React.ReactNode, disabled = false, toggle = false) => (
     <Pressable
       key={key}
       onPress={onPress}
       disabled={disabled}
-      accessibilityRole="button"
+      android_ripple={{ color: theme.accentSoft, borderless: true, radius: 24 }}
+      accessibilityRole={toggle ? 'switch' : 'button'}
       accessibilityLabel={label}
-      accessibilityState={{ selected, disabled }}
+      accessibilityState={toggle ? { checked: selected, disabled } : { selected, disabled }}
       style={[styles.tool, { backgroundColor: selected ? theme.accentSoft : 'transparent', borderColor: selected ? theme.accent : 'transparent', opacity: disabled ? 0.35 : 1 }]}
     >
       {content}
     </Pressable>
   );
-  const iconTool = (key: string, label: string, icon: IconName, selected: boolean, onPress: () => void, color?: string, disabled = false) =>
-    toolButton(key, label, selected, onPress, <Icon name={icon} size={22} color={color ?? theme.text} />, disabled);
+  const iconTool = (key: string, label: string, icon: IconName, selected: boolean, onPress: () => void, color?: string, disabled = false, toggle = false) =>
+    toolButton(key, label, selected, onPress, <Icon name={icon} size={22} color={color ?? theme.text} />, disabled, toggle);
+  const togglePenMode = () => {
+    penModeRef.current = !penModeRef.current;
+    setPenMode(penModeRef.current);
+    setNotice(penModeRef.current ? t('inkPenOnlyOn') : t('inkPenOnlyOff'));
+  };
 
   const empty = ink.strokes.length === 0 && !writing;
-  const hint = notice ?? (empty && !penMode ? t('inkHint') : null);
+  // The first hint on an empty page; after that a short reminder of how the page moves.
+  const hint = notice ?? (empty && !penMode ? t('inkHint') : penMode ? t('inkMovePen') : t('inkMoveFingers'));
   const titleFont = scriptureFont(scriptOf(title) ?? uiScript, settings.serif, true);
 
   return (
@@ -530,13 +595,19 @@ export function InkPageScreen({ id, onBack }: Props) {
               setColour(i);
             }, <View style={[styles.dot, { backgroundColor: colours.pens[i], borderColor: theme.border }]} />),
           )}
-          {iconTool('highlighter', t('highlighterYellow'), 'ink_highlighter', tool === 'highlighter', () => setTool('highlighter'), theme.dark ? '#E8C400' : '#C9A400')}
+          {iconTool('highlighter', t('highlighterYellow'), 'ink_highlighter', tool === 'highlighter', () => setTool('highlighter'), theme.dark ? '#E8C400' : '#806600')}
           {iconTool('eraser', t('eraser'), 'ink_eraser', tool === 'eraser', () => setTool('eraser'))}
-          {iconTool('size', size === 'thin' ? t('penThin') : t('penThick'), 'line_weight', size === 'thick', () => setSize(size === 'thin' ? 'thick' : 'thin'))}
+          {iconTool('size', t('penThick'), 'line_weight', size === 'thick', () => setSize(size === 'thin' ? 'thick' : 'thin'), undefined, false, true)}
+          {iconTool('penOnly', t('inkPenOnly'), penMode ? 'stylus' : 'touch_app', penMode, togglePenMode, undefined, false, true)}
+          <View style={[styles.divider, { backgroundColor: theme.border }]} />
           {iconTool('undo', t('undo'), 'undo', false, undo, undefined, past.current.length === 0)}
           {iconTool('redo', t('redo'), 'redo', false, redo, undefined, future.current.length === 0)}
         </ScrollView>
-        {hint ? <Text style={[styles.hint, { color: theme.muted }]}>{hint}</Text> : null}
+        {hint ? (
+          <Text style={[styles.hint, { color: theme.muted }]} accessibilityLiveRegion="polite">
+            {hint}
+          </Text>
+        ) : null}
       </View>
       <View style={styles.area} onLayout={onLayout}>
         {pageWidth > 0 ? (
@@ -548,24 +619,34 @@ export function InkPageScreen({ id, onBack }: Props) {
             contentContainerStyle={{ alignItems: 'center', paddingBottom: insets.bottom }}
             keyboardShouldPersistTaps="handled"
           >
-            <View ref={pageRef} collapsable={false} style={{ width: pageWidth, backgroundColor: theme.bg }}>
+            <View ref={pageRef} collapsable={false} style={{ width: pageWidth, backgroundColor: sharing ? SHARED_PAGE : theme.bg }}>
               <View onLayout={(e) => (titleHeight.current = e.nativeEvent.layout.height)} style={[styles.titleBox, sharing && !title.trim() && styles.hidden]}>
                 <TextInput
                   value={title}
                   onChangeText={setTitle}
                   placeholder={t('pageTitle')}
                   placeholderTextColor={theme.muted}
-                  style={[styles.titleInput, { color: theme.text, borderBottomColor: sharing ? 'transparent' : theme.border, fontFamily: titleFont, fontWeight: scriptOf(title) || uiScript ? 'normal' : '600' }]}
+                  style={[styles.titleInput, { color: sharing ? SHARED_TEXT : theme.text, borderBottomColor: sharing ? 'transparent' : theme.border, fontFamily: titleFont, fontWeight: scriptOf(title) || uiScript ? 'normal' : '600' }]}
                   returnKeyType="done"
                 />
               </View>
               <GestureDetector gesture={gesture}>
-                <View collapsable={false} style={{ width: pageWidth, height: heightUnits * scale }}>
-                  <Svg width={pageWidth} height={heightUnits * scale} viewBox={`0 0 ${PAGE_WIDTH} ${heightUnits}`}>
-                    {paper === 'lined' ? <Lines height={heightUnits} colour={lineColour(theme)} /> : null}
-                    <Strokes strokes={ink.strokes} dark={theme.dark} />
-                    <LiveStroke setter={liveSetter} dark={theme.dark} />
-                  </Svg>
+                <View
+                  collapsable={false}
+                  style={{ width: pageWidth, height: heightUnits * scale }}
+                  accessible
+                  accessibilityLabel={`${t('handwritten')}: ${ink.strokes.length}`}
+                  accessibilityHint={penMode ? t('inkMovePen') : t('inkHint')}
+                >
+                  <InkTiles
+                    strokes={ink.strokes}
+                    dark={theme.dark && !sharing}
+                    width={pageWidth}
+                    scale={scale}
+                    height={heightUnits}
+                    lines={paper === 'lined' ? (sharing ? lineColour(null) : lineColour(theme)) : null}
+                  />
+                  <LiveStroke setter={liveSetter} dark={theme.dark && !sharing} width={pageWidth} scale={scale} view={liveView} />
                 </View>
               </GestureDetector>
             </View>
@@ -594,16 +675,19 @@ export function InkPageScreen({ id, onBack }: Props) {
   );
 }
 
-const lineColour = (theme: Theme) => (theme.dark ? '#3A342C' : '#DCD3C3');
+const lineColour = (theme: Theme | null) => (theme?.dark ? '#3A342C' : '#DCD3C3');
+/** A shared picture is always light paper with dark writing, as the PDF is, whatever the theme. */
+const SHARED_PAGE = '#FFFDF8';
+const SHARED_TEXT = '#1E1B16';
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   toolbar: { borderBottomWidth: StyleSheet.hairlineWidth, paddingBottom: 4 },
-  tools: { alignItems: 'center', paddingHorizontal: 8, gap: 2, minWidth: '100%', justifyContent: 'center' },
-  tool: { width: 40, height: 40, borderRadius: 20, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
+  tools: { alignItems: 'center', paddingHorizontal: 8, gap: 0, minWidth: '100%', justifyContent: 'center' },
+  tool: { width: 48, height: 48, borderRadius: 24, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   dot: { width: 22, height: 22, borderRadius: 11, borderWidth: StyleSheet.hairlineWidth },
   divider: { width: StyleSheet.hairlineWidth, height: 26, marginHorizontal: 6 },
-  hint: { fontSize: 13, textAlign: 'center', paddingHorizontal: 16, paddingTop: 2 },
+  hint: { fontSize: 14, textAlign: 'center', paddingHorizontal: 16, paddingTop: 2 },
   area: { flex: 1 },
   titleBox: { paddingHorizontal: 18, paddingTop: 6 },
   hidden: { display: 'none' },

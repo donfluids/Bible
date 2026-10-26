@@ -93,6 +93,11 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
       writing is all there. Switch to plain paper and back. Share the page: the picture
       shows the title and the writing.
 - [ ] A handwritten page is not offered in "Add to notebook" from the verse menu.
+- [ ] On a handwritten page, the pen-only switch (stylus / hand icon) turns pen-only on and
+      off, and the line under the tools says how the page moves. Share a page as a picture
+      in dark mode: the picture is light paper with dark writing.
+- [ ] Write a long handwritten page (ten screens or more): writing stays smooth to the end
+      [device: Android especially]. Its PDF opens and has the writing on the right sheets.
 - [ ] Share a typed page as PDF and a handwritten page as PDF: the PDF opens with the
       title, the quoted verses (typed) or the writing on its paper, a long page over
       several A4 pages.
@@ -100,6 +105,10 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
       Delete one page, change another, then Restore from a backup and pick the file: the
       deleted page is back, the changed page keeps the newer change, a handwritten page
       has its writing. Picking a photo or another file says it is not a backup.
+- [ ] Restore, in the Malayalam app, a backup made in the English app: the app asks first.
+- [ ] Settings → Privacy shows the policy in the app's language.
+- [ ] At the largest text size (36) About this book and Why this Bible are at that size, and
+      the backup sheet shows its whole explanation ("Nothing is deleted").
 - [ ] Saved shows the bookmarks, highlights and notes from section 3.
 - [ ] Search for a word: results start in the New Testament; the Old and New Testament
       and book buttons narrow the list; Show more adds verses. Search for a reference

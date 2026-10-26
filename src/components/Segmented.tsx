@@ -46,7 +46,7 @@ export function Segmented<T extends string>({ options, value, onChange }: { opti
 
 const styles = StyleSheet.create({
   segmented: { flexDirection: 'row', borderWidth: 1, borderRadius: 20, overflow: 'hidden', marginTop: 10 },
-  segment: { flex: 1, minHeight: 40, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingHorizontal: 6, paddingVertical: 4 },
+  segment: { flex: 1, minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingHorizontal: 6, paddingVertical: 4 },
   grid: { flexWrap: 'wrap' },
   gridSegment: { flexBasis: '50%', flexGrow: 0 },
   segmentText: { fontSize: 14, fontWeight: '500', flexShrink: 1, textAlign: 'center' },

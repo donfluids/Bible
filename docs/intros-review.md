@@ -12,8 +12,15 @@ with `node --no-warnings scripts/check-intros.mjs`, and put in the databases wit
 - Names follow the app's Bible (Sathyavedapusthakam 1910, the IRV Tamil). Where that Bible
   spells a name two ways, the translators took the spelling of the book being introduced.
 - Pronouns for God and Jesus: Malayalam uses the respectful അവിടുന്ന് / അവിടുത്തെ, as the
-  "Why this Bible" page does; Tamil uses அவர். Apostles and godly people get the respectful
-  forms in Tamil (the IRV itself uses அவன் for them).
+  "Why this Bible" page does; Tamil uses அவர். In Tamil every named person, men and women
+  alike, takes the respectful forms (the IRV itself uses அவன் / அவள் for most of them);
+  only Satan, demons and the beasts of Revelation take the plain forms.
+- The English uses "the LORD" for the divine name in the Old Testament and "Lord" for
+  Adonai (Isaiah 6:1, Job 28:28, Malachi 3:1) and in the New Testament; Malayalam has
+  യഹോവ / കർത്താവ്, Tamil யெகோவா / ஆண்டவர் (Old Testament) and கர்த்தர் (New Testament).
+- The fifth council's native reviewers' corrections are applied (26 October 2026): see
+  their reports. Still to check by a person: everything, but above all books 14–39 and
+  53–66 in Malayalam, which were rewritten most.
 - New words for the interface: Cross references is now ഒത്തുവാക്യങ്ങൾ / தொடர்புடைய வசனங்கள்
   (it was സമാന്തര വാക്യങ്ങൾ / இணை வசனங்கள், "parallel verses"), so that Parallel passages
   can be സമാന്തര ഭാഗങ്ങൾ / இணைப் பகுதிகள். About this book: ഈ പുസ്തകത്തെക്കുറിച്ച് /

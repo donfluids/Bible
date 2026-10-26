@@ -72,7 +72,7 @@ import { abbottSmith, bdbGlosses } from './lib/lexicons.mjs';
 import { addCrossRefs } from './lib/crossrefs.mjs';
 import { addIntros } from './lib/intros.mjs';
 import { addParallels } from './lib/parallels.mjs';
-import { recordDatabase } from './lib/dbfiles.mjs';
+import { keepBuildDate, previousBuild, recordDatabase } from './lib/dbfiles.mjs';
 import { readFileSync, readdirSync, mkdirSync, rmSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -743,6 +743,7 @@ function buildEdition(edition) {
     try { statSync(join(RAW, t.dir)); } catch { throw new Error(`missing data/raw/${t.dir}; run npm run fetch-data first`); }
   }
   mkdirSync(OUT_DIR, { recursive: true });
+  const previous = previousBuild(OUT);
   rmSync(OUT, { force: true });
   const db = new DatabaseSync(OUT);
   db.exec(`
@@ -1041,6 +1042,7 @@ function buildEdition(edition) {
   stats.crossrefs = addCrossRefs(db, RAW);
   stats.parallels = addParallels(db, RAW);
   stats.intros = addIntros(db, ROOT, edition);
+  keepBuildDate(db, previous);
   db.exec('VACUUM');
   db.close();
 

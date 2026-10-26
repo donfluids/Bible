@@ -6,6 +6,7 @@ import { DefaultTheme, DarkTheme, NavigationContainer, StackActions } from '@rea
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
+import { Paths } from 'expo-file-system';
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import { DATABASE_ASSET, DATABASE_DIRECTORY, DATABASE_NAME, databaseCopyComplete, removeIncompleteCopy, removeStaleDatabases } from './src/db';
 import { navigationRef } from './src/navigation';
@@ -31,6 +32,7 @@ import { SearchScreen } from './src/screens/SearchScreen';
 import { LicencesScreen } from './src/screens/LicencesScreen';
 import { WhyScreen } from './src/screens/WhyScreen';
 import { IntroScreen } from './src/screens/IntroScreen';
+import { PrivacyScreen } from './src/screens/PrivacyScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { NotebookScreen } from './src/screens/NotebookScreen';
 import { NotePageScreen } from './src/screens/NotePageScreen';
@@ -77,12 +79,27 @@ function Database() {
     return true;
   }, [attempt]);
   const assetSource = useMemo(() => (firstCopy ? { assetId: DATABASE_ASSET, forceOverwrite: true } : undefined), [firstCopy]);
-  const onInit = useCallback(async () => setReady(true), []);
+  // The copy takes the database's size twice while it is made (the bundled file is first
+  // unpacked to the cache); with less room than that free, say so before starting.
+  const lowSpace = useMemo(() => {
+    if (!firstCopy) return false;
+    try {
+      const free = Paths.availableDiskSpace;
+      return typeof free === 'number' && free > 0 && free < 120 * 1024 * 1024;
+    } catch {
+      return false;
+    }
+  }, [firstCopy]);
+  const onInit = useCallback(async () => {
+    // The unpacked copy in the cache is not needed once the database is in place.
+    if (firstCopy && databaseCopyComplete()) removeStaleDatabases(true);
+    setReady(true);
+  }, [firstCopy]);
   // The provider reports errors while rendering, so record them afterwards.
   const onError = useCallback(() => {
     Promise.resolve().then(() => setFailed(true));
   }, []);
-  if (failed) {
+  if (failed || lowSpace) {
     return (
       <Failure
         language={STARTUP_LANGUAGE}
@@ -297,6 +314,7 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
           <Stack.Screen name="Licences" component={LicencesRoute} />
           <Stack.Screen name="Why" component={WhyRoute} />
           <Stack.Screen name="Intro" component={IntroRoute} />
+          <Stack.Screen name="Privacy" component={PrivacyRoute} />
           <Stack.Screen name="Notebook" component={NotebookRoute} options={TAB_SCREEN} />
           <Stack.Screen name="NotePage" component={NotePageRoute} />
           <Stack.Screen name="Card" component={CardRoute} />
@@ -415,7 +433,7 @@ function ConcordanceRoute({ navigation, route }: Props<'Concordance'>) {
 }
 
 function SettingsRoute({ navigation }: Props<'Settings'>) {
-  return <SettingsScreen onBack={() => navigation.goBack()} onOpenLicences={() => navigation.navigate('Licences')} onOpenWhy={() => navigation.navigate('Why')} />;
+  return <SettingsScreen onBack={() => navigation.goBack()} onOpenLicences={() => navigation.navigate('Licences')} onOpenWhy={() => navigation.navigate('Why')} onOpenPrivacy={() => navigation.navigate('Privacy')} />;
 }
 
 function NotebookRoute({ navigation }: Props<'Notebook'>) {
@@ -453,6 +471,10 @@ function IntroRoute({ navigation, route }: Props<'Intro'>) {
   const { books } = useApp();
   const openRef = useOpenRef(navigation, t('aboutBook'));
   return <IntroScreen book={route.params.book} books={books} onBack={() => navigation.goBack()} onOpenRef={openRef} />;
+}
+
+function PrivacyRoute({ navigation }: Props<'Privacy'>) {
+  return <PrivacyScreen onBack={() => navigation.goBack()} />;
 }
 
 function LicencesRoute({ navigation }: Props<'Licences'>) {

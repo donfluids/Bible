@@ -31,6 +31,8 @@ export const STEP_FILES = [
 ];
 /** At most this many passages for one verse. */
 export const PER_VERSE = 12;
+/** A source passage with more places than this is a stock phrase and is left out. */
+const MAX_GROUP = 12;
 
 /**
  * The KJV verse of the first and of the last word of each verse in the source's numbering,
@@ -101,6 +103,7 @@ export function addParallels(db, rawDir) {
   const kjvIndex = new Map(kjvRows.map((r, i) => [`${r.book}:${r.chapter}:${r.verse}`, i]));
   let skipped = 0;
   let unreadable = 0;
+  let formulas = 0;
   // Each passage's members: a range in KJV numbering, [b, c, v, b, c, v], and which of the
   // source's verse lists it came from ("Mark 1:32,34" gives two ranges from one list).
   const groups = [];
@@ -123,7 +126,12 @@ export function addParallels(db, rawDir) {
           members.push({ range: [...a, ...b], origin });
         }
       });
-      if (new Set(members.map((m) => m.origin)).size > 1) groups.push(members);
+      // A group of more than MAX_GROUP places is a stock phrase, not one event told again
+      // ("The word of the LORD came unto me, saying", 39 places; the greeting that opens
+      // Paul's letters, 17): it would fill each verse's list with the others.
+      const places = new Set(members.map((m) => m.origin)).size;
+      if (places > MAX_GROUP) formulas++;
+      else if (places > 1) groups.push(members);
     }
   }
   // Every verse of a member gets the other members of its passage.
@@ -172,5 +180,5 @@ export function addParallels(db, rawDir) {
     verses++;
   }
   db.exec('COMMIT');
-  return { passages: groups.length, verses, links, skipped, unreadable };
+  return { passages: groups.length, verses, links, skipped, unreadable, formulas };
 }

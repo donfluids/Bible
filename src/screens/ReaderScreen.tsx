@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, AppState, FlatList, Share, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, Alert, AppState, FlatList, Share, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, ViewToken } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -197,6 +197,9 @@ function KeepAwake() {
   return null;
 }
 
+/** Highlight colours as TalkBack says them, in the interface language. */
+const COLOUR_NAMES = { yellow: 'colourYellow', green: 'colourGreen', blue: 'colourBlue', pink: 'colourPink' } as const;
+
 export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onOpenNotePage, onOpenCard, onOpenIntro, onOpenRef, onWord, tabs = false }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
@@ -286,6 +289,10 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
   const [toNotebook, setToNotebook] = useState<VerseRow | null>(null);
   const notebook = useNotebook();
   const [toast, setToast] = useState<string | null>(null);
+  // Said by a screen reader too, since the toast itself takes no focus.
+  useEffect(() => {
+    if (toast) AccessibilityInfo.announceForAccessibility(toast);
+  }, [toast]);
   const listRef = useRef<FlatList<Item>>(null);
 
   const book = books.find((b) => b.id === position.book) ?? books[0];
@@ -1233,7 +1240,8 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
         }
         right={
           <>
-            <HeaderIconButton icon="info" onPress={() => onOpenIntro(position.book)} accessibilityLabel={t('aboutBook')} />
+            {/* On a narrow phone with Back shown the title needs the room; About this book is also above the chapter numbers. */}
+            {onBack && windowWidth < 400 ? null : <HeaderIconButton icon="info" onPress={() => onOpenIntro(position.book)} accessibilityLabel={t('aboutBook')} />}
             <HeaderIconButton icon="volume_up" onPress={() => startReading()} accessibilityLabel={t('readAloud')} />
             <HeaderIconButton icon="search" onPress={onOpenSearch} accessibilityLabel={t('search')} />
             <HeaderIconButton icon="settings" onPress={onOpenSettings} accessibilityLabel={t('settings')} />
@@ -1285,7 +1293,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                   key={c}
                   onPress={() => chooseTool(c)}
                   accessibilityRole="button"
-                  accessibilityLabel={`${t('highlight')} ${c}`}
+                  accessibilityLabel={`${t('highlight')} ${t(COLOUR_NAMES[c])}`}
                   accessibilityState={{ selected: markTool === c }}
                   hitSlop={4}
                   style={[
@@ -1446,7 +1454,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                     key={c}
                     onPress={() => setHighlight(actions, c)}
                     accessibilityRole="button"
-                    accessibilityLabel={`${t('highlight')} ${c}`}
+                    accessibilityLabel={`${t('highlight')} ${t(COLOUR_NAMES[c])}`}
                     accessibilityState={{ selected: chosen }}
                     hitSlop={6}
                     style={[styles.swatch, { backgroundColor: theme.marks[c], borderColor: theme.dark ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.12)' }]}
@@ -1496,12 +1504,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                 setCompare({ book: actions.book, chapter: actions.chapter, verse: actions.verse });
               }}
             />
-            {crossCount && crossCount.key === bookmarkKey(actions) && crossCount.n > 0 ? (
-              <SheetAction icon="link" label={t('crossReferences')} detail={t('crossReferencesDetail', { n: crossCount.n })} onPress={() => openCross(actions, 'crossrefs')} />
-            ) : null}
-            {crossCount && crossCount.key === bookmarkKey(actions) && crossCount.parallels > 0 ? (
-              <SheetAction icon="view_column" label={t('parallelPassages')} detail={t('parallelPassagesDetail', { n: crossCount.parallels })} onPress={() => openCross(actions, 'parallels')} />
-            ) : null}
+            {/* Shown once their counts are known; last, so their coming moves nothing under them. */}
             {actions.tags ? (
               <SheetAction
                 icon="translate"
@@ -1513,11 +1516,17 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                 }}
               />
             ) : null}
+            {crossCount && crossCount.key === bookmarkKey(actions) && crossCount.n > 0 ? (
+              <SheetAction icon="link" label={t('crossReferences')} detail={t('crossReferencesDetail', { n: crossCount.n })} onPress={() => openCross(actions, 'crossrefs')} />
+            ) : null}
+            {crossCount && crossCount.key === bookmarkKey(actions) && crossCount.parallels > 0 ? (
+              <SheetAction icon="view_column" label={t('parallelPassages')} detail={t('parallelPassagesDetail', { n: crossCount.parallels })} onPress={() => openCross(actions, 'parallels')} />
+            ) : null}
           </>
         ) : null}
       </SimpleSheet>
 
-      <SimpleSheet visible={!!cross} title={cross ? `${t(cross.kind === 'parallels' ? 'parallelPassages' : 'crossReferences')} · ${formatRef(books, cross.verse, translation)}` : ''} onClose={() => setCross(null)}>
+      <SimpleSheet visible={!!cross} title={cross ? `${formatRef(books, cross.verse, translation)} · ${t(cross.kind === 'parallels' ? 'parallelPassages' : 'crossReferences')}` : ''} onClose={() => setCross(null)}>
         {cross ? (
           <View>
             {cross.list === null ? <Text style={[styles.crossLoading, { color: theme.muted }]}>…</Text> : null}
@@ -1537,7 +1546,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
                   accessibilityRole="link"
                   style={({ pressed }) => [styles.crossRow, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
                 >
-                  <Text style={[styles.crossRef, { color: theme.accent }, !!scriptOf(label) && { fontFamily: scriptureFont(scriptOf(label), settings.serif, true), fontWeight: 'normal' }]}>{label}</Text>
+                  <Text style={[styles.crossRef, { color: theme.accent, fontSize: Math.max(15, fontSize - 3) }, !!scriptOf(label) && { fontFamily: scriptureFont(scriptOf(label), settings.serif, true), fontWeight: 'normal' }]}>{label}</Text>
                   {c.verses.length ? (
                     <Text style={{ color: theme.text, fontSize: Math.max(15, fontSize - 3), lineHeight: Math.round(Math.max(15, fontSize - 3) * translationInfo(translation).lineHeight), fontFamily: scriptFont }} numberOfLines={4}>
                       {c.verses.map((v) => flattenVerse(v.text)).join(' ')}
@@ -1982,7 +1991,7 @@ const styles = StyleSheet.create({
   markTools: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   markSwatch: { width: 34, height: 34, borderRadius: 17, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   markSwatchChosen: { borderWidth: 2 },
-  markDone: { paddingHorizontal: 18, paddingVertical: 8, borderRadius: 999 },
+  markDone: { paddingHorizontal: 20, minHeight: 48, justifyContent: 'center', borderRadius: 999 },
   markDoneText: { fontSize: 15, fontWeight: '600' },
   toast: { position: 'absolute', alignSelf: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 },
   toastText: { fontSize: 14, fontWeight: '600' },

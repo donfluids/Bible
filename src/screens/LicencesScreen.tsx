@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Header } from '../components/Header';
 import { SectionLabel } from '../components/SectionLabel';
@@ -10,6 +10,7 @@ import { APACHE_TEXT } from '../apacheText';
 import { MIT_TEXT } from '../mitText';
 import { OFL_TEXT } from '../oflText';
 import notices from '../notices.json';
+import { NATIVE_NOTICES } from '../nativeNotices';
 import { MAX_CONTENT_WIDTH } from '../text';
 import { useTheme } from '../theme';
 
@@ -24,6 +25,9 @@ const PACKAGES = notices.packages as Notice[];
 const ANDROID = notices.android as Notice[];
 const APACHE_LIBRARIES = ANDROID.filter((n) => n.licence === 'Apache-2.0');
 const NOTICED_LIBRARIES = ANDROID.filter((n) => n.licence !== 'Apache-2.0');
+/** The native libraries in this build: the Android list is the Android build's own; an iPhone build has only the hand-kept ones. */
+const IOS = Platform.OS === 'ios';
+const NATIVE = NATIVE_NOTICES.filter((n) => n.platforms.includes(IOS ? 'ios' : 'android')).map((n) => ({ ...n, version: '' }));
 
 /** A licence file's hard-wrapped lines joined into paragraphs, for a narrow screen; list items keep their lines. */
 const reflow = (text: string) =>
@@ -116,12 +120,15 @@ export function LicencesScreen({ onBack }: { onBack: () => void }) {
             </Text>
             <Text style={[styles.subhead, { color: theme.text }]}>JavaScript packages</Text>
             {PACKAGES.map(notice)}
-            <Text style={[styles.subhead, { color: theme.text }]}>Android libraries</Text>
-            {NOTICED_LIBRARIES.map(notice)}
-            <Text style={[styles.body, { color: theme.text, marginTop: 6 }]}>
-              <Text style={{ color: theme.muted }}>Apache License 2.0: </Text>
-              {APACHE_LIBRARIES.map((n) => `${n.name} ${n.version}`).join(', ')}.
-            </Text>
+            <Text style={[styles.subhead, { color: theme.text }]}>{IOS ? 'iOS libraries' : 'Android libraries'}</Text>
+            {IOS ? null : NOTICED_LIBRARIES.map(notice)}
+            {NATIVE.map(notice)}
+            {IOS ? null : (
+              <Text style={[styles.body, { color: theme.text, marginTop: 6 }]}>
+                <Text style={{ color: theme.muted }}>Apache License 2.0: </Text>
+                {APACHE_LIBRARIES.map((n) => `${n.name} ${n.version}`).join(', ')}.
+              </Text>
+            )}
           </View>
         </View>
 
