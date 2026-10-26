@@ -22,6 +22,7 @@ import { nativeTranslation, useEdition } from '../edition';
 import { scriptOf, scriptureFont } from '../fonts';
 import type { Script } from '../fonts';
 import { shortBookName } from '../shortNames';
+import { PassagePicker } from '../components/PassagePicker';
 import { useT } from '../i18n';
 import { InterlinearVerse } from '../components/InterlinearVerse';
 import { MarkableVerse } from '../components/MarkableVerse';
@@ -35,7 +36,7 @@ import type { CrossRef, LinkKind } from '../queries';
 import type { ChapterData } from '../queries';
 import { FONT_SIZES, useSettings } from '../settings';
 import type { Settings } from '../settings';
-import { getPlace, moveMainReader, savePlaceNow, selectBook, selectChapter, updatePlace, usePlace } from '../place';
+import { getPlace, moveMainReader, savePlaceNow, selectBook, selectChapter, selectLastChapters, updatePlace, usePlace } from '../place';
 import type { Position } from '../place';
 import { MAX_CONTENT_WIDTH, bookName, flattenVerse, formatRef, parseSegments, shareText } from '../text';
 import { useTheme } from '../theme';
@@ -53,7 +54,6 @@ interface Props {
   /** Present when the reader was opened from a list; goes back to it. */
   onBack?: () => void;
   backLabel?: string;
-  onOpenBooks: () => void;
   onOpenSearch: () => void;
   onOpenSettings: () => void;
   /** Opens the How to use page (from the first-time tip). */
@@ -202,7 +202,7 @@ function KeepAwake() {
 /** Highlight colours as TalkBack says them, in the interface language. */
 const COLOUR_NAMES = { yellow: 'colourYellow', green: 'colourGreen', blue: 'colourBlue', pink: 'colourPink' } as const;
 
-export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, onOpenSearch, onOpenSettings, onOpenHowTo, onOpenNotePage, onOpenCard, onOpenIntro, onOpenRef, onWord, tabs = false }: Props) {
+export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, onOpenSettings, onOpenHowTo, onOpenNotePage, onOpenCard, onOpenIntro, onOpenRef, onWord, tabs = false }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
   const t = useT();
@@ -269,6 +269,9 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
   const [actions, setActions] = useState<VerseRow | null>(null);
   const [wordsFor, setWordsFor] = useState<VerseRow | null>(null);
   const [compare, setCompare] = useState<Ref | null>(null);
+  // The passage picker, from the title: any book and chapter in two taps.
+  const [picking, setPicking] = useState(false);
+  const lastChapters = usePlace(selectLastChapters);
   // Cross references and parallel passages: how many the verse in the menu has, and the list once opened.
   const [crossCount, setCrossCount] = useState<{ key: string; n: number; parallels: number } | null>(null);
   const [cross, setCross] = useState<{ verse: VerseRow; kind: LinkKind; list: CrossRef[] | null } | null>(null);
@@ -1263,7 +1266,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
             short={shortBookName(position.book, translation)}
             chapter={position.chapter}
             script={translationInfo(translation).script ?? null}
-            onPress={onOpenBooks}
+            onPress={() => setPicking(true)}
             accessibilityLabel={t('choosePassage', { title })}
           />
         }
@@ -1603,6 +1606,20 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenBooks, on
           </View>
         ) : null}
       </SimpleSheet>
+
+      <PassagePicker
+        visible={picking}
+        books={books}
+        translation={translation}
+        current={{ book: position.book, chapter: position.chapter }}
+        lastChapters={lastChapters}
+        onPick={(b, c) => {
+          setPicking(false);
+          scrollTarget.current = { flash: false };
+          moveTo({ book: b, chapter: c });
+        }}
+        onClose={() => setPicking(false)}
+      />
 
       <SimpleSheet visible={!!toNotebook} title={toNotebook ? `${t('choosePage')} · ${formatRef(books, toNotebook, translation)}` : ''} onClose={() => setToNotebook(null)}>
         {toNotebook ? (

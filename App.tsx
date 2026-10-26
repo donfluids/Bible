@@ -365,7 +365,6 @@ function ReaderRoute({ navigation, route }: Props<'Reader'>) {
       jumpTo={route.params?.ref}
       onBack={from ? () => navigation.goBack() : undefined}
       backLabel={from}
-      onOpenBooks={() => switchTab('Books')}
       tabs={!from}
       onOpenSearch={() => navigation.navigate('Search')}
       onOpenSettings={() => navigation.navigate('Settings')}

@@ -264,6 +264,16 @@ Words chosen for the app's own features, used throughout:
 | tipNoTags | Hold a verse to highlight it, add a note, compare translations or bookmark it. The button below shows the whole verse in Hebrew or Greek; tap a word there for its meaning. | ஒரு வசனத்தை அழுத்திப் பிடித்து ஹைலைட் செய்யலாம், குறிப்பு சேர்க்கலாம், மொழிபெயர்ப்புகளை ஒப்பிடலாம், அடையாளக்குறி இடலாம். கீழே உள்ள பொத்தான் முழு வசனத்தையும் எபிரெயத்தில் அல்லது கிரேக்கத்தில் காட்டும்; அங்கே ஒரு வார்த்தையைத் தொட்டால் அதன் பொருள் தெரியும். | |
 | gotIt | Got it | புரிந்தது | |
 | choosePassage | {title}, choose passage | {title}, பகுதியைத் தேர்ந்தெடுக்க | |
+| choosePassageTitle | Choose a passage | பகுதியைத் தேர்ந்தெடுக்க | |
+| allBooks | ‹ All books | ‹ எல்லாப் புத்தகங்களும் | |
+| groupLaw | Law | நியாயப்பிரமாணம் | |
+| groupHistory | History | சரித்திரம் | |
+| groupPoetry | Poetry and wisdom | கவிதையும் ஞானமும் | |
+| groupProphets | Prophets | தீர்க்கதரிசிகள் | |
+| groupGospels | Gospels | சுவிசேஷங்கள் | |
+| groupActs | Acts | அப்போஸ்தலர் நடபடிகள் | |
+| groupLetters | Letters | நிருபங்கள் | |
+| groupRevelation | Revelation | வெளிப்படுத்தல் | |
 | copied | Copied | நகலெடுக்கப்பட்டது | |
 | bookmarked | Bookmarked | அடையாளக்குறி இடப்பட்டது | |
 | actCopy | Copy | நகலெடு | |
@@ -446,7 +456,7 @@ Words chosen for the app's own features, used throughout:
 | howTo | How to use | எப்படிப் பயன்படுத்துவது | |
 | howToIntro | Tap a topic to open it. | ஒரு தலைப்பைத் தொட்டால் திறக்கும். | |
 | howTopic1 | Reading a chapter | ஒரு அதிகாரத்தை வாசிக்க | |
-| howText1 | Turn the chapter with the arrows at the foot of the page, or swipe. Tap the book name at the top to pick another book and chapter; the Books tab lists them all, with the chapters you read last. Spread two fingers to make the text larger, or set the size in Settings. | பக்கத்தின் அடியிலுள்ள அம்புகளாலோ ஸ்வைப் செய்தோ அதிகாரத்தை மாற்றலாம். மேலே புத்தகத்தின் பெயரைத் தொட்டால் வேறு புத்தகமும் அதிகாரமும் தேர்ந்தெடுக்கலாம்; புத்தகங்கள் தாவலில் எல்லாம், கடைசியாக வாசித்த அதிகாரங்களோடு. இரண்டு விரல்களை விரித்தால் எழுத்து பெரிதாகும்; அமைப்புகளிலும் அளவை மாற்றலாம். | |
+| howText1 | Turn the chapter with the arrows at the foot of the page, or swipe. Tap the book name at the top to choose any book and chapter: Old or New Testament, the books under their groups, then the chapter. The Books tab lists them too, with the chapters you read last. Spread two fingers to make the text larger, or set the size in Settings. | பக்கத்தின் அடியிலுள்ள அம்புகளாலோ ஸ்வைப் செய்தோ அதிகாரத்தை மாற்றலாம். மேலே புத்தகத்தின் பெயரைத் தொட்டால் எந்தப் புத்தகத்தையும் அதிகாரத்தையும் தேர்ந்தெடுக்கலாம்: பழைய அல்லது புதிய ஏற்பாடு, பிரிவுகளின் கீழ் புத்தகங்கள், பின்பு அதிகாரம். புத்தகங்கள் தாவலிலும் எல்லாம் உண்டு, கடைசியாக வாசித்த அதிகாரங்களோடு. இரண்டு விரல்களை விரித்தால் எழுத்து பெரிதாகும்; அமைப்புகளிலும் அளவை மாற்றலாம். | |
 | howTopic2 | Switching Bibles | வேதாகமத்தை மாற்ற | |
 | howText2 | The button at the foot of the page switches to the other Bible. On a tablet, or a phone turned on its side, both Bibles can be read together (Settings → Side by side). | பக்கத்தின் அடியிலுள்ள பொத்தான் மற்ற வேதாகமத்துக்கு மாற்றும். டேப்லெட்டிலோ தொலைபேசியைச் சாய்த்துப் பிடிக்கும்போதோ இரண்டு வேதாகமங்களையும் சேர்த்து வாசிக்கலாம் (அமைப்புகள் → அருகருகே). | |
 | howTopic3 | A verse's menu | வசனத்தின் பட்டி | |

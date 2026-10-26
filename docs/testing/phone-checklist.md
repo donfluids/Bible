@@ -34,6 +34,11 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
 - [ ] With English open, turn the phone sideways: English is on the left. Tap the
       speaker: it reads English. Turn the phone back: English is still open.
 
+- [ ] Tap the title in the reader: the picker opens on the book being read with its chapters;
+      "All books" shows the Testament switch and the books under their groups. Pick 2 Kings
+      5 and then Luke 15: each opens at once. A book read before opens on its grid with the
+      last chapter marked.
+
 ## 3. Words and verses
 
 - [ ] Tap an underlined word: the sheet shows the Greek or Hebrew word, its meaning

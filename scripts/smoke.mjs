@@ -148,6 +148,33 @@ for (const edition of EDITIONS) {
       if (await tip.count()) await tip.first().click();
       await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', '1') })).waitFor({ timeout: 8000 });
     });
+    await step('passage-picker', async (snap) => {
+      // The title opens the picker: Testament switch, book grid, then the chapters; Genesis 3 opens.
+      await vis(page.getByRole('button', { name: new RegExp(t.choosePassage.replace('{title}', '.*')) })).click();
+      await wait(1200);
+      await vis(page.getByText(t.allBooks, { exact: true })).click();
+      await wait(600);
+      await vis(page.getByRole('radio', { name: t.oldTestament })).click();
+      await wait(600);
+      await shows(t.groupLaw);
+      await snap();
+      await vis(page.getByRole('button', { name: /^Genesis$|^ഉല്പത്തി$|^ஆதியாகமம்$/ })).click();
+      await wait(800);
+      await vis(page.getByRole('button', { name: /^(Genesis|ഉല്പത്തി|ஆதியாகமம்) 3$/ })).click();
+      await wait(2000);
+      await vis(page.getByRole('button', { name: new RegExp(t.choosePassage.replace('{title}', '(Genesis|ഉല്പത്തി|ஆதியாகமம்) 3')) })).waitFor({ timeout: 8000 });
+      // Back to John 1 for the steps that follow.
+      await vis(page.getByRole('button', { name: new RegExp(t.choosePassage.replace('{title}', '.*')) })).click();
+      await wait(1000);
+      await vis(page.getByText(t.allBooks, { exact: true })).click();
+      await wait(500);
+      await vis(page.getByRole('radio', { name: t.newTestament })).click();
+      await wait(500);
+      await vis(page.getByRole('button', { name: /^John$|^യോഹന്നാൻ$|^யோவான்$/ })).click();
+      await wait(800);
+      await vis(page.getByRole('button', { name: /^(John|യോഹന്നാൻ|யோவான்) 1$/ })).click();
+      await wait(2000);
+    });
     await step('word', async (snap) => {
       await vis(page.getByRole('link')).click();
       await wait(2500);

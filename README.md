@@ -77,6 +77,11 @@ rendering counts all work in Malayalam.
   share sheet, to Drive, Files or another phone. Restore picks such a file and adds its
   pages: a page already in the notebook is replaced only by a newer copy of itself, and
   nothing is deleted (src/notebookBackup.ts, src/notebookFiles.ts, src/pagePdf.ts).
+- Tapping the reader's title opens the passage picker (src/components/PassagePicker.tsx):
+  Old or New Testament, the books as a grid of short names under their groups (Law,
+  History, Poetry and wisdom, Prophets; Gospels, Acts, Letters, Revelation), then the
+  chapter numbers, with the chapter last read in that book marked. Two taps from any
+  chapter to any other; the Books tab remains.
 - Settings → How to use is a page of short topics (reading, the verse menu, words, marking,
   notebook, handwriting, backup, listening, study tools, cards), in the interface
   language; the reader's first-time tip links to it too (src/screens/HowToScreen.tsx).
