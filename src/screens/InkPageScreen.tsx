@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, Alert, AppState, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { AccessibilityInfo, Alert, AppState, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import type { LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector, PointerType } from 'react-native-gesture-handler';
 import type { GestureTouchEvent } from 'react-native-gesture-handler';
@@ -195,6 +195,7 @@ export function InkPageScreen({ id, onBack }: Props) {
   const t = useT();
   const edition = useEdition();
   const insets = useSafeAreaInsets();
+  const { width: windowWidth } = useWindowDimensions();
   const { settings } = useSettings();
   const { pages, edit, commit, remove } = useNotebook();
   const page = pages.find((p) => p.id === id);
@@ -543,6 +544,8 @@ export function InkPageScreen({ id, onBack }: Props) {
   };
   const setPaper = (next: 'plain' | 'lined') => edit(id, { ink: { paper: next, strokes: ink.strokes.length } });
 
+  // Ten tools in a row: 48 points each where they fit, a little less (with the same reach) on a narrow phone.
+  const toolSize = windowWidth >= 10 * 48 + 24 ? 48 : Math.max(40, Math.floor((windowWidth - 24) / 10));
   const toolButton = (key: string, label: string, selected: boolean, onPress: () => void, content: React.ReactNode, disabled = false, toggle = false) => (
     <Pressable
       key={key}
@@ -552,7 +555,8 @@ export function InkPageScreen({ id, onBack }: Props) {
       accessibilityRole={toggle ? 'switch' : 'button'}
       accessibilityLabel={label}
       accessibilityState={toggle ? { checked: selected, disabled } : { selected, disabled }}
-      style={[styles.tool, { backgroundColor: selected ? theme.accentSoft : 'transparent', borderColor: selected ? theme.accent : 'transparent', opacity: disabled ? 0.35 : 1 }]}
+      hitSlop={toolSize < 48 ? (48 - toolSize) / 2 : 0}
+      style={[styles.tool, { width: toolSize, height: toolSize, borderRadius: toolSize / 2, backgroundColor: selected ? theme.accentSoft : 'transparent', borderColor: selected ? theme.accent : 'transparent', opacity: disabled ? 0.35 : 1 }]}
     >
       {content}
     </Pressable>
