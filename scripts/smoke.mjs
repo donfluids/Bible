@@ -136,7 +136,14 @@ for (const edition of EDITIONS) {
       await wait(800);
     };
     const tab = async (key) => {
-      await vis(page.getByRole('tab', { name: t[key] })).click();
+      // The reader folds its bottom bar away while scrolling down; a scroll up brings it back.
+      const target = page.getByRole('tab', { name: t[key] });
+      if (!(await target.locator('visible=true').count())) {
+        await page.mouse.move(width / 2, height / 2);
+        await page.mouse.wheel(0, -600);
+        await wait(1000);
+      }
+      await vis(target).click();
       await wait(1500);
     };
 
