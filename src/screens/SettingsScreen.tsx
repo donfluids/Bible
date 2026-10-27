@@ -15,6 +15,7 @@ import { getMeta } from '../queries';
 import { FONT_SIZES, useSettings } from '../settings';
 import type { HighlightStyle, Layout, ThemeChoice } from '../settings';
 import { useTheme } from '../theme';
+import { useWriteToUs } from '../writeToUs';
 import { Segmented } from '../components/Segmented';
 
 /** Each interface language in its own script. */
@@ -37,6 +38,7 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
   const EDITION = useEdition();
   const { settings, update } = useSettings();
   const [meta, setMeta] = useState<Record<string, string>>({});
+  const writeToUs = useWriteToUs();
 
   useEffect(() => {
     getMeta(db)
@@ -227,6 +229,13 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
           </Text>
           <Pressable onPress={onOpenHowTo} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>
             <Text style={[styles.rowTitle, { color: theme.accent, flex: 1 }]}>{t('howTo')}</Text>
+            <Icon name="chevron_right" color={theme.accent} />
+          </Pressable>
+          <Pressable onPress={writeToUs} accessibilityRole="button" accessibilityHint={t('feedbackDetail')} android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.rowTitle, { color: theme.accent }]}>{t('feedback')}</Text>
+              <Text style={[styles.rowSub, { color: theme.muted }]}>{t('feedbackDetail')}</Text>
+            </View>
             <Icon name="chevron_right" color={theme.accent} />
           </Pressable>
           <Pressable onPress={onOpenWhy} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>

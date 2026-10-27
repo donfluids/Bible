@@ -89,6 +89,11 @@ rendering counts all work in Malayalam.
   tapped, the Hebrew or Greek pill becomes a Study pill that switches them back on, the
   verse menu loses Compare, cross references, parallels and Words in this verse, and the
   introductions are not offered; highlights, notes and the notebook stay. On by default.
+- Settings → Write to us starts a note in the phone's mail app (address, a subject with the
+  app's version, a last line naming the build and the phone that the reader may delete);
+  the address itself is not shown unless no mail app opens. About two weeks after install,
+  the reader is invited once above the chapter, with Not now and No thanks
+  (src/feedback.ts, src/writeToUs.ts).
 - A verse opened from search, Saved or a word's verse list opens in a reader of its own;
   Back returns to the list and then to the chapter you were reading.
 - The search box also searches the dictionary: an English meaning ("love"), a

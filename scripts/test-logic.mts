@@ -8,6 +8,7 @@
 import assert from 'node:assert/strict';
 import { groupForms, isTaBaseForm, taStem } from './lib/forms.mjs';
 import { addPoint, decodeInk, encodeInk, packSteps, pageHeight, parseInk, pathOf, strokePath, touchesStroke, unpackSteps } from '../src/ink';
+import { FEEDBACK_NEVER, deviceLine, feedbackCardDue, feedbackDueFrom, feedbackLater, mailtoUrl } from '../src/feedback';
 import { cleanLook, ownPhotoIn, savedCopyIn } from '../src/lookClean';
 import { makeBackup, mergePages, readBackup } from '../src/notebookBackup';
 import { inkPageHtml, typedPageHtml } from '../src/pagePdf';
@@ -316,4 +317,29 @@ if (failures.length) {
   console.log(`${failures.length} failed, ${passed} passed:\n  ${failures.join('\n  ')}`);
   process.exit(1);
 }
+
+test('the mail link carries the address, subject and body, encoded', () => {
+  const url = mailtoUrl('a@b.org', 'Feedback: Bible 0.4.21', '\n\n\nSent from Bible & more?');
+  assert.equal(url, 'mailto:a@b.org?subject=Feedback%3A%20Bible%200.4.21&body=%0A%0A%0ASent%20from%20Bible%20%26%20more%3F');
+  assert.equal(decodeURIComponent(new URL(url).searchParams.get('body') ?? ''), '\n\n\nSent from Bible & more?');
+});
+test('the device line names the phone, and only what is known', () => {
+  assert.equal(deviceLine('android', { Release: '14', Brand: 'samsung', Model: 'SM-S911B' }), 'Android 14, samsung SM-S911B');
+  assert.equal(deviceLine('android', {}), 'Android');
+  assert.equal(deviceLine('ios', { systemName: 'iOS', osVersion: '18.1' }), 'iOS 18.1');
+  assert.equal(deviceLine('web', undefined), 'web');
+});
+test('the invitation to write comes after a fortnight, waits after Not now, and never after No thanks', () => {
+  const day = 24 * 60 * 60 * 1000;
+  const start = 1_800_000_000_000;
+  const due = feedbackDueFrom(0, start);
+  assert.equal(feedbackDueFrom(due, start + day), due);
+  assert.equal(feedbackCardDue(due, start + 13 * day), false);
+  assert.equal(feedbackCardDue(due, start + 14 * day), true);
+  assert.equal(feedbackCardDue(feedbackLater(start + 14 * day), start + 70 * day), false);
+  assert.equal(feedbackCardDue(feedbackLater(start + 14 * day), start + 75 * day), true);
+  assert.equal(feedbackCardDue(FEEDBACK_NEVER, start + 1000 * day), false);
+  assert.equal(feedbackDueFrom(FEEDBACK_NEVER, start), FEEDBACK_NEVER);
+});
+
 console.log(`all ${passed} logic tests passed`);

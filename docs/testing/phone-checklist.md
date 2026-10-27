@@ -127,6 +127,12 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
       the bottom bar shows Study instead of Hebrew/Greek, the verse menu has no Compare,
       Cross references, Parallel passages or Words in this verse, and the chapter list has
       no About this book row. Tap Study in the bottom bar: everything comes back.
+- [ ] Settings → Write to us opens the mail app with the address, a subject naming the
+      app and version, and a last line naming the build and the phone. On a phone with no
+      mail app, a message shows the address with Copy address. The invitation card above
+      the chapter appears about two weeks after install (to try it sooner, set the phone's
+      date forward and reopen the app): Not now hides it, No thanks hides it for good,
+      Write to us opens the mail and hides it for good.
 
 - [ ] Each theme (Light, Sepia, Dark, follow the phone); Fluorescent highlights in dark.
 - [ ] **With the app open on a chapter**, switch the phone's own dark mode on and off

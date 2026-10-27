@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Dimensions, useColorScheme } from 'react-native';
 import { translate } from './i18n';
+import { feedbackDueFrom } from './feedback';
 import { cleanSettings } from './settingsClean';
 import { loadEntry, useAutosave } from './persist';
 import type { Loaded } from './persist';
@@ -46,6 +47,8 @@ export interface Settings {
   notes: Record<string, string>;
   /** The first-launch tip about tapping words has been dismissed. */
   tipSeen: boolean;
+  /** When the reader is next invited to write to us (src/feedback.ts): 0 not yet set, -1 never. */
+  feedbackDue: number;
   // The reading place (position, recent and last chapters) is kept in src/place.ts.
 }
 
@@ -69,6 +72,7 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
   marks: [],
   notes: {},
   tipSeen: false,
+  feedbackDue: 0,
 };
 
 // The Aa buttons in Settings and pinching the reader step through these.
@@ -127,7 +131,7 @@ export function tellLoadProblem(language: Language, source: Loaded<unknown>['sou
 
 export function SettingsProvider({ edition, children }: { edition: Edition; children: React.ReactNode }) {
   const [loaded] = useState(() => load(edition));
-  const [settings, setSettings] = useState<Settings>(loaded.value);
+  const [settings, setSettings] = useState<Settings>(() => ({ ...loaded.value, feedbackDue: feedbackDueFrom(loaded.value.feedbackDue, Date.now()) }));
   const update = useCallback((patch: Partial<Settings>) => setSettings((prev) => ({ ...prev, ...patch })), []);
   useEffect(() => tellLoadProblem(loaded.value.language, loaded.source), [loaded]);
   const language = useRef(settings.language);
@@ -145,6 +149,10 @@ export function SettingsProvider({ edition, children }: { edition: Edition; chil
     },
     [saveValue],
   );
+  // The first invitation time is written at once, so it does not move with each start.
+  useEffect(() => {
+    if (loaded.value.feedbackDue === 0) commit({ feedbackDue: latest.current.feedbackDue });
+  }, [loaded, commit]);
   const value = useMemo(() => ({ settings, update, commit }), [settings, update, commit]);
   // The phone's light or dark mode is read here once and handed down with the settings, so
   // a change reaches every verse, memoised or not, while a chapter is open.

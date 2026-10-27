@@ -281,6 +281,7 @@ for (const edition of EDITIONS) {
       await vis(page.getByLabel(t.settings)).click();
       await wait(1500);
       await shows(t.theme);
+      await shows(t.feedback);
       await snap();
       await vis(page.getByLabel(t.back)).click();
       await wait(1200);

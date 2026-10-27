@@ -40,6 +40,8 @@ import { getPlace, moveMainReader, savePlaceNow, selectBook, selectChapter, sele
 import type { Position } from '../place';
 import { MAX_CONTENT_WIDTH, bookName, flattenVerse, formatRef, parseSegments, shareText } from '../text';
 import { useTheme } from '../theme';
+import { useWriteToUs } from '../writeToUs';
+import { FEEDBACK_NEVER, feedbackCardDue, feedbackLater } from '../feedback';
 import type { Theme } from '../theme';
 import { HIGHLIGHT_COLORS, translationInfo } from '../types';
 import type { Book, HighlightColor, Note, OriginalWord, Ref, TextPoint, TranslationId, VerseRow, WordPick } from '../types';
@@ -221,6 +223,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
     showTranslit,
     hideCantillation,
     tipSeen,
+    feedbackDue,
     bookmarks,
     highlights,
     notes: userNotes,
@@ -249,6 +252,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   // A plain reader without the study tools: no tappable words, no Hebrew or Greek, and the
   // verse menu without cross references, parallels, Compare and Words in this verse.
   const study = settings.study;
+  const writeToUs = useWriteToUs();
   const interlinear = study && interlinearSetting;
   const underlineWords = study && underlineSetting;
   // The words being marked while a finger is down, and whether one is (the list then holds still).
@@ -1212,6 +1216,30 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             </View>
           </View>
         )}
+        {/* After a fortnight with the app, once: an invitation to write to us. */}
+        {tipSeen && !marking && feedbackCardDue(feedbackDue, Date.now()) ? (
+          <View style={[styles.tip, { backgroundColor: theme.accentSoft, borderColor: theme.border }]}>
+            <Text style={[styles.tipText, { color: theme.text }]}>{t('feedbackCard')}</Text>
+            <View style={styles.tipButtons}>
+              <Pressable onPress={() => update({ feedbackDue: feedbackLater(Date.now()) })} hitSlop={8} accessibilityRole="button">
+                <Text style={[styles.tipDismiss, { color: theme.accent }]}>{t('feedbackNotNow')}</Text>
+              </Pressable>
+              <Pressable onPress={() => update({ feedbackDue: FEEDBACK_NEVER })} hitSlop={8} accessibilityRole="button">
+                <Text style={[styles.tipDismiss, { color: theme.accent }]}>{t('feedbackNever')}</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  update({ feedbackDue: FEEDBACK_NEVER });
+                  writeToUs();
+                }}
+                hitSlop={8}
+                accessibilityRole="button"
+              >
+                <Text style={[styles.tipDismiss, { color: theme.accent }]}>{t('feedback')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
         {/* The book's introduction, offered where a book is begun (it is also above the chapter numbers). */}
         {study && position.chapter === 1 && !marking ? (
           <Pressable
@@ -1234,7 +1262,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
       </>
     ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [tipSeen, theme, translation, t, update, marking, interlinear, interlinearMode, book?.testament, position.chapter, position.book, books, settings.serif, onOpenIntro, study, onOpenHowTo],
+    [tipSeen, feedbackDue, writeToUs, theme, translation, t, update, marking, interlinear, interlinearMode, book?.testament, position.chapter, position.book, books, settings.serif, onOpenIntro, study, onOpenHowTo],
   );
   const onScrollToIndexFailed = useCallback((info: { index: number; averageItemLength: number }) => {
     // The row is not measured yet: get near it, then retry with the same placement.
@@ -2019,7 +2047,7 @@ const styles = StyleSheet.create({
   verseBookmarked: { borderLeftWidth: 3, paddingLeft: 8, marginLeft: -11 },
   tip: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, padding: 14, marginBottom: 10 },
   tipText: { fontSize: 15, lineHeight: 21 },
-  tipButtons: { flexDirection: 'row', justifyContent: 'flex-end', gap: 24, marginTop: 8 },
+  tipButtons: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', columnGap: 24, rowGap: 8, marginTop: 8 },
   tipDismiss: { fontSize: 15, fontWeight: '700' },
   modeHint: { fontSize: 12, marginBottom: 6 },
   aboutRow: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, marginBottom: 4 },

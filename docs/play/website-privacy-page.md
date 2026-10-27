@@ -93,6 +93,10 @@ When you have a chapter, or a Hebrew or Greek word, read aloud, the apps pass th
 
 The Sources and licences screen has links to the websites the texts come from. They open in your web browser, and those websites have their own privacy policies.
 
+## Writing to us
+
+Settings has a Write to us row, and after about two weeks the reader is invited once to write. Either opens a note in your own mail app, addressed to us, with a last line naming the app's version and your phone's model (for example "Android 14, Samsung SM-S911B"), so a problem can be understood. You can delete that line, and the apps send nothing themselves: the note goes only if you send it, from your mail app, under its terms. Your address and what you write are used only to answer you and to improve the apps, and are not shared.
+
 ## What the apps do not do
 
 - No accounts or sign-in.
