@@ -61,5 +61,7 @@
  "backup": 57403,
  "settings_backup_restore": 57404,
  "gesture": 57405,
- "touch_app": 57406
+ "touch_app": 57406,
+ "school": 57407,
+ "school_fill": 57408
 }

@@ -1300,6 +1300,16 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
         }
         right={
           <>
+            {/* Study tools on and off: a filled cap when on. */}
+            <IconButton
+              name={study ? 'school_fill' : 'school'}
+              color={study ? theme.accent : theme.text}
+              onPress={() => {
+                update({ study: !study });
+                setToast(t(study ? 'studyToolsOffNote' : 'studyToolsOnNote'));
+              }}
+              accessibilityLabel={t(study ? 'studyToolsOff' : 'studyToolsOn')}
+            />
             <HeaderIconButton icon="volume_up" onPress={() => startReading()} accessibilityLabel={t('readAloud')} />
             <HeaderIconButton icon="search" onPress={onOpenSearch} accessibilityLabel={t('search')} />
             <HeaderIconButton icon="settings" onPress={onOpenSettings} accessibilityLabel={t('settings')} />
@@ -1443,19 +1453,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             </Text>
           </Pressable>
           )}
-          {/* In the plain reader the second pill switches the study tools back on. */}
-          {!study ? (
-            <Pressable
-              android_ripple={{ color: theme.accentSoft }}
-              onPress={() => update({ study: true })}
-              hitSlop={6}
-              accessibilityRole="button"
-              accessibilityLabel={t('studyToolsOn')}
-              style={({ pressed }) => [styles.pill, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
-            >
-              <Text style={[styles.pillText, { color: theme.muted }]}>{t('studyPill')}</Text>
-            </Pressable>
-          ) : (
+          {study ? (
           <Pressable
             android_ripple={{ color: theme.accentSoft }}
             onPress={() => update({ interlinear: !interlinearSetting })}
@@ -1471,7 +1469,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
               {book?.testament === 'OT' ? t('hebrewInterlinear') : t('greekInterlinear')}
             </Text>
           </Pressable>
-          )}
+          ) : null}
         </View>
         <ChapterArrow icon="chevron_right" onPress={() => go(1)} disabled={atEnd} accessibilityLabel={t('nextChapter')} />
       </View>

@@ -132,9 +132,10 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
 - [ ] Settings → How to use: each topic opens and closes; the text is in the app's
       language and follows the text size. The reader's first tip has a How to use link.
 - [ ] Settings → Study tools off: words lose their underlines and do nothing when tapped,
-      the bottom bar shows Study instead of Hebrew/Greek, the verse menu has no Compare,
+      the Hebrew/Greek pill is gone from the bottom bar, the verse menu has no Compare,
       Cross references, Parallel passages or Words in this verse, and the chapter list has
-      no About this book row. Tap Study in the bottom bar: everything comes back.
+      no About this book row. Tap the graduation cap in the reader's top bar: everything
+      comes back, the cap fills in, and a note says Study tools on; tap it again to go plain.
 - [ ] Settings → Write to us opens the mail app with the address, a subject naming the
       app and version, and a last line naming the build and the phone. On a phone with no
       mail app, a message shows the address with Copy address. The invitation card above

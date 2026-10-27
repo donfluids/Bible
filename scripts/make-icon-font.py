@@ -36,6 +36,7 @@ ICONS = [
     'draw', 'undo', 'redo', 'line_weight', 'format_line_spacing', 'stylus',
     'link', 'download', 'upload', 'picture_as_pdf', 'view_column',
     'backup', 'settings_backup_restore', 'gesture', 'touch_app',
+    'school', 'school_fill',
 ]
 
 

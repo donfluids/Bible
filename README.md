@@ -89,7 +89,8 @@ rendering counts all work in Malayalam.
   notebook, handwriting, backup, listening, study tools, cards), in the interface
   language; the reader's first-time tip links to it too (src/screens/HowToScreen.tsx).
 - Settings → Study tools switches the study side of the app off and on: off, words are not
-  tapped, the Hebrew or Greek pill becomes a Study pill that switches them back on, the
+  tapped, the Hebrew or Greek pill goes, the graduation cap in the reader's top bar switches
+  them back on (filled when on, with a short note each time), the
   verse menu loses Compare, cross references, parallels and Words in this verse, and the
   introductions are not offered; highlights, notes and the notebook stay. On by default.
 - Settings → Write to us starts a note in the phone's mail app (address, a subject with the

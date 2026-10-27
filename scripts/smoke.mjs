@@ -302,7 +302,7 @@ for (const edition of EDITIONS) {
       await wait(1200);
     });
     await step('plain-reader', async (snap) => {
-      // Study tools off: no tappable words, and the bottom bar offers Study instead of Hebrew/Greek.
+      // Study tools off: no tappable words, and the cap in the top bar switches them back on.
       await vis(page.getByLabel(t.settings)).click();
       await wait(1200);
       await vis(page.getByRole('switch').first()).click();
@@ -310,9 +310,10 @@ for (const edition of EDITIONS) {
       await vis(page.getByLabel(t.back)).click();
       await wait(1500);
       if (await page.getByRole('link').count()) throw new Error('words are still links with the study tools off');
-      await shows(t.studyPill);
+      // The cap in the top bar now offers to switch them on.
       await snap();
-      await vis(page.getByText(t.studyPill, { exact: true })).click();
+      await vis(page.getByLabel(t.studyToolsOn)).click();
+      await shows(t.studyToolsOnNote);
       await wait(1200);
       await vis(page.getByRole('link').first()).waitFor({ timeout: 8000 });
     });
