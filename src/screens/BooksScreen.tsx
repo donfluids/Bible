@@ -29,7 +29,7 @@ type View3 = 'ALL' | 'OT' | 'NT';
 
 /**
  * The book list: all 66 at once, the Old Testament down the left and the New down the
- * right, or one Testament at a time with the switch above. It opens at the book being
+ * right, or one Testament at a time with the switch above; names only. It opens at the book being
  * read. Above it, the chapters read lately, to go back to.
  */
 export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
@@ -72,8 +72,7 @@ export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
         accessibilityRole="button"
         accessibilityState={{ selected: active }}
       >
-        <Text numberOfLines={2} style={[styles.cellName, { color: theme.text, fontWeight: active ? '700' : '400' }]}>{name(b)}</Text>
-        <Text style={[styles.cellCount, { color: theme.muted }]}>{b.chapters}</Text>
+        <Text style={[styles.cellName, { color: theme.text, fontWeight: active ? '700' : '400' }]}>{name(b)}</Text>
       </Pressable>
     );
   };
@@ -116,10 +115,10 @@ export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
               accessibilityState={{ selected: on }}
               style={[styles.segment, on && { backgroundColor: theme.accent }]}
             >
-              <Text style={[styles.segmentText, { color: on ? theme.onAccent : theme.accent, fontWeight: on ? '700' : '500' }]} numberOfLines={2}>
+              <Text style={[styles.segmentText, { color: on ? theme.onAccent : theme.accent, fontWeight: on ? '700' : '500' }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
                 {t(id === 'ALL' ? 'all' : id === 'OT' ? 'oldTestament' : 'newTestament')}
-                <Text style={styles.segmentCount}>{`  ${counts[id]}`}</Text>
               </Text>
+              <Text style={[styles.segmentCount, { color: on ? theme.onAccent : theme.accent }]}>{counts[id]}</Text>
             </Pressable>
           );
         })}
@@ -158,7 +157,6 @@ export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
                 accessibilityState={{ selected: active }}
               >
                 <Text style={[styles.name, { color: theme.text, fontWeight: active ? '700' : '400' }]}>{name(item)}</Text>
-                <Text style={[styles.count, { color: theme.muted }]}>{item.chapters}</Text>
               </Pressable>
             );
           }}
@@ -179,10 +177,10 @@ const styles = StyleSheet.create({
   recentRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { minHeight: 36, maxWidth: '100%', paddingHorizontal: 12, borderRadius: 18, borderWidth: 1, justifyContent: 'center', overflow: 'hidden' },
   chipText: { fontSize: 15 },
-  switch: { flexDirection: 'row', marginHorizontal: 16, marginTop: 2, marginBottom: 8, borderRadius: 22, padding: 4 },
-  segment: { flex: 1, minHeight: 44, borderRadius: 18, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
-  segmentText: { fontSize: 14, textAlign: 'center' },
-  segmentCount: { fontSize: 12, fontWeight: '400' },
+  switch: { flexDirection: 'row', marginHorizontal: 16, marginTop: 2, marginBottom: 8, borderRadius: 24, padding: 4 },
+  segment: { flex: 1, minHeight: 48, borderRadius: 20, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 2, paddingVertical: 4 },
+  segmentText: { fontSize: 13, textAlign: 'center' },
+  segmentCount: { fontSize: 12, fontWeight: '400', opacity: 0.85 },
   row: {
     height: ROW_H,
     flexDirection: 'row',
@@ -192,11 +190,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   pairRow: { height: PAIR_ROW_H, flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
-  cell: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6, paddingLeft: 16, paddingRight: 10 },
-  cellName: { flex: 1, fontSize: 15, lineHeight: 19 },
-  cellCount: { fontSize: 13, fontVariant: ['tabular-nums'] },
+  cell: { flex: 1, justifyContent: 'center', paddingHorizontal: 16 },
+  cellName: { fontSize: 15, lineHeight: 19 },
   listEnd: { paddingBottom: 24 },
   column: { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
   name: { fontSize: 17 },
-  count: { fontSize: 15, fontVariant: ['tabular-nums'] },
 });

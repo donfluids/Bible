@@ -52,8 +52,8 @@ rendering counts all work in Malayalam.
   copy it, share it, or bookmark it. Bookmarks, highlights and notes are listed under
   Saved on the Books screen, with the chapters read most recently.
 - The Books tab shows all 66 books at once, the Old Testament down the left and the New
-  down the right, with a filter above for one Testament alone; the book being read is
-  marked and in view.
+  down the right, names only, with a filter above for one Testament alone; the book being
+  read is marked and in view.
 - To highlight part of a verse, or a passage running over several verses, hold a verse
   and choose Mark text. Hold a word still, drag to the
   last word and let go; the bottom bar picks the colour, has an eraser for taking marks

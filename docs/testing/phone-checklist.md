@@ -35,7 +35,7 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
       speaker: it reads English. Turn the phone back: English is still open.
 
 - [ ] Books tab: all 66 books at once, Old Testament down the left and New Testament down
-      the right, each with its chapter count, the book being read marked and in view.
+      the right, names only, the book being read marked and in view.
       Old Testament or New Testament above shows that Testament alone in one list; All
       brings both columns back. Long names (Song of Solomon, 1 Thessalonians, and the
       Malayalam and Tamil names) take two lines and are not cut.
