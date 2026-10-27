@@ -176,7 +176,8 @@ for (const edition of EDITIONS) {
       await wait(2000);
     });
     await step('word', async (snap) => {
-      await vis(page.getByRole('link')).click();
+      // A word in the text: the first link that is not the About this book line above chapter 1.
+      await vis(page.locator(`[role="link"]:not([aria-label="${t.aboutBook}"])`)).click();
       await wait(2500);
       await shows(t.inThisVerse);
       await snap();
