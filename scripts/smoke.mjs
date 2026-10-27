@@ -230,7 +230,8 @@ for (const edition of EDITIONS) {
       // Genesis 3, read in the picker step, is behind the clock in the title bar.
       await vis(page.getByLabel(t.recent)).click();
       await wait(800);
-      await vis(page.getByRole('button', { name: /^(Genesis|ഉല്പത്തി|ஆதியாகமம்) 3$/ })).waitFor({ timeout: 8000 });
+      // The row's text (in the browser its name also carries the clock's glyph).
+      await vis(page.getByText(/^(Genesis|ഉല്പത്തി|ஆதியாகமம்) 3$/)).waitFor({ timeout: 8000 });
       await snap();
       await closeSheet();
     });
