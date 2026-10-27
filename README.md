@@ -50,7 +50,7 @@ rendering counts all work in Malayalam.
 - Hold a verse, or tap its number, to highlight it in one of four colours, add a note,
   compare the KJV and WEB side by side with the Hebrew or Greek, list its linked words,
   copy it, share it, or bookmark it. Bookmarks, highlights and notes are listed under
-  Saved on the Books screen, with the chapters read most recently.
+  Saved; the clock at the top of the Books tab lists the chapters read most recently.
 - The Books tab shows all 66 books at once, the Old Testament down the left and the New
   down the right, names only, with a filter above for one Testament alone; the book being
   read is marked and in view.

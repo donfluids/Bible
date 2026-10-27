@@ -39,6 +39,9 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
       Old Testament or New Testament above shows that Testament alone in one list; All
       brings both columns back. Long names (Song of Solomon, 1 Thessalonians, and the
       Malayalam and Tamil names) take two lines and are not cut.
+- [ ] Books tab after reading a few chapters: a clock at the right of the title opens
+      the chapters read lately (not the one open now); one tap opens that chapter. On a
+      fresh install, with nothing read yet, the clock is not there.
 - [ ] Tap the title in the reader: the picker opens on the book being read with its chapters;
       "All books" shows the Testament switch and the books under their groups. Pick 2 Kings
       5 and then Luke 15: each opens at once. A book read before opens on its grid with the

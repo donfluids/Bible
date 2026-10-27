@@ -223,9 +223,15 @@ for (const edition of EDITIONS) {
       await vis(page.getByLabel(t.back)).click();
       await wait(1500);
     });
-    await step('books', async () => {
+    await step('books', async (snap) => {
       await tab('books');
       await shows(t.newTestament);
+      // Genesis 3, read in the picker step, is behind the clock in the title bar.
+      await vis(page.getByLabel(t.recent)).click();
+      await wait(800);
+      await vis(page.getByRole('button', { name: /^(Genesis|ഉല്പത്തി|ஆதியாகமம்) 3$/ })).waitFor({ timeout: 8000 });
+      await snap();
+      await closeSheet();
     });
     await step('saved', () => tab('saved'));
     await step('notebook', async (snap) => {

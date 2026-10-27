@@ -2,7 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import { Header } from '../components/Header';
-import { Icon } from '../components/Icon';
+import { IconButton } from '../components/Icon';
+import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
 import { TabBar } from '../components/TabBar';
 import { useT } from '../i18n';
 import { selectPosition, selectRecent, usePlace } from '../place';
@@ -22,15 +23,15 @@ interface Props {
 const ROW_H = 50;
 /** A row of the two-column list: a name on two lines if need be. */
 const PAIR_ROW_H = 56;
-/** Recently read chapters shown above the list; the reader keeps more. */
-const MAX_RECENT = 4;
+/** Recently read chapters in the clock's sheet (the reader keeps eight, the open one among them). */
+const MAX_RECENT = 7;
 
 type View3 = 'ALL' | 'OT' | 'NT';
 
 /**
  * The book list: all 66 at once, the Old Testament down the left and the New down the
  * right, or one Testament at a time with the switch above; names only. It opens at the book being
- * read. Above it, the chapters read lately, to go back to.
+ * read. The clock in the title bar lists the chapters read lately, to go back to.
  */
 export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
   const theme = useTheme();
@@ -39,6 +40,7 @@ export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
 
   const currentTestament = books.find((b) => b.id === current)?.testament ?? 'OT';
   const [view, setView] = useState<View3>('ALL');
+  const [showRecent, setShowRecent] = useState(false);
   const old = useMemo(() => books.filter((b) => b.testament === 'OT'), [books]);
   const fresh = useMemo(() => books.filter((b) => b.testament === 'NT'), [books]);
   const counts = { ALL: books.length, OT: old.length, NT: fresh.length };
@@ -79,30 +81,26 @@ export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
-      <Header title={t('books')} />
+      {/* The chapters read lately, behind a clock in the title bar, so the list starts at the top. */}
+      <Header
+        title={t('books')}
+        right={recent.length > 0 ? <IconButton name="history" onPress={() => setShowRecent(true)} accessibilityLabel={t('recent')} color={theme.text} /> : undefined}
+      />
+      <SimpleSheet visible={showRecent} title={t('recent')} onClose={() => setShowRecent(false)}>
+        {recent.map((r) => (
+          <SheetAction
+            key={`${r.book}:${r.chapter}`}
+            icon="history"
+            label={`${bookName(books, r.book, settings.translation)} ${r.chapter}`}
+            onPress={() => {
+              setShowRecent(false);
+              onOpenRecent(r);
+            }}
+          />
+        ))}
+      </SimpleSheet>
       {/* On a tablet the list keeps to the reading width. */}
       <View style={styles.column}>
-      {recent.length > 0 ? (
-        <View style={styles.recent}>
-          <View style={styles.recentHead}>
-            <Icon name="history" size={18} color={theme.muted} />
-            <Text style={[styles.recentLabel, { color: theme.muted }]}>{t('recent')}</Text>
-          </View>
-          <View style={styles.recentRow}>
-            {recent.map((r) => (
-              <Pressable
-                key={`${r.book}:${r.chapter}`}
-                onPress={() => onOpenRecent(r)}
-                accessibilityRole="button"
-                android_ripple={{ color: theme.accentSoft }}
-                style={({ pressed }) => [styles.chip, { borderColor: theme.border, backgroundColor: pressed ? theme.accentSoft : theme.card }]}
-              >
-                <Text style={[styles.chipText, { color: theme.text }]} numberOfLines={1}>{`${bookName(books, r.book, settings.translation)} ${r.chapter}`}</Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-      ) : null}
       {/* All books, or one Testament: a filter on the list. */}
       <View style={[styles.switch, { backgroundColor: theme.accentSoft }]} accessibilityRole="tablist">
         {(['ALL', 'OT', 'NT'] as const).map((id) => {
@@ -171,12 +169,6 @@ export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  recent: { paddingHorizontal: 16, paddingBottom: 10, gap: 6 },
-  recentHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  recentLabel: { fontSize: 13, fontWeight: '600' },
-  recentRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { minHeight: 36, maxWidth: '100%', paddingHorizontal: 12, borderRadius: 18, borderWidth: 1, justifyContent: 'center', overflow: 'hidden' },
-  chipText: { fontSize: 15 },
   switch: { flexDirection: 'row', marginHorizontal: 16, marginTop: 2, marginBottom: 8, borderRadius: 24, padding: 4 },
   segment: { flex: 1, minHeight: 48, borderRadius: 20, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 2, paddingVertical: 4 },
   segmentText: { fontSize: 13, textAlign: 'center' },
