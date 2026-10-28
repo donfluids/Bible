@@ -167,6 +167,7 @@ for (const edition of EDITIONS) {
         // The Bible pill opens the six Bibles; the Hindi opens on the same chapter (John 1).
         await vis(page.getByRole('button', { name: new RegExp(`^${t.chooseBible}:`) })).click();
         await wait(800);
+        await page.screenshot({ path: join(shots, `${String(n).padStart(2, '0')}-bible-list.png`) });
         await vis(page.getByText(/^इंडियन रिवाइज्ड वर्जन/)).click();
         await wait(2000);
         // A footnote letter sits inside John 1:1's first words, so the pill tells which Bible is open.
