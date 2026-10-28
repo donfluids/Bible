@@ -169,7 +169,9 @@ for (const edition of EDITIONS) {
         await wait(800);
         await vis(page.getByText(/^इंडियन रिवाइज्ड वर्जन/)).click();
         await wait(2000);
-        await shows('आदि में वचन था');
+        // A footnote letter sits inside John 1:1's first words, so the pill tells which Bible is open.
+        await vis(page.getByRole('button', { name: new RegExp(`^${t.chooseBible}: इंडियन रिवाइज्ड वर्जन`) })).waitFor({ timeout: 8000 });
+        await shows('यही आदि में परमेश्वर के साथ था।');
         await snap();
         await vis(page.getByRole('button', { name: new RegExp(`^${t.chooseBible}:`) })).click();
         await wait(800);
