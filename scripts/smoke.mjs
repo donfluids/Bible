@@ -167,13 +167,14 @@ for (const edition of EDITIONS) {
         // The Bible pill opens the six Bibles; the Hindi opens on the same chapter (John 1).
         await vis(page.getByRole('button', { name: new RegExp(`^${t.chooseBible}:`) })).click();
         await wait(800);
-        await vis(page.getByRole('button', { name: /इंडियन रिवाइज्ड वर्जन/ })).click();
+        await vis(page.getByText(/^इंडियन रिवाइज्ड वर्जन/)).click();
         await wait(2000);
         await shows('आदि में वचन था');
         await snap();
         await vis(page.getByRole('button', { name: new RegExp(`^${t.chooseBible}:`) })).click();
         await wait(800);
-        await vis(page.getByRole('button', { name: /^King James Version/ })).click();
+        // The row's text: in the browser its name also carries the icon's glyph.
+        await vis(page.getByText('King James Version', { exact: true })).click();
         await wait(2000);
         await shows('In the beginning was the Word');
       });
