@@ -11,11 +11,15 @@ Android. All text ships inside each app, so they work without a connection.
 | `all` | Bibles (name to be chosen) | King James Version, Berean Standard Bible, World English Bible, Malayalam Sathyavedapusthakam 1910, Tamil and Hindi Indian Revised Version, Hebrew and Greek interlinear | English, Malayalam or Tamil, asked on first opening (Hindi interface to follow) |
 
 The four-language app (`all`, package `org.riversresearch.bible.india`) asks on first
-opening which language to read in: English, മലയാളം, தமிழ் or हिन्दी, each opening its
-Bible (Hindi opens the Hindi Bible with English menus for now). Its reader's Bible pill
-opens a list of the six Bibles. Side by side pairs the English with the Indian Bible open
-or read last. The Hindi words are not yet linked to the Hebrew and Greek, so the word
-sheet and occurrence lists use the KJV's links while reading the Hindi, as for the WEB.
+opening which language to read in: English, മലയാളം, தமிழ் or हिन्दी (the phone's own
+first, ticked), each opening its Bible (Hindi opens the Hindi Bible with English menus for
+now). Its reader's Bible pill opens the six Bibles under their own names, and a swap
+button beside it goes back and forth between the two read last. Search has a row of the
+six Bibles under its box. Side by side pairs the English with the Indian Bible open or
+read last. The Hindi words are not yet linked to the Hebrew and Greek, so the word sheet
+and occurrence lists use the KJV's links while reading the Hindi, as for the WEB; a
+one-time card says so when the Hindi first opens. In every app, the search dictionary
+shows two entries and More, and none with the study tools off.
 Its database is 109 MB, over GitHub's 100 MB file limit, so it is not committed: build it
 with `npm run fetch-data` and `node scripts/build-db.mjs all` before building this app.
 The GitHub release workflow builds the other three only.

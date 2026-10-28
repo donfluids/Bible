@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '../components/Icon';
 import { Pressable } from '../components/Pressable';
@@ -52,8 +52,10 @@ export function LanguageScreen({ onChoose }: { onChoose: (choice: LanguageChoice
   return (
     <ScrollView
       style={{ backgroundColor: theme.bg }}
-      contentContainerStyle={[styles.content, { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 24 }]}
+      contentContainerStyle={[styles.content, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 24 }]}
     >
+      <Image source={require('../../assets/icons/all/splash-icon.png')} style={styles.icon} accessibilityIgnoresInvertColors />
+      <Text style={[styles.welcome, { color: theme.muted }]}>Read the Bible in your language</Text>
       <Text style={[styles.title, { color: theme.text }]} accessibilityRole="header">
         Choose your language
       </Text>
@@ -93,24 +95,22 @@ export function LanguageScreen({ onChoose }: { onChoose: (choice: LanguageChoice
           );
         })}
       </View>
-      <Text style={[styles.foot, { color: theme.muted }]}>
-        You can change the language and the Bible at any time in Settings.
-      </Text>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   content: { paddingHorizontal: 20, alignSelf: 'center', width: '100%', maxWidth: 560 },
-  title: { fontSize: 26, fontWeight: '600', textAlign: 'center' },
-  subtitle: { fontSize: 14, lineHeight: 24, textAlign: 'center', marginTop: 8 },
-  list: { marginTop: 24, gap: 10 },
-  choice: { minHeight: 68, borderWidth: 1, borderRadius: 16, paddingLeft: 20, paddingRight: 14, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  icon: { width: 64, height: 64, alignSelf: 'center', borderRadius: 16 },
+  welcome: { fontSize: 14, textAlign: 'center', marginTop: 10 },
+  title: { fontSize: 24, fontWeight: '600', textAlign: 'center', marginTop: 2 },
+  subtitle: { fontSize: 13, lineHeight: 22, textAlign: 'center', marginTop: 6 },
+  list: { marginTop: 18, gap: 8 },
+  choice: { minHeight: 64, borderWidth: 1, borderRadius: 16, paddingLeft: 18, paddingRight: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 12 },
   choiceFirst: { borderWidth: 2 },
   choiceTexts: { flex: 1 },
-  name: { fontSize: 22, lineHeight: 34, fontWeight: '600' },
+  name: { fontSize: 21, lineHeight: 32, fontWeight: '600' },
   bible: { fontSize: 14, lineHeight: 22 },
   note: { fontSize: 13, lineHeight: 20, marginTop: 2 },
   go: { fontSize: 15, lineHeight: 22, fontWeight: '600', marginTop: 4 },
-  foot: { fontSize: 13, lineHeight: 19, textAlign: 'center', marginTop: 20 },
 });

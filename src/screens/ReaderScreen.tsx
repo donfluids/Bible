@@ -23,7 +23,7 @@ import { scriptOf, scriptureFont } from '../fonts';
 import type { Script } from '../fonts';
 import { shortBookName } from '../shortNames';
 import { PassagePicker } from '../components/PassagePicker';
-import { LANGUAGE_WORD, NATIVE_BIBLE_NAME, englishName, translationName, useT } from '../i18n';
+import { LANGUAGE_WORD, NATIVE_BIBLE_NAME, bibleName, englishName, translationName, useT } from '../i18n';
 import { InterlinearVerse } from '../components/InterlinearVerse';
 import { MarkableVerse } from '../components/MarkableVerse';
 import type { WordSlot } from '../components/MarkableVerse';
@@ -43,7 +43,7 @@ import { useTheme } from '../theme';
 import { useWriteToUs } from '../writeToUs';
 import { FEEDBACK_NEVER, feedbackCardDue, feedbackLater } from '../feedback';
 import type { Theme } from '../theme';
-import { HIGHLIGHT_COLORS, isEnglish, translationInfo } from '../types';
+import { HIGHLIGHT_COLORS, isEnglish, isIndian, translationInfo } from '../types';
 import type { Book, HighlightColor, Note, OriginalWord, Ref, TextPoint, TranslationId, VerseRow, WordPick } from '../types';
 
 // Width at each screen edge where a horizontal swipe belongs to the system back gesture.
@@ -224,6 +224,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
     hideCantillation,
     tipSeen,
     feedbackDue,
+    hindiNoteSeen,
     bookmarks,
     highlights,
     notes: userNotes,
@@ -902,6 +903,9 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
     id === 'MAL' ? t('bibleMalayalam') : id === 'TAM' ? t('bibleTamil') : id === 'HIN' ? t('bibleHindi') : id;
   // In the four-language app the pill names an Indian Bible's language in its own script (മലയാളം).
   const pillLabel = (id: TranslationId) => LANGUAGE_WORD[id] ?? id;
+  // The swap button's other side: the Bible read before this one, else the paired Indian Bible or the KJV.
+  const previous = edition.translations.find((id) => id === settings.previousTranslation && id !== translation);
+  const swapTo: TranslationId = previous ?? (isIndian(translation) ? 'KJV' : (nativeBible ?? 'KJV'));
   const pillFont = (id: TranslationId) => scriptureFont(translationInfo(id).script ?? null, false, true);
   const nextTranslation = edition.translations[(edition.translations.indexOf(translation) + 1) % edition.translations.length];
   const switchTranslation = async (next: TranslationId) => {
@@ -1227,6 +1231,17 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             </View>
           </View>
         )}
+        {/* Once, when the Hindi opens: its words are not linked yet. */}
+        {tipSeen && !marking && translation === 'HIN' && !hindiNoteSeen ? (
+          <View style={[styles.tip, { backgroundColor: theme.accentSoft, borderColor: theme.border }]}>
+            <Text style={[styles.tipText, { color: theme.text }]}>{t('hindiNote')}</Text>
+            <View style={styles.tipButtons}>
+              <Pressable onPress={() => update({ hindiNoteSeen: true })} hitSlop={8} accessibilityRole="button">
+                <Text style={[styles.tipDismiss, { color: theme.accent }]}>{t('gotIt')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
         {/* After a fortnight with the app, once: an invitation to write to us. */}
         {tipSeen && !marking && feedbackCardDue(feedbackDue, Date.now()) ? (
           <View style={[styles.tip, { backgroundColor: theme.accentSoft, borderColor: theme.border }]}>
@@ -1273,7 +1288,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
       </>
     ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [tipSeen, feedbackDue, writeToUs, theme, translation, t, update, marking, interlinear, interlinearMode, book?.testament, position.chapter, position.book, books, settings.serif, onOpenIntro, study, onOpenHowTo],
+    [tipSeen, feedbackDue, hindiNoteSeen, writeToUs, theme, translation, t, update, marking, interlinear, interlinearMode, book?.testament, position.chapter, position.book, books, settings.serif, onOpenIntro, study, onOpenHowTo],
   );
   const onScrollToIndexFailed = useCallback((info: { index: number; averageItemLength: number }) => {
     // The row is not measured yet: get near it, then retry with the same placement.
@@ -1451,6 +1466,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
               (BSB, then WEB) with each tap. Settings lists each version in full. */}
           {/* Side by side shows both Bibles, so there is nothing to switch (but a choice of six, in the four-language app). */}
           {multilingual ? (
+            <>
             <Pressable
               android_ripple={{ color: theme.accentSoft }}
               onPress={() => setChoosingBible(true)}
@@ -1462,6 +1478,21 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
               <Text style={[styles.pillText, { color: theme.accent }, pillFont(translation) ? { fontFamily: pillFont(translation), fontWeight: 'normal' } : null]}>{pillLabel(translation)}</Text>
               <Icon name="arrow_drop_down" size={20} color={theme.accent} />
             </Pressable>
+            {/* One tap back and forth between the two Bibles read last. */}
+            {swapTo !== translation ? (
+              <Pressable
+                android_ripple={{ color: theme.accentSoft }}
+                onPress={() => switchTranslation(swapTo)}
+                hitSlop={6}
+                accessibilityRole="button"
+                accessibilityLabel={t('switchTo', { name: bibleName(settings.language, swapTo) })}
+                style={({ pressed }) => [styles.pill, styles.pillIcon, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
+              >
+                <Icon name="swap_horiz" size={20} color={theme.accent} />
+                <Text style={[styles.pillText, styles.pillSmall, { color: theme.muted }, pillFont(swapTo) ? { fontFamily: pillFont(swapTo), fontWeight: 'normal' } : null]}>{pillLabel(swapTo)}</Text>
+              </Pressable>
+            ) : null}
+            </>
           ) : sideBySide ? null : (
           <Pressable
             android_ripple={{ color: theme.accentSoft }}
@@ -2100,6 +2131,8 @@ const styles = StyleSheet.create({
   pill: { minHeight: 36, justifyContent: 'center', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 999, borderWidth: 1 },
   pillText: { fontSize: 14, fontWeight: '600' },
   pillRow: { flexDirection: 'row', alignItems: 'center', paddingRight: 8 },
+  pillIcon: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10 },
+  pillSmall: { fontSize: 12 },
   sheetGroup: { fontSize: 13, fontWeight: '600', marginTop: 10, marginBottom: 2 },
   heading: { fontWeight: '700', letterSpacing: 1, marginTop: 14, marginBottom: 2 },
   // Letter spacing breaks up Malayalam conjuncts on some phones.

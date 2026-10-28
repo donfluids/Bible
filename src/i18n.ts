@@ -353,6 +353,9 @@ const en = {
   aboutAll: "Bibles: the King James Version (1769), the Berean Standard Bible, the World English Bible, the Sathyavedapusthakam 1910 (Malayalam) in contemporary orthography, and the Indian Revised Version in Tamil and in Hindi. The links from Malayalam and Tamil words to the Hebrew and Greek are machine-generated and not fully reviewed; the Hindi words are not linked yet. The translators' footnotes appear as small letters in the text; tap one to read it.",
   sideBySideDetailAll: 'Your Indian Bible beside the English, verse by verse, on a tablet or a phone turned sideways',
   chooseBible: 'Choose a Bible',
+  hindiNote: 'Hindi words are not yet linked to the Hebrew and Greek, so tapping a word does nothing here. Cross references, parallel passages and the introductions still work, and the English Bibles have the word links.',
+  moreEntries: 'More ({n})',
+  fewerEntries: 'Fewer',
   englishBibles: 'English',
   indianBibles: 'Indian languages',
   aboutStrongs: "Dictionaries: Strong's Hebrew and Greek Dictionaries (1890), Abbott-Smith's Greek lexicon (1922) and the Brown–Driver–Briggs Hebrew lexicon (1906).",
@@ -783,6 +786,9 @@ const ml: Record<StringKey, string> = {
   aboutAll: 'ബൈബിളുകൾ: കിംഗ് ജെയിംസ് വേർഷൻ (1769), ബെറിയൻ സ്റ്റാൻഡേർഡ് ബൈബിൾ, വേൾഡ് ഇംഗ്ലീഷ് ബൈബിൾ, സത്യവേദപുസ്തകം 1910 (സമകാലിക ലിപിയിലുള്ള പരിഷ്കരിച്ച പതിപ്പ്), തമിഴിലും ഹിന്ദിയിലുമുള്ള ഇന്ത്യൻ റിവൈസ്ഡ് വേർഷൻ. മലയാളം, തമിഴ് വാക്കുകളിൽനിന്ന് എബ്രായ, ഗ്രീക്ക് പദങ്ങളിലേക്കുള്ള ബന്ധങ്ങൾ യന്ത്രം തയ്യാറാക്കിയതാണ്, പൂർണ്ണമായി പരിശോധിച്ചിട്ടില്ല; ഹിന്ദി വാക്കുകൾ ഇതുവരെ ബന്ധിപ്പിച്ചിട്ടില്ല.',
   sideBySideDetailAll: 'ടാബ്‌ലെറ്റിലോ ഫോൺ ചരിച്ചുപിടിക്കുമ്പോഴോ നിങ്ങളുടെ ഇന്ത്യൻ ബൈബിളും ഇംഗ്ലീഷും വാക്യംവാക്യമായി ഒരുമിച്ച്',
   chooseBible: 'ബൈബിൾ തിരഞ്ഞെടുക്കുക',
+  hindiNote: 'ഹിന്ദി വാക്കുകൾ ഇതുവരെ എബ്രായ, ഗ്രീക്ക് പദങ്ങളുമായി ബന്ധിപ്പിച്ചിട്ടില്ല; അതിനാൽ ഇവിടെ വാക്കിൽ തൊട്ടാൽ ഒന്നും സംഭവിക്കില്ല. ഒത്തുവാക്യങ്ങളും സമാന്തരഭാഗങ്ങളും പുസ്തക പരിചയങ്ങളും പ്രവർത്തിക്കും; ഇംഗ്ലീഷ് ബൈബിളുകളിൽ വാക്കുകളുടെ ബന്ധങ്ങളുണ്ട്.',
+  moreEntries: 'കൂടുതൽ ({n})',
+  fewerEntries: 'കുറവ്',
   englishBibles: 'ഇംഗ്ലീഷ്',
   indianBibles: 'ഇന്ത്യൻ ഭാഷകൾ',
   aboutStrongs: 'നിഘണ്ടുക്കൾ: സ്ട്രോങ്സ് എബ്രായ, ഗ്രീക്ക് നിഘണ്ടുക്കൾ (1890), Abbott-Smith ഗ്രീക്ക് നിഘണ്ടു (1922), Brown–Driver–Briggs എബ്രായ നിഘണ്ടു (1906).',
@@ -1211,6 +1217,9 @@ const ta: Record<StringKey, string> = {
   aboutAll: 'வேதாகமங்கள்: கிங் ஜேம்ஸ் வெர்ஸன் (1769), பெரியன் ஸ்டாண்டர்டு பைபிள், வேர்ல்டு இங்கிலீஷ் பைபிள், மலையாள சத்தியவேதபுஸ்தகம் 1910 (இன்றைய எழுத்துமுறையில்), தமிழிலும் இந்தியிலும் இண்டியன் ரிவைஸ்டு வெர்ஸன். மலையாள, தமிழ் வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திரம் உருவாக்கியவை, முழுமையாகச் சரிபார்க்கப்படவில்லை; இந்தி வார்த்தைகள் இன்னும் இணைக்கப்படவில்லை.',
   sideBySideDetailAll: 'டேப்லெட்டில் அல்லது தொலைபேசியைச் சாய்த்துப் பிடிக்கும்போது உங்கள் இந்திய வேதாகமமும் ஆங்கிலமும் வசனம் வசனமாக ஒன்றாக',
   chooseBible: 'வேதாகமத்தைத் தேர்ந்தெடுக்க',
+  hindiNote: 'இந்தி வார்த்தைகள் இன்னும் எபிரெய, கிரேக்க வார்த்தைகளுடன் இணைக்கப்படவில்லை; எனவே இங்கே வார்த்தையைத் தொட்டால் ஒன்றும் நடக்காது. தொடர்புடைய வசனங்கள், இணையான பகுதிகள், புத்தக முன்னுரைகள் வேலை செய்யும்; ஆங்கில வேதாகமங்களில் வார்த்தை இணைப்புகள் உள்ளன.',
+  moreEntries: 'மேலும் ({n})',
+  fewerEntries: 'குறைவாக',
   englishBibles: 'ஆங்கிலம்',
   indianBibles: 'இந்திய மொழிகள்',
   aboutStrongs: 'அகராதிகள்: ஸ்ட்ராங் எபிரெய, கிரேக்க அகராதிகள் (1890), Abbott-Smith கிரேக்க அகராதி (1922), Brown–Driver–Briggs எபிரெய அகராதி (1906).',
@@ -1326,6 +1335,11 @@ export function shortName(id: string): string {
 /** An Indian Bible's name in its own script, and its language's name in that script. */
 export const NATIVE_BIBLE_NAME: Partial<Record<string, string>> = { MAL: 'സത്യവേദപുസ്തകം 1910', TAM: 'இண்டியன் ரிவைஸ்டு வெர்ஸன்', HIN: 'इंडियन रिवाइज्ड वर्जन' };
 export const LANGUAGE_WORD: Partial<Record<string, string>> = { MAL: 'മലയാളം', TAM: 'தமிழ்', HIN: 'हिन्दी' };
+
+/** A Bible's name where its text is read: an Indian Bible in its own script, the English ones by their English names. */
+export function bibleName(language: Language, id: string): string {
+  return NATIVE_BIBLE_NAME[id] ?? translationName(language, id);
+}
 
 /** A Bible's name in English, for a detail line under its own name. */
 export function englishName(id: string): string {

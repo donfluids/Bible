@@ -42,6 +42,16 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
 - [ ] Books tab after reading a few chapters: a clock at the right of the title opens
       the chapters read lately (not the one open now); one tap opens that chapter. On a
       fresh install, with nothing read yet, the clock is not there.
+- [ ] Four-language app, first opening: the language screen shows the phone's language
+      first, ticked, with Continue in that language; a tap opens that Bible. Set the phone
+      to Hindi and reinstall: हिन्दी stands first and opens the Hindi Bible with English
+      menus and a one-time card (Got it) saying the Hindi words are not linked yet.
+- [ ] Four-language app, reader: the Bible pill (हिन्दी, മലയാളം, KJV…) opens the six
+      Bibles under their own names; the swap button beside it returns to the Bible read
+      before; in Search the row of Bibles under the box searches each, and a result opens
+      in that Bible. Hindi footnote letters hang off the word before them.
+- [ ] Search dictionary: with study tools on, two entries and a More row that opens the
+      rest; with study tools off, no dictionary block.
 - [ ] Tap the title in the reader: the picker opens on the book being read with its chapters;
       "All books" shows the Testament switch and the books under their groups. Pick 2 Kings
       5 and then Luke 15: each opens at once. A book read before opens on its grid with the

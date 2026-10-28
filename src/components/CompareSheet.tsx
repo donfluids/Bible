@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEdition } from '../edition';
-import { translationName, useT } from '../i18n';
+import { bibleName, useT } from '../i18n';
 import { getInterlinear, getVerses, mapRefs } from '../queries';
 import { useSettings } from '../settings';
 import { formatRef } from '../text';
@@ -87,7 +87,7 @@ export function CompareSheet({ target, translation, books, onClose, onWord }: Pr
         <View style={styles.body}>
           {rows.map((r) => (
             <View key={r.translation} style={[styles.block, { borderBottomColor: theme.border }]}>
-              <SectionLabel text={translationName(settings.language, r.translation) + (r.refs ? ` · ${r.refs.map((ref) => formatRef(books, ref, r.translation)).join(', ')}` : '')} style={styles.label} />
+              <SectionLabel text={bibleName(settings.language, r.translation) + (r.refs ? ` · ${r.refs.map((ref) => formatRef(books, ref, r.translation)).join(', ')}` : '')} style={styles.label} />
               {r.verses.length > 0 ? (
                 r.verses.map((v) => (
                   <VerseText key={`${v.chapter}:${v.verse}`} verse={v} fontSize={size} onWord={pickWord} underline={false} showNumber={r.verses.length > 1} />

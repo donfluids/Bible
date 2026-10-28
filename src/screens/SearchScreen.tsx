@@ -6,7 +6,9 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
 import { Icon, IconButton } from '../components/Icon';
 import { SectionLabel } from '../components/SectionLabel';
-import { renderingsLabel, shortName, useT } from '../i18n';
+import { LANGUAGE_WORD, bibleName, renderingsLabel, shortName, useT } from '../i18n';
+import { isMultilingual, useEdition } from '../edition';
+import { scriptureFont } from '../fonts';
 import { VerseListItem } from '../components/VerseListItem';
 import { getVerses, searchLexicon, searchText } from '../queries';
 import { parseReference } from '../refs';
@@ -16,7 +18,8 @@ import { useTheme } from '../theme';
 import { newTestamentFirst, refInScope, scopeCounts } from '../searchScope';
 import type { Scope } from '../searchScope';
 import { shortBookName } from '../shortNames';
-import type { Book, LexiconHit, Ref, VerseRow, WordPick } from '../types';
+import { translationInfo } from '../types';
+import type { Book, LexiconHit, Ref, TranslationId, VerseRow, WordPick } from '../types';
 
 interface Props {
   books: Book[];
@@ -41,8 +44,15 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
   // Lists run under the system navigation bar; the last row must clear it.
   const insets = useSafeAreaInsets();
   const t = useT();
-  const { settings } = useSettings();
-  const { translation } = settings;
+  const { settings, update } = useSettings();
+  const edition = useEdition();
+  // In the four-language app the Bible searched is chosen under the box; elsewhere it is the one being read.
+  const multilingual = isMultilingual(edition);
+  const [searchIn, setSearchIn] = useState<TranslationId>(settings.translation);
+  const translation = multilingual ? searchIn : settings.translation;
+  // Without the study tools there is no dictionary; with them, two entries and the rest behind More.
+  const study = settings.study;
+  const [allEntries, setAllEntries] = useState(false);
   const [query, setQuery] = useState('');
   const inputRef = useRef<TextInput>(null);
   // Every matching verse, New Testament first; the list shows a page of them at a time.
@@ -75,7 +85,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
     setFailed(false);
     const timer = setTimeout(async () => {
       try {
-        const [refs, hits] = await Promise.all([searchText(db, translation, q, () => latest.current !== id), searchLexicon(db, q, 8)]);
+        const [refs, hits] = await Promise.all([searchText(db, translation, q, () => latest.current !== id), study ? searchLexicon(db, q, 8) : Promise.resolve([])]);
         if (latest.current !== id) return;
         const ordered = newTestamentFirst(refs, testament);
         const rows = await getVerses(db, translation, ordered.slice(0, PAGE));
@@ -95,7 +105,13 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
     }, 250);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [db, translation, query, strongsId, goTo?.book, goTo?.chapter, goTo?.verse]);
+  }, [db, translation, study, query, strongsId, goTo?.book, goTo?.chapter, goTo?.verse]);
+
+  // A verse found in another Bible opens in that Bible.
+  const openRef = (ref: Ref) => {
+    if (translation !== settings.translation) update({ translation });
+    onOpenRef(ref);
+  };
 
   const testament = useMemo(() => new Map(books.map((b) => [b.id, b.testament])), [books]);
   const inScope = useCallback((r: Ref, sc: Scope) => refInScope(r, sc, testament), [testament]);
@@ -137,8 +153,9 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
   // Stable list props: the rows redraw for a new query (its words are highlighted), not
   // when the spinner or the dictionary matches change.
   const renderResult = useCallback(
-    ({ item }: { item: VerseRow }) => <VerseListItem verse={item} books={books} fontSize={listFont} onOpen={onOpenRef} onWord={onWord} highlightText={query} />,
-    [books, listFont, onOpenRef, onWord, query],
+    ({ item }: { item: VerseRow }) => <VerseListItem verse={item} books={books} fontSize={listFont} onOpen={openRef} onWord={onWord} highlightText={query} />,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [books, listFont, onOpenRef, onWord, query, translation, settings.translation],
   );
   const listStyle = useMemo(() => [styles.list, { paddingBottom: insets.bottom + 24 }], [insets.bottom]);
 
@@ -166,7 +183,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
       ) : null}
       {goTo ? (
         <Pressable
-          onPress={() => onOpenRef({ book: goTo.book, chapter: goTo.chapter, verse: goTo.verse })}
+          onPress={() => openRef({ book: goTo.book, chapter: goTo.chapter, verse: goTo.verse })}
           android_ripple={{ color: theme.accentSoft }}
           style={({ pressed }) => [styles.strongsRow, { backgroundColor: pressed ? theme.accentSoft : theme.card, borderColor: theme.border }]}
           accessibilityRole="button"
@@ -193,7 +210,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
       {entries.length > 0 && !busy ? (
         <View style={[styles.lexicon, { borderColor: theme.border, backgroundColor: theme.card }]}>
           <SectionLabel text={t('dictionary')} style={styles.lexiconTitle} />
-          {entries.map((e) => (
+          {(allEntries ? entries : entries.slice(0, 2)).map((e) => (
             <Pressable
               key={e.id}
               onPress={() => onWord({ strongs: e.id })}
@@ -212,6 +229,11 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
               </View>
             </Pressable>
           ))}
+          {entries.length > 2 ? (
+            <Pressable onPress={() => setAllEntries((v) => !v)} android_ripple={{ color: theme.accentSoft }} style={[styles.entry, styles.moreRow, { borderTopColor: theme.border }]} accessibilityRole="button">
+              <Text style={[styles.entryId, { color: theme.accent }]}>{allEntries ? t('fewerEntries') : t('moreEntries', { n: entries.length - 2 })}</Text>
+            </Pressable>
+          ) : null}
         </View>
       ) : null}
       {matches && !busy ? (
@@ -245,7 +267,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
-      <Header title={t('searchTitle', { name: shortName(translation), in: renderingsLabel(settings.language, translation) })} onBack={onBack} />
+      <Header title={multilingual ? t('search') : t('searchTitle', { name: shortName(translation), in: renderingsLabel(settings.language, translation) })} onBack={onBack} />
       <View style={[styles.inputBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
         <Icon name="search" color={theme.muted} />
         <TextInput
@@ -273,6 +295,27 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
           />
         ) : null}
       </View>
+      {multilingual ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.bibles}>
+          {edition.translations.map((id) => {
+            const active = id === translation;
+            const font = scriptureFont(translationInfo(id).script ?? null, false, true);
+            return (
+              <Pressable
+                key={id}
+                onPress={() => setSearchIn(id)}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: active }}
+                accessibilityLabel={bibleName(settings.language, id)}
+                android_ripple={{ color: theme.accentSoft }}
+                style={[styles.chip, { borderColor: active ? theme.accent : theme.border, backgroundColor: active ? theme.accentSoft : 'transparent' }]}
+              >
+                <Text style={[styles.chipText, { color: active ? theme.accent : theme.text }, font ? { fontFamily: font, fontWeight: 'normal' } : null]}>{LANGUAGE_WORD[id] ?? id}</Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      ) : null}
       <FlatList
         data={results ?? []}
         keyExtractor={verseKey}
@@ -335,6 +378,8 @@ const styles = StyleSheet.create({
   exampleText: { fontSize: 15 },
   spinner: { marginVertical: 12 },
   failed: { fontSize: 15, paddingHorizontal: 18, paddingVertical: 12 },
+  bibles: { paddingHorizontal: 14, paddingBottom: 8, gap: 8 },
+  moreRow: { justifyContent: 'center' },
   lexicon: { marginHorizontal: 14, marginBottom: 10, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
   lexiconTitle: { paddingHorizontal: 12, paddingTop: 10, paddingBottom: 6 },
   entry: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth },

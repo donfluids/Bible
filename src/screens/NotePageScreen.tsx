@@ -8,7 +8,7 @@ import { sharePdf } from '../notebookFiles';
 import { typedPageHtml } from '../pagePdf';
 import type { TypedLine } from '../pagePdf';
 import { languageScript, scriptOf, scriptureFont } from '../fonts';
-import { translationName, useT } from '../i18n';
+import { bibleName, useT } from '../i18n';
 import { useNotebook } from '../notebook';
 import { getVerseCounts, getVerses } from '../queries';
 import { findReferences } from '../refs';
@@ -210,7 +210,7 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
         out.push(`“${text}${more > 0 ? ' …' : ''}”`);
       }
     }
-    if (anyQuoted) out.push('', `— ${translationName(settings.language, translation)}`);
+    if (anyQuoted) out.push('', `— ${bibleName(settings.language, translation)}`);
     await Share.share({ message: out.join('\n').replace(/\n{3,}/g, '\n\n').trim() });
   };
 
@@ -227,7 +227,7 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
       }),
     }));
     const anyQuoted = typed.some((l) => l.quotes.length > 0);
-    const html = typedPageHtml(page.title.trim(), typed, anyQuoted ? `— ${translationName(settings.language, translation)}` : '', (n) => t('moreVerses', { n }));
+    const html = typedPageHtml(page.title.trim(), typed, anyQuoted ? `— ${bibleName(settings.language, translation)}` : '', (n) => t('moreVerses', { n }));
     try {
       await sharePdf(html, page.title, t('sharePage'));
     } catch {

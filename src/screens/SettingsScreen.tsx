@@ -10,10 +10,12 @@ import { Icon, IconButton } from '../components/Icon';
 import { SectionLabel } from '../components/SectionLabel';
 import { isMultilingual, nativeTranslation, useEdition } from '../edition';
 import type { Language } from '../edition';
-import { translationName, useT } from '../i18n';
+import { bibleName, englishName, useT } from '../i18n';
 import { getMeta } from '../queries';
 import { FONT_SIZES, useSettings } from '../settings';
 import type { HighlightStyle, Layout, ThemeChoice } from '../settings';
+import { scriptureFont } from '../fonts';
+import { translationInfo } from '../types';
 import { useTheme } from '../theme';
 import { useWriteToUs } from '../writeToUs';
 import { Segmented } from '../components/Segmented';
@@ -150,9 +152,9 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
             return (
               <Pressable key={id} onPress={() => update({ translation: id })} android_ripple={{ color: theme.accentSoft }} accessibilityRole="radio" accessibilityState={{ checked: active }} style={[styles.row, i > 0 && divider]}>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.rowTitle, { color: theme.text }]}>{translationName(settings.language, id)}</Text>
-                  {/* The short label the reader's chip shows, and the version's code. */}
-                  <Text style={[styles.rowSub, { color: theme.muted }]}>{nativeTranslation(EDITION) && id !== nativeTranslation(EDITION) ? `ENG · ${id}` : id}</Text>
+                  <Text style={[styles.rowTitle, { color: theme.text }, scriptureFont(translationInfo(id).script ?? null, false) ? { fontFamily: scriptureFont(translationInfo(id).script ?? null, false) } : null]}>{bibleName(settings.language, id)}</Text>
+                  {/* The English name of an Indian Bible; else the short label the reader's chip shows, and the version's code. */}
+                  <Text style={[styles.rowSub, { color: theme.muted }]}>{translationInfo(id).script ? `${englishName(id)} · ${id}` : nativeTranslation(EDITION) && id !== nativeTranslation(EDITION) ? `ENG · ${id}` : id}</Text>
                 </View>
                 <View style={styles.check}>{active ? <Icon name="check" color={theme.accent} /> : null}</View>
               </Pressable>

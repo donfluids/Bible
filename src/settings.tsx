@@ -52,8 +52,12 @@ export interface Settings {
   feedbackDue: number;
   /** The Indian Bible read last (four-language app): beside the English, and the switch's other side. */
   lastIndian: string;
+  /** The Bible read before the one open: the swap button's other side (four-language app). */
+  previousTranslation: string;
   /** The four-language app has asked the reader's language once, on first opening. */
   languageChosen: boolean;
+  /** The note that Hindi words are not linked yet has been dismissed. */
+  hindiNoteSeen: boolean;
   // The reading place (position, recent and last chapters) is kept in src/place.ts.
 }
 
@@ -79,7 +83,9 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
   tipSeen: false,
   feedbackDue: 0,
   lastIndian: '',
+  previousTranslation: '',
   languageChosen: false,
+  hindiNoteSeen: false,
 };
 
 // The Aa buttons in Settings and pinching the reader step through these.
@@ -139,10 +145,13 @@ export function tellLoadProblem(language: Language, source: Loaded<unknown>['sou
 export function SettingsProvider({ edition, children }: { edition: Edition; children: React.ReactNode }) {
   const [loaded] = useState(() => load(edition));
   const [settings, setSettings] = useState<Settings>(() => ({ ...loaded.value, feedbackDue: feedbackDueFrom(loaded.value.feedbackDue, Date.now()) }));
-  // Opening an Indian Bible remembers it, for the four-language app's pairing (src/edition.ts).
-  const remember = (patch: Partial<Settings>): Partial<Settings> =>
-    patch.translation && isIndian(patch.translation) ? { ...patch, lastIndian: patch.translation } : patch;
-  const update = useCallback((patch: Partial<Settings>) => setSettings((prev) => ({ ...prev, ...remember(patch) })), []);
+  // Opening another Bible remembers the one left, and an Indian one as the last Indian
+  // Bible, for the four-language app's swap and pairing (src/edition.ts).
+  const remember = (prev: Settings, patch: Partial<Settings>): Partial<Settings> => {
+    if (!patch.translation || patch.translation === prev.translation) return patch;
+    return { ...patch, previousTranslation: prev.translation, ...(isIndian(patch.translation) ? { lastIndian: patch.translation } : {}) };
+  };
+  const update = useCallback((patch: Partial<Settings>) => setSettings((prev) => ({ ...prev, ...remember(prev, patch) })), []);
   useEffect(() => tellLoadProblem(loaded.value.language, loaded.source), [loaded]);
   const language = useRef(settings.language);
   language.current = settings.language;
@@ -152,10 +161,10 @@ export function SettingsProvider({ edition, children }: { edition: Edition; chil
   latest.current = settings;
   const commit = useCallback(
     (patch: Partial<Settings>) => {
-      const next = { ...latest.current, ...remember(patch) };
+      const next = { ...latest.current, ...remember(latest.current, patch) };
       latest.current = next;
       saveValue(next);
-      setSettings((prev) => ({ ...prev, ...remember(patch) }));
+      setSettings((prev) => ({ ...prev, ...remember(prev, patch) }));
     },
     [saveValue],
   );
