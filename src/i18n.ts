@@ -351,8 +351,10 @@ const en = {
   aboutMalayalam: 'Bibles: the Sathyavedapusthakam 1910 (Malayalam), in a revised edition in contemporary orthography, and the King James Version (1769). The links from Malayalam words to the Hebrew and Greek are machine-generated and not fully reviewed.',
   aboutTamil: 'Bibles: the Indian Revised Version (Tamil) and the King James Version (1769). The links from Tamil words to the Hebrew and Greek are machine-generated and not reviewed.',
   aboutAll: "Bibles: the King James Version (1769), the Berean Standard Bible, the World English Bible, the Sathyavedapusthakam 1910 (Malayalam) in contemporary orthography, and the Indian Revised Version in Tamil and in Hindi. The links from Malayalam and Tamil words to the Hebrew and Greek are machine-generated and not fully reviewed; the Hindi words are not linked yet. The translators' footnotes appear as small letters in the text; tap one to read it.",
-  sideBySideDetailAll: 'The Malayalam, Tamil or Hindi Bible beside the English, verse by verse, on a tablet or a phone turned sideways',
+  sideBySideDetailAll: 'Your Indian Bible beside the English, verse by verse, on a tablet or a phone turned sideways',
   chooseBible: 'Choose a Bible',
+  englishBibles: 'English',
+  indianBibles: 'Indian languages',
   aboutStrongs: "Dictionaries: Strong's Hebrew and Greek Dictionaries (1890), Abbott-Smith's Greek lexicon (1922) and the Brown–Driver–Briggs Hebrew lexicon (1906).",
   aboutInterlinear: 'The Hebrew (Leningrad Codex) and Greek words, with transliteration, glosses and grammar are from the Translators Amalgamated Hebrew OT and Greek NT of STEPBible.org (Tyndale House, Cambridge). The Greek is spelled as in the Nestle-Aland 28th edition and has every word of the Textus Receptus and the Byzantine text; where those texts have a different word from Nestle-Aland, their word is shown. Words not in the Nestle-Aland editions have a line beneath; tap one to see which texts have it.',
   aboutWeb: "The World English Bible is shown as plain text: the Strong's numbers in its source file are attached to the wrong words too often to use. Word lookups and verse lists use the King James Version; to tap the original words while reading the WEB, switch on Hebrew words or Greek words.",
@@ -779,8 +781,10 @@ const ml: Record<StringKey, string> = {
   aboutMalayalam: 'ബൈബിളുകൾ: സത്യവേദപുസ്തകം 1910 (സമകാലിക ലിപിയിലുള്ള പരിഷ്കരിച്ച പതിപ്പ്), കിംഗ് ജെയിംസ് വേർഷൻ (1769). മലയാളം വാക്കുകളിൽനിന്ന് എബ്രായ, ഗ്രീക്ക് വാക്കുകളിലേക്കുള്ള ബന്ധങ്ങൾ യന്ത്രസഹായത്തോടെ ഉണ്ടാക്കിയവയാണ്; പൂർണ്ണമായി പരിശോധിച്ചിട്ടില്ല.',
   aboutTamil: 'ബൈബിളുകൾ: തമിഴ് ഇന്ത്യൻ റിവൈസ്ഡ് വേർഷൻ (IRV), കിംഗ് ജെയിംസ് വേർഷൻ (1769).',
   aboutAll: 'ബൈബിളുകൾ: കിംഗ് ജെയിംസ് വേർഷൻ (1769), ബെറിയൻ സ്റ്റാൻഡേർഡ് ബൈബിൾ, വേൾഡ് ഇംഗ്ലീഷ് ബൈബിൾ, സത്യവേദപുസ്തകം 1910 (സമകാലിക ലിപിയിലുള്ള പരിഷ്കരിച്ച പതിപ്പ്), തമിഴിലും ഹിന്ദിയിലുമുള്ള ഇന്ത്യൻ റിവൈസ്ഡ് വേർഷൻ. മലയാളം, തമിഴ് വാക്കുകളിൽനിന്ന് എബ്രായ, ഗ്രീക്ക് പദങ്ങളിലേക്കുള്ള ബന്ധങ്ങൾ യന്ത്രം തയ്യാറാക്കിയതാണ്, പൂർണ്ണമായി പരിശോധിച്ചിട്ടില്ല; ഹിന്ദി വാക്കുകൾ ഇതുവരെ ബന്ധിപ്പിച്ചിട്ടില്ല.',
-  sideBySideDetailAll: 'ടാബ്‌ലെറ്റിലോ ഫോൺ ചരിച്ചുപിടിക്കുമ്പോഴോ മലയാളം, തമിഴ് അല്ലെങ്കിൽ ഹിന്ദി ബൈബിളും ഇംഗ്ലീഷും വാക്യംവാക്യമായി ഒരുമിച്ച്',
+  sideBySideDetailAll: 'ടാബ്‌ലെറ്റിലോ ഫോൺ ചരിച്ചുപിടിക്കുമ്പോഴോ നിങ്ങളുടെ ഇന്ത്യൻ ബൈബിളും ഇംഗ്ലീഷും വാക്യംവാക്യമായി ഒരുമിച്ച്',
   chooseBible: 'ബൈബിൾ തിരഞ്ഞെടുക്കുക',
+  englishBibles: 'ഇംഗ്ലീഷ്',
+  indianBibles: 'ഇന്ത്യൻ ഭാഷകൾ',
   aboutStrongs: 'നിഘണ്ടുക്കൾ: സ്ട്രോങ്സ് എബ്രായ, ഗ്രീക്ക് നിഘണ്ടുക്കൾ (1890), Abbott-Smith ഗ്രീക്ക് നിഘണ്ടു (1922), Brown–Driver–Briggs എബ്രായ നിഘണ്ടു (1906).',
   aboutInterlinear: 'എബ്രായ (ലെനിൻഗ്രാഡ് കോഡക്സ്), ഗ്രീക്ക് വാക്കുകൾ, ലിപ്യന്തരണവും അർത്ഥവും വ്യാകരണവും സഹിതം, STEPBible.org (Tyndale House Cambridge) തയ്യാറാക്കിയ Translators Amalgamated Hebrew OT and Greek NT-യിൽ നിന്ന്. ഗ്രീക്ക് പാഠം നെസ്‌ലെ-ആലൻഡ് 28-ാം പതിപ്പിന്റെ അക്ഷരവിന്യാസത്തിലാണ്; ടെക്സ്റ്റസ് റിസെപ്റ്റസിലെയും ബൈസന്റൈൻ പാഠത്തിലെയും എല്ലാ വാക്കുകളും ഉണ്ട്. ആ പാഠങ്ങൾ നെസ്‌ലെ-ആലൻഡിൽനിന്നു വ്യത്യസ്തമായ വാക്കു വായിക്കുന്നിടത്ത് അവയുടെ വാക്കു കാണിക്കുന്നു. നെസ്‌ലെ-ആലൻഡ് പതിപ്പുകളിൽ ഇല്ലാത്ത വാക്കുകൾക്കു താഴെ വരയുണ്ട്; ഏതൊക്കെ പാഠങ്ങളിൽ അതുണ്ടെന്ന് അറിയാൻ അതിൽ തൊടുക.',
   aboutWeb: 'വേൾഡ് ഇംഗ്ലീഷ് ബൈബിൾ സാധാരണ പാഠമായി മാത്രം കാണിക്കുന്നു: അതിന്റെ ഉറവിടത്തിലെ സ്ട്രോങ്സ് നമ്പറുകൾ പലപ്പോഴും തെറ്റായ വാക്കുകളിലാണ്. പദവിവരവും വാക്യപ്പട്ടികയും KJV ഉപയോഗിക്കുന്നു; WEB വായിക്കുമ്പോൾ മൂലപദങ്ങൾ തൊടാൻ എബ്രായ / ഗ്രീക്ക് വാക്കുകൾ ഓണാക്കുക.',
@@ -1205,8 +1209,10 @@ const ta: Record<StringKey, string> = {
   aboutMalayalam: 'வேதாகமங்கள்: மலையாள சத்தியவேதபுஸ்தகம் 1910 (இன்றைய எழுத்துமுறையில் திருத்தப்பட்ட பதிப்பு), கிங் ஜேம்ஸ் வெர்ஸன் (1769). மலையாள வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திரத்தால் உருவாக்கப்பட்டவை; முழுமையாகச் சரிபார்க்கப்படவில்லை.',
   aboutTamil: 'வேதாகமங்கள்: இண்டியன் ரிவைஸ்டு வெர்ஸன் (IRV) தமிழ், கிங் ஜேம்ஸ் வெர்ஸன் (1769). தமிழ் வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திர உதவியுடன் உருவாக்கப்பட்டவை; சரிபார்க்கப்படவில்லை.',
   aboutAll: 'வேதாகமங்கள்: கிங் ஜேம்ஸ் வெர்ஸன் (1769), பெரியன் ஸ்டாண்டர்டு பைபிள், வேர்ல்டு இங்கிலீஷ் பைபிள், மலையாள சத்தியவேதபுஸ்தகம் 1910 (இன்றைய எழுத்துமுறையில்), தமிழிலும் இந்தியிலும் இண்டியன் ரிவைஸ்டு வெர்ஸன். மலையாள, தமிழ் வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திரம் உருவாக்கியவை, முழுமையாகச் சரிபார்க்கப்படவில்லை; இந்தி வார்த்தைகள் இன்னும் இணைக்கப்படவில்லை.',
-  sideBySideDetailAll: 'டேப்லெட்டில் அல்லது தொலைபேசியைச் சாய்த்துப் பிடிக்கும்போது மலையாள, தமிழ் அல்லது இந்தி வேதாகமமும் ஆங்கிலமும் வசனம் வசனமாக ஒன்றாக',
+  sideBySideDetailAll: 'டேப்லெட்டில் அல்லது தொலைபேசியைச் சாய்த்துப் பிடிக்கும்போது உங்கள் இந்திய வேதாகமமும் ஆங்கிலமும் வசனம் வசனமாக ஒன்றாக',
   chooseBible: 'வேதாகமத்தைத் தேர்ந்தெடுக்க',
+  englishBibles: 'ஆங்கிலம்',
+  indianBibles: 'இந்திய மொழிகள்',
   aboutStrongs: 'அகராதிகள்: ஸ்ட்ராங் எபிரெய, கிரேக்க அகராதிகள் (1890), Abbott-Smith கிரேக்க அகராதி (1922), Brown–Driver–Briggs எபிரெய அகராதி (1906).',
   aboutInterlinear: 'எபிரெய (லெனின்கிராட் கோடெக்ஸ்), கிரேக்க வார்த்தைகள், ஒலிபெயர்ப்பு, பொருள், இலக்கணத்துடன், STEPBible.org (Tyndale House Cambridge) தயாரித்த Translators Amalgamated Hebrew OT and Greek NT-இலிருந்து. கிரேக்கம் நெஸ்லே-ஆலந்து 28-ஆம் பதிப்பின் எழுத்துக்கூட்டலில் உள்ளது; டெக்ஸ்டஸ் ரிசெப்டஸ், பைசாந்திய பாடங்களின் ஒவ்வொரு வார்த்தையும் அதில் உண்டு. அவற்றில் வேறு வார்த்தை இருக்கும் இடத்தில் அந்த வார்த்தை காட்டப்படுகிறது. நெஸ்லே-ஆலந்து பதிப்புகளில் இல்லாத வார்த்தைகளுக்குக் கீழே கோடு இருக்கும்; எந்தப் பாடங்களில் அது உள்ளது என்று அறியத் தொடுங்கள்.',
   aboutWeb: 'வேர்ல்டு இங்கிலீஷ் பைபிள் வெறும் உரையாக மட்டுமே காட்டப்படுகிறது: அதன் மூலக் கோப்பில் உள்ள ஸ்ட்ராங் எண்கள் அடிக்கடி தவறான வார்த்தைகளில் உள்ளன. சொல் விவரமும் வசனப் பட்டியலும் KJV-ஐப் பயன்படுத்துகின்றன; WEB-ஐ வாசிக்கும்போது மூல வார்த்தைகளைத் தொட, எபிரெய / கிரேக்க வார்த்தைகளை இயக்குங்கள்.',
@@ -1317,6 +1323,18 @@ export function shortName(id: string): string {
 }
 
 /** Display name of a translation in the interface language. */
+/** An Indian Bible's name in its own script, and its language's name in that script. */
+export const NATIVE_BIBLE_NAME: Partial<Record<string, string>> = { MAL: 'സത്യവേദപുസ്തകം 1910', TAM: 'இண்டியன் ரிவைஸ்டு வெர்ஸன்', HIN: 'इंडियन रिवाइज्ड वर्जन' };
+export const LANGUAGE_WORD: Partial<Record<string, string>> = { MAL: 'മലയാളം', TAM: 'தமிழ்', HIN: 'हिन्दी' };
+
+/** A Bible's name in English, for a detail line under its own name. */
+export function englishName(id: string): string {
+  if (id === 'MAL') return 'Sathyavedapusthakam 1910';
+  if (id === 'TAM') return 'Indian Revised Version';
+  if (id === 'HIN') return 'Indian Revised Version';
+  return translationName('en', id);
+}
+
 export function translationName(language: Language, id: string): string {
   if (id === 'MAL') return language === 'ml' ? 'സത്യവേദപുസ്തകം 1910' : 'Sathyavedapusthakam 1910 (Malayalam)';
   if (id === 'TAM') return language === 'ta' ? 'இண்டியன் ரிவைஸ்டு வெர்ஸன்' : 'Indian Revised Version (Tamil)';

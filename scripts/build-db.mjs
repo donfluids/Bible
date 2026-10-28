@@ -194,7 +194,9 @@ const ALL_TRANSLATIONS = [
   // The Hindi IRV marks the Old Testament passages a verse quotes in bold italics inside the
   // text, "(भज. 2:7)"; those are the editors' references, not Scripture, and become cross
   // references (bditAsXref). Its zero-width joiners are Devanagari's own and stay.
-  { id: 'HIN', name: 'इंडियन रिवाइज्ड वर्जन (IRV)', dir: 'hin2017', suffix: 'hin2017.usfm', bditAsXref: true },
+  // Its footnotes stand before the phrase they explain, "आदि में \f…\f* वचन था": the marker
+  // moves back onto the word before it (notesAfterWord), as the other Bibles have them.
+  { id: 'HIN', name: 'इंडियन रिवाइज्ड वर्जन (IRV)', dir: 'hin2017', suffix: 'hin2017.usfm', bditAsXref: true, notesAfterWord: true },
 ];
 
 // Paragraph level markers whose content belongs to the current verse.
@@ -905,6 +907,7 @@ function buildEdition(edition) {
     for (const row of pending) {
       const { book: bookId, chapter, verse, entries, notes, para } = row;
       const { text, tags, markers } = collapseSpaces(row.text, row.tags, row.markers);
+      if (t.notesAfterWord) for (const mk of markers) if (mk.pos > 0 && text[mk.pos - 1] === ' ' && mk.pos < text.length && text[mk.pos] !== ' ') mk.pos--;
       insVerse.run(t.id, bookId, chapter, verse, text, tags, 0, para);
       verses++;
       markers.forEach((mk, n) => {

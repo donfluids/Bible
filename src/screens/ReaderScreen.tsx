@@ -23,7 +23,7 @@ import { scriptOf, scriptureFont } from '../fonts';
 import type { Script } from '../fonts';
 import { shortBookName } from '../shortNames';
 import { PassagePicker } from '../components/PassagePicker';
-import { translationName, useT } from '../i18n';
+import { LANGUAGE_WORD, NATIVE_BIBLE_NAME, englishName, translationName, useT } from '../i18n';
 import { InterlinearVerse } from '../components/InterlinearVerse';
 import { MarkableVerse } from '../components/MarkableVerse';
 import type { WordSlot } from '../components/MarkableVerse';
@@ -900,6 +900,9 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   // their language in the interface language (MAL, or മലയാളം with the Malayalam interface).
   const bibleLabel = (id: TranslationId) =>
     id === 'MAL' ? t('bibleMalayalam') : id === 'TAM' ? t('bibleTamil') : id === 'HIN' ? t('bibleHindi') : id;
+  // In the four-language app the pill names an Indian Bible's language in its own script (മലയാളം).
+  const pillLabel = (id: TranslationId) => LANGUAGE_WORD[id] ?? id;
+  const pillFont = (id: TranslationId) => scriptureFont(translationInfo(id).script ?? null, false, true);
   const nextTranslation = edition.translations[(edition.translations.indexOf(translation) + 1) % edition.translations.length];
   const switchTranslation = async (next: TranslationId) => {
     if (next === translation) return;
@@ -1456,7 +1459,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
               accessibilityLabel={`${t('chooseBible')}: ${translationName(settings.language, translation)}`}
               style={({ pressed }) => [styles.pill, styles.pillRow, { borderColor: theme.accent, opacity: pressed ? 0.7 : 1 }]}
             >
-              <Text style={[styles.pillText, { color: theme.accent }]}>{bibleLabel(translation)}</Text>
+              <Text style={[styles.pillText, { color: theme.accent }, pillFont(translation) ? { fontFamily: pillFont(translation), fontWeight: 'normal' } : null]}>{pillLabel(translation)}</Text>
               <Icon name="arrow_drop_down" size={20} color={theme.accent} />
             </Pressable>
           ) : sideBySide ? null : (
@@ -1512,17 +1515,27 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
       </SimpleSheet>
 
       <SimpleSheet visible={choosingBible} title={t('chooseBible')} onClose={() => setChoosingBible(false)}>
-        {edition.translations.map((id) => (
-          <SheetAction
-            key={id}
-            icon={id === translation ? 'check' : 'menu_book'}
-            label={translationName(settings.language, id)}
-            detail={isEnglish(id) ? id : bibleLabel(id)}
-            onPress={() => {
-              setChoosingBible(false);
-              switchTranslation(id);
-            }}
-          />
+        {/* The English Bibles, then the Indian ones, each under its own name with the English under it. */}
+        {[
+          [t('englishBibles'), edition.translations.filter(isEnglish)],
+          [t('indianBibles'), edition.translations.filter((id) => !isEnglish(id))],
+        ].map(([heading, ids]) => (
+          <View key={heading as string}>
+            <Text style={[styles.sheetGroup, { color: theme.accent }]}>{heading as string}</Text>
+            {(ids as TranslationId[]).map((id) => (
+              <SheetAction
+                key={id}
+                icon={id === translation ? 'check' : 'menu_book'}
+                label={NATIVE_BIBLE_NAME[id] ?? translationName(settings.language, id)}
+                labelFont={pillFont(id) ? scriptureFont(translationInfo(id).script ?? null, false) : undefined}
+                detail={isEnglish(id) ? `English · ${id}` : `${LANGUAGE_WORD[id]} · ${englishName(id)}`}
+                onPress={() => {
+                  setChoosingBible(false);
+                  switchTranslation(id);
+                }}
+              />
+            ))}
+          </View>
         ))}
       </SimpleSheet>
       <SimpleSheet visible={!!actions} title={actions ? formatRef(books, actions, translation) : ''} onClose={() => setActions(null)}>
@@ -2087,6 +2100,7 @@ const styles = StyleSheet.create({
   pill: { minHeight: 36, justifyContent: 'center', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 999, borderWidth: 1 },
   pillText: { fontSize: 14, fontWeight: '600' },
   pillRow: { flexDirection: 'row', alignItems: 'center', paddingRight: 8 },
+  sheetGroup: { fontSize: 13, fontWeight: '600', marginTop: 10, marginBottom: 2 },
   heading: { fontWeight: '700', letterSpacing: 1, marginTop: 14, marginBottom: 2 },
   // Letter spacing breaks up Malayalam conjuncts on some phones.
   headingMalayalam: { letterSpacing: 0 },

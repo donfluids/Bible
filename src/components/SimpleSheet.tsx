@@ -93,10 +93,12 @@ interface ActionProps {
   destructive?: boolean;
   /** Lines of the detail shown (three by default); 0 shows all of it, for a detail that must be read whole. */
   detailLines?: number;
+  /** A bundled typeface for the label, for a name in an Indian script. */
+  labelFont?: string;
 }
 
 /** A row in a sheet: an icon, a label and an optional line under it. */
-export function SheetAction({ label, detail, icon, onPress, destructive, detailLines = 3 }: ActionProps) {
+export function SheetAction({ label, detail, icon, onPress, destructive, detailLines = 3, labelFont }: ActionProps) {
   const theme = useTheme();
   const color = destructive ? theme.error : theme.text;
   return (
@@ -108,7 +110,7 @@ export function SheetAction({ label, detail, icon, onPress, destructive, detailL
     >
       {icon ? <Icon name={icon} color={destructive ? theme.error : theme.muted} /> : null}
       <View style={styles.actionTexts}>
-        <Text style={[styles.actionText, { color }]}>{label}</Text>
+        <Text style={[styles.actionText, { color }, labelFont ? { fontFamily: labelFont } : null]}>{label}</Text>
         {detail ? (
           <Text style={[styles.actionDetail, { color: theme.muted }]} numberOfLines={detailLines || undefined}>
             {detail}
