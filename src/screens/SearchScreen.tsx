@@ -296,7 +296,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
         ) : null}
       </View>
       {multilingual ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.bibles}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled" style={styles.biblesRow} contentContainerStyle={styles.bibles}>
           {edition.translations.map((id) => {
             const active = id === translation;
             const font = scriptureFont(translationInfo(id).script ?? null, false, true);
@@ -378,6 +378,8 @@ const styles = StyleSheet.create({
   exampleText: { fontSize: 15 },
   spinner: { marginVertical: 12 },
   failed: { fontSize: 15, paddingHorizontal: 18, paddingVertical: 12 },
+  // The row keeps its height; the list below would otherwise squeeze it to nothing.
+  biblesRow: { flexGrow: 0, flexShrink: 0 },
   bibles: { paddingHorizontal: 14, paddingBottom: 8, gap: 8 },
   moreRow: { justifyContent: 'center' },
   lexicon: { marginHorizontal: 14, marginBottom: 10, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
