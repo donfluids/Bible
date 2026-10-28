@@ -33,6 +33,7 @@ const PAGE = 100;
 const ENGLISH_EXAMPLES = ['John 3:16', 'Psalm 23', 'love', 'G26'];
 const MALAYALAM_EXAMPLES = ['യോഹന്നാൻ 3:16', 'സങ്കീർത്തനം 23', 'സ്നേഹം', 'H430'];
 const TAMIL_EXAMPLES = ['யோவான் 3:16', 'சங்கீதம் 23', 'அன்பு', 'H430'];
+const HINDI_EXAMPLES = ['यूहन्ना 3:16', 'भजन संहिता 23', 'प्रेम', 'H430'];
 
 export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
   const db = useSQLiteContext();
@@ -149,7 +150,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
         <View style={styles.examples}>
           <Text style={[styles.examplesLabel, { color: theme.muted }]}>{t('searchExamples')}</Text>
           <View style={styles.exampleRow}>
-            {(translation === 'MAL' ? MALAYALAM_EXAMPLES : translation === 'TAM' ? TAMIL_EXAMPLES : ENGLISH_EXAMPLES).map((example) => (
+            {(translation === 'MAL' ? MALAYALAM_EXAMPLES : translation === 'TAM' ? TAMIL_EXAMPLES : translation === 'HIN' ? HINDI_EXAMPLES : ENGLISH_EXAMPLES).map((example) => (
               <Pressable
                 key={example}
                 onPress={() => setQuery(example)}

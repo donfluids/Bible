@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "main": "index.ts",
   "dependencies": {
+    "@expo-google-fonts/noto-sans-devanagari": "^0.4.1",
     "@expo-google-fonts/noto-sans-malayalam": "^0.4.2",
     "@expo-google-fonts/noto-sans-tamil": "^0.4.3",
+    "@expo-google-fonts/noto-serif-devanagari": "^0.4.1",
     "@expo-google-fonts/noto-serif-hebrew": "^0.4.2",
     "@expo-google-fonts/noto-serif-malayalam": "^0.4.3",
     "@expo-google-fonts/noto-serif-tamil": "^0.4.1",

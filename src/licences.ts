@@ -85,6 +85,15 @@ const TAMIL: Source = {
   modifications: "Section headings omitted; eight stray zero-width non-joiners removed; book names taken from each book's running head. The modified text is distributed under CC BY-SA 4.0.",
 };
 
+const HINDI: Source = {
+  title: 'Indian Revised Version (Hindi)',
+  notice: '\u00a9 2017, 2018, 2019 Bridge Connectivity Solutions.',
+  licence: CC_BY_SA,
+  source: [{ label: 'eBible.org (hin2017)', url: 'https://ebible.org/find/details.php?id=hin2017' }],
+  modifications:
+    "Section headings omitted; the Old Testament references the editors print in bold italics after quoted verses, \u201c(\u092d\u091c. 2:7)\u201d, moved into cross-reference notes; book names taken from each book's short title. The modified text is distributed under CC BY-SA 4.0.",
+};
+
 const TAMIL_LINKS: Source = {
   title: 'Tamil word alignment',
   notice:
@@ -155,7 +164,9 @@ const FONTS = (edition: EditionId): Source => ({
       ? 'Noto Serif Hebrew, Noto Sans Malayalam, Noto Serif Malayalam'
       : edition === 'ta'
         ? 'Noto Serif Hebrew, Noto Sans Tamil, Noto Serif Tamil'
-        : 'Noto Serif Hebrew') + '. © 2022 The Noto Project Authors.',
+        : edition === 'all'
+          ? 'Noto Serif Hebrew, Noto Sans and Noto Serif Malayalam, Tamil and Devanagari'
+          : 'Noto Serif Hebrew') + '. © 2022 The Noto Project Authors.',
   licence: OFL,
 });
 
@@ -181,7 +192,7 @@ const ROSE: Source = {
   modifications: 'Background removed; edges faded.',
 };
 
-const APP_NAME: Record<EditionId, string> = { en: 'Bible', ml: 'വേദപുസ്തകം', ta: 'வேதாகமம்' };
+const APP_NAME: Record<EditionId, string> = { en: 'Bible', ml: 'വേദപുസ്തകം', ta: 'வேதாகமம்', all: 'Bibles' };
 
 const APP = (edition: EditionId): Source => ({
   title: APP_NAME[edition],
@@ -198,7 +209,9 @@ export function sectionsFor(edition: EditionId): Section[] {
       : edition === 'ta'
         ? // The word links join the list once the Tamil is aligned.
           [TAMIL, ...(translationInfo('TAM').tagged ? [TAMIL_LINKS] : []), KJV]
-        : [KJV, BSB, WEB];
+        : edition === 'all'
+          ? [KJV, BSB, WEB, MALAYALAM, MALAYALAM_LINKS, TAMIL, ...(translationInfo('TAM').tagged ? [TAMIL_LINKS] : []), HINDI]
+          : [KJV, BSB, WEB];
   return [
     { heading: 'Scripture texts', sources: texts },
     { heading: 'Hebrew and Greek data', sources: [STEPBIBLE, STRONGS] },

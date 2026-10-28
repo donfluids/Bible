@@ -5,11 +5,11 @@ import * as Speech from 'expo-speech';
 import { stripCantillation } from './text';
 
 export type OriginalLanguage = 'hebrew' | 'greek';
-export type VoiceLanguage = OriginalLanguage | 'english' | 'malayalam' | 'tamil';
+export type VoiceLanguage = OriginalLanguage | 'english' | 'malayalam' | 'tamil' | 'hindi';
 
-export const LANGUAGE: Record<VoiceLanguage, string> = { hebrew: 'he-IL', greek: 'el-GR', english: 'en', malayalam: 'ml-IN', tamil: 'ta-IN' };
+export const LANGUAGE: Record<VoiceLanguage, string> = { hebrew: 'he-IL', greek: 'el-GR', english: 'en', malayalam: 'ml-IN', tamil: 'ta-IN', hindi: 'hi-IN' };
 // Older Android engines name Hebrew "iw".
-const CODES: Record<VoiceLanguage, string[]> = { hebrew: ['he', 'iw'], greek: ['el'], english: ['en'], malayalam: ['ml'], tamil: ['ta'] };
+const CODES: Record<VoiceLanguage, string[]> = { hebrew: ['he', 'iw'], greek: ['el'], english: ['en'], malayalam: ['ml'], tamil: ['ta'], hindi: ['hi'] };
 
 let voices: Promise<Speech.Voice[]> | null = null;
 

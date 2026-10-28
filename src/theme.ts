@@ -134,6 +134,8 @@ const PALETTES: Record<EditionId, Record<ThemeName, Palette>> = {
   // The Malayalam app has the English app's paper and brown.
   ml: { light, sepia, dark },
   ta: { light: blueLight, sepia: blueSepia, dark: blueDark },
+  // The four-language app has the English app's paper and brown too.
+  all: { light, sepia, dark },
 };
 
 /** A serif face available on every phone without bundling a font file. */

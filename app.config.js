@@ -31,6 +31,18 @@ const EDITIONS = {
     splashBackgroundDark: '#15130F',
     adaptiveBackground: '#6C4520',
   },
+  // The four-language app: English, Malayalam, Tamil and Hindi. Its name is a placeholder.
+  all: {
+    name: 'Bibles',
+    slug: 'bible-india',
+    package: 'org.riversresearch.bible.india',
+    icons: './assets/icons/all',
+    languages: ['en', 'ml', 'ta'],
+    easProjectId: '',
+    splashBackground: '#FBF8F1',
+    splashBackgroundDark: '#15130F',
+    adaptiveBackground: '#6C4520',
+  },
   ta: {
     name: 'வேதாகமம்',
     slug: 'bible-tamil',
@@ -46,7 +58,8 @@ const EDITIONS = {
 
 // Typefaces built into the app (src/fonts.ts uses them by file name): the icons
 // (scripts/make-icon-font.py) and Hebrew in every edition, Malayalam only in the
-// Malayalam one, Tamil only in the Tamil one.
+// Malayalam one, Tamil only in the Tamil one, and all three Indian scripts in the
+// four-language app.
 const FONT = (pkg, file) => `./node_modules/@expo-google-fonts/${pkg}/${file.split('_')[1].replace('.ttf', '')}/${file}`;
 const ICONS = './assets/fonts/BibleIcons.ttf';
 const FONTS = {
@@ -66,6 +79,22 @@ const FONTS = {
     FONT('noto-sans-tamil', 'NotoSansTamil_700Bold.ttf'),
     FONT('noto-serif-tamil', 'NotoSerifTamil_400Regular.ttf'),
     FONT('noto-serif-tamil', 'NotoSerifTamil_700Bold.ttf'),
+  ],
+  all: [
+    ICONS,
+    FONT('noto-serif-hebrew', 'NotoSerifHebrew_500Medium.ttf'),
+    FONT('noto-sans-malayalam', 'NotoSansMalayalam_400Regular.ttf'),
+    FONT('noto-sans-malayalam', 'NotoSansMalayalam_700Bold.ttf'),
+    FONT('noto-serif-malayalam', 'NotoSerifMalayalam_400Regular.ttf'),
+    FONT('noto-serif-malayalam', 'NotoSerifMalayalam_700Bold.ttf'),
+    FONT('noto-sans-tamil', 'NotoSansTamil_400Regular.ttf'),
+    FONT('noto-sans-tamil', 'NotoSansTamil_700Bold.ttf'),
+    FONT('noto-serif-tamil', 'NotoSerifTamil_400Regular.ttf'),
+    FONT('noto-serif-tamil', 'NotoSerifTamil_700Bold.ttf'),
+    FONT('noto-sans-devanagari', 'NotoSansDevanagari_400Regular.ttf'),
+    FONT('noto-sans-devanagari', 'NotoSansDevanagari_700Bold.ttf'),
+    FONT('noto-serif-devanagari', 'NotoSerifDevanagari_400Regular.ttf'),
+    FONT('noto-serif-devanagari', 'NotoSerifDevanagari_700Bold.ttf'),
   ],
 };
 

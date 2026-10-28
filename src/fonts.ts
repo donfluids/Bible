@@ -2,8 +2,8 @@ import { Platform } from 'react-native';
 import { SERIF_FONT } from './theme';
 
 /**
- * Typefaces built into the app (SIL Open Font License), so Hebrew points and Malayalam
- * and Tamil letters look the same on every phone instead of depending on the fonts the phone ships.
+ * Typefaces built into the app (SIL Open Font License), so Hebrew points and Malayalam,
+ * Tamil and Hindi letters look the same on every phone instead of depending on the fonts the phone ships.
  * The expo-font config plugin (app.config.js) puts the font files in the app, so nothing
  * loads at startup. Android finds them by file name, iOS by the name inside the font (its
  * PostScript name). Expo Go does not have them and shows the phone's own fonts. Android
@@ -13,7 +13,7 @@ const ios = Platform.OS === 'ios';
 export const HEBREW_FONT = ios ? 'NotoSerifHebrew-Medium' : 'NotoSerifHebrew_500Medium';
 
 /** The Indian scripts the apps carry their own typefaces for. */
-export type Script = 'ml' | 'ta';
+export type Script = 'ml' | 'ta' | 'hi';
 
 type Faces = { sans: string; sansBold: string; serif: string; serifBold: string };
 // File names on Android, the fonts' own (PostScript) names on iOS.
@@ -28,15 +28,17 @@ const faces = (sans: string, serif: string): Faces => ({
 const FACES: Record<Script, Faces> = {
   ml: faces('NotoSansMalayalam', 'NotoSerifMalayalam'),
   ta: faces('NotoSansTamil', 'NotoSerifTamil'),
+  hi: faces('NotoSansDevanagari', 'NotoSerifDevanagari'),
 };
 
 /** The script of an interface language, when it has a bundled typeface. */
-export const languageScript = (language: string): Script | null => (language === 'ml' || language === 'ta' ? language : null);
+export const languageScript = (language: string): Script | null => (language === 'ml' || language === 'ta' || language === 'hi' ? language : null);
 
 /** The Indian script a text is written in, if any. */
 export function scriptOf(text: string): Script | null {
   if (/[\u0d00-\u0d7f]/.test(text)) return 'ml';
   if (/[\u0b80-\u0bff]/.test(text)) return 'ta';
+  if (/[\u0900-\u097f]/.test(text)) return 'hi';
   return null;
 }
 

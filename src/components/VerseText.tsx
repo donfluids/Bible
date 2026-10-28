@@ -112,7 +112,7 @@ export const VerseText = memo(function VerseText({
   const script = scriptOf(verse.text);
   const font = scriptureFont(script, serif) ?? theme.font;
   const bold = script ? { fontFamily: scriptureFont(script, serif, true) } : { fontWeight: '700' as const };
-  const lineHeight = Math.round(fontSize * translationInfo(script === 'ta' ? 'TAM' : script === 'ml' ? 'MAL' : 'KJV').lineHeight);
+  const lineHeight = Math.round(fontSize * translationInfo(script === 'ta' ? 'TAM' : script === 'ml' ? 'MAL' : script === 'hi' ? 'HIN' : 'KJV').lineHeight);
   const small = Math.max(11, fontSize - 6);
   // On a highlight colour the text, number and note letters take the colours made for it.
   // A flash covers the highlight colour, so the text keeps the page's colours under it.

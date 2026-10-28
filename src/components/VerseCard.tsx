@@ -38,8 +38,8 @@ const STARS: [number, number, number][] = [
 ];
 
 // The space one character of each script takes at size 1, line height included.
-const CHAR_AREA: Record<Script | 'latin', number> = { latin: 0.62, ml: 1.15, ta: 1.2 };
-const LINE_HEIGHT: Record<Script | 'latin', number> = { latin: 1.5, ml: 1.75, ta: 1.7 };
+const CHAR_AREA: Record<Script | 'latin', number> = { latin: 0.62, ml: 1.15, ta: 1.2, hi: 0.95 };
+const LINE_HEIGHT: Record<Script | 'latin', number> = { latin: 1.5, ml: 1.75, ta: 1.7, hi: 1.7 };
 
 /**
  * The verse as a card, drawn at `width` and captured from here for sharing. The verse is

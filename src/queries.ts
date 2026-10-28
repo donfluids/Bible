@@ -1,5 +1,6 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { inflateSync, strFromU8 } from 'fflate';
+import { hindiPattern } from './hindiSearch';
 import { malayalamPattern } from './malayalamSearch';
 import type { MalayalamPattern } from './malayalamSearch';
 import { plainText } from './text';
@@ -271,6 +272,8 @@ export async function searchText(
   if (!cleaned) return [];
   const malayalam = malayalamPattern(cleaned);
   if (malayalam) return searchMalayalam(db, translation, malayalam, stale);
+  const hindi = hindiPattern(cleaned);
+  if (hindi) return searchMalayalam(db, translation, hindi, stale);
   const pattern = '%' + cleaned.replace(/[\\%_]/g, (c) => '\\' + c).replace(/'/g, '_') + '%';
   return db.getAllAsync<Ref>(
     "SELECT book, chapter, verse FROM verses WHERE translation = ? AND omitted = 0 AND text LIKE ? ESCAPE '\\' ORDER BY book, chapter, verse",
@@ -280,8 +283,9 @@ export async function searchText(
 }
 
 /**
- * Malayalam search: LIKE finds the verses that could match, a page at a time in book
- * order, and the exact pattern keeps the ones that do (src/malayalamSearch.ts).
+ * Malayalam and Hindi search: LIKE finds the verses that could match, a page at a time in
+ * book order, and the exact pattern keeps the ones that do (src/malayalamSearch.ts,
+ * src/hindiSearch.ts).
  */
 async function searchMalayalam(
   db: SQLiteDatabase,

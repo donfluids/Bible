@@ -1,4 +1,4 @@
-export type TranslationId = 'KJV' | 'WEB' | 'BSB' | 'MAL' | 'TAM';
+export type TranslationId = 'KJV' | 'WEB' | 'BSB' | 'MAL' | 'TAM' | 'HIN';
 
 export interface Translation {
   id: TranslationId;
@@ -8,7 +8,7 @@ export interface Translation {
   /** Line height multiplier; scripts with stacked marks need more room. */
   lineHeight: number;
   /** The Indian script the text is in, which has a typeface of its own (src/fonts.ts). */
-  script?: 'ml' | 'ta';
+  script?: 'ml' | 'ta' | 'hi';
 }
 
 export const TRANSLATIONS: Translation[] = [
@@ -21,6 +21,9 @@ export const TRANSLATIONS: Translation[] = [
   { id: 'MAL', name: 'സത്യവേദപുസ്തകം 1910 (Malayalam)', tagged: true, lineHeight: 1.75, script: 'ml' },
   // Tagged by scripts/align.mjs --lang ta, like the Malayalam.
   { id: 'TAM', name: 'இண்டியன் ரிவைஸ்டு வெர்ஸன் (Tamil IRV)', tagged: true, lineHeight: 1.75, script: 'ta' },
+  // In the four-language app. Its words are not linked to the Hebrew and Greek yet; the
+  // word sheet and the concordance use the KJV meanwhile, as for the WEB.
+  { id: 'HIN', name: 'इंडियन रिवाइज्ड वर्जन (Hindi IRV)', tagged: false, lineHeight: 1.7, script: 'hi' },
 ];
 
 export function translationInfo(id: TranslationId): Translation {
@@ -30,6 +33,9 @@ export function translationInfo(id: TranslationId): Translation {
 /** The translation whose Strong's tags back the concordance: itself if tagged, else the KJV. */
 /** The English Bibles, whose book names are the English ones of the books table. */
 export const isEnglish = (id: TranslationId) => id === 'KJV' || id === 'WEB' || id === 'BSB';
+
+/** The Indian Bibles (Malayalam, Tamil, Hindi): those with a script of their own. */
+export const isIndian = (id: TranslationId) => !!translationInfo(id).script;
 
 export function taggedTranslation(id: TranslationId): TranslationId {
   return translationInfo(id).tagged ? id : 'KJV';

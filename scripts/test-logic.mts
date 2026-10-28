@@ -12,6 +12,7 @@ import { FEEDBACK_NEVER, deviceLine, feedbackCardDue, feedbackDueFrom, feedbackL
 import { cleanLook, ownPhotoIn, savedCopyIn } from '../src/lookClean';
 import { makeBackup, mergePages, readBackup } from '../src/notebookBackup';
 import { inkPageHtml, typedPageHtml } from '../src/pagePdf';
+import { hindiPattern } from '../src/hindiSearch';
 import { malayalamPattern } from '../src/malayalamSearch';
 import { countCrossRefs, getBeside, getCrossRefs, getIntro } from '../src/queries';
 import { findReferences, parseReference } from '../src/refs';
@@ -340,6 +341,21 @@ test('the invitation to write comes after a fortnight, waits after Not now, and 
   assert.equal(feedbackCardDue(feedbackLater(start + 14 * day), start + 75 * day), true);
   assert.equal(feedbackCardDue(FEEDBACK_NEVER, start + 1000 * day), false);
   assert.equal(feedbackDueFrom(FEEDBACK_NEVER, start), FEEDBACK_NEVER);
+});
+
+
+test('Hindi search: anusvara finds chandrabindu, nukta and joiners are optional', () => {
+  const finds = (query: string, text: string) => new RegExp(hindiPattern(query)!.source).test(text);
+  assert.ok(finds('मुंह', 'उसके मुँह से'));
+  assert.ok(finds('पड', 'वह गिर पड़ा'));
+  assert.ok(finds('\u095c', 'वह गिर पड़ा'), 'a precomposed nukta letter');
+  assert.ok(finds('वेश्या', 'देश वेश्\u094d\u200dयागमन के कारण'.replace('\u094d\u094d', '\u094d')));
+  assert.ok(!finds('प्रेम', 'परमेश्वर'));
+  assert.equal(hindiPattern('love'), null);
+  assert.doesNotThrow(() => hindiPattern('प्रेम (.*+?[ ]'));
+  // The LIKE pattern lets every exact match through.
+  const p = hindiPattern('मुंह')!;
+  assert.equal(p.like, '%मु_ह%');
 });
 
 console.log(`all ${passed} logic tests passed`);

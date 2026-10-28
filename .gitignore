@@ -51,6 +51,9 @@ credentials/
 
 # Edition databases are bible-en.db, bible-ml.db and bible-ta.db; bible.db is only a name Metro redirects
 assets/db/bible.db
+# The four-language database is over GitHub's 100 MB limit; it is built, not kept:
+#   npm run fetch-data && node scripts/build-db.mjs all
+assets/db/bible-all.db
 
 # Screen check output (scripts/smoke.mjs)
 smoke-out/

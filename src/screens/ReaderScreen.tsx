@@ -588,7 +588,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
     if (index < 0) return;
     listRef.current?.scrollToIndex({ index, viewPosition: 0.2, animated: true });
   }, [readingVerse, following, items]);
-  const NO_VOICE = { english: 'noEnglishVoice', malayalam: 'noMalayalamVoice', tamil: 'noTamilVoice' } as const;
+  const NO_VOICE = { english: 'noEnglishVoice', malayalam: 'noMalayalamVoice', tamil: 'noTamilVoice', hindi: 'noHindiVoice' } as const;
   const startReading = async (from?: number) => {
     setActions(null);
     if (marking) setMarkTool(null);

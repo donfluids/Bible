@@ -2,18 +2,19 @@
 // Run: node --experimental-strip-types scripts/test-refs.mts
 // Cases come from the reviewers' reports: references people write in sermon notes, and
 // ordinary words and numbers that must stay plain text.
+import { existsSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { findReferences, parseReference } from '../src/refs.ts';
 import { formatRef } from '../src/text.ts';
 
 type Expect = [string, string];
 
-function load(edition: 'ml' | 'ta' | 'en') {
+function load(edition: 'ml' | 'ta' | 'en' | 'all') {
   const db = new DatabaseSync(new URL(`../assets/db/bible-${edition}.db`, import.meta.url).pathname, { readOnly: true });
   const rows = db.prepare('SELECT id, osis, name, testament, chapters FROM books ORDER BY id').all() as any[];
   const names = db.prepare('SELECT translation, book, name FROM book_names').all() as any[];
   const books = rows.map((b) => ({ ...b, names: Object.fromEntries(names.filter((n) => n.book === b.id).map((n) => [n.translation, n.name])) }));
-  const translation = edition === 'ml' ? 'MAL' : edition === 'ta' ? 'TAM' : 'KJV';
+  const translation = edition === 'ml' ? 'MAL' : edition === 'ta' ? 'TAM' : edition === 'all' ? 'HIN' : 'KJV';
   const counts = new Map<string, number>();
   for (const r of db.prepare('SELECT book, chapter, MAX(verse) AS n FROM verses WHERE translation = ? GROUP BY book, chapter').all(translation) as any[]) counts.set(`${r.book}:${r.chapter}`, r.n);
   return { db, books, translation, count: (b: number, c: number) => counts.get(`${b}:${c}`) };
@@ -117,6 +118,27 @@ const EN: Expect[] = [
   ['Romans 8 is long; is 5 people; I am 3 years old.', '45:8'],
 ];
 
+// Hindi, read in the four-language app (its database is built, not kept in git): names as
+// the IRV writes them and as its editors cite the Old Testament, "(1 यूह. 4:9)".
+const HI: Expect[] = [
+  ['यूहन्ना 3:16', '43:3:16'],
+  ['युहन्ना 3:16', '43:3:16'],
+  ['1 यूह. 4:9', '62:4:9'],
+  ['1 पत. 1:19, यशा. 53:7', '60:1:19 23:53:7'],
+  ['1कुरि. 13:4-7', '46:13:4-7'],
+  ['भजन संहिता 23', '19:23'],
+  ['भज. 2:7; 110:1', '19:2:7 19:110:1'],
+  ['भजन 23:1', '19:23:1'],
+  ['प्रेरितों के काम 2:38', '44:2:38'],
+  ['रोमियों 8:28, 29।', '45:8:28 45:8:29'],
+  ['मत्ती 5:1-7:29', '40:5:1-7:29'],
+  ['यहूदा 3', '65:1:3'],
+  ['पहला कुरिन्थियों 13', '46:13'],
+  ['भजन संहिता 3 (शीर्षक)', '19:3:0'],
+  ['उसने न्याय 5 बार किया', ''],
+  ['रोम 12 लोग', ''],
+];
+
 // What the search box opens. Malayalam and Tamil names exist only in their own edition.
 const SEARCH: [string, string, 'ml' | 'ta' | 'both'][] = [
   ['சங். 23:1-6', '19:23:1', 'ta'],
@@ -136,7 +158,9 @@ const SEARCH: [string, string, 'ml' | 'ta' | 'both'][] = [
 ];
 
 let failed = 0;
-for (const [edition, cases] of [['ml', ML], ['ta', TA], ['en', EN]] as const) {
+const hindi = existsSync(new URL('../assets/db/bible-all.db', import.meta.url).pathname);
+if (!hindi) console.log('hi: skipped, assets/db/bible-all.db not built (node scripts/build-db.mjs all)');
+for (const [edition, cases] of [['ml', ML], ['ta', TA], ['en', EN], ...(hindi ? [['all', HI]] : [])] as const) {
   const ctx = load(edition);
   for (const [text, want] of cases) {
     const got = links(text, ctx);

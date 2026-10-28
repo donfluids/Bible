@@ -6,7 +6,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-export const INTRO_LANGUAGES = { en: ['en'], ml: ['ml', 'en'], ta: ['ta', 'en'] };
+export const INTRO_LANGUAGES = { en: ['en'], ml: ['ml', 'en'], ta: ['ta', 'en'], all: ['en', 'ml', 'ta'] };
 
 const VERSE = /^(\d+):(\d+)$/;
 const RANGE = /^(\d+):(\d+)(?:-(?:(\d+):)?(\d+))?$/;

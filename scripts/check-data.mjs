@@ -32,7 +32,7 @@ const CHAPTERS = 1189;
 // Markup a source can leave behind: USFM (\f, \v), braces, tags, the KJV's [[ ]].
 const MARKUP = /\\[a-z]|[{}<>|]|\[\[|\]\]/;
 const BAD_CHARS = /[�\u0000-\u0009\u000B-\u001F\u007F]/;
-const SCRIPT = { MAL: /[ഀ-ൿ]/, TAM: /[஀-௿]/ };
+const SCRIPT = { MAL: /[ഀ-ൿ]/, TAM: /[஀-௿]/, HIN: /[ऀ-ॿ]/ };
 
 const errors = [];
 const warnings = [];

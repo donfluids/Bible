@@ -10,7 +10,7 @@ import type { TranslationId, VerseRow } from './types';
 export const READ_SPEEDS = [0.75, 1, 1.25];
 
 export function voiceFor(translation: TranslationId): VoiceLanguage {
-  return translation === 'MAL' ? 'malayalam' : translation === 'TAM' ? 'tamil' : 'english';
+  return translation === 'MAL' ? 'malayalam' : translation === 'TAM' ? 'tamil' : translation === 'HIN' ? 'hindi' : 'english';
 }
 
 /** What is said for a verse: its text only, without the KJV's paragraph marks. */

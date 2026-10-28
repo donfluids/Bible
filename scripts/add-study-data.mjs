@@ -10,8 +10,8 @@ import { addIntros } from './lib/intros.mjs';
 import { addParallels } from './lib/parallels.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const wanted = process.argv.slice(2).filter((a) => ['en', 'ml', 'ta'].includes(a));
-for (const edition of wanted.length ? wanted : ['en', 'ml', 'ta']) {
+const wanted = process.argv.slice(2).filter((a) => ['en', 'ml', 'ta', 'all'].includes(a));
+for (const edition of wanted.length ? wanted : ['en', 'ml', 'ta', 'all']) {
   const file = join(ROOT, 'assets', 'db', `bible-${edition}.db`);
   const db = new DatabaseSync(file);
   const raw = join(ROOT, 'data', 'raw');

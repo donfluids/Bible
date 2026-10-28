@@ -80,7 +80,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = join(ROOT, 'data', 'raw');
 const OUT_DIR = join(ROOT, 'assets', 'db');
-const EDITIONS = { en: ['KJV', 'BSB', 'WEB'], ml: ['MAL', 'KJV'], ta: ['TAM', 'KJV'] };
+// "all" is the four-language app: the three English Bibles and the Malayalam, Tamil and Hindi.
+const EDITIONS = { en: ['KJV', 'BSB', 'WEB'], ml: ['MAL', 'KJV'], ta: ['TAM', 'KJV'], all: ['KJV', 'BSB', 'WEB', 'MAL', 'TAM', 'HIN'] };
 
 // USFM book code, display name, testament. Order is the Protestant canon.
 const BOOKS = [
@@ -190,6 +191,10 @@ const ALL_TRANSLATIONS = [
   // The IRV's \toc2 is an abbreviation (ஆதி); its \h is the book's name (ஆதியாகமம்).
   // Tamil needs no zero-width non-joiner; the IRV has eight stray ones, one inside a word (1 John 5:3).
   { id: 'TAM', name: 'இண்டியன் ரிவைஸ்டு வெர்ஸன் (IRV)', dir: 'tam2017', suffix: 'tam2017.usfm', nameFrom: 'h', dropZwnj: true },
+  // The Hindi IRV marks the Old Testament passages a verse quotes in bold italics inside the
+  // text, "(भज. 2:7)"; those are the editors' references, not Scripture, and become cross
+  // references (bditAsXref). Its zero-width joiners are Devanagari's own and stay.
+  { id: 'HIN', name: 'इंडियन रिवाइज्ड वर्जन (IRV)', dir: 'hin2017', suffix: 'hin2017.usfm', bditAsXref: true },
 ];
 
 // Paragraph level markers whose content belongs to the current verse.
@@ -259,8 +264,10 @@ function splitTags(tagged) {
   return { text, tags: tags.join(' '), notes };
 }
 
-function parseBook(path, nameFrom) {
+function parseBook(path, nameFrom, bditAsXref = false) {
   let src = readFileSync(path, 'utf8').replace(/^﻿/, '');
+  // "\bdit (1 यूह. 4:9) \bdit*" as a cross reference: "\x + \xt 1 यूह. 4:9\x*".
+  if (bditAsXref) src = src.replace(/[ \t]*\\bdit\s*\(?\s*([^\\]*?)\s*\)?\s*\\bdit\*/g, (_, refs) => (refs.trim() ? `\\x + \\xt ${refs.trim()}\\x*` : ''));
   // A verse whose only content is a footnote is one the translation omits. Keep the
   // note, marked with U+2205, so the app can show the gap honestly.
   src = src.replace(/^(\\v\s+\d+\s*)\\f\s+\+\s+(?:\\fr\s+[^\\\n]*)?\\ft\s+([^\n]*?)\\f\*[ \t]*$/gm,
@@ -810,7 +817,7 @@ function buildEdition(edition) {
     for (const book of BOOKS) {
       const file = files.find((f) => f.endsWith(book.osis + t.suffix));
       if (!file) throw new Error(`${t.id}: no file for ${book.osis}`);
-      const { chapters, headings, notes, paras, bookName } = parseBook(join(RAW, t.dir, file), t.nameFrom);
+      const { chapters, headings, notes, paras, bookName } = parseBook(join(RAW, t.dir, file), t.nameFrom, t.bditAsXref);
       // Replace chapters the source gets wrong, and strip stray text it contains.
       for (const [ch, versesById] of Object.entries(corrections[t.id]?.[book.id] ?? {})) {
         chapters.set(Number(ch), new Map(Object.entries(versesById).map(([v, text]) => [Number(v), text])));
@@ -998,6 +1005,7 @@ function buildEdition(edition) {
     BSB: 'CrossWire BSB module 2.0, Berean Standard Bible, BSB Publishing, CC0 / public domain',
     MAL: 'eBible.org mal2015, Malayalam Sathyavedapusthakam 1910 in contemporary orthography, Free Bible Foundation 2015, CC BY-SA 4.0',
     TAM: 'eBible.org tam2017, Tamil Indian Revised Version, Bridge Connectivity Solutions 2017, 2019, CC BY-SA 4.0',
+    HIN: 'eBible.org hin2017, Hindi Indian Revised Version, Bridge Connectivity Solutions 2017, 2018, 2019, CC BY-SA 4.0',
   };
   insMeta.run('sources', JSON.stringify({
     ...Object.fromEntries(TRANSLATIONS.map((t) => [t.id, SOURCES[t.id]])),
