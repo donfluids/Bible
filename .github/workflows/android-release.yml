@@ -33,6 +33,7 @@ jobs:
       fail-fast: false
       matrix:
         # en = Bible (KJV, BSB, WEB); ml = വേദപുസ്തകം (Malayalam, KJV); ta = வேதாகமம் (Tamil, KJV). See src/edition.ts.
+        # The four-language app (all) is built locally: its database is built, not committed (README).
         edition: [en, ml, ta]
     env:
       BIBLE_EDITION: ${{ matrix.edition }}

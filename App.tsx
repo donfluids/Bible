@@ -15,7 +15,8 @@ import { setSelection } from './src/selection';
 import type { RootStackParamList } from './src/navigation';
 import { translate, useT } from './src/i18n';
 import type { StringKey } from './src/i18n';
-import { CONFIGURED_EDITION, EDITIONS, EditionContext, isEditionId } from './src/edition';
+import { CONFIGURED_EDITION, EDITIONS, EditionContext, isEditionId, isMultilingual, useEdition } from './src/edition';
+import { LanguageScreen } from './src/screens/LanguageScreen';
 import type { Edition, Language } from './src/edition';
 import { getBooks, getMeta } from './src/queries';
 import { SettingsProvider, useSettings } from './src/settings';
@@ -229,7 +230,8 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
   const insets = useSafeAreaInsets();
   const db = useSQLiteContext();
   const theme = useTheme();
-  const { settings } = useSettings();
+  const { settings, commit } = useSettings();
+  const edition = useEdition();
   const wide = useWindowDimensions().width >= PANEL_MIN_WIDTH;
   const [loadedBooks, setBooks] = useState<Book[] | null>(null);
   const books = loadedBooks ?? initialBooks;
@@ -294,6 +296,15 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
 
   if (booksFailed) return <Failure language={settings.language} title="loadFailed" onRetry={() => setBooksAttempt((n) => n + 1)} />;
   if (!appValue) return <Loading message={translate(settings.language, 'loading')} />;
+  // The four-language app asks once which language to read in (src/screens/LanguageScreen.tsx).
+  if (isMultilingual(edition) && !settings.languageChosen) {
+    return (
+      <>
+        <StatusBar style={theme.dark ? 'light' : 'dark'} />
+        <LanguageScreen onChoose={(choice) => commit({ ...choice, languageChosen: true })} />
+      </>
+    );
+  }
 
   return (
     <AppContext.Provider value={appValue}>

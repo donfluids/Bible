@@ -18,12 +18,12 @@ import { useHardwareKeys } from '../keys';
 import { TAB_BAR_HEIGHT, TabBar } from '../components/TabBar';
 import { Icon, IconButton } from '../components/Icon';
 import type { IconName } from '../components/Icon';
-import { nativeTranslation, useEdition } from '../edition';
+import { isMultilingual, pairedBible, useEdition } from '../edition';
 import { scriptOf, scriptureFont } from '../fonts';
 import type { Script } from '../fonts';
 import { shortBookName } from '../shortNames';
 import { PassagePicker } from '../components/PassagePicker';
-import { useT } from '../i18n';
+import { translationName, useT } from '../i18n';
 import { InterlinearVerse } from '../components/InterlinearVerse';
 import { MarkableVerse } from '../components/MarkableVerse';
 import type { WordSlot } from '../components/MarkableVerse';
@@ -43,7 +43,7 @@ import { useTheme } from '../theme';
 import { useWriteToUs } from '../writeToUs';
 import { FEEDBACK_NEVER, feedbackCardDue, feedbackLater } from '../feedback';
 import type { Theme } from '../theme';
-import { HIGHLIGHT_COLORS, translationInfo } from '../types';
+import { HIGHLIGHT_COLORS, isEnglish, translationInfo } from '../types';
 import type { Book, HighlightColor, Note, OriginalWord, Ref, TextPoint, TranslationId, VerseRow, WordPick } from '../types';
 
 // Width at each screen edge where a horizontal swipe belongs to the system back gesture.
@@ -246,8 +246,10 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   const [markTool, setMarkTool] = useState<HighlightColor | 'erase' | null>(null);
   const marking = markTool !== null;
   // On a wide screen the edition's own Bible stands on the left and the KJV beside it,
-  // verse by verse (Settings: side by side). Marker mode keeps one column.
-  const nativeBible = nativeTranslation(edition);
+  // verse by verse (Settings: side by side). Marker mode keeps one column. In the
+  // four-language app the Indian Bible is the one open or read last (src/edition.ts).
+  const multilingual = isMultilingual(edition);
+  const nativeBible = pairedBible(edition, translation, settings.lastIndian, settings.language);
   const sideBySide = !!nativeBible && settings.sideBySide && windowWidth >= SIDE_BY_SIDE_MIN_WIDTH && !marking;
   // A plain reader without the study tools: no tappable words, no Hebrew or Greek, and the
   // verse menu without cross references, parallels, Compare and Words in this verse.
@@ -891,7 +893,13 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
 
   // Cycle through the translations bundled in this edition, staying on the verse at the
   // top of the screen (which can have another number, or chapter, in the other translation).
-  const native = nativeTranslation(edition);
+  const native = nativeBible;
+  // The four-language app has six Bibles: its pill opens a list instead of stepping through them.
+  const [choosingBible, setChoosingBible] = useState(false);
+  // A Bible's short name on the pill: the English ones by their initials, the Indian ones by
+  // their language in the interface language (MAL, or മലയാളം with the Malayalam interface).
+  const bibleLabel = (id: TranslationId) =>
+    id === 'MAL' ? t('bibleMalayalam') : id === 'TAM' ? t('bibleTamil') : id === 'HIN' ? t('bibleHindi') : id;
   const nextTranslation = edition.translations[(edition.translations.indexOf(translation) + 1) % edition.translations.length];
   const switchTranslation = async (next: TranslationId) => {
     if (next === translation) return;
@@ -1438,8 +1446,20 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
               language a tap takes you to, in the interface language (ENG or ഇംഗ്ലീഷ് while
               reading Malayalam, MAL or മലയാളം while reading English); the English app names the one open (KJV) and moves on to the next
               (BSB, then WEB) with each tap. Settings lists each version in full. */}
-          {/* Side by side shows both Bibles, so there is nothing to switch. */}
-          {sideBySide ? null : (
+          {/* Side by side shows both Bibles, so there is nothing to switch (but a choice of six, in the four-language app). */}
+          {multilingual ? (
+            <Pressable
+              android_ripple={{ color: theme.accentSoft }}
+              onPress={() => setChoosingBible(true)}
+              hitSlop={6}
+              accessibilityRole="button"
+              accessibilityLabel={`${t('chooseBible')}: ${translationName(settings.language, translation)}`}
+              style={({ pressed }) => [styles.pill, styles.pillRow, { borderColor: theme.accent, opacity: pressed ? 0.7 : 1 }]}
+            >
+              <Text style={[styles.pillText, { color: theme.accent }]}>{bibleLabel(translation)}</Text>
+              <Icon name="arrow_drop_down" size={20} color={theme.accent} />
+            </Pressable>
+          ) : sideBySide ? null : (
           <Pressable
             android_ripple={{ color: theme.accentSoft }}
             onPress={() => switchTranslation(nextTranslation)}
@@ -1449,7 +1469,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             style={({ pressed }) => [styles.pill, { borderColor: theme.accent, opacity: pressed ? 0.7 : 1 }]}
           >
             <Text style={[styles.pillText, { color: theme.accent }]}>
-              {native ? t(nextTranslation === 'MAL' ? 'bibleMalayalam' : nextTranslation === 'TAM' ? 'bibleTamil' : 'bibleEnglish') : translation}
+              {native ? (isEnglish(nextTranslation) ? t('bibleEnglish') : bibleLabel(nextTranslation)) : translation}
             </Text>
           </Pressable>
           )}
@@ -1491,6 +1511,20 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
         {note ? <Text style={[styles.noteText, { color: theme.text }]}>{note.note.text}</Text> : null}
       </SimpleSheet>
 
+      <SimpleSheet visible={choosingBible} title={t('chooseBible')} onClose={() => setChoosingBible(false)}>
+        {edition.translations.map((id) => (
+          <SheetAction
+            key={id}
+            icon={id === translation ? 'check' : 'menu_book'}
+            label={translationName(settings.language, id)}
+            detail={isEnglish(id) ? id : bibleLabel(id)}
+            onPress={() => {
+              setChoosingBible(false);
+              switchTranslation(id);
+            }}
+          />
+        ))}
+      </SimpleSheet>
       <SimpleSheet visible={!!actions} title={actions ? formatRef(books, actions, translation) : ''} onClose={() => setActions(null)}>
         {actions ? (
           <>
@@ -2052,6 +2086,7 @@ const styles = StyleSheet.create({
   aboutText: { fontSize: 15, fontWeight: '600' },
   pill: { minHeight: 36, justifyContent: 'center', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 999, borderWidth: 1 },
   pillText: { fontSize: 14, fontWeight: '600' },
+  pillRow: { flexDirection: 'row', alignItems: 'center', paddingRight: 8 },
   heading: { fontWeight: '700', letterSpacing: 1, marginTop: 14, marginBottom: 2 },
   // Letter spacing breaks up Malayalam conjuncts on some phones.
   headingMalayalam: { letterSpacing: 0 },

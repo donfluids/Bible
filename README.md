@@ -1,6 +1,6 @@
 # Bible
 
-Three phone apps from one codebase, built with Expo and React Native for iOS and
+Four phone apps from one codebase, built with Expo and React Native for iOS and
 Android. All text ships inside each app, so they work without a connection.
 
 | Edition | App name | Texts | Interface |
@@ -8,6 +8,17 @@ Android. All text ships inside each app, so they work without a connection.
 | `en` | Bible | King James Version, World English Bible, Hebrew and Greek interlinear | English |
 | `ml` | വേദപുസ്തകം | Malayalam Sathyavedapusthakam 1910, King James Version, Hebrew and Greek interlinear | Malayalam (English available) |
 | `ta` | வேதாகமம் | Tamil Indian Revised Version, King James Version, Hebrew and Greek interlinear | Tamil (English available) |
+| `all` | Bibles (name to be chosen) | King James Version, Berean Standard Bible, World English Bible, Malayalam Sathyavedapusthakam 1910, Tamil and Hindi Indian Revised Version, Hebrew and Greek interlinear | English, Malayalam or Tamil, asked on first opening (Hindi interface to follow) |
+
+The four-language app (`all`, package `org.riversresearch.bible.india`) asks on first
+opening which language to read in: English, മലയാളം, தமிழ் or हिन्दी, each opening its
+Bible (Hindi opens the Hindi Bible with English menus for now). Its reader's Bible pill
+opens a list of the six Bibles. Side by side pairs the English with the Indian Bible open
+or read last. The Hindi words are not yet linked to the Hebrew and Greek, so the word
+sheet and occurrence lists use the KJV's links while reading the Hindi, as for the WEB.
+Its database is 109 MB, over GitHub's 100 MB file limit, so it is not committed: build it
+with `npm run fetch-data` and `node scripts/build-db.mjs all` before building this app.
+The GitHub release workflow builds the other three only.
 
 The edition is chosen at build time with `BIBLE_EDITION=en` (default) or
 `BIBLE_EDITION=ml`; see `src/edition.ts`, `app.config.js` and `metro.config.js`.
@@ -237,7 +248,7 @@ rebuild it from the sources:
 
 ```bash
 npm run fetch-data   # downloads KJV, WEB, the Strong's dictionaries and the STEPBible texts
-npm run build-db     # writes assets/db/bible-en.db and bible-ml.db (needs Node 22+)
+npm run build-db     # writes assets/db/bible-en.db, -ml, -ta and -all (needs Node 22+)
 npm run icons        # redraws both editions' icons (needs Chromium; see scripts/make-icons.mjs)
 ```
 

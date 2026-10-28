@@ -18,17 +18,17 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'smoke-out');
-const editions = process.argv.slice(2).filter((a) => ['en', 'ml', 'ta'].includes(a));
-const EDITIONS = editions.length ? editions : ['en', 'ml', 'ta'];
+const editions = process.argv.slice(2).filter((a) => ['en', 'ml', 'ta', 'all'].includes(a));
+const EDITIONS = editions.length ? editions : ['en', 'ml', 'ta', 'all'];
 const SIZES = [
   ['phone', 412, 915, 2],
   ['small-phone', 360, 640, 2],
   ['phone-sideways', 915, 412, 2],
   ['tablet-sideways', 1366, 1024, 1],
 ];
-const LANGUAGE = { en: 'en', ml: 'ml', ta: 'ta' };
-const QUERY = { en: 'love', ml: 'സ്നേഹം', ta: 'அன்பு' };
-const PAGE = { en: 'Love – John 3:16', ml: 'സ്നേഹം – യോഹന്നാൻ 3:16', ta: 'அன்பு – யோவான் 3:16' };
+const LANGUAGE = { en: 'en', ml: 'ml', ta: 'ta', all: 'en' };
+const QUERY = { en: 'love', ml: 'സ്നേഹം', ta: 'அன்பு', all: 'love' };
+const PAGE = { en: 'Love – John 3:16', ml: 'സ്നേഹം – യോഹന്നാൻ 3:16', ta: 'அன்பு – யோவான் 3:16', all: 'Love – John 3:16' };
 
 for (const pkg of ['react-dom', 'react-native-web']) {
   if (!existsSync(join(ROOT, 'node_modules', pkg))) {
@@ -151,10 +151,33 @@ for (const edition of EDITIONS) {
       await page.goto(url);
       await page.waitForFunction(() => document.body.innerText.length > 200, null, { timeout: 120000 });
       await wait(1500);
+      // The four-language app asks the language once: its screenshot, then English.
+      const chooser = page.getByText('Choose your language', { exact: true });
+      if (await chooser.count()) {
+        await page.screenshot({ path: join(shots, '00-language.png') });
+        await vis(page.getByRole('button', { name: /^English,/ })).click();
+        await wait(2500);
+      }
       const tip = page.getByText(t.gotIt, { exact: true });
       if (await tip.count()) await tip.first().click();
       await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', '1') })).waitFor({ timeout: 8000 });
     });
+    if (edition === 'all') {
+      await step('bible-chooser', async (snap) => {
+        // The Bible pill opens the six Bibles; the Hindi opens on the same chapter (John 1).
+        await vis(page.getByRole('button', { name: new RegExp(`^${t.chooseBible}:`) })).click();
+        await wait(800);
+        await vis(page.getByRole('button', { name: /इंडियन रिवाइज्ड वर्जन/ })).click();
+        await wait(2000);
+        await shows('आदि में वचन था');
+        await snap();
+        await vis(page.getByRole('button', { name: new RegExp(`^${t.chooseBible}:`) })).click();
+        await wait(800);
+        await vis(page.getByRole('button', { name: /^King James Version/ })).click();
+        await wait(2000);
+        await shows('In the beginning was the Word');
+      });
+    }
     await step('passage-picker', async (snap) => {
       // The title opens the picker: Testament switch, book grid, then the chapters; Genesis 3 opens.
       await vis(page.getByRole('button', { name: new RegExp(t.choosePassage.replace('{title}', '.*')) })).click();

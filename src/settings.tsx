@@ -6,6 +6,7 @@ import { cleanSettings } from './settingsClean';
 import { loadEntry, useAutosave } from './persist';
 import type { Loaded } from './persist';
 import type { Edition, Language } from './edition';
+import { isIndian } from './types';
 import type { Bookmark, HighlightColor, TextMark, TranslationId } from './types';
 
 export type ThemeChoice = 'system' | 'light' | 'sepia' | 'dark';
@@ -49,6 +50,10 @@ export interface Settings {
   tipSeen: boolean;
   /** When the reader is next invited to write to us (src/feedback.ts): 0 not yet set, -1 never. */
   feedbackDue: number;
+  /** The Indian Bible read last (four-language app): beside the English, and the switch's other side. */
+  lastIndian: string;
+  /** The four-language app has asked the reader's language once, on first opening. */
+  languageChosen: boolean;
   // The reading place (position, recent and last chapters) is kept in src/place.ts.
 }
 
@@ -73,6 +78,8 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
   notes: {},
   tipSeen: false,
   feedbackDue: 0,
+  lastIndian: '',
+  languageChosen: false,
 };
 
 // The Aa buttons in Settings and pinching the reader step through these.
@@ -132,7 +139,10 @@ export function tellLoadProblem(language: Language, source: Loaded<unknown>['sou
 export function SettingsProvider({ edition, children }: { edition: Edition; children: React.ReactNode }) {
   const [loaded] = useState(() => load(edition));
   const [settings, setSettings] = useState<Settings>(() => ({ ...loaded.value, feedbackDue: feedbackDueFrom(loaded.value.feedbackDue, Date.now()) }));
-  const update = useCallback((patch: Partial<Settings>) => setSettings((prev) => ({ ...prev, ...patch })), []);
+  // Opening an Indian Bible remembers it, for the four-language app's pairing (src/edition.ts).
+  const remember = (patch: Partial<Settings>): Partial<Settings> =>
+    patch.translation && isIndian(patch.translation) ? { ...patch, lastIndian: patch.translation } : patch;
+  const update = useCallback((patch: Partial<Settings>) => setSettings((prev) => ({ ...prev, ...remember(patch) })), []);
   useEffect(() => tellLoadProblem(loaded.value.language, loaded.source), [loaded]);
   const language = useRef(settings.language);
   language.current = settings.language;
@@ -142,10 +152,10 @@ export function SettingsProvider({ edition, children }: { edition: Edition; chil
   latest.current = settings;
   const commit = useCallback(
     (patch: Partial<Settings>) => {
-      const next = { ...latest.current, ...patch };
+      const next = { ...latest.current, ...remember(patch) };
       latest.current = next;
       saveValue(next);
-      setSettings((prev) => ({ ...prev, ...patch }));
+      setSettings((prev) => ({ ...prev, ...remember(patch) }));
     },
     [saveValue],
   );

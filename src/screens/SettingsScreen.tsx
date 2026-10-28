@@ -8,7 +8,7 @@ import { AppSwitch } from '../components/AppSwitch';
 import { Header } from '../components/Header';
 import { Icon, IconButton } from '../components/Icon';
 import { SectionLabel } from '../components/SectionLabel';
-import { nativeTranslation, useEdition } from '../edition';
+import { isMultilingual, nativeTranslation, useEdition } from '../edition';
 import type { Language } from '../edition';
 import { translationName, useT } from '../i18n';
 import { getMeta } from '../queries';
@@ -130,12 +130,12 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
             </View>
             <AppSwitch value={settings.keepAwake} onValueChange={(v) => update({ keepAwake: v })} />
           </View>
-          {nativeTranslation(EDITION) ? (
+          {nativeTranslation(EDITION) || isMultilingual(EDITION) ? (
             <View style={[styles.row, divider]}>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.rowTitle, { color: theme.text }]}>{t('sideBySide')}</Text>
                 <Text style={[styles.rowSub, { color: theme.muted }]}>
-                  {t('sideBySideDetail', { native: nativeTranslation(EDITION) === 'TAM' ? 'Tamil' : 'Malayalam' })}
+                  {isMultilingual(EDITION) ? t('sideBySideDetailAll') : t('sideBySideDetail', { native: nativeTranslation(EDITION) === 'TAM' ? 'Tamil' : 'Malayalam' })}
                 </Text>
               </View>
               <AppSwitch value={settings.sideBySide} onValueChange={(v) => update({ sideBySide: v })} />
@@ -218,7 +218,7 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
 
         <Label text={t('aboutTexts')} />
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border, padding: 14 }]}>
-          <Text style={[styles.about, { color: theme.text }]}>{t(EDITION.id === 'ml' ? 'aboutMalayalam' : EDITION.id === 'ta' ? 'aboutTamil' : 'aboutEnglish')}</Text>
+          <Text style={[styles.about, { color: theme.text }]}>{t(EDITION.id === 'ml' ? 'aboutMalayalam' : EDITION.id === 'ta' ? 'aboutTamil' : EDITION.id === 'all' ? 'aboutAll' : 'aboutEnglish')}</Text>
           <Text style={[styles.about, { color: theme.text, marginTop: 10 }]}>{t('aboutStrongs')}</Text>
           <Text style={[styles.about, { color: theme.text, marginTop: 10 }]}>{t('aboutInterlinear')}</Text>
           {EDITION.translations.includes('WEB') ? <Text style={[styles.about, { color: theme.muted, marginTop: 10 }]}>{t('aboutWeb')}</Text> : null}

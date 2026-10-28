@@ -3,7 +3,7 @@ import { ActivityIndicator, Alert, Animated, BackHandler, Modal, PanResponder, S
 import { Pressable } from './Pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
-import { nativeTranslation, useEdition } from '../edition';
+import { pairedBible, useEdition } from '../edition';
 import { HEBREW_FONT, languageScript, scriptOf, scriptureFont } from '../fonts';
 import { renderingsLabel, translationName, useT } from '../i18n';
 import type { StringKey } from '../i18n';
@@ -123,7 +123,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
   // In the Malayalam or Tamil interface the headline is the rendering in that language's
   // Bible, whichever translation is open, and the English meaning goes under it. A Bible
   // whose words are not linked yet has no renderings to show.
-  const native = nativeTranslation(edition);
+  const native = pairedBible(edition, translation, settings.lastIndian, settings.language);
   const nativeFirst = !!native && languageScript(settings.language) === translationInfo(native).script && translationInfo(native).tagged ? native : null;
   const [data, setData] = useState<Loaded | null>(null);
   // The word being said aloud; a new word, or closing the sheet, stops it.
