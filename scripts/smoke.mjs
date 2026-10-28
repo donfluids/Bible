@@ -176,7 +176,8 @@ for (const edition of EDITIONS) {
         // The row's text: in the browser its name also carries the icon's glyph.
         await vis(page.getByText('King James Version', { exact: true })).click();
         await wait(2000);
-        await shows('In the beginning was the Word');
+        // The KJV's words are links each, so its pill tells which Bible is open.
+        await vis(page.getByRole('button', { name: `${t.chooseBible}: King James Version` })).waitFor({ timeout: 8000 });
       });
     }
     await step('passage-picker', async (snap) => {
