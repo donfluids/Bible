@@ -305,7 +305,10 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   // The verse being added to the notebook, while its page is chosen.
   const [toNotebook, setToNotebook] = useState<VerseRow | null>(null);
   const notebook = useNotebook();
-  const [toast, setToast] = useState<string | null>(null);
+  // A short message at the foot of the page; one with an undo stays longer and takes taps.
+  const [toastState, setToastState] = useState<{ text: string; undo?: () => void } | null>(null);
+  const toast = toastState?.text ?? null;
+  const setToast = useCallback((text: string | null, undo?: () => void) => setToastState(text ? { text, undo } : null), []);
   // Said by a screen reader too, since the toast itself takes no focus.
   useEffect(() => {
     if (toast) AccessibilityInfo.announceForAccessibility(toast);
@@ -527,10 +530,10 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   }, [flash]);
 
   useEffect(() => {
-    if (!toast) return;
-    const timer = setTimeout(() => setToast(null), 1600);
+    if (!toastState) return;
+    const timer = setTimeout(() => setToastState(null), toastState.undo ? 6000 : 1600);
     return () => clearTimeout(timer);
-  }, [toast]);
+  }, [toastState]);
 
   const moveTo = useCallback(
     (target: { book: number; chapter: number }, extra: Partial<Settings> = {}) => {
@@ -1331,10 +1334,15 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
               name={study ? 'school_fill' : 'school'}
               color={study ? theme.accent : theme.text}
               onPress={() => {
-                update({ study: !study });
-                setToast(t(study ? 'studyToolsOffNote' : 'studyToolsOnNote'));
+                const was = study;
+                update({ study: !was });
+                setToast(t(was ? 'studyToolsOffNote' : 'studyToolsOnNote'), () => {
+                  update({ study: was });
+                  setToast(null);
+                });
               }}
-              accessibilityLabel={t(study ? 'studyToolsOff' : 'studyToolsOn')}
+              checked={study}
+              accessibilityLabel={t('studyTools')}
             />
             <HeaderIconButton icon="volume_up" onPress={() => startReading()} accessibilityLabel={t('readAloud')} />
             <HeaderIconButton icon="search" onPress={onOpenSearch} accessibilityLabel={t('search')} />
@@ -1531,9 +1539,17 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
 
       {tabs ? <TabBar current="Reader" hidden={barHidden || marking} /> : null}
 
-      {toast ? (
-        <View style={[styles.toast, { backgroundColor: theme.text, bottom: insets.bottom + 70 + (tabs && !barHidden && !marking ? TAB_BAR_HEIGHT : 0) }]} pointerEvents="none">
-          <Text style={[styles.toastText, { color: theme.bg }]}>{toast}</Text>
+      {toastState ? (
+        <View
+          style={[styles.toast, { backgroundColor: theme.text, bottom: insets.bottom + 70 + (tabs && !barHidden && !marking ? TAB_BAR_HEIGHT : 0) }]}
+          pointerEvents={toastState.undo ? 'box-none' : 'none'}
+        >
+          <Text style={[styles.toastText, { color: theme.bg }]}>{toastState.text}</Text>
+          {toastState.undo ? (
+            <Pressable onPress={toastState.undo} accessibilityRole="button" hitSlop={8} style={styles.toastAction}>
+              <Text style={[styles.toastText, styles.toastActionText, { color: theme.bg }]}>{t('undo')}</Text>
+            </Pressable>
+          ) : null}
         </View>
       ) : null}
 
@@ -2165,8 +2181,20 @@ const styles = StyleSheet.create({
   markSwatchChosen: { borderWidth: 2 },
   markDone: { paddingHorizontal: 20, minHeight: 48, justifyContent: 'center', borderRadius: 999 },
   markDoneText: { fontSize: 15, fontWeight: '600' },
-  toast: { position: 'absolute', alignSelf: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 },
-  toastText: { fontSize: 14, fontWeight: '600' },
+  toast: {
+    position: 'absolute',
+    alignSelf: 'center',
+    maxWidth: '88%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 24,
+  },
+  toastText: { flexShrink: 1, fontSize: 14, fontWeight: '600', textAlign: 'center' },
+  toastAction: { minHeight: 40, justifyContent: 'center', paddingLeft: 12, paddingRight: 4 },
+  toastActionText: { textDecorationLine: 'underline' },
   noteText: { fontSize: 16, lineHeight: 23, paddingBottom: 8 },
   swatchLabel: { fontSize: 13, fontWeight: '500', marginBottom: 10 },
   swatchRow: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 14 },

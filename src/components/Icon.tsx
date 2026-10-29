@@ -41,19 +41,21 @@ interface IconButtonProps {
   color?: string;
   size?: number;
   disabled?: boolean;
+  /** Set for an on/off button: a screen reader then hears a switch and its state. */
+  checked?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
 /** A 48 dp round button holding one icon, with the Android ripple. */
-export function IconButton({ name, onPress, accessibilityLabel, color, size = 24, disabled, style }: IconButtonProps) {
+export function IconButton({ name, onPress, accessibilityLabel, color, size = 24, disabled, checked, style }: IconButtonProps) {
   const theme = useTheme();
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      accessibilityRole="button"
+      accessibilityRole={checked === undefined ? 'button' : 'switch'}
       accessibilityLabel={accessibilityLabel}
-      accessibilityState={{ disabled }}
+      accessibilityState={checked === undefined ? { disabled } : { disabled, checked }}
       android_ripple={{ color: theme.accentSoft, borderless: true, radius: 24 }}
       style={({ pressed }) => [styles.button, { opacity: disabled ? 0.38 : pressed ? 0.7 : 1 }, style]}
     >
