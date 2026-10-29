@@ -115,7 +115,9 @@ for (const edition of EDITIONS) {
     const step = async (name, fn) => {
       const file = join(shots, `${String(++n).padStart(2, '0')}-${name}.png`);
       let snapped = false;
-      const snap = async () => {
+      // snap('more') takes a second picture beside the step's own, named …-more.png.
+      const snap = async (extra) => {
+        if (extra) return page.screenshot({ path: file.replace(/\.png$/, `-${extra}.png`) });
         snapped = true;
         await page.screenshot({ path: file });
       };
@@ -351,8 +353,16 @@ for (const edition of EDITIONS) {
       if (await page.getByRole('link').count()) throw new Error('words are still links with the study tools off');
       // The cap in the top bar now offers to switch them on.
       await snap();
-      await vis(page.getByLabel(t.studyToolsOn)).click();
+      const cap = page.getByRole('switch', { name: t.studyTools, exact: true });
+      await vis(cap).click();
       await shows(t.studyToolsOnNote);
+      await wait(1200);
+      await vis(page.getByRole('link').first()).waitFor({ timeout: 8000 });
+      // Off again from the cap, then Undo in its message puts them back.
+      await vis(cap).click();
+      await shows(t.studyToolsOffNote);
+      await snap('undo');
+      await vis(page.getByRole('button', { name: t.undo, exact: true })).click();
       await wait(1200);
       await vis(page.getByRole('link').first()).waitFor({ timeout: 8000 });
     });
