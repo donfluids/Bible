@@ -8,9 +8,13 @@ or the address chosen when it was first published). This task replaces the page'
 
 ## What changed in the policy
 
-Compared with the version dated 20 October 2026:
+Compared with the version dated 20 October 2026 (the one on the website now):
 
-- Effective date **26 October 2026**.
+- Effective date **29 October 2026**.
+- A new section, "Writing to us": the apps can open a note to us in the user's own mail app,
+  with the app's version and the phone's system version and model on its last line; the
+  reader is invited by a card in the reader, which can be put off or turned off.
+- "Children": a message from a child is used only to answer it, then deleted.
 - "Copying and sharing" also covers a photo the user puts on a card: it is chosen in the
   phone's own photo picker, the app sees only that photo and sends it nowhere, and a saved
   card design keeps a copy on the phone (outside Android's backup, inside iCloud backup).
@@ -21,7 +25,7 @@ Compared with the version dated 20 October 2026:
   the user shares, copies, exports or prints it, and that a file is opened only when the
   user picks it.
 
-If the page shows an older version (dated 20 or 23 October 2026, or earlier), replace it
+If the page shows an older version (dated 20, 23 or 26 October 2026, or earlier), replace it
 all the same: the text below is the whole current policy.
 
 This privacy page is the only change the website needs for these app updates.
@@ -51,7 +55,7 @@ This privacy page is the only change the website needs for these app updates.
 
 - `curl -sI https://riversresearch.org/bible/privacy` (or the page's address) returns
   status 200 with `Content-Type: text/html`.
-- The page shows "Effective 26 October 2026", "Reading aloud", "picture card", "photo picker", "Notebook backup", "வேதாகமம்", "for Android and iPhone" and
+- The page shows "Effective 29 October 2026", "Writing to us", "Reading aloud", "picture card", "photo picker", "Notebook backup", "வேதாகமம்", "for Android and iPhone" and
   "iCloud", plus "Rivers Research LLC", all three package names and dond@riversresearch.org.
 - It opens on a phone without signing in.
 
@@ -65,7 +69,7 @@ The page's address, and that the text now reads as below.
 
 # Privacy policy
 
-Bible (org.riversresearch.bible), വേദപുസ്തകം (org.riversresearch.bible.malayalam) and வேதாகமம் (org.riversresearch.bible.tamil), for Android and iPhone, published by Rivers Research LLC. Effective 26 October 2026.
+Bible (org.riversresearch.bible), വേദപുസ്തകം (org.riversresearch.bible.malayalam) and வேதாகமம் (org.riversresearch.bible.tamil), for Android and iPhone, published by Rivers Research LLC. Effective 29 October 2026.
 
 > The apps collect no personal data and send nothing to us or to anyone else. They do not connect to the internet. What you save in them stays on your phone, and leaves it only when you share, copy, export or print it yourself, to the place you choose.
 
@@ -95,7 +99,7 @@ The Sources and licences screen has links to the websites the texts come from. T
 
 ## Writing to us
 
-Settings has a Write to us row, and after about two weeks the reader is invited once to write. Either opens a note in your own mail app, addressed to us, with a last line naming the app's version and your phone's model (for example "Android 14, Samsung SM-S911B"), so a problem can be understood. You can delete that line, and the apps send nothing themselves: the note goes only if you send it, from your mail app, under its terms. Your address and what you write are used only to answer you and to improve the apps, and are not shared.
+Settings has a Write to us row, and after about two weeks of reading a small card in the reader invites you to write. "Not now" puts the card off for about two months; "No thanks" removes it for good. The row or the card opens a note in your own mail app, addressed to us, with a last line naming the app, its version and build number, and your phone's system version and model (for example "Android 14, Samsung SM-S911B"; on iPhone only the iOS version), so a problem can be understood. You can delete that line, and the apps send nothing themselves: the note goes only if you send it, from your mail app, under its terms. Your address and what you write are used only to answer you and to improve the apps, and are not shared.
 
 ## What the apps do not do
 
@@ -108,7 +112,7 @@ On Android, the only permission the apps use is vibration, for the light ticks y
 
 ## Children
 
-The apps collect no data from anyone, including children.
+The apps collect no data from anyone, including children. If a child writes to us, we use the message only to answer it, and then delete it.
 
 ## Removing your data
 
