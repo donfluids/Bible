@@ -6,7 +6,7 @@ import { useSelectedStart } from '../selection';
 import { ICON_FONT_FAMILY, iconChar } from './Icon';
 import { useDisplaySettings } from '../settings';
 import { PILCROW, parseSegments } from '../text';
-import { malayalamPattern } from '../malayalamSearch';
+import { matchRanges } from '../searchMatch';
 import { useTheme } from '../theme';
 import { translationInfo } from '../types';
 import type { HighlightColor, Note, Segment, TranslationId, VerseRow, WordPick } from '../types';
@@ -50,26 +50,6 @@ interface Props {
   selectionTranslation?: TranslationId;
   /** Number the verse with its chapter (7:25), for a verse beside another chapter's. */
   withChapter?: boolean;
-}
-
-/** Character ranges of `query` inside `text`, ignoring case and apostrophe style (and Malayalam spelling variants). */
-export function matchRanges(text: string, query: string): [number, number][] {
-  const malayalam = malayalamPattern(query);
-  if (malayalam) {
-    const re = new RegExp(malayalam.source, 'g');
-    return [...text.matchAll(re)].filter((m) => m[0]).map((m) => [m.index, m.index + m[0].length]);
-  }
-  const q = query.trim().replace(/\s+/g, ' ').toLowerCase().replace(/[’‘]/g, "'");
-  if (!q) return [];
-  const t = text.toLowerCase().replace(/[’‘]/g, "'");
-  if (t.length !== text.length) return []; // case folding changed lengths; skip rather than mis-highlight
-  const out: [number, number][] = [];
-  let i = t.indexOf(q);
-  while (i >= 0) {
-    out.push([i, i + q.length]);
-    i = t.indexOf(q, i + q.length);
-  }
-  return out;
 }
 
 export function noteLetter(n: number): string {

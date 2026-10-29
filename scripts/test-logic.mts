@@ -13,6 +13,7 @@ import { cleanLook, ownPhotoIn, savedCopyIn } from '../src/lookClean';
 import { makeBackup, mergePages, readBackup } from '../src/notebookBackup';
 import { inkPageHtml, typedPageHtml } from '../src/pagePdf';
 import { hindiPattern } from '../src/hindiSearch';
+import { matchRanges } from '../src/searchMatch';
 import { malayalamPattern } from '../src/malayalamSearch';
 import { countCrossRefs, getBeside, getCrossRefs, getIntro } from '../src/queries';
 import { findReferences, parseReference } from '../src/refs';
@@ -356,6 +357,26 @@ test('Hindi search: anusvara finds chandrabindu, nukta and joiners are optional'
   // The LIKE pattern lets every exact match through.
   const p = hindiPattern('मुंह')!;
   assert.equal(p.like, '%मु_ह%');
+});
+
+test('Hindi search: the dot before a stop finds the half nasal of its group, and back', () => {
+  const finds = (query: string, text: string) => new RegExp(hindiPattern(query)!.source).test(text);
+  assert.ok(finds('मंदिर', 'यहोवा के मन्दिर में'));
+  assert.ok(finds('परंतु', 'परन्तु उसने कहा'));
+  assert.ok(finds('संबंध', 'उनके सम्बन्ध में'));
+  assert.ok(finds('दंड', 'उसको दण्ड मिला'));
+  assert.ok(finds('मन्दिर', 'प्रभु के मंदिर में'));
+  // Only the nasal of the stop's group: न्ह and म्म are not written with the dot.
+  assert.ok(!finds('उंहें', 'उन्हें'));
+  assert.ok(!finds('मंबई', 'मन्बई'));
+  // The LIKE alternatives let every exact match through, and highlighting finds it.
+  const like = (pattern: string) => new RegExp('^' + pattern.replace(/\\(.)|([%_])|([^%_\\]+)/g, (_, esc, w, lit) => (esc ? esc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : w === '%' ? '.*' : w === '_' ? '.' : lit.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))) + '$', 's');
+  for (const [q, text] of [['मंदिर', 'यहोवा के मन्दिर में'], ['आनंद', 'बड़ा आनन्द हुआ']]) {
+    const hp = hindiPattern(q)!;
+    assert.ok(like(hp.like).test(text), `LIKE ${hp.like}`);
+    assert.ok(hp.alternatives.some((a) => like(a).test(text)), `alternatives for ${q}`);
+    assert.deepEqual(matchRanges(text, q).length, 1, `highlight ${q}`);
+  }
 });
 
 console.log(`all ${passed} logic tests passed`);

@@ -49,7 +49,7 @@ export interface MalayalamPattern {
 const MAX_ALTERNATIVES = 8;
 
 /** Joins runs of the LIKE wildcard %, leaving an escaped \% alone. */
-function collapseWildcards(pattern: string): string {
+export function collapseWildcards(pattern: string): string {
   let out = '';
   for (let i = 0; i < pattern.length; i++) {
     const c = pattern[i];
