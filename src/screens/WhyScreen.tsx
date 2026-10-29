@@ -7,6 +7,7 @@ import { useT } from '../i18n';
 import { useSettings } from '../settings';
 import { MAX_CONTENT_WIDTH } from '../text';
 import { useTheme } from '../theme';
+import type { Language } from '../edition';
 import type { Ref } from '../types';
 
 interface Props {
@@ -26,7 +27,7 @@ const GALATIANS_2_20 = { book: 48, chapter: 2, verse: 20 };
  * Why this Bible was made, in the author's words, in the interface language. The verses
  * quoted are those of the edition's own Bible (KJV, സത്യവേദപുസ്തകം, IRV Tamil).
  */
-const PARAGRAPHS: Record<'en' | 'ml' | 'ta', Piece[][]> = {
+const PARAGRAPHS: Record<Language, Piece[][]> = {
   en: [
     [
       'This Bible was made to bring the word of God within reach of all who need it. It was inspired by Bibles that others have given, and it rests on the work of many who went before us.',
@@ -105,6 +106,32 @@ const PARAGRAPHS: Record<'en' | 'ml' | 'ta', Piece[][]> = {
     ],
     ['ஆமென்.'],
   ],
+  hi: [
+    [
+      'यह बाइबल इसलिए बनाई गई कि परमेश्वर का वचन उन सबकी पहुँच में आए जिन्हें उसकी ज़रूरत है। दूसरों की दी हुई बाइबलों से इसकी प्रेरणा मिली, और यह उन अनेक लोगों के परिश्रम पर टिकी है जो हमसे पहले गए।',
+    ],
+    [
+      'इसे देने में हम प्रभु यीशु का अनुसरण करते हैं। जब उन्होंने बारह शिष्यों को भेजा (',
+      { text: 'मत्ती 10:5–10', ref: MATTHEW_10_5 },
+      '), तो उनसे कहा कि अपने साथ कुछ न लें, क्योंकि जो उनके लिए काम करते हैं उन्हें जो चाहिए वह दिया जाएगा; और उन्होंने कहा: “तुम ने सेंत-मेंत पाया है, सेंत-मेंत दो” (',
+      { text: 'मत्ती 10:8', ref: MATTHEW_10_8 },
+      ')।',
+    ],
+    [
+      'परन्तु वचन एक उद्देश्य से दिया जाता है। आप अपनी यात्रा में जहाँ भी हों, चाहे विश्वास में नए हों या वर्षों से उनके साथ चल रहे हों, हमारी प्रार्थना है कि आप प्रभु यीशु को अधिक से अधिक जानें। वचन का पास होना अपने आप में काफ़ी नहीं है; हमारी आशा है कि आप उनके साथ समय बिताएँ, उनके वचन पर मनन करें और उनके और निकट आएँ।',
+    ],
+    [
+      'इसमें सहायता के लिए, पाठ को समझने में इब्रानी और यूनानी शब्द यहाँ दिए गए हैं। परन्तु समझ से बढ़कर, जीवन को प्रकाशित करने वाले पवित्र आत्मा हैं। यह उनकी सेवकाई है।',
+    ],
+    [
+      'और उन्हें जानना ही जीवन है: “अनन्त जीवन यह है, कि वे तुझ एकमात्र सच्चे परमेश्वर को और यीशु मसीह को, जिसे तूने भेजा है, जानें” (',
+      { text: 'यूहन्ना 17:3', ref: JOHN_17_3 },
+      ')। उस यात्रा में पवित्र आत्मा आपके साथ रहें और, आग की तरह, आपके कष्टों को जला दें, ताकि वे आप पर बोझ न रहें, क्योंकि उन्हें उठाने वाले वे हैं, हम नहीं। और हम उस आग को केवल अपने बोझ ही नहीं, अपना पुराना जीवन भी परमेश्वर की वेदी पर दे दें, ताकि, जैसा पौलुस कहता है, हम मसीह के साथ क्रूस पर चढ़ाए गए हों, और अब हम नहीं, परन्तु मसीह हम में जीवित हों (',
+      { text: 'गलातियों 2:20', ref: GALATIANS_2_20 },
+      '), और हम प्रभु यीशु में पूरी तरह नया जीवन पाएँ, हर पल, सदा के लिए, उनकी महिमा में जीते हुए।',
+    ],
+    ['आमीन।'],
+  ],
 };
 
 export function WhyScreen({ onBack, onOpenRef }: Props) {
@@ -112,7 +139,7 @@ export function WhyScreen({ onBack, onOpenRef }: Props) {
   const t = useT();
   const insets = useSafeAreaInsets();
   const { settings } = useSettings();
-  const language = settings.language === 'ml' || settings.language === 'ta' ? settings.language : 'en';
+  const language = settings.language;
   const font = scriptureFont(languageScript(language), settings.serif) ?? theme.font;
   const size = settings.fontSize;
   return (

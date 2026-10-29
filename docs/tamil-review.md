@@ -146,7 +146,7 @@ whether to install the app.
 ## 8. Interface strings
 
 Every Tamil string in the app (`src/i18n.ts`, table `ta`), beside the English it translates.
-The table is written by `node scripts/tamil-review-strings.mjs`, so it always matches the app;
+The table is written by `node scripts/review-strings.mjs ta`, so it always matches the app;
 notes in the Check column are kept as long as the Tamil they refer to is unchanged.
 {placeholders} such as {n}, {ref}, {title} are filled in by the app and must stay as they are.
 Words chosen for the app's own features, used throughout:
@@ -178,6 +178,7 @@ Words chosen for the app's own features, used throughout:
 | bibleEnglish | ENG | ஆங்கிலம் | |
 | bibleMalayalam | MAL | மலையாளம் | |
 | bibleTamil | TAM | தமிழ் | |
+| bibleHindi | HIN | இந்தி | |
 | nextChapter | Next chapter | அடுத்த அதிகாரம் | |
 | hebrewInterlinear | Hebrew | எபிரெயம் | |
 | greekInterlinear | Greek | கிரேக்கம் | |
@@ -202,6 +203,7 @@ Words chosen for the app's own features, used throughout:
 | noEnglishVoice | This phone has no English voice. You can add one in the phone's settings, under Text-to-speech (Android) or Spoken Content (iPhone). | இந்தத் தொலைபேசியில் ஆங்கிலக் குரல் இல்லை. தொலைபேசியின் அமைப்புகளில் Text-to-speech (Android) அல்லது Spoken Content (iPhone) பகுதியில் ஒன்றைச் சேர்க்கலாம். | |
 | noMalayalamVoice | This phone has no Malayalam voice. Install Speech Services by Google from the Play Store, choose it in the phone's Text-to-speech settings, and download the Malayalam voice there. | இந்தத் தொலைபேசியில் மலையாளக் குரல் இல்லை. Play Store-இலிருந்து Speech Services by Google-ஐ நிறுவி, தொலைபேசியின் Text-to-speech அமைப்புகளில் அதைத் தேர்ந்தெடுத்து, அங்கே மலையாளக் குரலைப் பதிவிறக்கவும். | |
 | noTamilVoice | This phone has no Tamil voice. Install Speech Services by Google from the Play Store, choose it in the phone's Text-to-speech settings, and download the Tamil voice there. | இந்தத் தொலைபேசியில் தமிழ்க் குரல் இல்லை. Play Store-இலிருந்து Speech Services by Google-ஐ நிறுவி, தொலைபேசியின் Text-to-speech அமைப்புகளில் அதைத் தேர்ந்தெடுத்து, அங்கே தமிழ்க் குரலைப் பதிவிறக்கவும். | |
+| noHindiVoice | This phone has no Hindi voice. Install Speech Services by Google from the Play Store, choose it in the phone's Text-to-speech settings, and download the Hindi voice there. | இந்தத் தொலைபேசியில் இந்திக் குரல் இல்லை. Play Store-இலிருந்து Speech Services by Google-ஐ நிறுவி, தொலைபேசியின் Text-to-speech அமைப்புகளில் அதைத் தேர்ந்தெடுத்து, அங்கே இந்திக் குரலைப் பதிவிறக்கவும். | |
 | shareAsCard | Share as card | அட்டையாகப் பகிர் | |
 | shareAsCardDetail | A picture of the verse, for a greeting or your status | வாழ்த்துக்கோ ஸ்டேட்டஸுக்கோ வசனத்தின் படம் | |
 | cardSquare | Square | சதுரம் | |
@@ -428,8 +430,10 @@ Words chosen for the app's own features, used throughout:
 | sideBySideDetail | {native} and English verses together on a tablet or a phone turned sideways | டேப்லெட்டில் அல்லது தொலைபேசியைச் சாய்த்துப் பிடிக்கும்போது தமிழும் ஆங்கிலமும் ஒன்றாக | |
 | studyTools | Study tools | படிப்புக் கருவிகள் | |
 | studyToolsDetail | Tap a word for its Hebrew or Greek, the original words under each verse, cross references, parallel passages, Compare, and an introduction to each book. Off, the app is a plain Bible for reading; your highlights, notes and notebook stay. | ஒரு வார்த்தையைத் தொட்டால் அதன் எபிரெய / கிரேக்க மூலச்சொல், ஒவ்வொரு வசனத்தின் கீழும் மூல மொழி வார்த்தைகள், தொடர்புடைய வசனங்கள், இணையான பகுதிகள், ஒப்பீடு, ஒவ்வொரு புத்தகத்துக்கும் முன்னுரை. அணைத்தால் வாசிப்பதற்கான சாதாரண வேதாகமம்; ஹைலைட்டுகள், குறிப்புகள், குறிப்பேடு அப்படியே இருக்கும். | |
-| studyPill | Study | படிப்பு | |
 | studyToolsOn | Switch the study tools on | படிப்புக் கருவிகளை இயக்கு | |
+| studyToolsOff | Switch the study tools off | படிப்புக் கருவிகளை அணை | |
+| studyToolsOnNote | Study tools on | படிப்புக் கருவிகள் இயக்கத்தில் | |
+| studyToolsOffNote | Study tools off: plain reading | படிப்புக் கருவிகள் அணைக்கப்பட்டன: வெறும் வாசிப்பு | |
 | language | Interface language | செயலியின் மொழி | |
 | translation | Translation | மொழிபெயர்ப்பு | |
 | textSize | Text size | எழுத்தளவு | |
@@ -478,13 +482,31 @@ Words chosen for the app's own features, used throughout:
 | howTopic11 | Listening | கேட்க | |
 | howText11 | Tap the speaker in the top bar to hear the chapter read in your phone's voice, verse by verse; the verse being read is marked, and reading goes on to the next chapter. The player sets the speed and moves between verses. | மேலுள்ள ஸ்பீக்கரைத் தொட்டால் தொலைபேசியின் குரலில் அதிகாரம் வசனம் வசனமாக வாசிக்கப்படும்; வாசிக்கப்படும் வசனம் குறிக்கப்படும், அடுத்த அதிகாரத்துக்குத் தொடரும். பிளேயரில் வேகத்தை மாற்றலாம், வசனங்களுக்கிடையே நகரலாம். | |
 | howTopic12 | Study tools and book introductions | படிப்புக் கருவிகளும் புத்தக முன்னுரைகளும் | |
-| howText12 | Settings → Study tools switches the study side of the app off, for plain reading, and on again; the Study button at the foot of the page also switches it on. With it on, About this book at the top of a book's first chapter (and above its chapter numbers) tells who wrote the book, when and for whom, its themes and outline, and key verses. | அமைப்புகள் → படிப்புக் கருவிகள் செயலியின் படிப்புப் பகுதியை அணைக்கும் (வெறும் வாசிப்புக்கு), மீண்டும் இயக்கும்; பக்கத்தின் அடியிலுள்ள படிப்புப் பொத்தானும் இயக்கும். இயங்கும்போது, புத்தகத்தின் முதல் அதிகாரத்தின் மேலுள்ள (அதிகார எண்களுக்கு மேலும் உள்ள) இந்தப் புத்தகத்தைப் பற்றி, யார் எழுதினார், எப்போது, யாருக்காக, முக்கிய கருப்பொருள்கள், பொருளடக்கம், முக்கிய வசனங்கள் ஆகியவற்றைச் சொல்லும். | |
+| howText12 | Settings → Study tools switches the study side of the app off, for plain reading, and on again; the cap at the top of the reader switches it off and on too. With it on, About this book at the top of a book's first chapter (and above its chapter numbers) tells who wrote the book, when and for whom, its themes and outline, and key verses. | அமைப்புகள் → படிப்புக் கருவிகள் செயலியின் படிப்புப் பகுதியை அணைக்கும் (வெறும் வாசிப்புக்கு), மீண்டும் இயக்கும்; வாசிப்புப் பக்கத்தின் மேலுள்ள தொப்பிக் குறியும் அணைக்கும், இயக்கும். இயங்கும்போது, புத்தகத்தின் முதல் அதிகாரத்தின் மேலுள்ள (அதிகார எண்களுக்கு மேலும் உள்ள) இந்தப் புத்தகத்தைப் பற்றி, யார் எழுதினார், எப்போது, யாருக்காக, முக்கிய கருப்பொருள்கள், பொருளடக்கம், முக்கிய வசனங்கள் ஆகியவற்றைச் சொல்லும். | |
 | howTopic13 | Picture cards | பட அட்டைகள் | |
 | howText13 | Hold a verse and choose Share as card to put it on a picture, for a birthday, a wedding or any day, with a message of your own and your own photo if you like. A design you make can be saved for next time. | வசனத்தை அழுத்திப் பிடித்து அட்டையாகப் பகிர் என்பதைத் தேர்ந்தெடுத்தால், பிறந்தநாள், திருமணம் அல்லது எந்த நாளுக்கும் ஒரு படத்தில் வசனம், உங்கள் செய்தியோடும், விரும்பினால் உங்கள் சொந்தப் புகைப்படத்தோடும். நீங்கள் உருவாக்கும் வடிவமைப்பை அடுத்த முறைக்குச் சேமிக்கலாம். | |
+| feedback | Write to us | எங்களுக்கு எழுதுங்கள் | |
+| feedbackDetail | A problem, a wish, a word of thanks: anything. Opens your mail app. | ஒரு பிரச்சினை, ஒரு விருப்பம், ஒரு நன்றி வார்த்தை: எதுவும். உங்கள் மெயில் செயலி திறக்கும். | |
+| feedbackCard | You have been reading with this app for a while. What could be better? A line from you helps us more than you might think. | சில நாட்களாக இந்தச் செயலியில் வாசித்து வருகிறீர்கள். எதை மேம்படுத்தலாம்? உங்களிடமிருந்து ஒரு வரி எங்களுக்குப் பெரிய உதவி. | |
+| feedbackNotNow | Not now | இப்போது வேண்டாம் | |
+| feedbackNever | No thanks | வேண்டாம், நன்றி | |
+| feedbackSubject | Feedback: {app} {version} | கருத்து: {app} {version} | |
+| feedbackSentFrom | Sent from {app} {version} ({build}) on {device}. You may delete this line. | இந்தக் குறிப்பு {app} {version} ({build}) செயலியிலிருந்து, {device} தொலைபேசியிலிருந்து, அனுப்பப்பட்டது. இந்த வரியை நீக்கலாம். | |
+| feedbackNoMail | No mail app found | மெயில் செயலி கிடைக்கவில்லை | |
+| feedbackNoMailText | You can write to us at {address}. | இந்த முகவரிக்கு எழுதலாம்: {address} | |
+| feedbackCopyAddress | Copy address | முகவரியை நகலெடு | |
 | privacy | Privacy | தனியுரிமை | |
 | aboutEnglish | Bibles: the King James Version (1769), the Berean Standard Bible and the World English Bible. The translators' footnotes appear as small letters in the text; tap one to read it. | வேதாகமங்கள்: கிங் ஜேம்ஸ் வெர்ஸன் (1769), பெரியன் ஸ்டாண்டர்டு பைபிள், வேர்ல்டு இங்கிலீஷ் பைபிள். மொழிபெயர்ப்பாளர்களின் அடிக்குறிப்புகள் சிறிய எழுத்துகளாகத் தெரியும்; தொட்டால் படிக்கலாம். | |
 | aboutMalayalam | Bibles: the Sathyavedapusthakam 1910 (Malayalam), in a revised edition in contemporary orthography, and the King James Version (1769). The links from Malayalam words to the Hebrew and Greek are machine-generated and not fully reviewed. | வேதாகமங்கள்: மலையாள சத்தியவேதபுஸ்தகம் 1910 (இன்றைய எழுத்துமுறையில் திருத்தப்பட்ட பதிப்பு), கிங் ஜேம்ஸ் வெர்ஸன் (1769). மலையாள வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திரத்தால் உருவாக்கப்பட்டவை; முழுமையாகச் சரிபார்க்கப்படவில்லை. | |
 | aboutTamil | Bibles: the Indian Revised Version (Tamil) and the King James Version (1769). The links from Tamil words to the Hebrew and Greek are machine-generated and not reviewed. | வேதாகமங்கள்: இண்டியன் ரிவைஸ்டு வெர்ஸன் (IRV) தமிழ், கிங் ஜேம்ஸ் வெர்ஸன் (1769). தமிழ் வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திர உதவியுடன் உருவாக்கப்பட்டவை; சரிபார்க்கப்படவில்லை. | |
+| aboutAll | Bibles: the King James Version (1769), the Berean Standard Bible, the World English Bible, the Sathyavedapusthakam 1910 (Malayalam) in contemporary orthography, and the Indian Revised Version in Tamil and in Hindi. The links from Malayalam and Tamil words to the Hebrew and Greek are machine-generated and not fully reviewed; the Hindi words are not linked yet. The translators' footnotes appear as small letters in the text; tap one to read it. | வேதாகமங்கள்: கிங் ஜேம்ஸ் வெர்ஸன் (1769), பெரியன் ஸ்டாண்டர்டு பைபிள், வேர்ல்டு இங்கிலீஷ் பைபிள், மலையாள சத்தியவேதபுஸ்தகம் 1910 (இன்றைய எழுத்துமுறையில்), தமிழிலும் இந்தியிலும் இண்டியன் ரிவைஸ்டு வெர்ஸன். மலையாள, தமிழ் வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திரம் உருவாக்கியவை, முழுமையாகச் சரிபார்க்கப்படவில்லை; இந்தி வார்த்தைகள் இன்னும் இணைக்கப்படவில்லை. | |
+| sideBySideDetailAll | Your Indian Bible beside the English, verse by verse, on a tablet or a phone turned sideways | டேப்லெட்டில் அல்லது தொலைபேசியைச் சாய்த்துப் பிடிக்கும்போது உங்கள் இந்திய வேதாகமமும் ஆங்கிலமும் வசனம் வசனமாக ஒன்றாக | |
+| chooseBible | Choose a Bible | வேதாகமத்தைத் தேர்ந்தெடுக்க | |
+| hindiNote | Hindi words are not yet linked to the Hebrew and Greek, so tapping a word does nothing here. Cross references, parallel passages and the introductions still work, and the English Bibles have the word links. | இந்தி வார்த்தைகள் இன்னும் எபிரெய, கிரேக்க வார்த்தைகளுடன் இணைக்கப்படவில்லை; எனவே இங்கே வார்த்தையைத் தொட்டால் ஒன்றும் நடக்காது. தொடர்புடைய வசனங்கள், இணையான பகுதிகள், புத்தக முன்னுரைகள் வேலை செய்யும்; ஆங்கில வேதாகமங்களில் வார்த்தை இணைப்புகள் உள்ளன. | |
+| moreEntries | More ({n}) | மேலும் ({n}) | |
+| fewerEntries | Fewer | குறைவாக | |
+| englishBibles | English | ஆங்கிலம் | |
+| indianBibles | Indian languages | இந்திய மொழிகள் | |
 | aboutStrongs | Dictionaries: Strong's Hebrew and Greek Dictionaries (1890), Abbott-Smith's Greek lexicon (1922) and the Brown–Driver–Briggs Hebrew lexicon (1906). | அகராதிகள்: ஸ்ட்ராங் எபிரெய, கிரேக்க அகராதிகள் (1890), Abbott-Smith கிரேக்க அகராதி (1922), Brown–Driver–Briggs எபிரெய அகராதி (1906). | |
 | aboutInterlinear | The Hebrew (Leningrad Codex) and Greek words, with transliteration, glosses and grammar are from the Translators Amalgamated Hebrew OT and Greek NT of STEPBible.org (Tyndale House, Cambridge). The Greek is spelled as in the Nestle-Aland 28th edition and has every word of the Textus Receptus and the Byzantine text; where those texts have a different word from Nestle-Aland, their word is shown. Words not in the Nestle-Aland editions have a line beneath; tap one to see which texts have it. | எபிரெய (லெனின்கிராட் கோடெக்ஸ்), கிரேக்க வார்த்தைகள், ஒலிபெயர்ப்பு, பொருள், இலக்கணத்துடன், STEPBible.org (Tyndale House Cambridge) தயாரித்த Translators Amalgamated Hebrew OT and Greek NT-இலிருந்து. கிரேக்கம் நெஸ்லே-ஆலந்து 28-ஆம் பதிப்பின் எழுத்துக்கூட்டலில் உள்ளது; டெக்ஸ்டஸ் ரிசெப்டஸ், பைசாந்திய பாடங்களின் ஒவ்வொரு வார்த்தையும் அதில் உண்டு. அவற்றில் வேறு வார்த்தை இருக்கும் இடத்தில் அந்த வார்த்தை காட்டப்படுகிறது. நெஸ்லே-ஆலந்து பதிப்புகளில் இல்லாத வார்த்தைகளுக்குக் கீழே கோடு இருக்கும்; எந்தப் பாடங்களில் அது உள்ளது என்று அறியத் தொடுங்கள். | |
 | aboutWeb | The World English Bible is shown as plain text: the Strong's numbers in its source file are attached to the wrong words too often to use. Word lookups and verse lists use the King James Version; to tap the original words while reading the WEB, switch on Hebrew words or Greek words. | வேர்ல்டு இங்கிலீஷ் பைபிள் வெறும் உரையாக மட்டுமே காட்டப்படுகிறது: அதன் மூலக் கோப்பில் உள்ள ஸ்ட்ராங் எண்கள் அடிக்கடி தவறான வார்த்தைகளில் உள்ளன. சொல் விவரமும் வசனப் பட்டியலும் KJV-ஐப் பயன்படுத்துகின்றன; WEB-ஐ வாசிக்கும்போது மூல வார்த்தைகளைத் தொட, எபிரெய / கிரேக்க வார்த்தைகளை இயக்குங்கள். | |

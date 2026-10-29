@@ -326,6 +326,17 @@ for (const edition of EDITIONS) {
       await shows(t.theme);
       await shows(t.feedback);
       await snap();
+      if (edition === 'all') {
+        // The Hindi interface: Settings in Hindi, then back to English for the steps that follow.
+        const hi = strings('hi');
+        await vis(page.getByRole('radio', { name: 'हिन्दी' })).click();
+        await wait(1200);
+        await shows(hi.theme);
+        await page.screenshot({ path: join(shots, `${String(n).padStart(2, '0')}-settings-hindi.png`) });
+        await vis(page.getByRole('radio', { name: 'English' })).click();
+        await wait(1000);
+        await shows(t.theme);
+      }
       await vis(page.getByLabel(t.back)).click();
       await wait(1200);
     });

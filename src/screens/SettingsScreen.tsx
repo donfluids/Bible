@@ -21,7 +21,7 @@ import { useWriteToUs } from '../writeToUs';
 import { Segmented } from '../components/Segmented';
 
 /** Each interface language in its own script. */
-const LANGUAGE_NAMES: Record<Language, string> = { ml: 'മലയാളം', ta: 'தமிழ்', en: 'English' };
+const LANGUAGE_NAMES: Record<Language, string> = { ml: 'മലയാളം', ta: 'தமிழ்', hi: 'हिन्दी', en: 'English' };
 
 interface Props {
   onBack: () => void;

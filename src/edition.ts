@@ -4,7 +4,7 @@ import { isEnglish, isIndian } from './types';
 import type { TranslationId } from './types';
 
 export type EditionId = 'en' | 'ml' | 'ta' | 'all';
-export type Language = 'en' | 'ml' | 'ta';
+export type Language = 'en' | 'ml' | 'ta' | 'hi';
 
 export interface Edition {
   id: EditionId;
@@ -20,8 +20,8 @@ export const EDITIONS: Record<EditionId, Edition> = {
   ml: { id: 'ml', translations: ['MAL', 'KJV'], defaultTranslation: 'MAL', languages: ['ml', 'en'] },
   ta: { id: 'ta', translations: ['TAM', 'KJV'], defaultTranslation: 'TAM', languages: ['ta', 'en'] },
   // The four-language app: every Bible the others carry, and the Hindi. Its interface is
-  // English, Malayalam or Tamil (Hindi to follow); the first opening asks which.
-  all: { id: 'all', translations: ['KJV', 'BSB', 'WEB', 'MAL', 'TAM', 'HIN'], defaultTranslation: 'KJV', languages: ['en', 'ml', 'ta'] },
+  // English, Malayalam, Tamil or Hindi; the first opening asks which.
+  all: { id: 'all', translations: ['KJV', 'BSB', 'WEB', 'MAL', 'TAM', 'HIN'], defaultTranslation: 'KJV', languages: ['en', 'ml', 'ta', 'hi'] },
 };
 
 /** The edition's own-language Bible (MAL, TAM), if it has exactly one besides the English. */

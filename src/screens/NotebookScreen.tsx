@@ -119,7 +119,7 @@ export function NotebookScreen({ onOpenPage }: Props) {
             // The first lines after the one used as the name; for a handwritten page, that it is one.
             const rest = item.title.trim() ? item.body : item.body.split('\n').slice(1).join('\n');
             const preview = item.ink ? (item.title.trim() ? t('handwritten') : '') : rest.replace(/\s+/g, ' ').trim();
-            const date = new Date(item.updated).toLocaleDateString(settings.language === 'ml' ? 'ml-IN' : settings.language === 'ta' ? 'ta-IN' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            const date = new Date(item.updated).toLocaleDateString(settings.language === 'ml' ? 'ml-IN' : settings.language === 'ta' ? 'ta-IN' : settings.language === 'hi' ? 'hi-IN' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
             return (
               <Pressable
                 onPress={() => onOpenPage(item.id)}

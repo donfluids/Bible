@@ -1,8 +1,9 @@
-// Rewrites the strings table in docs/tamil-review.md (section 8) from src/i18n.ts, so the
-// review always covers every Tamil string the app has. Notes a reviewer has written in the
-// Check column are kept for keys whose Tamil is unchanged.
+// Rewrites the strings table in docs/tamil-review.md or docs/hindi-review.md from
+// src/i18n.ts, so the review always covers every string the app has in that language.
+// Notes a reviewer has written in the Check column are kept for keys whose text is unchanged.
 //
-//   node scripts/tamil-review-strings.mjs
+//   node scripts/review-strings.mjs ta
+//   node scripts/review-strings.mjs hi
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -20,14 +21,17 @@ function table(name) {
   }
   return out;
 }
+const LANGUAGES = { ta: { doc: 'docs/tamil-review.md', name: 'Tamil' }, hi: { doc: 'docs/hindi-review.md', name: 'Hindi' } };
+const lang = LANGUAGES[process.argv[2]];
+if (!lang) throw new Error('give the language: ta or hi');
 const en = table('en');
-const ta = table('ta');
+const ta = table(process.argv[2]);
 
-const DOC = join(ROOT, 'docs/tamil-review.md');
+const DOC = join(ROOT, lang.doc);
 const doc = readFileSync(DOC, 'utf8');
-const head = '| Key | English | Tamil | Check |\n| --- | --- | --- | --- |\n';
+const head = `| Key | English | ${lang.name} | Check |\n| --- | --- | --- | --- |\n`;
 const at = doc.indexOf(head);
-if (at < 0) throw new Error('strings table not found in docs/tamil-review.md');
+if (at < 0) throw new Error(`strings table not found in ${lang.doc}`);
 let end = at + head.length;
 while (end < doc.length && doc.startsWith('|', end)) end = doc.indexOf('\n', end) + 1 || doc.length;
 
@@ -48,4 +52,4 @@ const rows = [...ta.keys()].map((key) => {
   return `| ${key} | ${cell(en.get(key) ?? '')} | ${cell(ta.get(key))} |${check ? ` ${check} ` : ' '}|\n`;
 });
 writeFileSync(DOC, doc.slice(0, at) + head + rows.join('') + doc.slice(end));
-console.log(`${rows.length} strings written to docs/tamil-review.md`);
+console.log(`${rows.length} strings written to ${lang.doc}`);

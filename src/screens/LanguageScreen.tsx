@@ -17,14 +17,13 @@ export interface LanguageChoice {
 
 /**
  * Each choice in its own script, with the Bible it opens and the word "Continue" in that
- * language for the one the phone speaks. Hindi has no interface yet, so it opens the Hindi
- * Bible with the English menus, and says so in Hindi.
+ * language for the one the phone speaks.
  */
 const CHOICES: { code: string; name: string; bible: string; go: string; note?: string; script: Script | null; choice: LanguageChoice }[] = [
   { code: 'en', name: 'English', bible: 'King James Version', go: 'Continue', script: null, choice: { language: 'en', translation: 'KJV' } },
   { code: 'ml', name: 'മലയാളം', bible: 'സത്യവേദപുസ്തകം', go: 'തുടരുക', script: 'ml', choice: { language: 'ml', translation: 'MAL' } },
   { code: 'ta', name: 'தமிழ்', bible: 'இண்டியன் ரிவைஸ்டு வெர்ஸன்', go: 'தொடரவும்', script: 'ta', choice: { language: 'ta', translation: 'TAM' } },
-  { code: 'hi', name: 'हिन्दी', bible: 'इंडियन रिवाइज्ड वर्जन', go: 'जारी रखें', note: 'बाइबल हिन्दी में; मेनू अभी अंग्रेज़ी में', script: 'hi', choice: { language: 'en', translation: 'HIN' } },
+  { code: 'hi', name: 'हिन्दी', bible: 'इंडियन रिवाइज्ड वर्जन', go: 'जारी रखें', script: 'hi', choice: { language: 'hi', translation: 'HIN' } },
 ];
 
 /** The language the phone is set to, when it is one of the four; English otherwise. */

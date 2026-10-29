@@ -8,12 +8,12 @@ Android. All text ships inside each app, so they work without a connection.
 | `en` | Bible | King James Version, World English Bible, Hebrew and Greek interlinear | English |
 | `ml` | വേദപുസ്തകം | Malayalam Sathyavedapusthakam 1910, King James Version, Hebrew and Greek interlinear | Malayalam (English available) |
 | `ta` | வேதாகமம் | Tamil Indian Revised Version, King James Version, Hebrew and Greek interlinear | Tamil (English available) |
-| `all` | Bibles (name to be chosen) | King James Version, Berean Standard Bible, World English Bible, Malayalam Sathyavedapusthakam 1910, Tamil and Hindi Indian Revised Version, Hebrew and Greek interlinear | English, Malayalam or Tamil, asked on first opening (Hindi interface to follow) |
+| `all` | Bibles (name to be chosen) | King James Version, Berean Standard Bible, World English Bible, Malayalam Sathyavedapusthakam 1910, Tamil and Hindi Indian Revised Version, Hebrew and Greek interlinear | English, Malayalam, Tamil or Hindi, asked on first opening |
 
 The four-language app (`all`, package `org.riversresearch.bible.india`) asks on first
 opening which language to read in: English, മലയാളം, தமிழ் or हिन्दी (the phone's own
-first, ticked), each opening its Bible (Hindi opens the Hindi Bible with English menus for
-now). Its reader's Bible pill opens the six Bibles under their own names, and a swap
+first, ticked), each opening its Bible, with the menus in that language (the Hindi menus
+are unchecked: docs/hindi-review.md). Its reader's Bible pill opens the six Bibles under their own names, and a swap
 button beside it goes back and forth between the two read last. Search has a row of the
 six Bibles under its box. Side by side pairs the English with the Indian Bible open or
 read last. The Hindi words are not yet linked to the Hebrew and Greek, so the word sheet
@@ -237,7 +237,7 @@ scripts/make-icons.mjs   Draws the icon, adaptive icon layers, splash images and
 scripts/make-feature-graphic.mjs  Draws the Play feature graphics from the same art (scripts/icon-art.mjs)
 scripts/make-icon-font.py  Cuts the interface icons out of Material Symbols Rounded
 scripts/notices.mjs      Lists the third-party software in the app with licences and copyright lines (src/notices.json)
-scripts/tamil-review-strings.mjs  Rewrites the strings table of docs/tamil-review.md from src/i18n.ts
+scripts/review-strings.mjs        Rewrites the strings table of docs/tamil-review.md or docs/hindi-review.md (ta | hi) from src/i18n.ts
 assets/db/               bible-en.db (32 MB) and bible-ml.db (47 MB), one per edition
 assets/icons/            Icon, adaptive icon layers and splash images per edition (the same in each)
 data/overrides/          Hand corrections: Malayalam text, verse map, short meanings
