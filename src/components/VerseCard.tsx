@@ -187,6 +187,10 @@ export const VerseCard = forwardRef<View, Props>(function VerseCard({ design, si
                 fontSize: headingSize * u,
                 lineHeight: headingSize * 1.35 * u,
                 textAlign: align,
+                // The full width of the box, not the width the text measures: on some Android
+                // phones an italic line measured to fit exactly wraps when drawn, and the wrapped
+                // word was cut off ("Stay blessed" came out as "Stay").
+                width: '100%',
                 marginBottom: 10 * u,
               }}
             >
@@ -195,7 +199,7 @@ export const VerseCard = forwardRef<View, Props>(function VerseCard({ design, si
           ) : null}
           <Text
             allowFontScaling={false}
-            style={{ ...shadow, color: design.ink, fontFamily: serif(verseScript), fontSize: verseSize * u, lineHeight: verseSize * LINE_HEIGHT[v] * u, textAlign: align }}
+            style={{ ...shadow, color: design.ink, fontFamily: serif(verseScript), fontSize: verseSize * u, lineHeight: verseSize * LINE_HEIGHT[v] * u, textAlign: align, width: '100%' }}
           >
             {text}
           </Text>
@@ -211,6 +215,7 @@ export const VerseCard = forwardRef<View, Props>(function VerseCard({ design, si
               textTransform: refScript ? 'none' : 'uppercase',
               marginTop: 12 * u,
               textAlign: align,
+              width: '100%',
             }}
           >
             {reference}
@@ -228,6 +233,7 @@ export const VerseCard = forwardRef<View, Props>(function VerseCard({ design, si
                 lineHeight: (messageLine * Math.min(messageSize, verseSize)) / messageSize * u,
                 marginTop: 14 * u,
                 textAlign: align,
+                width: '100%',
               }}
             >
               {message}
