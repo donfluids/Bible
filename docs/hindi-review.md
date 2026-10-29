@@ -305,7 +305,7 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | verseActions | Verse {n}, actions | पद {n}, क्रियाएँ | |
 | recent | Recent | हाल में पढ़े | |
 | openFailed | The Bible text could not be opened. | बाइबल का पाठ नहीं खुल सका। | |
-| openFailedDetail | This can happen when the phone is short of storage. Free about 100 MB and try again. | ऐसा तब हो सकता है जब फ़ोन में जगह कम हो। लगभग 100 MB खाली करके फिर आज़माएँ। | |
+| openFailedDetail | This can happen when the phone is short of storage. Free about {mb} MB and try again. | ऐसा तब हो सकता है जब फ़ोन में जगह कम हो। लगभग {mb} MB खाली करके फिर आज़माएँ। | |
 | loadFailed | This could not be loaded. | यह लोड नहीं हो सका। | |
 | somethingWrong | Something went wrong. | कुछ गड़बड़ हुई। | |
 | tryAgain | Try again | फिर आज़माएँ | |

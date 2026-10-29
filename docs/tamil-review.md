@@ -405,7 +405,7 @@ Words chosen for the app's own features, used throughout:
 | verseActions | Verse {n}, actions | வசனம் {n}, செயல்கள் | |
 | recent | Recent | சமீபத்தில் வாசித்தவை | |
 | openFailed | The Bible text could not be opened. | வேதாகம உரையைத் திறக்க முடியவில்லை. | |
-| openFailedDetail | This can happen when the phone is short of storage. Free about 100 MB and try again. | தொலைபேசியில் சேமிப்பிடம் குறைவாக இருந்தால் இப்படி நடக்கலாம். சுமார் 100 MB இடம் விடுவித்து மீண்டும் முயலுங்கள். | |
+| openFailedDetail | This can happen when the phone is short of storage. Free about {mb} MB and try again. | தொலைபேசியில் சேமிப்பிடம் குறைவாக இருந்தால் இப்படி நடக்கலாம். சுமார் {mb} MB இடம் விடுவித்து மீண்டும் முயலுங்கள். | |
 | loadFailed | This could not be loaded. | இதை ஏற்ற முடியவில்லை. | |
 | somethingWrong | Something went wrong. | ஏதோ தவறு நடந்துவிட்டது. | |
 | tryAgain | Try again | மீண்டும் முயல்க | |

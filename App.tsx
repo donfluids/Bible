@@ -8,7 +8,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { Paths } from 'expo-file-system';
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
-import { DATABASE_ASSET, DATABASE_DIRECTORY, DATABASE_NAME, databaseCopyComplete, removeIncompleteCopy, removeStaleDatabases } from './src/db';
+import { DATABASE_ASSET, DATABASE_DIRECTORY, DATABASE_NAME, databaseCopyComplete, firstCopySpace, removeIncompleteCopy, removeStaleDatabases } from './src/db';
 import { navigationRef } from './src/navigation';
 import { getPlace, initPlace, moveMainReader, selectBook, selectLastChapters, selectPosition, usePlace } from './src/place';
 import { setSelection } from './src/selection';
@@ -16,7 +16,7 @@ import type { RootStackParamList } from './src/navigation';
 import { translate, useT } from './src/i18n';
 import type { StringKey } from './src/i18n';
 import { CONFIGURED_EDITION, EDITIONS, EditionContext, isEditionId, isMultilingual, useEdition } from './src/edition';
-import { LanguageScreen } from './src/screens/LanguageScreen';
+import { LanguageScreen, phoneLanguage } from './src/screens/LanguageScreen';
 import type { Edition, Language } from './src/edition';
 import { getBooks, getMeta } from './src/queries';
 import { SettingsProvider, useSettings } from './src/settings';
@@ -53,7 +53,12 @@ export default function App() {
   );
 }
 
-const STARTUP_LANGUAGE = CONFIGURED_EDITION.languages[0];
+// The four-language app speaks the phone's language before the reader has chosen one.
+const STARTUP_LANGUAGE: Language = isMultilingual(CONFIGURED_EDITION)
+  ? (CONFIGURED_EDITION.languages.find((l) => l === phoneLanguage()) ?? CONFIGURED_EDITION.languages[0])
+  : CONFIGURED_EDITION.languages[0];
+/** The free space to ask for, in MB, rounded up to tens. */
+const SPACE_MB = Math.ceil(firstCopySpace() / (1024 * 1024) / 10) * 10;
 
 
 // Whether this launch copied the database from the app; its leftovers are then kept
@@ -87,7 +92,7 @@ function Database() {
     if (!firstCopy) return false;
     try {
       const free = Paths.availableDiskSpace;
-      return typeof free === 'number' && free > 0 && free < 120 * 1024 * 1024;
+      return typeof free === 'number' && free > 0 && free < firstCopySpace();
     } catch {
       return false;
     }
@@ -107,6 +112,7 @@ function Database() {
         language={STARTUP_LANGUAGE}
         title="openFailed"
         detail="openFailedDetail"
+        params={{ mb: SPACE_MB }}
         onRetry={() => {
           setFailed(false);
           setReady(false);
@@ -150,12 +156,14 @@ function Failure({
   language,
   title,
   detail,
+  params,
   message,
   onRetry,
 }: {
   language: Language;
   title: StringKey;
   detail?: StringKey;
+  params?: Record<string, string | number>;
   message?: string;
   onRetry: () => void;
 }) {
@@ -165,7 +173,7 @@ function Failure({
       <Text style={[styles.failureTitle, { color: theme.text }]} accessibilityRole="header">
         {translate(language, title)}
       </Text>
-      {detail ? <Text style={[styles.failureText, { color: theme.muted }]}>{translate(language, detail)}</Text> : null}
+      {detail ? <Text style={[styles.failureText, { color: theme.muted }]}>{translate(language, detail, params)}</Text> : null}
       {message ? <Text style={[styles.failureText, { color: theme.muted }]}>{message}</Text> : null}
       <Pressable onPress={onRetry} accessibilityRole="button" style={[styles.retry, { backgroundColor: theme.accent }]}>
         <Text style={[styles.retryText, { color: theme.onAccent }]}>{translate(language, 'tryAgain')}</Text>

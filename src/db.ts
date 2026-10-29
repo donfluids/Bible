@@ -55,6 +55,17 @@ export function databaseCopyComplete(): boolean {
 }
 
 /**
+ * Free space the first copy needs: the database twice (the bundled file is first unpacked
+ * to the cache, then copied into place) and a margin. About 130 MB for a one-language app,
+ * 230 MB for the four-language one.
+ */
+export function firstCopySpace(): number {
+  const sizes = DATABASE_SIZES as Record<string, number>;
+  const size = (CONFIGURED_EDITION_ID && sizes[CONFIGURED_EDITION_ID]) || Math.max(...Object.values(sizes));
+  return 2 * size + 20 * 1024 * 1024;
+}
+
+/**
  * Remove a copy that was cut short (the app closed during the first launch, or the phone
  * ran out of space), with its journal files, so it is copied again in full.
  */
