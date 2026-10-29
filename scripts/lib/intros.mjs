@@ -6,7 +6,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-export const INTRO_LANGUAGES = { en: ['en'], ml: ['ml', 'en'], ta: ['ta', 'en'], all: ['en', 'ml', 'ta'] };
+export const INTRO_LANGUAGES = { en: ['en'], ml: ['ml', 'en'], ta: ['ta', 'en'], all: ['en', 'ml', 'ta', 'hi'] };
 
 const VERSE = /^(\d+):(\d+)$/;
 const RANGE = /^(\d+):(\d+)(?:-(?:(\d+):)?(\d+))?$/;
@@ -73,9 +73,9 @@ export function checkIntro(intro, book, verses, lang, english) {
   if (lang === 'en') {
     const n = (intro.about ?? []).map(words).reduce((a, b) => a + b, 0);
     if (n < 90 || n > 260) say(`about has ${n} words (120-200 wanted)`);
-    if (/[ഀ-෿஀-௿]/.test(JSON.stringify(intro))) say('Malayalam or Tamil letters in the English file');
+    if (/[ഀ-෿஀-௿ऀ-ॿ]/.test(JSON.stringify(intro))) say('Malayalam, Tamil or Hindi letters in the English file');
   } else {
-    const script = lang === 'ml' ? /[ഀ-ൿ]/ : /[஀-௿]/;
+    const script = lang === 'ml' ? /[ഀ-ൿ]/ : lang === 'ta' ? /[஀-௿]/ : /[ऀ-ॿ]/;
     for (const text of [...texts, ...(intro.themes ?? []).map((t) => t?.title ?? ''), ...(intro.outline ?? []).map((s) => s?.title ?? '')])
       if (!script.test(String(text))) say(`not translated: "${String(text).slice(0, 40)}"`);
     if (english) {
@@ -90,7 +90,7 @@ export function checkIntro(intro, book, verses, lang, english) {
 }
 
 /** Reads every introduction of `langs`; returns { intros: Map("lang:book" -> intro), problems }. */
-export function readIntros(root, verses, langs = ['en', 'ml', 'ta']) {
+export function readIntros(root, verses, langs = ['en', 'ml', 'ta', 'hi']) {
   const intros = new Map();
   const problems = [];
   for (const lang of ['en', ...langs.filter((l) => l !== 'en')]) {

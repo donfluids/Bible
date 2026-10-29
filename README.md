@@ -376,7 +376,7 @@ npm run smoke        # every main screen of each app in a browser, at four sizes
   numbers are turned into the KJV's with the STEPBible files (`scripts/lib/parallels.mjs`).
   The `parallels` table made from it is offered under the same licence, CC BY-SA 4.0.
   Hold a verse → Parallel passages.
-- **Book introductions**, written for these apps in English, Malayalam and Tamil
+- **Book introductions**, written for these apps in English, Malayalam, Tamil and Hindi
   (`data/intros`, see `data/intros/GUIDE.md`; checked by `scripts/check-intros.mjs`): who
   wrote each book, when and for whom, what it is about, its themes, an outline and key
   verses, giving the church's traditional view of authorship and dates. A line above a

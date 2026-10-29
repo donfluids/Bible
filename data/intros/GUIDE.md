@@ -1,7 +1,7 @@
 # Book introductions: how they are written
 
 One file per book and language: `data/intros/<lang>/<book>.json`, book 1 (Genesis) to 66
-(Revelation), lang `en`, `ml` (Malayalam) or `ta` (Tamil). `scripts/lib/intros.mjs` checks
+(Revelation), lang `en`, `ml` (Malayalam), `ta` (Tamil) or `hi` (Hindi). `scripts/lib/intros.mjs` checks
 them and puts them in the databases; the app shows one from the reader's menu (About this
 book), in the interface language.
 
@@ -56,6 +56,17 @@ The divine name is "the LORD" in capitals in the Old Testament books, as the KJV
 
 Plain, warm, simple sentences that a reader with school English follows easily. British
 spelling (baptised, honour). Names as in the KJV (Elijah, Hezekiah, Nebuchadnezzar).
+
+## Hindi
+
+As for Malayalam and Tamil below, from the English file, with names as the Hindi Indian
+Revised Version spells them (`assets/db/bible-all.db`, translation HIN: मूसा, एलिय्याह,
+हिजकिय्याह, नबूकदनेस्सर, यरूशलेम; book names उत्पत्ति … प्रकाशितवाक्य). The LORD is यहोवा in
+the Old Testament books, as the IRV prints it; "Lord" (Adonai, and the New Testament) is
+प्रभु; God is परमेश्वर; the Holy Spirit पवित्र आत्मा. God and Jesus take the respectful
+plural throughout (वे, उन्होंने, उनका, उनसे), as "Why this Bible" does; other people the
+ordinary forms. Formal register, plain modern Hindi, no Urdu-heavy or Sanskrit-heavy words
+where a common one exists. Dates: "लगभग 55–65 ईस्वी", "लगभग 1446–1406 ई. पू.".
 
 ## Malayalam and Tamil
 

@@ -1,7 +1,7 @@
-# Book introductions: points for the Malayalam and Tamil reviewers
+# Book introductions: points for the Malayalam, Tamil and Hindi reviewers
 
 The introductions in `data/intros` (see `data/intros/GUIDE.md`) were written in English and
-translated into Malayalam and Tamil. They have not yet been read by a native speaker. Please
+translated into Malayalam, Tamil and Hindi. They have not yet been read by a native speaker. Please
 read them in the app (reader → the (i) button) and check especially the choices below, which
 the translators were unsure of. A change is made in `data/intros/<lang>/<book>.json`, checked
 with `node --no-warnings scripts/check-intros.mjs`, and put in the databases with
@@ -66,3 +66,14 @@ with `node --no-warnings scripts/check-intros.mjs`, and put in the databases wit
   'மேய்ப்பர் கடிதங்கள்' (Pastoral Letters), இரத்தசாட்சி (martyr), மிஷனரிப் பயணங்கள், ஆசியா
   மைனர், துருக்கி, ஐரோப்பா; எல்கோஷ் (Elkosh, the IRV has only எல்கோசானாகிய).
 - Numbers use the Indian grouping (1,85,000).
+
+## Hindi
+
+- Written for the four-language app (29 October 2026), not yet read by a Hindi speaker.
+- The LORD is यहोवा in the Old Testament books, as the IRV prints it; "Lord" (Adonai, and the
+  New Testament) is प्रभु; God is परमेश्वर; the Holy Spirit पवित्र आत्मा.
+- God and Jesus take the respectful plural (वे, उन्होंने, उनका), as "Why this Bible" does;
+  other people the ordinary singular.
+- Names follow the Hindi IRV (मूसा, एलिय्याह, हिजकिय्याह, नबूकदनेस्सर, यरूशलेम; कलीसिया for the
+  church, अन्यजाति for Gentiles, मेम्ना for the Lamb).
+- Dates: ई. पू. for BC, ईस्वी for AD.
