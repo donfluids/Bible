@@ -29,7 +29,7 @@ Status: **done** (committed and pushed), **partly**, **open**, or **yours** (a d
 | 9 | Hindi interface slips | open |
 | 10 | Two Hindi verses without a KJV partner | done; the data check now fails on any unmapped verse |
 | 11 | Four Tamil verses start with a stray number | done; the data check catches a bridged verse's "-18" |
-| 12 | Introductions' licence and credit; IRV change statements; README | open |
+| 12 | Introductions' licence and credit; IRV change statements; README | done. Introductions: © 2026 Rivers Research, CC BY-SA 4.0 (my choice, to match the databases; change it if you prefer another) |
 | 13 | Package name, app name, icon, store languages, the Tamil app | **yours** |
 | 14 | Four-language backups lose their app tag; iOS languages miss Hindi | done; the notebook calls that app "Bibles" until its name is decided (13) |
 

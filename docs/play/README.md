@@ -86,6 +86,11 @@ Uninstalling removes the bookmarks and notes on that phone.
       device", and a user who sends their own file to their own drive or chat is not
       collection; user-initiated sharing is exempt from "sharing". Do not tick "Files
       and docs". (Data safety help: support.google.com/googleplay/android-developer/answer/10787469)
+      Write to us does not change it either: the app only opens a note in the user's own
+      mail app (a mailto link, with the app's version and the phone's system version and
+      model on the last line, which the user can delete); the app transmits nothing, and
+      the user sends the mail. So no "Personal info: email address" and no "Device or
+      other IDs". The privacy policy describes the note under "Writing to us".
 - [ ] **Government apps**: No. **Financial features**: None. **Health**: None.
       **News app**: No.
 

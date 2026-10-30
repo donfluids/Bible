@@ -359,14 +359,25 @@ npm run smoke        # every main screen of each app in a browser, at four sizes
   [CrossWire's SWORD module](https://www.crosswire.org/sword/modules/ModInfo.jsp?modName=BSB)
   (version 2.0), whose Strong's numbers come from the Berean word tables. eBible.org's
   engbsb is not used: its Strong's numbers are shifted by a word in many verses.
-  `scripts/bsb-from-sword.mjs` turns the module into USFM. English edition only.
+  `scripts/bsb-from-sword.mjs` turns the module into USFM. In the English and
+  four-language apps.
 - **Malayalam Sathyavedapusthakam 1910**, revised edition in contemporary orthography,
   copyright © 2015 The Free Bible Foundation, from
   [eBible.org](https://ebible.org/find/details.php?id=mal2015), CC BY-SA 4.0.
-  Bundled in the Malayalam edition only.
+  In the Malayalam and four-language apps. The Psalms' five book headings are left out.
 - **Tamil Indian Revised Version**, © 2017, 2019 Bridge Connectivity Solutions, from
   [eBible.org](https://ebible.org/find/details.php?id=tam2017), CC BY-SA 4.0. Section
-  headings are left out and eight stray zero-width non-joiners removed. Tamil edition only.
+  headings and the translators' introduction and outline before each book are left out,
+  eight stray zero-width non-joiners and four stray verse-start numbers removed. In the
+  Tamil and four-language apps.
+- **Hindi Indian Revised Version**, © 2017, 2018, 2019 Bridge Connectivity Solutions, from
+  [eBible.org](https://ebible.org/find/details.php?id=hin2017), CC BY-SA 4.0. Section
+  headings, the translators' book introductions and outlines and the Psalms' book headings
+  are left out; the Old Testament references printed after quoted verses become
+  cross-reference notes, and footnote markers sit straight after their word. In the
+  four-language app.
+- **The databases as a whole** (`assets/db`) are offered under CC BY-SA 4.0; each text and
+  data set in them keeps its own licence given here.
 - **Strong's Hebrew and Greek dictionaries**, digital edition by
   [Open Scriptures](https://github.com/openscriptures/strongs), CC BY-SA.
 - **Abbott-Smith**, *A Manual Greek Lexicon of the New Testament* (1922), public domain,
@@ -394,17 +405,19 @@ npm run smoke        # every main screen of each app in a browser, at four sizes
   wrote each book, when and for whom, what it is about, its themes, an outline and key
   verses, giving the church's traditional view of authorship and dates. A line above a
   book's first chapter opens its introduction, and so does About this book above the
-  book's chapter numbers.
+  book's chapter numbers. © 2026 Rivers Research, CC BY-SA 4.0. The Malayalam, Tamil and
+  Hindi were translated from the English with a language model and are being reviewed by
+  native speakers (`docs/intros-review.md`).
 - **Interlinear Hebrew and Greek**: Translators Amalgamated Hebrew OT (TAHOT) and
   Greek NT (TAGNT) by [STEPBible](https://github.com/STEPBible/STEPBible-Data),
   Tyndale House Cambridge, CC BY 4.0. Their licence permits bundling the data in
   software and asks that the source files are not redistributed, so only the built
   database is committed here, never the files in `data/raw/`. The short meanings in
   the word sheet are the senses their glosses give each word most often.
-- **Fonts**: Noto Serif Hebrew, Noto Sans Malayalam and Noto Serif Malayalam (Google),
-  SIL Open Font License, taken from the `@expo-google-fonts` packages and built into
-  the Android app by the expo-font config plugin (`app.config.js`; the English edition
-  carries only the Hebrew one). Expo Go does not have them and shows the phone's fonts.
+- **Fonts**: Noto Serif Hebrew, and Noto Sans and Noto Serif Malayalam, Tamil and
+  Devanagari (Google), SIL Open Font License, taken from the `@expo-google-fonts` packages
+  and built into the Android app by the expo-font config plugin (`app.config.js`; each app
+  carries the Hebrew and its own languages' fonts, the English app only the Hebrew). Expo Go does not have them and shows the phone's fonts.
 - **Icons**: Material Symbols Rounded (Google), Apache License 2.0, from the
   `material-symbols` npm package. `scripts/make-icon-font.py` keeps only the icons the
   app uses, at one weight and size, as `assets/fonts/BibleIcons.ttf` (8 KB) with the
