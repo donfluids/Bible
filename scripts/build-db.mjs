@@ -81,7 +81,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = join(ROOT, 'data', 'raw');
 const OUT_DIR = join(ROOT, 'assets', 'db');
 // "all" is the four-language app: the three English Bibles and the Malayalam, Tamil and Hindi.
-const EDITIONS = { en: ['KJV', 'BSB', 'WEB'], ml: ['MAL', 'KJV'], ta: ['TAM', 'KJV'], all: ['KJV', 'BSB', 'WEB', 'MAL', 'TAM', 'HIN'] };
+const EDITIONS = { en: ['KJV', 'BSB', 'WEB'], ml: ['MAL', 'KJV', 'BSB'], ta: ['TAM', 'KJV', 'BSB'], all: ['KJV', 'BSB', 'WEB', 'MAL', 'TAM', 'HIN'] };
 
 // USFM book code, display name, testament. Order is the Protestant canon.
 const BOOKS = [
