@@ -175,3 +175,80 @@ export function describeMorph(code: string, hebrew: boolean): string {
     return code;
   }
 }
+
+type Plain = 'noun' | 'name' | 'verb' | 'adjective' | 'adverb' | 'preposition' | 'conjunction' | 'pronoun' | 'article' | 'particle' | 'interjection' | 'numeral';
+type PlainNumber = 'singular' | 'plural' | 'dual';
+/** The plain grammar words, for the word sheet in each interface language. */
+const PLAIN_WORDS: Record<string, Record<Plain | PlainNumber, string>> = {
+  en: {
+    noun: 'noun', name: 'name', verb: 'verb', adjective: 'adjective', adverb: 'adverb', preposition: 'preposition', conjunction: 'conjunction',
+    pronoun: 'pronoun', article: 'article (“the”)', particle: 'particle', interjection: 'interjection', numeral: 'number',
+    singular: 'singular', plural: 'plural', dual: 'dual (two)',
+  },
+  ml: {
+    noun: 'നാമം', name: 'പേര്', verb: 'ക്രിയ', adjective: 'വിശേഷണം', adverb: 'ക്രിയാവിശേഷണം', preposition: 'ഗതി', conjunction: 'സംയോജകം',
+    pronoun: 'സർവ്വനാമം', article: 'ഉപപദം (“the”)', particle: 'നിപാതം', interjection: 'വ്യാക്ഷേപകം', numeral: 'സംഖ്യ',
+    singular: 'ഏകവചനം', plural: 'ബഹുവചനം', dual: 'ദ്വിവചനം',
+  },
+  ta: {
+    noun: 'பெயர்ச்சொல்', name: 'பெயர்', verb: 'வினைச்சொல்', adjective: 'பெயரடை', adverb: 'வினையடை', preposition: 'முன்னிடைச்சொல்', conjunction: 'இணைப்புச்சொல்',
+    pronoun: 'பிரதிப்பெயர்', article: 'சுட்டு (“the”)', particle: 'இடைச்சொல்', interjection: 'வியப்பிடைச்சொல்', numeral: 'எண்',
+    singular: 'ஒருமை', plural: 'பன்மை', dual: 'இருமை',
+  },
+  hi: {
+    noun: 'संज्ञा', name: 'नाम', verb: 'क्रिया', adjective: 'विशेषण', adverb: 'क्रियाविशेषण', preposition: 'संबंधसूचक', conjunction: 'समुच्चयबोधक',
+    pronoun: 'सर्वनाम', article: 'उपपद (“the”)', particle: 'निपात', interjection: 'विस्मयादिबोधक', numeral: 'संख्या',
+    singular: 'एकवचन', plural: 'बहुवचन', dual: 'द्विवचन',
+  },
+};
+const HEB_PLAIN: Record<string, Plain> = { N: 'noun', V: 'verb', A: 'adjective', R: 'preposition', C: 'conjunction', c: 'conjunction', D: 'adverb', T: 'particle', P: 'pronoun' };
+const GRK_PLAIN: Record<string, Plain> = {
+  N: 'noun', V: 'verb', A: 'adjective', T: 'article', P: 'pronoun', R: 'pronoun', D: 'pronoun', C: 'pronoun', F: 'pronoun', S: 'pronoun',
+  I: 'pronoun', X: 'pronoun', K: 'pronoun', Q: 'pronoun', ADV: 'adverb', CONJ: 'conjunction', COND: 'conjunction', PRT: 'particle',
+  PREP: 'preposition', INJ: 'interjection',
+};
+const NUMBER_LETTER: Record<string, PlainNumber> = { s: 'singular', p: 'plural', d: 'dual', S: 'singular', P: 'plural' };
+
+/**
+ * A word's grammar in plain words, in the interface language: its part of speech and
+ * number ("noun, singular", "നാമം, ഏകവചനം"); a word with a prefix gives both parts
+ * ("preposition + noun, singular"). The full description (describeMorph) is for those who
+ * ask for it. Returns '' when the code says nothing plain.
+ */
+export function plainMorph(code: string, hebrew: boolean, language: string): string {
+  if (!code) return '';
+  const words = PLAIN_WORDS[language] ?? PLAIN_WORDS.en;
+  const kinds: Plain[] = [];
+  let number: PlainNumber | undefined;
+  if (hebrew) {
+    const body = code[0] === 'H' || code[0] === 'A' ? code.slice(1) : code;
+    for (const part of body.split('/')) {
+      const pos = part[0];
+      let kind = HEB_PLAIN[pos];
+      if (!kind) continue; // a suffix rides on the word before it
+      if (pos === 'N' && part[1] === 'p') kind = 'name';
+      if (pos === 'A' && (part[1] === 'c' || part[1] === 'o')) kind = 'numeral';
+      if (pos === 'T' && part[1] === 'd') kind = 'article';
+      kinds.push(kind);
+      // Gender (or person and gender) then number: "Ncfsa", "Vqp3ms", "Pp3ms".
+      const agreement = /[mfbc]([spd])/.exec(pos === 'V' ? part.slice(3) : part.slice(2));
+      if (agreement && (kind === 'noun' || kind === 'name' || kind === 'verb' || kind === 'adjective' || kind === 'pronoun')) number = NUMBER_LETTER[agreement[1]];
+    }
+  } else {
+    const first = code.split(' + ')[0];
+    const segments = first.split('-');
+    let kind = GRK_PLAIN[segments[0]];
+    if (kind) {
+      const rest = segments.slice(1);
+      if (kind === 'noun' && rest.some((s) => ['PRI', 'PG', 'LG', 'L', 'T'].includes(s))) kind = 'name';
+      if (kind === 'adjective' && rest.includes('NUI')) kind = 'numeral';
+      kinds.push(kind);
+      for (const seg of rest) {
+        const m = /^\d?[NGDAV]([SP])[MFN]?$/.exec(seg) ?? /^\d([SP])$/.exec(seg);
+        if (m) number = NUMBER_LETTER[m[1]];
+      }
+    }
+  }
+  if (!kinds.length) return '';
+  return [kinds.map((k) => words[k]).join(' + '), number ? words[number] : ''].filter(Boolean).join(', ');
+}

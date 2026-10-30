@@ -391,6 +391,8 @@ Words chosen for the app's own features, used throughout:
 | inTranslationSub | in {name} | {name} | |
 | usedHebrew | Used {n} times in the Hebrew Bible | எபிரெய வேதாகமத்தில் {n} முறை | |
 | usedGreek | Used {n} times in the Greek New Testament | கிரேக்கப் புதிய ஏற்பாட்டில் {n} முறை | |
+| usesInVerses | (some verses have it more than once) | (சில வசனங்களில் ஒன்றுக்கு மேற்பட்ட முறை) | |
+| grammarMore | Shows the full grammar | இலக்கணத்தை விரிவாகக் காட்டும் | |
 | usedOnceHebrew | Used once in the Hebrew Bible | எபிரெய வேதாகமத்தில் ஒரு முறை | |
 | usedOnceGreek | Used once in the Greek New Testament | கிரேக்கப் புதிய ஏற்பாட்டில் ஒரு முறை | |
 | originalVersesHebrew | {n} verses in the Hebrew Bible, shown in the {translation} | எபிரெய வேதாகமத்தின் {n} வசனங்கள், {in} | |

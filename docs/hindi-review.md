@@ -291,6 +291,8 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | inTranslationSub | in {name} | {name} में | |
 | usedHebrew | Used {n} times in the Hebrew Bible | इब्रानी बाइबल में {n} बार प्रयुक्त | |
 | usedGreek | Used {n} times in the Greek New Testament | यूनानी नए नियम में {n} बार प्रयुक्त | |
+| usesInVerses | (some verses have it more than once) | (कुछ पदों में एक से अधिक बार) | |
+| grammarMore | Shows the full grammar | पूरा व्याकरण दिखाता है | |
 | usedOnceHebrew | Used once in the Hebrew Bible | इब्रानी बाइबल में एक बार प्रयुक्त | |
 | usedOnceGreek | Used once in the Greek New Testament | यूनानी नए नियम में एक बार प्रयुक्त | |
 | originalVersesHebrew | {n} verses in the Hebrew Bible, shown in the {translation} | इब्रानी बाइबल में {n} पद, {in} दिखाए गए | |

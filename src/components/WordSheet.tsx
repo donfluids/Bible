@@ -7,7 +7,7 @@ import { bibleOfLanguage, isMultilingual, pairedBible, useEdition } from '../edi
 import { HEBREW_FONT, languageScript, scriptOf, scriptureFont } from '../fonts';
 import { renderingsLabel, translationName, useT } from '../i18n';
 import type { StringKey } from '../i18n';
-import { describeMorph } from '../morph';
+import { describeMorph, plainMorph } from '../morph';
 import { getConcordance, getConcordanceCount, getInterlinear, getLexicon, getOriginalCount, getRelated, getRenderings, getStrongs, getVerses } from '../queries';
 import { useSettings } from '../settings';
 import { hasVoice, sayWord, stopSaying } from '../speech';
@@ -377,7 +377,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
               <View style={[styles.inText, (short || landscape) && styles.inTextCompact, { backgroundColor: theme.accentSoft }]}>
                 <Text style={[styles.inTextLabel, { color: theme.muted }]}>{t('inThisVerse')}</Text>
                 {inVerse.map((w, i) => (
-                  <InVerseWord key={`${w.text}|${w.morph}`} word={w} hebrew={hebrew} font={originalFont} theme={theme} t={t} first={i === 0} compact={short || landscape} />
+                  <InVerseWord key={`${w.text}|${w.morph}`} word={w} hebrew={hebrew} font={originalFont} theme={theme} t={t} language={settings.language} first={i === 0} compact={short || landscape} />
                 ))}
               </View>
             ) : null}
@@ -438,6 +438,8 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                     {entry.uses === 1
                       ? t(hebrew ? 'usedOnceHebrew' : 'usedOnceGreek')
                       : t(hebrew ? 'usedHebrew' : 'usedGreek', { n: formatCount(entry.uses) })}
+                    {/* The button below counts verses of the translation: fewer when a verse has the word twice. */}
+                    {listCount > 0 && listCount < entry.uses ? ` ${t('usesInVerses')}` : ''}
                   </Text>
                 ) : null}
 
@@ -534,7 +536,8 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
               { backgroundColor: theme.card, borderTopColor: theme.border, paddingBottom: insets.bottom + 12, transform: [{ translateY: footerOffset }] },
             ]}
           >
-            {!expanded ? (
+            {/* A panel already shows everything; the bar is for the half-open sheet. */}
+            {!expanded && !panel ? (
               <Pressable onPress={() => snap('full')} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.more}>
                 <Icon name="expand_less" size={22} color={theme.accent} />
                 <Text style={[styles.moreText, { color: theme.accent }]}>{t('moreAboutWord')}</Text>
@@ -587,21 +590,34 @@ function PanelFrame({ theme, children }: FrameProps) {
 
 
 /** One Hebrew or Greek word as it stands in the verse: form, transliteration, gloss, grammar. */
-function InVerseWord({ word, hebrew, font, theme, t, first, compact }: { word: OriginalWord; hebrew: boolean; font: string | undefined; theme: Theme; t: ReturnType<typeof useT>; first: boolean; compact: boolean }) {
-  const grammar = word.morph ? describeMorph(word.morph, hebrew) : '';
+function InVerseWord({ word, hebrew, font, theme, t, language, first, compact }: { word: OriginalWord; hebrew: boolean; font: string | undefined; theme: Theme; t: ReturnType<typeof useT>; language: string; first: boolean; compact: boolean }) {
+  // Plain grammar in the reader's language ("noun, singular"); a tap shows the full
+  // description and its code, for those who study it.
+  const [full, setFull] = useState(false);
+  const plain = word.morph ? plainMorph(word.morph, hebrew, language) : '';
+  const detailed = word.morph ? describeMorph(word.morph, hebrew) : '';
+  const grammar = full || !plain ? detailed : plain;
+  // The gloss as the source gives it can carry the verse's punctuation ("Word,").
+  const gloss = word.gloss?.replace(/[\s,.;:·]+$/, '');
   const note = textNote(word, t);
   return (
     <View style={first ? null : styles.inTextMore}>
       <Text style={[styles.inTextWord, compact && styles.inTextWordCompact, { color: theme.text, fontFamily: font, textAlign: hebrew ? 'right' : 'left' }]}>{word.text}</Text>
       <Text style={[styles.inTextLine, { color: theme.text }]}>
         {word.translit}
-        {word.gloss ? <Text style={{ color: theme.muted }}>  ·  {word.gloss}</Text> : null}
+        {gloss ? <Text style={{ color: theme.muted }}>  ·  {gloss}</Text> : null}
       </Text>
       {grammar ? (
-        <Text style={[styles.inTextLine, { color: theme.muted }]}>
+        <Text
+          style={[styles.inTextLine, { color: theme.muted }]}
+          onPress={plain && plain !== detailed ? () => setFull((f) => !f) : undefined}
+          accessibilityRole={plain && plain !== detailed ? 'button' : undefined}
+          accessibilityHint={plain && plain !== detailed && !full ? t('grammarMore') : undefined}
+        >
           {grammar}
-          {/* The code is kept on one line (no-break hyphens); a short screen leaves it out. */}
-          {grammar !== word.morph && !compact ? <Text style={{ fontVariant: ['tabular-nums'] }}>{`  (${word.morph.replace(/-/g, '\u2011')})`}</Text> : null}
+          {/* The full description keeps its code on one line (no-break hyphens). */}
+          {full && grammar !== word.morph ? <Text style={{ fontVariant: ['tabular-nums'] }}>{`  (${word.morph.replace(/-/g, '\u2011')})`}</Text> : null}
+          {plain && plain !== detailed && !full ? <Text style={{ color: theme.accent }}>{'  ›'}</Text> : null}
         </Text>
       ) : null}
       {note ? <Text style={[styles.note, { color: theme.accent }]}>{note}</Text> : null}
@@ -718,7 +734,8 @@ function LexiconEntry({ id, theme, t, onOpenRef }: { id: string; theme: Theme; t
                 const word = part.slice(1, -1);
                 return (
                   <Text key={j} style={{ fontFamily: /[\u0590-\u05ff]/.test(word) ? HEBREW_FONT : undefined }}>
-                    {word}
+                    {/* Each Hebrew word isolated, so the comma between two of them stays where it is written. */}
+                    {/[\u0590-\u05ff]/.test(word) ? `\u2068${word}\u2069` : word}
                   </Text>
                 );
               }

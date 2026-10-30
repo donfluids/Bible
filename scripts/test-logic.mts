@@ -5,6 +5,7 @@
 // must stay fast on long text.
 //
 //   npx tsx scripts/test-logic.mts
+import { plainMorph } from '../src/morph';
 import assert from 'node:assert/strict';
 import { groupForms, isTaBaseForm, taStem } from './lib/forms.mjs';
 import { addPoint, decodeInk, encodeInk, packSteps, pageHeight, parseInk, pathOf, strokePath, touchesStroke, unpackSteps } from '../src/ink';
@@ -382,6 +383,15 @@ test('Hindi search: the dot before a stop finds the half nasal of its group, and
     assert.ok(hp.alternatives.some((a) => like(a).test(text)), `alternatives for ${q}`);
     assert.deepEqual(matchRanges(text, q).length, 1, `highlight ${q}`);
   }
+});
+
+test('word sheet grammar in plain words, in each interface language', () => {
+  assert.equal(plainMorph('N-DSF', false, 'en'), 'noun, singular');
+  assert.equal(plainMorph('V-AAI-3P', false, 'ml'), 'ക്രിയ, ബഹുവചനം');
+  assert.equal(plainMorph('HR/Ncfsa', true, 'en'), 'preposition + noun, singular');
+  assert.equal(plainMorph('HNpm', true, 'hi'), 'नाम');
+  assert.equal(plainMorph('PREP', false, 'ta'), 'முன்னிடைச்சொல்');
+  assert.equal(plainMorph('', false, 'en'), '');
 });
 
 console.log(`all ${passed} logic tests passed`);
