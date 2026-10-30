@@ -154,19 +154,28 @@ function tamilKey(name: string): string {
  * the names of the Catholic Hindi Bible. To be checked by a Hindi reader.
  */
 const HINDI_NAMES: Record<number, string[]> = {
-  3: ['लैव्यवस्था'], 5: ['विधि-विवरण'], 7: ['न्यायकर्ता'], 19: ['भजन', 'स्तोत्र'], 20: ['सूक्ति'], 21: ['उपदेशक'],
-  22: ['गीतों का गीत', 'सर्वश्रेष्ठ गीत'], 25: ['विलाप'], 44: ['प्रेरितों', 'प्रेरित-चरित'], 66: ['प्रकाशना', 'प्रकाशन'],
+  3: ['लैव्यवस्था', 'लेवी'], 4: ['गणना'], 5: ['विधि-विवरण'], 6: ['योशुआ'], 7: ['न्यायकर्ता'], 19: ['भजन', 'स्तोत्र'],
+  20: ['सूक्ति'], 21: ['उपदेशक'], 22: ['गीतों का गीत', 'सर्वश्रेष्ठ गीत'], 23: ['इसायाह'], 24: ['यिरमियाह', 'यिर्मियाह'], 25: ['विलाप'],
+  26: ['एज़ेकिएल'], 27: ['दानिएल'], 28: ['होशेआ'], 33: ['मीकाह'], 37: ['हग्गय'], 41: ['मारकुस'], 42: ['लूकस'],
+  43: ['योहन'], 44: ['प्रेरितों', 'प्रेरित-चरित'], 46: ['कोरिन्थियों'], 47: ['कोरिन्थियों'], 49: ['एफ़ेसियों'],
+  51: ['कलोसियों'], 54: ['तिमथी'], 55: ['तिमथी'], 60: ['पेत्रुस'], 61: ['पेत्रुस'], 62: ['योहन'], 63: ['योहन'],
+  64: ['योहन'], 65: ['यूदस'], 66: ['प्रकाशना', 'प्रकाशन'],
 };
 
 /**
  * A Hindi book name reduced so that spellings people type meet the IRV's: no spaces,
- * dots, hyphens, joiners or nukta; chandrabindu as anusvara (मुँह, मुंह); long and short
- * vowels alike (यूहन्ना, युहन्ना); a doubled consonant as one; and no final virama.
+ * dots, hyphens, joiners or nukta; the Catholic Bible's trailing ग्रन्थ (स्तोत्र ग्रन्थ)
+ * dropped; chandrabindu as anusvara (मुँह, मुंह), and a half nasal before a letter of its
+ * group as anusvara too (कुरिन्थियों, कुरिंथियों); long and short vowels alike (यूहन्ना,
+ * युहन्ना); a doubled consonant as one; and no final virama.
  */
 const HI_LONG_SHORT: Record<string, string> = { 'ी': 'ि', 'ू': 'ु', 'ई': 'इ', 'ऊ': 'उ', 'ँ': 'ं' };
+const HI_NASAL_GROUP: [string, string][] = [['ङ', 'कखगघ'], ['ञ', 'चछजझ'], ['ण', 'टठडढ'], ['न', 'तथदध'], ['म', 'पफबभ']];
 function hindiKey(name: string): string {
   return name
+    .replace(/\s*(ग्रन्थ|ग्रंथ)$/, '')
     .replace(/[\s.\-\u200c\u200d\u093c]/g, '')
+    .replace(/([ङञणनम])\u094d([\u0915-\u0939])/g, (m, n: string, c: string) => (HI_NASAL_GROUP.some(([g, stops]) => g === n && stops.includes(c)) ? 'ं' + c : m))
     .replace(/[ीूईऊँ]/g, (c) => HI_LONG_SHORT[c])
     .replace(/([\u0915-\u0939])\u094d\1/g, '$1')
     .replace(/\u094d+$/, '');
@@ -227,7 +236,7 @@ export interface ParsedRef extends Ref {
  */
 export function parseReference(input: string, books: Book[], translation?: TranslationId): ParsedRef | null {
   // முதலாம் கொரிந்தியர், 1-ஆம் யோவான், ഒന്നാം കൊരിന്ത്യർ: the number as a figure.
-  let typed = input.replace(/\s+/g, ' ').trim();
+  let typed = westernDigits(input).replace(/\s+/g, ' ').trim();
   for (const [re, n] of ORDINALS) typed = typed.replace(re, n);
   const m = /^\s*([1-3]?\.?\s*[^\d:,]+?)\s*(\d{1,3})(?:\s*[:.,\s]\s*(\d{1,3}))?(?:\s*[-–]\s*\d{1,3}(?:\s*[:.]\s*\d{1,3})?)?\s*$/i.exec(typed);
   if (!m) return null;
@@ -296,7 +305,11 @@ const ORDINALS: [RegExp, string][] = [
 // Words that are also a book's short name; a chapter alone after them is a number, not a
 // reference. Malayalam: സംഖ്യ (number). Tamil: எண் (number), ஆதி (beginning), நீதி
 // (justice), புலம் (field), வெளி (outside). Hindi: न्याय (justice), नीति (policy), रोम (Rome).
-const SHORT_WORDS = new Set(['സംഖ്യ', 'எண்', 'ஆதி', 'நீதி', 'புலம்', 'வெளி', 'न्याय', 'नीति', 'रोम']);
+// Hindi also: मर (die), गिन (count).
+const SHORT_WORDS = new Set(['സംഖ്യ', 'எண்', 'ஆதி', 'நீதி', 'புலம்', 'வெளி', 'न्याय', 'नीति', 'रोम', 'मर', 'गिन']);
+// Whole book names that are also common words: a chapter alone after them is a number.
+// Hindi गिनती (Numbers) is "counting".
+const NAME_WORDS = new Set(['गिनती']);
 const SHORT_NAMES: Record<NameScript, string[]> = { ml: MALAYALAM_SHORT_NAMES, ta: TAMIL_SHORT_NAMES, hi: HINDI_SHORT_NAMES };
 
 // Book abbreviations that are also English words: written in lower case, they are words ("is 5", "he 1:3").
@@ -309,6 +322,7 @@ function nameForChapter(name: string, id: number, books: Book[], translation?: T
   if (script) {
     if (/\.$/.test(name)) return true; // an abbreviation with its dot: സങ്കീ. 23, சங். 23
     const plain = bare.replace(/[\s.]/g, '');
+    if (NAME_WORDS.has(plain)) return false;
     if (SHORT_NAMES[script][id - 1]?.replace(/^[1-3]\s*/, '') === plain) return !SHORT_WORDS.has(plain);
     const { key, other } = SCRIPTS[script];
     const typed = key(bare);
@@ -338,6 +352,23 @@ function nameForChapter(name: string, id: number, books: Book[], translation?: T
  *   "is 7:30" and "Daniel 1260" plain.
  */
 export function findReferences(text: string, books: Book[], translation?: TranslationId, verseCount?: VerseCount): TextPiece[] {
+  // Devanagari digits (यूहन्ना ३:१६) are read as 0-9; the pieces keep the text as written.
+  const plain = westernDigits(text);
+  if (plain === text) return findIn(text, books, translation, verseCount);
+  let at = 0;
+  return findIn(plain, books, translation, verseCount).map((p) => {
+    const piece = { ...p, text: text.slice(at, at + p.text.length) };
+    at += p.text.length;
+    return piece;
+  });
+}
+
+/** Devanagari digits as 0-9, one character each, so offsets in the text stay the same. */
+function westernDigits(text: string): string {
+  return text.replace(/[०-९]/g, (d) => String(d.charCodeAt(0) - 0x966));
+}
+
+function findIn(text: string, books: Book[], translation?: TranslationId, verseCount?: VerseCount): TextPiece[] {
   const pieces: TextPiece[] = [];
   const numbers = /(\d{1,3})(?:\s*[:.]\s*(\d{1,3})(?:\s*[-–]\s*(\d{1,3})(?:\s*[:.]\s*(\d{1,3}))?)?)?(?![\d:])/g;
   const exists = (ref: ParsedRef) => {
