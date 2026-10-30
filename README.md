@@ -22,7 +22,10 @@ one-time card says so when the Hindi first opens. In every app, the search dicti
 shows two entries and More, and none with the study tools off.
 Its database is 109 MB, over GitHub's 100 MB file limit, so it is not committed: build it
 with `npm run fetch-data` and `node scripts/build-db.mjs all` before building this app.
-The GitHub release workflow builds the other three only.
+The GitHub release workflow builds the other three only: a build there downloads today's
+sources, which have drifted from the ones the database was built from (see Rebuilding the
+database), so it could not reproduce this one. Keeping a copy of the sources (for example as
+release files) would let it.
 
 The edition is chosen at build time with `BIBLE_EDITION=en` (default) or
 `BIBLE_EDITION=ml`; see `src/edition.ts`, `app.config.js` and `metro.config.js`.

@@ -197,7 +197,7 @@ const APP_NAME: Record<EditionId, string> = { en: 'Bible', ml: 'വേദപു�
 const APP = (edition: EditionId): Source => ({
   title: APP_NAME[edition],
   notice:
-    '\u00a9 2026 Rivers Research. The licence covers the source code of the app; the texts, data, fonts and pictures keep the licences given above. The databases inside the app are offered as a whole under CC BY-SA 4.0; each text and data set in them keeps its own licence given above, and the public-domain and CC BY parts may be reused on those terms. The databases and the scripts that build them are at github.com/donfluids/Bible. Nothing in a store\u2019s terms restricts what these licences allow.',
+    '\u00a9 2026 Rivers Research. The licence covers the source code of the app; the texts, data, fonts and pictures keep the licences given above. The databases inside the app are offered as a whole under CC BY-SA 4.0; each text and data set in them keeps its own licence given above, and the public-domain and CC BY parts may be reused on those terms. The scripts that build the databases are at github.com/donfluids/Bible, with the databases of the one-language apps; the four-language app\u2019s database, too large for that site, is built by the same scripts from the same sources. Nothing in a store\u2019s terms restricts what these licences allow.',
   licence: MIT,
   source: [{ label: 'github.com/donfluids/Bible', url: 'https://github.com/donfluids/Bible' }],
 });
