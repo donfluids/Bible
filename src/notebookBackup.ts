@@ -80,7 +80,8 @@ export function readBackup(text: string): Backup {
     pages.push(page);
   }
   const edition = (raw as { edition?: unknown }).edition;
-  return { edition: typeof edition === 'string' && /^[a-z]{2}$/.test(edition) ? edition : null, pages, ink };
+  // The app it was made in (src/edition.ts: en, ml, ta or the four-language all).
+  return { edition: typeof edition === 'string' && /^(en|ml|ta|all)$/.test(edition) ? edition : null, pages, ink };
 }
 
 export interface MergeResult {

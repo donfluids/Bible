@@ -237,6 +237,11 @@ test('a backup is read back, typed and handwritten pages with their strokes', ()
   assert.deepEqual(b.pages, [typedPage, handPage]);
   assert.deepEqual(b.ink.get('abc2'), handInk);
 });
+test('a backup says which app made it, the four-language app too', () => {
+  assert.equal(readBackup(backupText).edition, 'ml');
+  assert.equal(readBackup(makeBackup([typedPage], () => null, 'all', new Date(0))).edition, 'all');
+  assert.equal(readBackup(JSON.stringify({ kind: 'riversresearch-notebook', edition: 'xx', pages: [] })).edition, null);
+});
 test('a file that is not a backup is refused', () => {
   for (const text of ['{', '[]', '{"kind":"other","pages":[]}', '{"kind":"riversresearch-notebook"}']) assert.throws(() => readBackup(text), text);
 });

@@ -20,7 +20,8 @@ interface Props {
 }
 
 /** The notebook's pages, the most recently edited first. A new page is typed or handwritten. */
-const APP_NAMES: Record<string, string> = { en: 'Bible', ml: 'വേദപുസ്തകം', ta: 'வேதாகமம்' };
+// The apps' names on the phone (app.config.js); the four-language app's name is not final.
+const APP_NAMES: Record<string, string> = { en: 'Bible', ml: 'വേദപുസ്തകം', ta: 'வேதாகமம்', all: 'Bibles' };
 
 export function NotebookScreen({ onOpenPage }: Props) {
   const theme = useTheme();

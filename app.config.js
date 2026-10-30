@@ -37,7 +37,7 @@ const EDITIONS = {
     slug: 'bible-india',
     package: 'org.riversresearch.bible.india',
     icons: './assets/icons/all',
-    languages: ['en', 'ml', 'ta'],
+    languages: ['en', 'ml', 'ta', 'hi'],
     easProjectId: '',
     splashBackground: '#FBF8F1',
     splashBackgroundDark: '#15130F',

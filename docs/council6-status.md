@@ -31,7 +31,7 @@ Status: **done** (committed and pushed), **partly**, **open**, or **yours** (a d
 | 11 | Four Tamil verses start with a stray number | done; the data check catches a bridged verse's "-18" |
 | 12 | Introductions' licence and credit; IRV change statements; README | open |
 | 13 | Package name, app name, icon, store languages, the Tamil app | **yours** |
-| 14 | Four-language backups lose their app tag; iOS languages miss Hindi | open |
+| 14 | Four-language backups lose their app tag; iOS languages miss Hindi | done; the notebook calls that app "Bibles" until its name is decided (13) |
 
 ## Tier 2 and 3
 
