@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -43,6 +43,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
   const theme = useTheme();
   // Lists run under the system navigation bar; the last row must clear it.
   const insets = useSafeAreaInsets();
+  const { width: windowWidth } = useWindowDimensions();
   const t = useT();
   const { settings, update } = useSettings();
   const edition = useEdition();
@@ -275,7 +276,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Header title={multilingual ? t('search') : t('searchTitle', { name: shortName(translation), in: renderingsLabel(settings.language, translation) })} onBack={onBack} />
-      <View style={[styles.inputBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
+      <View style={[styles.inputBox, { marginHorizontal: Math.max(14, (windowWidth - (MAX_CONTENT_WIDTH - 28)) / 2), backgroundColor: theme.card, borderColor: theme.border }]}>
         <Icon name="search" color={theme.muted} />
         <TextInput
           ref={inputRef}
@@ -304,7 +305,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
       </View>
       {multilingual ? (
         // All six at once, on two lines if need be: in a sideways scroll the last were missed.
-        <View accessibilityRole="radiogroup" style={[styles.biblesRow, styles.bibles, styles.biblesWrap]}>
+        <View accessibilityRole="radiogroup" style={[styles.biblesRow, styles.bibles, styles.biblesWrap, { paddingHorizontal: Math.max(14, (windowWidth - (MAX_CONTENT_WIDTH - 28)) / 2) }]}>
           {edition.translations.map((id) => {
             const active = id === translation;
             const font = scriptureFont(translationInfo(id).script ?? null, false, true);
@@ -363,10 +364,11 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   list: { alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
   column: { alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
+  // Inside the screen's edges with 14 px either side (a 100% width plus margins ran off
+  // them), and centred on a wide screen.
   inputBox: {
-    alignSelf: 'center',
-    width: '100%',
-    maxWidth: MAX_CONTENT_WIDTH - 28,
+    alignSelf: 'stretch',
+    marginHorizontal: 14,
     margin: 14,
     marginTop: 4,
     minHeight: 52,

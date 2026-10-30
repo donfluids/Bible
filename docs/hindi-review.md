@@ -162,8 +162,8 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | headingChristmas | Merry Christmas | क्रिसमस की बधाई | |
 | headingEaster | Happy Easter | ईस्टर की बधाई | |
 | headingNewYear | Happy New Year | नया साल मुबारक | |
-| tip | Tap any underlined word to see the Hebrew or Greek behind it. Hold a verse to copy, share or bookmark it. The button below shows the whole verse in the original language. | रेखांकित किसी भी शब्द को छूकर उसका मूल इब्रानी या यूनानी शब्द देखें। किसी पद को दबाकर रखें: कॉपी, साझा या बुकमार्क करने के लिए। नीचे का बटन पूरे पद को मूल भाषा में दिखाता है। | |
-| tipNoTags | Hold a verse to highlight it, add a note, compare translations or bookmark it. The button below shows the whole verse in Hebrew or Greek; tap a word there for its meaning. | किसी पद को दबाकर रखें: हाइलाइट करने, टिप्पणी जोड़ने, अनुवादों की तुलना करने या बुकमार्क करने के लिए। नीचे का बटन पूरे पद को इब्रानी या यूनानी में दिखाता है; वहाँ किसी शब्द को छूकर उसका अर्थ देखें। | |
+| tip | Tap any underlined word to see the Hebrew or Greek behind it. Press and hold a verse to copy, share or bookmark it. The button below shows the whole verse in the original language. | रेखांकित किसी भी शब्द को छूकर उसका मूल इब्रानी या यूनानी शब्द देखें। किसी पद को दबाकर रखें: कॉपी, साझा या बुकमार्क करने के लिए। नीचे का बटन पूरे पद को मूल भाषा में दिखाता है। | |
+| tipNoTags | Press and hold a verse to highlight it, add a note, compare translations or bookmark it. The button below shows the whole verse in Hebrew or Greek; tap a word there for its meaning. | किसी पद को दबाकर रखें: हाइलाइट करने, टिप्पणी जोड़ने, अनुवादों की तुलना करने या बुकमार्क करने के लिए। नीचे का बटन पूरे पद को इब्रानी या यूनानी में दिखाता है; वहाँ किसी शब्द को छूकर उसका अर्थ देखें। | |
 | gotIt | Got it | ठीक है | |
 | choosePassage | {title}, choose passage | {title}, अंश चुनें | |
 | choosePassageTitle | Choose a passage | अंश चुनें | |
@@ -193,7 +193,7 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | markText | Mark text | पाठ चिह्नित करें | |
 | markTextDetail | Highlight some words or a passage across verses | कुछ शब्द, या कई पदों में फैला अंश, हाइलाइट करें | |
 | markDone | Done | हो गया | |
-| markHint | Hold a word, then drag to the last word to mark. | एक शब्द दबाकर रखें, फिर अंतिम शब्द तक खींचकर चिह्नित करें। | |
+| markHint | Press and hold a word, then drag to the last word to mark. | एक शब्द दबाकर रखें, फिर अंतिम शब्द तक खींचकर चिह्नित करें। | |
 | eraseHint | Hold a marked word, then drag over the marks to remove them. | चिह्नित शब्द दबाकर रखें, फिर चिह्नों पर खींचकर उन्हें हटाएँ। | |
 | eraser | Eraser | रबड़ | |
 | markedText | Marked text | चिह्नित पाठ | |
@@ -201,7 +201,7 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | addNote | Add a note | टिप्पणी जोड़ें | |
 | editNote | Edit note | टिप्पणी बदलें | |
 | compare | Compare translations | अनुवादों की तुलना | |
-| compareDetail | Side by side with the {lang} | {lang} के साथ, आमने-सामने | |
+| compareDetail | Side by side with the {lang} | {lang} के साथ, साथ-साथ | |
 | copy | Copy | कॉपी करें | |
 | copyDetail | Verse text with its reference | पद का पाठ, संदर्भ सहित | |
 | share | Share… | साझा करें… | |
@@ -232,7 +232,7 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | introNone | There is no introduction to this book yet. | इस पुस्तक का परिचय अभी नहीं है। | |
 | omitted | Omitted in this translation. | इस अनुवाद में नहीं है। | |
 | nothingSavedTitle | Nothing saved yet | अभी कुछ सहेजा नहीं | |
-| nothingSaved | Hold a verse in the reader to bookmark it, highlight it or add a note. They will be listed here. | पढ़ते समय किसी पद को दबाकर रखें: बुकमार्क करने, हाइलाइट करने या टिप्पणी जोड़ने के लिए। वे यहाँ सूचीबद्ध होंगे। | |
+| nothingSaved | Press and hold a verse in the reader to bookmark it, highlight it or add a note. They will be listed here. | पढ़ते समय किसी पद को दबाकर रखें: बुकमार्क करने, हाइलाइट करने या टिप्पणी जोड़ने के लिए। वे यहाँ सूचीबद्ध होंगे। | |
 | searchTitle | Search the {name} | {in} खोजें | |
 | clearSearch | Clear search | खोज साफ़ करें | |
 | searchExamples | Try | आज़माएँ | |
@@ -327,7 +327,7 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | serifDetail | Scripture in a book-style face | पवित्रशास्त्र पुस्तक जैसी अक्षर शैली में | |
 | keepAwake | Keep screen awake | स्क्रीन चालू रखें | |
 | keepAwakeDetail | While the app is open | जब तक ऐप खुला है | |
-| sideBySide | Side by side | आमने-सामने | |
+| sideBySide | Side by side | साथ-साथ | |
 | sideBySideDetail | {native} and English verses together on a tablet or a phone turned sideways | टैबलेट पर या फ़ोन को आड़ा करने पर {native} और अंग्रेज़ी पद साथ-साथ | |
 | studyTools | Study tools | अध्ययन उपकरण | |
 | studyToolsDetail | Tap a word for its Hebrew or Greek, the original words under each verse, cross references, parallel passages, Compare, and an introduction to each book. Off, the app is a plain Bible for reading; your highlights, notes and notebook stay. | चालू होने पर: शब्द छूकर उसका इब्रानी या यूनानी मूल, हर पद के नीचे मूल शब्द, संदर्भ पद, समानांतर अंश, तुलना और हर पुस्तक का परिचय। बंद होने पर ऐप पढ़ने के लिए एक सादी बाइबल बन जाता है; आपके हाइलाइट, टिप्पणियाँ और नोटबुक बने रहते हैं। | |
@@ -363,21 +363,21 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | howTopic1 | Reading a chapter | अध्याय पढ़ना | |
 | howText1 | Turn the chapter with the arrows at the foot of the page, or swipe. Tap the book name at the top to choose any book and chapter: Old or New Testament, the books under their groups, then the chapter. The Books tab lists every book too, and its clock button opens the chapters you read last. Spread two fingers to make the text larger, or set the size in Settings. | पृष्ठ के नीचे के तीरों से, या उँगली फिराकर, अध्याय बदलें। ऊपर पुस्तक का नाम छूकर कोई भी पुस्तक और अध्याय चुनें: पुराना या नया नियम, अपने समूहों में पुस्तकें, फिर अध्याय। पुस्तकें टैब में भी सारी पुस्तकें हैं; वहाँ घड़ी वाला बटन वे अध्याय दिखाता है जो आपने पिछली बार पढ़े। दो उँगलियाँ फैलाकर पाठ बड़ा करें, या सेटिंग्स में आकार चुनें। | |
 | howTopic2 | Switching Bibles | बाइबल बदलना | |
-| howText2 | The button at the foot of the page switches to the next Bible, and its label names that Bible. On a tablet, or a phone turned on its side, the Bible in your language and the KJV can be read together (Settings → Side by side). | पृष्ठ के नीचे का बटन दूसरी बाइबल पर ले जाता है। टैबलेट पर, या फ़ोन को आड़ा करने पर, दोनों बाइबलें साथ-साथ पढ़ी जा सकती हैं (सेटिंग्स → आमने-सामने)। | |
-| howText2All | The Bible button at the foot of the page opens a list of all six Bibles, in English, Malayalam, Tamil and Hindi. The smaller button beside it goes back to the Bible you read before, so two Bibles are one tap apart. On a tablet, or a phone turned on its side, an Indian Bible and an English one can be read together (Settings → Side by side). | पृष्ठ के नीचे बाइबल वाला बटन छूने पर अंग्रेज़ी, मलयालम, तमिल और हिन्दी की छहों बाइबलें दिखती हैं; कोई भी चुनें। उसके पास का छोटा बटन आपको उस बाइबल पर लौटा देता है जो आपने पहले पढ़ी थी, इसलिए दो बाइबलें एक छुअन की दूरी पर रहती हैं। टैबलेट पर, या फ़ोन को आड़ा करने पर, एक भारतीय भाषा की बाइबल और एक अंग्रेज़ी बाइबल साथ-साथ पढ़ी जा सकती हैं (सेटिंग्स → आमने-सामने)। | |
+| howText2 | The button at the foot of the page switches to the next Bible, and its label names that Bible. On a tablet, or a phone turned on its side, the Bible in your language and the KJV can be read together (Settings → Side by side). | पृष्ठ के नीचे का बटन दूसरी बाइबल पर ले जाता है। टैबलेट पर, या फ़ोन को आड़ा करने पर, दोनों बाइबलें साथ-साथ पढ़ी जा सकती हैं (सेटिंग्स → साथ-साथ)। | |
+| howText2All | The Bible button at the foot of the page opens a list of all six Bibles, in English, Malayalam, Tamil and Hindi. The smaller button beside it goes back to the Bible you read before, so two Bibles are one tap apart. On a tablet, or a phone turned on its side, an Indian Bible and an English one can be read together (Settings → Side by side). | पृष्ठ के नीचे बाइबल वाला बटन छूने पर अंग्रेज़ी, मलयालम, तमिल और हिन्दी की छहों बाइबलें दिखती हैं; कोई भी चुनें। उसके पास का छोटा बटन आपको उस बाइबल पर लौटा देता है जो आपने पहले पढ़ी थी, इसलिए दो बाइबलें एक छुअन की दूरी पर रहती हैं। टैबलेट पर, या फ़ोन को आड़ा करने पर, एक भारतीय भाषा की बाइबल और एक अंग्रेज़ी बाइबल साथ-साथ पढ़ी जा सकती हैं (सेटिंग्स → साथ-साथ)। | |
 | howTopic3 | A verse's menu | पद का मेनू | |
-| howText3 | Hold a verse to open its menu: copy, share, bookmark, a highlight colour, a note, a picture card, add to the notebook, read aloud from here, mark part of the verse, compare the Bibles, cross references and parallel passages. | किसी पद को दबाकर रखें और उसका मेनू खुलता है: कॉपी, साझा, बुकमार्क, हाइलाइट का रंग, टिप्पणी, चित्र कार्ड, नोटबुक में जोड़ना, यहाँ से सुनना, पद का कुछ भाग चिह्नित करना, बाइबलों की तुलना, संदर्भ पद और समानांतर अंश। | |
+| howText3 | Press and hold a verse to open its menu: copy, share, bookmark, a highlight colour, a note, a picture card, add to the notebook, read aloud from here, mark part of the verse, compare the Bibles, cross references and parallel passages. | किसी पद को दबाकर रखें और उसका मेनू खुलता है: कॉपी, साझा, बुकमार्क, हाइलाइट का रंग, टिप्पणी, चित्र कार्ड, नोटबुक में जोड़ना, यहाँ से सुनना, पद का कुछ भाग चिह्नित करना, बाइबलों की तुलना, संदर्भ पद और समानांतर अंश। | |
 | howTopic4 | Words and their Hebrew or Greek | शब्द और उनका इब्रानी या यूनानी | |
 | howText4 | Tap an underlined word to see the Hebrew or Greek word behind it, with its meaning, pronunciation and every verse it is used in. The Hebrew or Greek button at the foot of the page shows the whole verse in the original language, word by word. | रेखांकित शब्द छूकर उसका मूल इब्रानी या यूनानी शब्द देखें: अर्थ, उच्चारण और हर वह पद जिसमें वह आया है। पृष्ठ के नीचे का इब्रानी या यूनानी बटन पूरे पद को मूल भाषा में, शब्द-दर-शब्द, दिखाता है। | |
 | howTopic5 | Highlighting part of a verse | पद का कुछ भाग हाइलाइट करना | |
-| howText5 | Hold a verse and choose Mark text. Hold a word still, drag to the last word and let go. The bar at the foot picks the colour and has an eraser; tap Done when finished. Everything marked is listed under Saved. | किसी पद को दबाकर रखें और “पाठ चिह्नित करें” चुनें। एक शब्द को स्थिर दबाए रखें, अंतिम शब्द तक खींचें और छोड़ दें। नीचे की पट्टी रंग चुनती है और उसमें रबड़ है; पूरा होने पर “हो गया” छुएँ। चिह्नित सब कुछ “सहेजे हुए” में सूचीबद्ध है। | |
+| howText5 | Press and hold a verse and choose Mark text. Press and hold a word, drag to the last word and let go. The bar at the foot picks the colour and has an eraser; tap Done when finished. Everything marked is listed under Saved. | किसी पद को दबाकर रखें और “पाठ चिह्नित करें” चुनें। एक शब्द को स्थिर दबाए रखें, अंतिम शब्द तक खींचें और छोड़ दें। नीचे की पट्टी रंग चुनती है और उसमें रबड़ है; पूरा होने पर “हो गया” छुएँ। चिह्नित सब कुछ “सहेजे हुए” में सूचीबद्ध है। | |
 | howTopic6 | Saved | सहेजे हुए | |
 | howText6 | The Saved tab lists your bookmarks, highlights, marked text and notes. Tap one to open its verse. | “सहेजे हुए” टैब में आपके बुकमार्क, हाइलाइट, चिह्नित पाठ और टिप्पणियाँ हैं। किसी एक को छूकर उसका पद खोलें। | |
 | howTopic7 | Search | खोज | |
 | howText7 | Type a word, or a reference such as John 3:16 or Psalm 23, in the search box. Results start in the New Testament; the buttons narrow them to a Testament or a book. | खोज के डिब्बे में कोई शब्द, या यूहन्ना 3:16 या भजन 23 जैसा संदर्भ लिखें। परिणाम नए नियम से शुरू होते हैं; बटन उन्हें एक नियम या एक पुस्तक तक सीमित करते हैं। | |
 | howText7All | Type a word, or a reference such as John 3:16 or Psalm 23, in the search box. The Bible buttons above the results choose which Bible is searched; the Bible you are reading is chosen at first. Results start in the New Testament; the other buttons narrow them to a Testament or a book. A result opens in the Bible it was found in. | खोज के डिब्बे में कोई शब्द, या यूहन्ना 3:16 या भजन 23 जैसा संदर्भ लिखें। परिणामों के ऊपर बाइबल के बटन चुनते हैं कि किस बाइबल में खोजा जाए; शुरू में वही बाइबल चुनी रहती है जो आप पढ़ रहे हैं। परिणाम नए नियम से शुरू होते हैं; दूसरे बटन उन्हें एक नियम या एक पुस्तक तक सीमित करते हैं। कोई परिणाम छूने पर वह उसी बाइबल में खुलता है जिसमें वह मिला। | |
 | howTopic8 | Notebook | नोटबुक | |
-| howText8 | The Notebook tab holds typed pages for sermon notes or a study. A reference typed on a page, such as John 3:16, becomes a link with the verse shown beneath. Hold a verse and choose Add to notebook to put it on a page. A page can be shared as text or as a PDF. | नोटबुक टैब में उपदेश की टिप्पणियों या अध्ययन के लिए टाइप किए हुए पृष्ठ रहते हैं। पृष्ठ पर लिखा संदर्भ, जैसे यूहन्ना 3:16, एक कड़ी बन जाता है और पद नीचे दिखता है। किसी पद को दबाकर रखें और “नोटबुक में जोड़ें” चुनकर उसे पृष्ठ पर रखें। पृष्ठ पाठ या PDF के रूप में साझा किया जा सकता है। | |
+| howText8 | The Notebook tab holds typed pages for sermon notes or a study. A reference typed on a page, such as John 3:16, becomes a link with the verse shown beneath. Press and hold a verse and choose Add to notebook to put it on a page. A page can be shared as text or as a PDF. | नोटबुक टैब में उपदेश की टिप्पणियों या अध्ययन के लिए टाइप किए हुए पृष्ठ रहते हैं। पृष्ठ पर लिखा संदर्भ, जैसे यूहन्ना 3:16, एक कड़ी बन जाता है और पद नीचे दिखता है। किसी पद को दबाकर रखें और “नोटबुक में जोड़ें” चुनकर उसे पृष्ठ पर रखें। पृष्ठ पाठ या PDF के रूप में साझा किया जा सकता है। | |
 | howTopic9 | Handwritten pages | हाथ से लिखे पृष्ठ | |
 | howText9 | New page → Handwritten gives a page to write on with a pen or a finger, on plain or lined paper: three pens, a highlighter, an eraser, undo and redo. Two fingers move the page. With a stylus, the pen-only switch lets your hand rest on the screen. The page is shared as a picture or a PDF. | नया पृष्ठ → हाथ से लिखा: सादे या रेखांकित काग़ज़ पर क़लम या उँगली से लिखने का पृष्ठ देता है: तीन क़लम, एक हाइलाइटर, रबड़, पहले जैसा करें और फिर से करें। दो उँगलियाँ पृष्ठ को हिलाती हैं। स्टाइलस के साथ, “केवल क़लम” का बटन आपके हाथ को स्क्रीन पर टिकने देता है। पृष्ठ चित्र या PDF के रूप में साझा होता है। | |
 | howTopic10 | Backing up the notebook | नोटबुक का बैकअप | |
@@ -387,7 +387,7 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | howTopic12 | Study tools and book introductions | अध्ययन उपकरण और पुस्तक परिचय | |
 | howText12 | Study tools can be switched off for plain reading, and on again: in Settings → Study tools, or with the cap at the top of the reader. With them on, tap “About this book” at the top of a book's first chapter (or above its chapter numbers) to read who wrote the book, when and for whom, its themes and outline, and key verses. | सेटिंग्स → अध्ययन उपकरण ऐप के अध्ययन वाले हिस्से को सादे पढ़ने के लिए बंद करता है, और फिर चालू; ऊपर का टोपी वाला बटन भी इसे बंद और चालू करता है। चालू होने पर, पुस्तक के पहले अध्याय के ऊपर (और उसके अध्यायों की संख्याओं के ऊपर) “इस पुस्तक के बारे में” छुएँ: उसमें लिखा है कि पुस्तक किसने लिखी, कब और किसके लिए, उसके विषय और रूपरेखा, और मुख्य पद। | |
 | howTopic13 | Picture cards | चित्र कार्ड | |
-| howText13 | Hold a verse and choose Share as card to put it on a picture, for a birthday, a wedding or any day, with a message of your own and your own photo if you like. A design you make can be saved for next time. | किसी पद को दबाकर रखें और “कार्ड के रूप में साझा करें” चुनें: जन्मदिन, विवाह या किसी भी दिन के लिए, उसे एक चित्र पर रखें, अपने संदेश के साथ और चाहें तो अपनी फ़ोटो के साथ। आपका बनाया डिज़ाइन अगली बार के लिए सहेजा जा सकता है। | |
+| howText13 | Press and hold a verse and choose Share as card to put it on a picture, for a birthday, a wedding or any day, with a message of your own and your own photo if you like. A design you make can be saved for next time. | किसी पद को दबाकर रखें और “कार्ड के रूप में साझा करें” चुनें: जन्मदिन, विवाह या किसी भी दिन के लिए, उसे एक चित्र पर रखें, अपने संदेश के साथ और चाहें तो अपनी फ़ोटो के साथ। आपका बनाया डिज़ाइन अगली बार के लिए सहेजा जा सकता है। | |
 | feedback | Write to us | हमें लिखें | |
 | feedbackDetail | A problem, a wish, a word of thanks: anything. Opens your mail app. | कोई समस्या, कोई इच्छा, धन्यवाद के दो शब्द: कुछ भी। आपका मेल ऐप खुलता है। | |
 | feedbackCard | You have been reading with this app for a while. What could be better? A line from you helps us more than you might think. | आप कुछ समय से इस ऐप में पढ़ रहे हैं। क्या बेहतर हो सकता है? आपकी एक पंक्ति हमारी जितनी मदद करती है, उतनी आप शायद सोच भी न सकें। | |

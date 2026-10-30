@@ -188,22 +188,22 @@ Words chosen for the app's own features, used throughout:
 | sayWord | Say the word | சொல்லை உச்சரி | |
 | stopSaying | Stop | நிறுத்து | |
 | noVoiceTitle | No voice for this language | இந்த மொழிக்குக் குரல் இல்லை | |
-| noHebrewVoice | This phone has no Hebrew voice. You can add one in the phone’s settings, under Text-to-speech (Android) or Spoken Content (iPhone). | இந்தத் தொலைபேசியில் எபிரெயக் குரல் இல்லை. தொலைபேசியின் அமைப்புகளில் Text-to-speech (Android) அல்லது Spoken Content (iPhone) பகுதியில் ஒன்றைச் சேர்க்கலாம். | |
-| noGreekVoice | This phone has no Greek voice. You can add one in the phone’s settings, under Text-to-speech (Android) or Spoken Content (iPhone). | இந்தத் தொலைபேசியில் கிரேக்கக் குரல் இல்லை. தொலைபேசியின் அமைப்புகளில் Text-to-speech (Android) அல்லது Spoken Content (iPhone) பகுதியில் ஒன்றைச் சேர்க்கலாம். | |
+| noHebrewVoice | This phone has no Hebrew voice. You can add one in the phone’s settings, under Text-to-speech (Android) or Spoken Content (iPhone). | இந்தத் கைபேசியில் எபிரெயக் குரல் இல்லை. கைபேசியின் அமைப்புகளில் Text-to-speech (Android) அல்லது Spoken Content (iPhone) பகுதியில் ஒன்றைச் சேர்க்கலாம். | |
+| noGreekVoice | This phone has no Greek voice. You can add one in the phone’s settings, under Text-to-speech (Android) or Spoken Content (iPhone). | இந்தத் கைபேசியில் கிரேக்கக் குரல் இல்லை. கைபேசியின் அமைப்புகளில் Text-to-speech (Android) அல்லது Spoken Content (iPhone) பகுதியில் ஒன்றைச் சேர்க்கலாம். | |
 | readAloud | Read aloud | உரக்க வாசி | |
 | stopReading | Stop reading | வாசிப்பை நிறுத்து | |
 | readFromHere | Read from here | இங்கிருந்து வாசித்துக் காட்டு | |
-| readFromHereDetail | Listen to the chapter from this verse in the phone's voice | தொலைபேசியின் குரலில் இந்த வசனம் முதல் அதிகாரத்தைக் கேட்கலாம் | |
+| readFromHereDetail | Listen to the chapter from this verse in the phone's voice | கைபேசியின் குரலில் இந்த வசனம் முதல் அதிகாரத்தைக் கேட்கலாம் | |
 | pauseReading | Pause | இடைநிறுத்து | |
 | resumeReading | Continue | தொடர் | |
 | previousVerse | Previous verse | முந்தைய வசனம் | |
 | nextVerse | Next verse | அடுத்த வசனம் | |
 | readingSpeed | Reading speed | வாசிப்பு வேகம் | |
 | backToReading | Back to reading | வாசிக்கும் இடத்திற்கு | |
-| noEnglishVoice | This phone has no English voice. You can add one in the phone's settings, under Text-to-speech (Android) or Spoken Content (iPhone). | இந்தத் தொலைபேசியில் ஆங்கிலக் குரல் இல்லை. தொலைபேசியின் அமைப்புகளில் Text-to-speech (Android) அல்லது Spoken Content (iPhone) பகுதியில் ஒன்றைச் சேர்க்கலாம். | |
-| noMalayalamVoice | This phone has no Malayalam voice. Install Speech Services by Google from the Play Store, choose it in the phone's Text-to-speech settings, and download the Malayalam voice there. | இந்தத் தொலைபேசியில் மலையாளக் குரல் இல்லை. Play Store-இலிருந்து Speech Services by Google-ஐ நிறுவி, தொலைபேசியின் Text-to-speech அமைப்புகளில் அதைத் தேர்ந்தெடுத்து, அங்கே மலையாளக் குரலைப் பதிவிறக்கவும். | |
-| noTamilVoice | This phone has no Tamil voice. Install Speech Services by Google from the Play Store, choose it in the phone's Text-to-speech settings, and download the Tamil voice there. | இந்தத் தொலைபேசியில் தமிழ்க் குரல் இல்லை. Play Store-இலிருந்து Speech Services by Google-ஐ நிறுவி, தொலைபேசியின் Text-to-speech அமைப்புகளில் அதைத் தேர்ந்தெடுத்து, அங்கே தமிழ்க் குரலைப் பதிவிறக்கவும். | |
-| noHindiVoice | This phone has no Hindi voice. Install Speech Services by Google from the Play Store, choose it in the phone's Text-to-speech settings, and download the Hindi voice there. | இந்தத் தொலைபேசியில் இந்திக் குரல் இல்லை. Play Store-இலிருந்து Speech Services by Google-ஐ நிறுவி, தொலைபேசியின் Text-to-speech அமைப்புகளில் அதைத் தேர்ந்தெடுத்து, அங்கே இந்திக் குரலைப் பதிவிறக்கவும். | |
+| noEnglishVoice | This phone has no English voice. You can add one in the phone's settings, under Text-to-speech (Android) or Spoken Content (iPhone). | இந்தத் கைபேசியில் ஆங்கிலக் குரல் இல்லை. கைபேசியின் அமைப்புகளில் Text-to-speech (Android) அல்லது Spoken Content (iPhone) பகுதியில் ஒன்றைச் சேர்க்கலாம். | |
+| noMalayalamVoice | This phone has no Malayalam voice. Install Speech Services by Google from the Play Store, choose it in the phone's Text-to-speech settings, and download the Malayalam voice there. | இந்தத் கைபேசியில் மலையாளக் குரல் இல்லை. Play Store-இலிருந்து Speech Services by Google-ஐ நிறுவி, கைபேசியின் Text-to-speech அமைப்புகளில் அதைத் தேர்ந்தெடுத்து, அங்கே மலையாளக் குரலைப் பதிவிறக்கவும். | |
+| noTamilVoice | This phone has no Tamil voice. Install Speech Services by Google from the Play Store, choose it in the phone's Text-to-speech settings, and download the Tamil voice there. | இந்தத் கைபேசியில் தமிழ்க் குரல் இல்லை. Play Store-இலிருந்து Speech Services by Google-ஐ நிறுவி, கைபேசியின் Text-to-speech அமைப்புகளில் அதைத் தேர்ந்தெடுத்து, அங்கே தமிழ்க் குரலைப் பதிவிறக்கவும். | |
+| noHindiVoice | This phone has no Hindi voice. Install Speech Services by Google from the Play Store, choose it in the phone's Text-to-speech settings, and download the Hindi voice there. | இந்தத் கைபேசியில் இந்திக் குரல் இல்லை. Play Store-இலிருந்து Speech Services by Google-ஐ நிறுவி, கைபேசியின் Text-to-speech அமைப்புகளில் அதைத் தேர்ந்தெடுத்து, அங்கே இந்திக் குரலைப் பதிவிறக்கவும். | |
 | shareAsCard | Share as card | அட்டையாகப் பகிர் | |
 | shareAsCardDetail | A picture of the verse, for a greeting or your status | வாழ்த்துக்கோ ஸ்டேட்டஸுக்கோ வசனத்தின் படம் | |
 | cardSquare | Square | சதுரம் | |
@@ -262,8 +262,8 @@ Words chosen for the app's own features, used throughout:
 | headingChristmas | Merry Christmas | கிறிஸ்துமஸ் வாழ்த்துக்கள் | |
 | headingEaster | Happy Easter | ஈஸ்டர் வாழ்த்துக்கள் | |
 | headingNewYear | Happy New Year | புத்தாண்டு வாழ்த்துக்கள் | |
-| tip | Tap any underlined word to see the Hebrew or Greek behind it. Hold a verse to copy, share or bookmark it. The button below shows the whole verse in the original language. | அடிக்கோடிட்ட ஒரு வார்த்தையைத் தொட்டால் அதன் எபிரெய அல்லது கிரேக்க மூலச்சொல் தெரியும். ஒரு வசனத்தை அழுத்திப் பிடித்தால் நகலெடுக்கலாம், பகிரலாம், அடையாளக்குறி இடலாம். கீழே உள்ள பொத்தான் முழு வசனத்தையும் மூலமொழியில் காட்டும். | |
-| tipNoTags | Hold a verse to highlight it, add a note, compare translations or bookmark it. The button below shows the whole verse in Hebrew or Greek; tap a word there for its meaning. | ஒரு வசனத்தை அழுத்திப் பிடித்து ஹைலைட் செய்யலாம், குறிப்பு சேர்க்கலாம், மொழிபெயர்ப்புகளை ஒப்பிடலாம், அடையாளக்குறி இடலாம். கீழே உள்ள பொத்தான் முழு வசனத்தையும் எபிரெயத்தில் அல்லது கிரேக்கத்தில் காட்டும்; அங்கே ஒரு வார்த்தையைத் தொட்டால் அதன் பொருள் தெரியும். | |
+| tip | Tap any underlined word to see the Hebrew or Greek behind it. Press and hold a verse to copy, share or bookmark it. The button below shows the whole verse in the original language. | அடிக்கோடிட்ட ஒரு வார்த்தையைத் தொட்டால் அதன் எபிரெய அல்லது கிரேக்க மூலச்சொல் தெரியும். ஒரு வசனத்தை அழுத்திப் பிடித்தால் நகலெடுக்கலாம், பகிரலாம், அடையாளக்குறி இடலாம். கீழே உள்ள பொத்தான் முழு வசனத்தையும் மூலமொழியில் காட்டும். | |
+| tipNoTags | Press and hold a verse to highlight it, add a note, compare translations or bookmark it. The button below shows the whole verse in Hebrew or Greek; tap a word there for its meaning. | ஒரு வசனத்தை அழுத்திப் பிடித்து ஹைலைட் செய்யலாம், குறிப்பு சேர்க்கலாம், மொழிபெயர்ப்புகளை ஒப்பிடலாம், அடையாளக்குறி இடலாம். கீழே உள்ள பொத்தான் முழு வசனத்தையும் எபிரெயத்தில் அல்லது கிரேக்கத்தில் காட்டும்; அங்கே ஒரு வார்த்தையைத் தொட்டால் அதன் பொருள் தெரியும். | |
 | gotIt | Got it | புரிந்தது | |
 | choosePassage | {title}, choose passage | {title}, பகுதியைத் தேர்ந்தெடுக்க | |
 | choosePassageTitle | Choose a passage | பகுதியைத் தேர்ந்தெடுக்க | |
@@ -293,7 +293,7 @@ Words chosen for the app's own features, used throughout:
 | markText | Mark text | பகுதியை ஹைலைட் செய் | |
 | markTextDetail | Highlight some words or a passage across verses | சில வார்த்தைகளையோ பல வசனங்களில் நீளும் ஒரு பகுதியையோ ஹைலைட் செய்யுங்கள் | |
 | markDone | Done | முடிந்தது | |
-| markHint | Hold a word, then drag to the last word to mark. | ஒரு வார்த்தையை அழுத்திப் பிடித்து, ஹைலைட் செய்ய வேண்டிய கடைசி வார்த்தை வரை விரலை நகர்த்துங்கள். | |
+| markHint | Press and hold a word, then drag to the last word to mark. | ஒரு வார்த்தையை அழுத்திப் பிடித்து, ஹைலைட் செய்ய வேண்டிய கடைசி வார்த்தை வரை விரலை நகர்த்துங்கள். | |
 | eraseHint | Hold a marked word, then drag over the marks to remove them. | ஹைலைட் செய்த ஒரு வார்த்தையை அழுத்திப் பிடித்து, அழிக்க வேண்டிய பகுதியின் மேல் விரலை நகர்த்துங்கள். | |
 | eraser | Eraser | அழிப்பான் | |
 | markedText | Marked text | ஹைலைட் செய்த பகுதிகள் | |
@@ -301,7 +301,7 @@ Words chosen for the app's own features, used throughout:
 | addNote | Add a note | வசனக் குறிப்பு சேர் | |
 | editNote | Edit note | வசனக் குறிப்பைத் திருத்து | |
 | compare | Compare translations | மொழிபெயர்ப்புகளை ஒப்பிடு | |
-| compareDetail | Side by side with the {lang} | {lang} உடன் அருகருகே | |
+| compareDetail | Side by side with the {lang} | {lang} மூல உரையுடன் அருகருகே | |
 | copy | Copy | நகலெடு | |
 | copyDetail | Verse text with its reference | வசனமும் அதன் குறிப்பும் | |
 | share | Share… | பகிர்… | |
@@ -332,7 +332,7 @@ Words chosen for the app's own features, used throughout:
 | introNone | There is no introduction to this book yet. | இந்தப் புத்தகத்திற்கு இன்னும் முன்னுரை இல்லை. | |
 | omitted | Omitted in this translation. | இந்த மொழிபெயர்ப்பில் இல்லை. | |
 | nothingSavedTitle | Nothing saved yet | இன்னும் எதுவும் சேமிக்கப்படவில்லை | |
-| nothingSaved | Hold a verse in the reader to bookmark it, highlight it or add a note. They will be listed here. | வாசிக்கும்போது ஒரு வசனத்தை அழுத்திப் பிடித்து அடையாளக்குறி இடலாம், ஹைலைட் செய்யலாம், வசனக் குறிப்பு சேர்க்கலாம். அவை இங்கே தெரியும். | |
+| nothingSaved | Press and hold a verse in the reader to bookmark it, highlight it or add a note. They will be listed here. | வாசிக்கும்போது ஒரு வசனத்தை அழுத்திப் பிடித்து அடையாளக்குறி இடலாம், ஹைலைட் செய்யலாம், வசனக் குறிப்பு சேர்க்கலாம். அவை இங்கே தெரியும். | |
 | searchTitle | Search the {name} | {in} தேடு | |
 | clearSearch | Clear search | தேடலை அழி | |
 | searchExamples | Try | இப்படித் தேடலாம் | |
@@ -406,7 +406,7 @@ Words chosen for the app's own features, used throughout:
 | verseActions | Verse {n}, actions | வசனம் {n}, செயல்கள் | |
 | recent | Recent | சமீபத்தில் வாசித்தவை | |
 | openFailed | The Bible text could not be opened. | வேதாகம உரையைத் திறக்க முடியவில்லை. | |
-| openFailedDetail | This can happen when the phone is short of storage. Free about {mb} MB and try again. | தொலைபேசியில் சேமிப்பிடம் குறைவாக இருந்தால் இப்படி நடக்கலாம். சுமார் {mb} MB இடம் விடுவித்து மீண்டும் முயலுங்கள். | |
+| openFailedDetail | This can happen when the phone is short of storage. Free about {mb} MB and try again. | கைபேசியில் சேமிப்பிடம் குறைவாக இருந்தால் இப்படி நடக்கலாம். சுமார் {mb} MB இடம் விடுவித்து மீண்டும் முயலுங்கள். | |
 | loadFailed | This could not be loaded. | இதை ஏற்ற முடியவில்லை. | |
 | somethingWrong | Something went wrong. | ஏதோ தவறு நடந்துவிட்டது. | |
 | tryAgain | Try again | மீண்டும் முயல்க | |
@@ -428,7 +428,7 @@ Words chosen for the app's own features, used throughout:
 | keepAwake | Keep screen awake | திரையை அணையாமல் வை | |
 | keepAwakeDetail | While the app is open | செயலி திறந்திருக்கும் வரை | |
 | sideBySide | Side by side | அருகருகே | |
-| sideBySideDetail | {native} and English verses together on a tablet or a phone turned sideways | டேப்லெட்டில் அல்லது தொலைபேசியைச் சாய்த்துப் பிடிக்கும்போது தமிழும் ஆங்கிலமும் ஒன்றாக | |
+| sideBySideDetail | {native} and English verses together on a tablet or a phone turned sideways | டேப்லெட்டில் அல்லது கைபேசியைச் சாய்த்துப் பிடிக்கும்போது தமிழும் ஆங்கிலமும் ஒன்றாக | |
 | studyTools | Study tools | படிப்புக் கருவிகள் | |
 | studyToolsDetail | Tap a word for its Hebrew or Greek, the original words under each verse, cross references, parallel passages, Compare, and an introduction to each book. Off, the app is a plain Bible for reading; your highlights, notes and notebook stay. | ஒரு வார்த்தையைத் தொட்டால் அதன் எபிரெய / கிரேக்க மூலச்சொல், ஒவ்வொரு வசனத்தின் கீழும் மூல மொழி வார்த்தைகள், தொடர்புடைய வசனங்கள், இணையான பகுதிகள், ஒப்பீடு, ஒவ்வொரு புத்தகத்துக்கும் முன்னுரை. அணைத்தால் வாசிப்பதற்கான சாதாரண வேதாகமம்; ஹைலைட்டுகள், குறிப்புகள், குறிப்பேடு அப்படியே இருக்கும். | |
 | studyToolsOn | Switch the study tools on | படிப்புக் கருவிகளை இயக்கு | |
@@ -463,38 +463,38 @@ Words chosen for the app's own features, used throughout:
 | howTopic1 | Reading a chapter | ஒரு அதிகாரத்தை வாசிக்க | |
 | howText1 | Turn the chapter with the arrows at the foot of the page, or swipe. Tap the book name at the top to choose any book and chapter: Old or New Testament, the books under their groups, then the chapter. The Books tab lists every book too, and its clock button opens the chapters you read last. Spread two fingers to make the text larger, or set the size in Settings. | பக்கத்தின் அடியிலுள்ள அம்புகளாலோ ஸ்வைப் செய்தோ அதிகாரத்தை மாற்றலாம். மேலே புத்தகத்தின் பெயரைத் தொட்டால் எந்தப் புத்தகத்தையும் அதிகாரத்தையும் தேர்ந்தெடுக்கலாம்: பழைய அல்லது புதிய ஏற்பாடு, பிரிவுகளின் கீழ் புத்தகங்கள், பின்பு அதிகாரம். புத்தகங்கள் தாவலிலும் எல்லாப் புத்தகங்களும் உண்டு; அதன் கடிகாரப் பொத்தான் கடைசியாக வாசித்த அதிகாரங்களைக் காட்டும். இரண்டு விரல்களை விரித்தால் எழுத்து பெரிதாகும்; அமைப்புகளிலும் அளவை மாற்றலாம். | |
 | howTopic2 | Switching Bibles | வேதாகமத்தை மாற்ற | |
-| howText2 | The button at the foot of the page switches to the next Bible, and its label names that Bible. On a tablet, or a phone turned on its side, the Bible in your language and the KJV can be read together (Settings → Side by side). | பக்கத்தின் அடியிலுள்ள பொத்தான் அடுத்த வேதாகமத்துக்கு மாற்றும்: தமிழ், KJV, BSB, மீண்டும் தமிழ்; பொத்தானில் அடுத்த வேதாகமத்தின் பெயர் இருக்கும். டேப்லெட்டிலோ தொலைபேசியைச் சாய்த்துப் பிடிக்கும்போதோ தமிழையும் KJV-யையும் சேர்த்து வாசிக்கலாம் (அமைப்புகள் → அருகருகே). | |
-| howText2All | The Bible button at the foot of the page opens a list of all six Bibles, in English, Malayalam, Tamil and Hindi. The smaller button beside it goes back to the Bible you read before, so two Bibles are one tap apart. On a tablet, or a phone turned on its side, an Indian Bible and an English one can be read together (Settings → Side by side). | பக்கத்தின் அடியிலுள்ள வேதாகமப் பொத்தானைத் தொட்டால் ஆங்கிலம், மலையாளம், தமிழ், இந்தி ஆகியவற்றிலுள்ள ஆறு வேதாகமங்களும் தெரியும்; எதையும் தேர்ந்தெடுக்கலாம். அதன் அருகிலுள்ள சிறிய பொத்தான் முன்பு வாசித்த வேதாகமத்துக்குத் திரும்பக் கொண்டுசெல்லும். டேப்லெட்டிலோ தொலைபேசியைச் சாய்த்துப் பிடிக்கும்போதோ ஓர் இந்திய மொழி வேதாகமத்தையும் ஓர் ஆங்கில வேதாகமத்தையும் சேர்த்து வாசிக்கலாம் (அமைப்புகள் → அருகருகே). | |
+| howText2 | The button at the foot of the page switches to the next Bible, and its label names that Bible. On a tablet, or a phone turned on its side, the Bible in your language and the KJV can be read together (Settings → Side by side). | பக்கத்தின் அடியிலுள்ள பொத்தான் அடுத்த வேதாகமத்துக்கு மாற்றும்: தமிழ், KJV, BSB, மீண்டும் தமிழ்; பொத்தானில் அடுத்த வேதாகமத்தின் பெயர் இருக்கும். டேப்லெட்டிலோ கைபேசியைச் சாய்த்துப் பிடிக்கும்போதோ தமிழையும் KJV-யையும் சேர்த்து வாசிக்கலாம் (அமைப்புகள் → அருகருகே). | |
+| howText2All | The Bible button at the foot of the page opens a list of all six Bibles, in English, Malayalam, Tamil and Hindi. The smaller button beside it goes back to the Bible you read before, so two Bibles are one tap apart. On a tablet, or a phone turned on its side, an Indian Bible and an English one can be read together (Settings → Side by side). | பக்கத்தின் அடியிலுள்ள வேதாகமப் பொத்தானைத் தொட்டால் ஆங்கிலம், மலையாளம், தமிழ், இந்தி ஆகியவற்றிலுள்ள ஆறு வேதாகமங்களும் தெரியும்; எதையும் தேர்ந்தெடுக்கலாம். அதன் அருகிலுள்ள சிறிய பொத்தான் முன்பு வாசித்த வேதாகமத்துக்குத் திரும்பக் கொண்டுசெல்லும். டேப்லெட்டிலோ கைபேசியைச் சாய்த்துப் பிடிக்கும்போதோ ஓர் இந்திய மொழி வேதாகமத்தையும் ஓர் ஆங்கில வேதாகமத்தையும் சேர்த்து வாசிக்கலாம் (அமைப்புகள் → அருகருகே). | |
 | howTopic3 | A verse's menu | வசனத்தின் பட்டி | |
-| howText3 | Hold a verse to open its menu: copy, share, bookmark, a highlight colour, a note, a picture card, add to the notebook, read aloud from here, mark part of the verse, compare the Bibles, cross references and parallel passages. | ஒரு வசனத்தை அழுத்திப் பிடித்தால் அதன் பட்டி திறக்கும்: நகல், பகிர், அடையாளக்குறி, ஹைலைட் நிறம், குறிப்பு, பட அட்டை, குறிப்பேட்டில் சேர், இங்கிருந்து வாசிக்கச் செய், வசனத்தின் ஒரு பகுதியைக் குறி, வேதாகமங்களை ஒப்பிடு, தொடர்புடைய வசனங்கள், இணையான பகுதிகள். | |
+| howText3 | Press and hold a verse to open its menu: copy, share, bookmark, a highlight colour, a note, a picture card, add to the notebook, read aloud from here, mark part of the verse, compare the Bibles, cross references and parallel passages. | ஒரு வசனத்தை அழுத்திப் பிடித்தால் அதன் பட்டி திறக்கும்: நகல், பகிர், அடையாளக்குறி, ஹைலைட் நிறம், குறிப்பு, பட அட்டை, குறிப்பேட்டில் சேர், இங்கிருந்து வாசிக்கச் செய், வசனத்தின் ஒரு பகுதியைக் குறி, வேதாகமங்களை ஒப்பிடு, தொடர்புடைய வசனங்கள், இணையான பகுதிகள். | |
 | howTopic4 | Words and their Hebrew or Greek | வார்த்தைகளும் அவற்றின் எபிரெய / கிரேக்க மூலச்சொல்லும் | |
 | howText4 | Tap an underlined word to see the Hebrew or Greek word behind it, with its meaning, pronunciation and every verse it is used in. The Hebrew or Greek button at the foot of the page shows the whole verse in the original language, word by word. | அடிக்கோடிட்ட வார்த்தையைத் தொட்டால் அதன் பின்னுள்ள எபிரெய அல்லது கிரேக்க வார்த்தை, பொருள், உச்சரிப்பு, அது வரும் எல்லா வசனங்களும் தெரியும். பக்கத்தின் அடியிலுள்ள எபிரெய / கிரேக்கப் பொத்தான் முழு வசனத்தையும் மூல மொழியில் வார்த்தை வார்த்தையாகக் காட்டும். | |
 | howTopic5 | Highlighting part of a verse | வசனத்தின் ஒரு பகுதியை ஹைலைட் செய்ய | |
-| howText5 | Hold a verse and choose Mark text. Hold a word still, drag to the last word and let go. The bar at the foot picks the colour and has an eraser; tap Done when finished. Everything marked is listed under Saved. | வசனத்தை அழுத்திப் பிடித்து, “பகுதியை ஹைலைட் செய்” என்பதைத் தேர்ந்தெடுங்கள். ஒரு வார்த்தையை அழுத்திப் பிடித்து, கடைசி வார்த்தை வரை இழுத்து விடுங்கள். அடியிலுள்ள பட்டையில் நிறமும் அழிப்பானும்; முடிந்ததும் “முடிந்தது” என்பதைத் தொடுங்கள். ஹைலைட் செய்தவை எல்லாம் சேமித்தவை தாவலில் இருக்கும். | |
+| howText5 | Press and hold a verse and choose Mark text. Press and hold a word, drag to the last word and let go. The bar at the foot picks the colour and has an eraser; tap Done when finished. Everything marked is listed under Saved. | வசனத்தை அழுத்திப் பிடித்து, “பகுதியை ஹைலைட் செய்” என்பதைத் தேர்ந்தெடுங்கள். ஒரு வார்த்தையை அழுத்திப் பிடித்து, கடைசி வார்த்தை வரை இழுத்து விடுங்கள். அடியிலுள்ள பட்டையில் நிறமும் அழிப்பானும்; முடிந்ததும் “முடிந்தது” என்பதைத் தொடுங்கள். ஹைலைட் செய்தவை எல்லாம் சேமித்தவை தாவலில் இருக்கும். | |
 | howTopic6 | Saved | சேமித்தவை | |
 | howText6 | The Saved tab lists your bookmarks, highlights, marked text and notes. Tap one to open its verse. | சேமித்தவை தாவலில் அடையாளக்குறிகள், ஹைலைட்டுகள், குறித்த உரை, குறிப்புகள். ஒன்றைத் தொட்டால் அந்த வசனம் திறக்கும். | |
 | howTopic7 | Search | தேடல் | |
 | howText7 | Type a word, or a reference such as John 3:16 or Psalm 23, in the search box. Results start in the New Testament; the buttons narrow them to a Testament or a book. | தேடல் பெட்டியில் ஒரு வார்த்தையையோ யோவான் 3:16, சங்கீதம் 23 போன்ற குறிப்பையோ தட்டச்சு செய்யுங்கள். முடிவுகள் புதிய ஏற்பாட்டிலிருந்து தொடங்கும்; பொத்தான்கள் ஒரு ஏற்பாட்டுக்கோ புத்தகத்துக்கோ சுருக்கும். | |
 | howText7All | Type a word, or a reference such as John 3:16 or Psalm 23, in the search box. The Bible buttons above the results choose which Bible is searched; the Bible you are reading is chosen at first. Results start in the New Testament; the other buttons narrow them to a Testament or a book. A result opens in the Bible it was found in. | தேடல் பெட்டியில் ஒரு வார்த்தையையோ யோவான் 3:16, சங்கீதம் 23 போன்ற குறிப்பையோ தட்டச்சு செய்யுங்கள். முடிவுகளுக்கு மேலுள்ள வேதாகமப் பொத்தான்கள் எந்த வேதாகமத்தில் தேடுவது என்பதைத் தேர்ந்தெடுக்கும்; நீங்கள் வாசிக்கும் வேதாகமம் முதலில் தேர்ந்தெடுக்கப்பட்டிருக்கும். முடிவுகள் புதிய ஏற்பாட்டிலிருந்து தொடங்கும்; மற்ற பொத்தான்கள் அவற்றை ஒரு ஏற்பாட்டுக்கோ புத்தகத்துக்கோ சுருக்கும். ஒரு முடிவைத் தொட்டால் அது கிடைத்த வேதாகமத்தில் திறக்கும். | |
 | howTopic8 | Notebook | குறிப்பேடு | |
-| howText8 | The Notebook tab holds typed pages for sermon notes or a study. A reference typed on a page, such as John 3:16, becomes a link with the verse shown beneath. Hold a verse and choose Add to notebook to put it on a page. A page can be shared as text or as a PDF. | குறிப்பேடு தாவலில் பிரசங்கக் குறிப்புகளுக்கோ படிப்புக்கோ தட்டச்சுப் பக்கங்கள். பக்கத்தில் தட்டச்சு செய்யும் யோவான் 3:16 போன்ற குறிப்பு இணைப்பாகும்; வசனம் கீழே தெரியும். வசனத்தை அழுத்திப் பிடித்து குறிப்பேட்டில் சேர் என்பதைத் தேர்ந்தெடுத்தால் அது பக்கத்தில் வரும். பக்கத்தை உரையாகவோ PDF-ஆகவோ பகிரலாம். | |
+| howText8 | The Notebook tab holds typed pages for sermon notes or a study. A reference typed on a page, such as John 3:16, becomes a link with the verse shown beneath. Press and hold a verse and choose Add to notebook to put it on a page. A page can be shared as text or as a PDF. | குறிப்பேடு தாவலில் பிரசங்கக் குறிப்புகளுக்கோ படிப்புக்கோ தட்டச்சுப் பக்கங்கள். பக்கத்தில் தட்டச்சு செய்யும் யோவான் 3:16 போன்ற குறிப்பு இணைப்பாகும்; வசனம் கீழே தெரியும். வசனத்தை அழுத்திப் பிடித்து குறிப்பேட்டில் சேர் என்பதைத் தேர்ந்தெடுத்தால் அது பக்கத்தில் வரும். பக்கத்தை உரையாகவோ PDF-ஆகவோ பகிரலாம். | |
 | howTopic9 | Handwritten pages | கையால் எழுதும் பக்கங்கள் | |
 | howText9 | New page → Handwritten gives a page to write on with a pen or a finger, on plain or lined paper: three pens, a highlighter, an eraser, undo and redo. Two fingers move the page. With a stylus, the pen-only switch lets your hand rest on the screen. The page is shared as a picture or a PDF. | புதிய பக்கம் → கையெழுத்துப் பக்கம் என்பது பேனாவாலோ விரலாலோ எழுதும் பக்கத்தைத் தரும், வெற்றுத் தாளிலோ கோடிட்ட தாளிலோ: மூன்று பேனாக்கள், ஹைலைட்டர், அழிப்பான், செயல்தவிர், மீண்டும் செய். இரண்டு விரல்களால் பக்கத்தை நகர்த்தலாம். ஸ்டைலஸ் இருந்தால், பேனா மட்டும் எழுதும் சுவிட்ச் கையைத் திரையில் வைக்க அனுமதிக்கும். பக்கத்தைப் படமாகவோ PDF-ஆகவோ பகிரலாம். | |
 | howTopic10 | Backing up the notebook | குறிப்பேட்டின் காப்புப்பிரதி | |
 | howText10 | In the Notebook, tap the backup button to save every page to one file, and keep it in Drive, Files or a chat. Restore from a backup adds the file's pages back; a page already here is replaced only by a newer copy of itself, and nothing is deleted. | குறிப்பேட்டில் காப்புப்பிரதிப் பொத்தானைத் தொட்டால் எல்லாப் பக்கங்களும் ஒரே கோப்பில் சேமிக்கப்படும்; Drive, Files அல்லது ஒரு அரட்டையில் வைக்கலாம். காப்புப்பிரதியிலிருந்து மீட்டெடுக்கும்போது கோப்பின் பக்கங்கள் சேர்க்கப்படும்; இங்குள்ள ஒரு பக்கம் அதன் புதிய பதிப்பால் மட்டுமே மாற்றப்படும், எதுவும் நீக்கப்படாது. | |
 | howTopic11 | Listening | கேட்க | |
-| howText11 | Tap the speaker in the top bar to hear the chapter read in your phone's voice, verse by verse; the verse being read is marked, and reading goes on to the next chapter. The player sets the speed and moves between verses. | மேலுள்ள ஸ்பீக்கரைத் தொட்டால் தொலைபேசியின் குரலில் அதிகாரம் வசனம் வசனமாக வாசிக்கப்படும்; வாசிக்கப்படும் வசனம் குறிக்கப்படும், அடுத்த அதிகாரத்துக்குத் தொடரும். பிளேயரில் வேகத்தை மாற்றலாம், வசனங்களுக்கிடையே நகரலாம். | |
+| howText11 | Tap the speaker in the top bar to hear the chapter read in your phone's voice, verse by verse; the verse being read is marked, and reading goes on to the next chapter. The player sets the speed and moves between verses. | மேலுள்ள ஸ்பீக்கரைத் தொட்டால் கைபேசியின் குரலில் அதிகாரம் வசனம் வசனமாக வாசிக்கப்படும்; வாசிக்கப்படும் வசனம் குறிக்கப்படும், அடுத்த அதிகாரத்துக்குத் தொடரும். பிளேயரில் வேகத்தை மாற்றலாம், வசனங்களுக்கிடையே நகரலாம். | |
 | howTopic12 | Study tools and book introductions | படிப்புக் கருவிகளும் புத்தக முன்னுரைகளும் | |
 | howText12 | Study tools can be switched off for plain reading, and on again: in Settings → Study tools, or with the cap at the top of the reader. With them on, tap “About this book” at the top of a book's first chapter (or above its chapter numbers) to read who wrote the book, when and for whom, its themes and outline, and key verses. | அமைப்புகள் → படிப்புக் கருவிகள் செயலியின் படிப்புப் பகுதியை அணைக்கும் (வெறும் வாசிப்புக்கு), மீண்டும் இயக்கும்; வாசிப்புப் பக்கத்தின் மேலுள்ள தொப்பிக் குறியும் அணைக்கும், இயக்கும். இயங்கும்போது, புத்தகத்தின் முதல் அதிகாரத்துக்கு மேலும் அதிகார எண்களுக்கு மேலும் உள்ள “இந்தப் புத்தகத்தைப் பற்றி” என்பதைத் தொட்டால், யார் எழுதினார், எப்போது, யாருக்காக, முக்கிய கருப்பொருள்கள், பொருளடக்கம், முக்கிய வசனங்கள் ஆகியவை தெரியும். | |
 | howTopic13 | Picture cards | பட அட்டைகள் | |
-| howText13 | Hold a verse and choose Share as card to put it on a picture, for a birthday, a wedding or any day, with a message of your own and your own photo if you like. A design you make can be saved for next time. | வசனத்தை அழுத்திப் பிடித்து அட்டையாகப் பகிர் என்பதைத் தேர்ந்தெடுத்தால், பிறந்தநாள், திருமணம் அல்லது எந்த நாளுக்கும் ஒரு படத்தில் வசனத்தை, உங்கள் செய்தியோடும் விரும்பினால் உங்கள் சொந்தப் புகைப்படத்தோடும் பகிரலாம். நீங்கள் உருவாக்கும் வடிவமைப்பை அடுத்த முறைக்குச் சேமிக்கலாம். | |
+| howText13 | Press and hold a verse and choose Share as card to put it on a picture, for a birthday, a wedding or any day, with a message of your own and your own photo if you like. A design you make can be saved for next time. | வசனத்தை அழுத்திப் பிடித்து அட்டையாகப் பகிர் என்பதைத் தேர்ந்தெடுத்தால், பிறந்தநாள், திருமணம் அல்லது எந்த நாளுக்கும் ஒரு படத்தில் வசனத்தை, உங்கள் செய்தியோடும் விரும்பினால் உங்கள் சொந்தப் புகைப்படத்தோடும் பகிரலாம். நீங்கள் உருவாக்கும் வடிவமைப்பை அடுத்த முறைக்குச் சேமிக்கலாம். | |
 | feedback | Write to us | எங்களுக்கு எழுதுங்கள் | |
 | feedbackDetail | A problem, a wish, a word of thanks: anything. Opens your mail app. | ஒரு பிரச்சினை, ஒரு விருப்பம், ஒரு நன்றி வார்த்தை: எதுவும். உங்கள் மெயில் செயலி திறக்கும். | |
 | feedbackCard | You have been reading with this app for a while. What could be better? A line from you helps us more than you might think. | சில நாட்களாக இந்தச் செயலியில் வாசித்து வருகிறீர்கள். எதை மேம்படுத்தலாம்? உங்களிடமிருந்து ஒரு வரி எங்களுக்குப் பெரிய உதவி. | |
 | feedbackNotNow | Not now | இப்போது வேண்டாம் | |
 | feedbackNever | No thanks | வேண்டாம், நன்றி | |
 | feedbackSubject | Feedback: {app} {version} | கருத்து: {app} {version} | |
-| feedbackSentFrom | Sent from {app} {version} ({build}) on {device}. You may delete this line. | இந்தக் குறிப்பு {app} {version} ({build}) செயலியிலிருந்து, {device} தொலைபேசியிலிருந்து, அனுப்பப்பட்டது. இந்த வரியை நீக்கலாம். | |
+| feedbackSentFrom | Sent from {app} {version} ({build}) on {device}. You may delete this line. | இந்தக் குறிப்பு {app} {version} ({build}) செயலியிலிருந்து, {device} கைபேசியிலிருந்து, அனுப்பப்பட்டது. இந்த வரியை நீக்கலாம். | |
 | feedbackNoMail | No mail app found | மெயில் செயலி கிடைக்கவில்லை | |
 | feedbackNoMailText | You can write to us at {address}. | இந்த முகவரிக்கு எழுதலாம்: {address} | |
 | feedbackCopyAddress | Copy address | முகவரியை நகலெடு | |
@@ -503,7 +503,7 @@ Words chosen for the app's own features, used throughout:
 | aboutMalayalam | Bibles: the Sathyavedapusthakam 1910 (Malayalam), in a revised edition in contemporary orthography, the King James Version (1769) and the Berean Standard Bible. The links from Malayalam words to the Hebrew and Greek are machine-generated and not fully reviewed. | வேதாகமங்கள்: மலையாள சத்தியவேதபுஸ்தகம் 1910 (இன்றைய எழுத்துமுறையில்), கிங் ஜேம்ஸ் வெர்ஸன் (1769), பெரியன் ஸ்டாண்டர்டு பைபிள். மலையாள வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திரத்தால் உருவாக்கப்பட்டவை; முழுமையாகச் சரிபார்க்கப்படவில்லை. | |
 | aboutTamil | Bibles: the Indian Revised Version (Tamil), the King James Version (1769) and the Berean Standard Bible. The links from Tamil words to the Hebrew and Greek are machine-generated and not reviewed. | வேதாகமங்கள்: இண்டியன் ரிவைஸ்டு வெர்ஸன் (IRV) தமிழ், கிங் ஜேம்ஸ் வெர்ஸன் (1769), பெரியன் ஸ்டாண்டர்டு பைபிள். தமிழ் வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திர உதவியுடன் உருவாக்கப்பட்டவை; சரிபார்க்கப்படவில்லை. | |
 | aboutAll | Bibles: the King James Version (1769), the Berean Standard Bible, the World English Bible, the Sathyavedapusthakam 1910 (Malayalam) in contemporary orthography, and the Indian Revised Version in Tamil and in Hindi. The links from Malayalam and Tamil words to the Hebrew and Greek are machine-generated and not fully reviewed; the Hindi words are not linked yet. The translators' footnotes appear as small letters in the text; tap one to read it. | வேதாகமங்கள்: கிங் ஜேம்ஸ் வெர்ஸன் (1769), பெரியன் ஸ்டாண்டர்டு பைபிள், வேர்ல்டு இங்கிலீஷ் பைபிள், மலையாள சத்தியவேதபுஸ்தகம் 1910 (இன்றைய எழுத்துமுறையில்), தமிழிலும் இந்தியிலும் இண்டியன் ரிவைஸ்டு வெர்ஸன். மலையாள, தமிழ் வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திரம் உருவாக்கியவை, முழுமையாகச் சரிபார்க்கப்படவில்லை; இந்தி வார்த்தைகள் இன்னும் இணைக்கப்படவில்லை. மொழிபெயர்ப்பாளர்களின் அடிக்குறிப்புகள் வசனத்தில் சிறிய எழுத்துகளாகத் தெரியும்; தொட்டால் வாசிக்கலாம். | |
-| sideBySideDetailAll | Your Indian Bible beside the English, verse by verse, on a tablet or a phone turned sideways | டேப்லெட்டில் அல்லது தொலைபேசியைச் சாய்த்துப் பிடிக்கும்போது உங்கள் இந்திய வேதாகமமும் ஆங்கிலமும் வசனம் வசனமாக ஒன்றாக | |
+| sideBySideDetailAll | Your Indian Bible beside the English, verse by verse, on a tablet or a phone turned sideways | டேப்லெட்டில் அல்லது கைபேசியைச் சாய்த்துப் பிடிக்கும்போது உங்கள் இந்திய வேதாகமமும் ஆங்கிலமும் வசனம் வசனமாக ஒன்றாக | |
 | chooseBible | Choose a Bible | வேதாகமத்தைத் தேர்ந்தெடுக்க | |
 | hindiNote | Hindi words are not yet linked to the Hebrew and Greek, so tapping a word does nothing here. Cross references, parallel passages and the introductions still work, and the English Bibles have the word links. | இந்தி வார்த்தைகள் இன்னும் எபிரெய, கிரேக்க வார்த்தைகளுடன் இணைக்கப்படவில்லை; எனவே இங்கே வார்த்தையைத் தொட்டால் ஒன்றும் நடக்காது. தொடர்புடைய வசனங்கள், இணையான பகுதிகள், புத்தக முன்னுரைகள் வேலை செய்யும்; ஆங்கில வேதாகமங்களில் வார்த்தை இணைப்புகள் உள்ளன. | |
 | moreEntries | More ({n}) | மேலும் ({n}) | |
@@ -530,7 +530,7 @@ Words chosen for the app's own features, used throughout:
 | sharePage | Share page | பக்கத்தைப் பகிர் | |
 | backupRestore | Back up or restore | காப்புப்பிரதியும் மீட்டெடுப்பும் | |
 | saveBackup | Save a backup | காப்புப்பிரதி சேமி | |
-| saveBackupDetail | Every page, typed and handwritten, in one file to keep in Drive or Files, or to bring to another phone | தட்டச்சு, கையால் எழுதிய எல்லாப் பக்கங்களும் ஒரே கோப்பில்; Drive அல்லது Files-இல் வைக்கலாம், வேறு தொலைபேசிக்குக் கொண்டுசெல்லலாம் | |
+| saveBackupDetail | Every page, typed and handwritten, in one file to keep in Drive or Files, or to bring to another phone | தட்டச்சு, கையால் எழுதிய எல்லாப் பக்கங்களும் ஒரே கோப்பில்; Drive அல்லது Files-இல் வைக்கலாம், வேறு கைபேசிக்குக் கொண்டுசெல்லலாம் | |
 | restoreBackup | Restore from a backup | காப்புப்பிரதியிலிருந்து மீட்டெடு | |
 | restoreBackupDetail | Pages in the file are added; a page here is replaced only by a newer copy of itself. Nothing is deleted. | கோப்பிலுள்ள பக்கங்கள் சேர்க்கப்படும்; இங்குள்ள ஒரு பக்கம் அதன் புதிய பதிப்பால் மட்டுமே மாற்றப்படும். எதுவும் நீக்கப்படாது. | |
 | backupEmpty | The notebook has no pages yet. | குறிப்பேட்டில் இன்னும் பக்கங்கள் இல்லை. | |
@@ -558,7 +558,7 @@ Words chosen for the app's own features, used throughout:
 | highlighterYellow | Yellow highlighter | மஞ்சள் ஹைலைட்டர் | |
 | penThin | Thin pen | மெல்லிய பேனா | |
 | penThick | Thick pen | தடித்த பேனா | |
-| undo | Undo | செயல்தவிர் | |
+| undo | Undo | முன்போல் ஆக்கு | |
 | redo | Redo | மீண்டும் செய் | |
 | linedPaper | Lined paper | கோடிட்ட தாள் | |
 | plainPaper | Plain paper | வெற்றுத் தாள் | |
@@ -584,7 +584,7 @@ Words chosen for the app's own features, used throughout:
 | pageEdited | Edited {date} | திருத்தியது {date} | |
 | tabRead | Read | வாசிப்பு | |
 | saveFailedTitle | Not saved | சேமிக்கப்படவில்லை | |
-| saveFailed | Your latest changes could not be saved. The phone may be out of storage space. The app will keep trying while it is open. | கடைசியாகச் செய்த மாற்றங்களைச் சேமிக்க முடியவில்லை. தொலைபேசியில் இடம் தீர்ந்திருக்கலாம். செயலி திறந்திருக்கும் வரை மீண்டும் முயலும். | |
+| saveFailed | Your latest changes could not be saved. The phone may be out of storage space. The app will keep trying while it is open. | கடைசியாகச் செய்த மாற்றங்களைச் சேமிக்க முடியவில்லை. கைபேசியில் இடம் தீர்ந்திருக்கலாம். செயலி திறந்திருக்கும் வரை மீண்டும் முயலும். | |
 | readFailedTitle | Saved data could not be read | சேமித்தவற்றைப் படிக்க முடியவில்லை | |
 | readFailed | Your bookmarks, notes or notebook could not be read this time. They are left untouched; changes made now will not be saved. Close the app fully and open it again. | உங்கள் அடையாளக்குறிகளையோ குறிப்புகளையோ குறிப்பேட்டையோ இந்த முறை படிக்க முடியவில்லை. அவை மாற்றப்படவில்லை; இப்போது செய்யும் மாற்றங்கள் சேமிக்கப்படாது. செயலியை முழுவதுமாக மூடி மீண்டும் திறங்கள். | |
 | restoredBackupTitle | Restored from a backup | பழைய நகலிலிருந்து மீட்கப்பட்டது | |

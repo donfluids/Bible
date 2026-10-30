@@ -1230,6 +1230,20 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   const listHeader = useMemo(
     () => (
       <>
+        {/* Side by side: each column's Bible named above it. */}
+        {sideBySide ? (
+          <View style={[styles.pairRow, styles.pairHeads]}>
+            {[translation, besideTranslation].map((id, i) => (
+              <Text
+                key={id}
+                style={[styles.pairColumn, styles.pairHead, i === 1 && styles.pairRight, { color: theme.accent }, pillFont(id) ? { fontFamily: pillFont(id), fontWeight: 'normal' } : null]}
+                accessibilityRole="header"
+              >
+                {bibleName(settings.language, id)}
+              </Text>
+            ))}
+          </View>
+        ) : null}
         {tipSeen ? null : (
           <View style={[styles.tip, { backgroundColor: theme.accentSoft, borderColor: theme.border }]}>
             <Text style={[styles.tipText, cardText, { color: theme.text }]}>{translationInfo(translation).tagged ? t('tip') : t('tipNoTags')}</Text>
@@ -1300,7 +1314,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
       </>
     ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [tipSeen, feedbackDue, hindiNoteSeen, writeToUs, theme, translation, t, update, marking, cardSize, cardText.lineHeight, interlinear, interlinearMode, book?.testament, position.chapter, position.book, books, settings.serif, onOpenIntro, study, onOpenHowTo],
+    [tipSeen, feedbackDue, hindiNoteSeen, writeToUs, theme, translation, t, update, marking, cardSize, cardText.lineHeight, sideBySide, besideTranslation, settings.language, interlinear, interlinearMode, book?.testament, position.chapter, position.book, books, settings.serif, onOpenIntro, study, onOpenHowTo],
   );
   const onScrollToIndexFailed = useCallback((info: { index: number; averageItemLength: number }) => {
     // The row is not measured yet: get near it, then retry with the same placement.
@@ -1332,6 +1346,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             short={shortBookName(position.book, translation)}
             chapter={position.chapter}
             script={translationInfo(translation).script ?? null}
+            badge={isEnglish(translation) && englishCount > 1 ? translation : undefined}
             onPress={() => setPicking(true)}
             accessibilityLabel={t('choosePassage', { title })}
           />
@@ -1847,7 +1862,7 @@ function ChapterArrow({ icon, onPress, disabled, accessibilityLabel }: { icon: I
  * letters shrink to fit, down to MIN_TITLE_SCALE of their size, and on the narrowest
  * screens the drop-down arrow is left out.
  */
-function ReaderTitle({ name, short, chapter, script, onPress, accessibilityLabel }: { name: string; short: string; chapter: number; script: Script | null; onPress: () => void; accessibilityLabel: string }) {
+function ReaderTitle({ name, short, chapter, script, badge, onPress, accessibilityLabel }: { name: string; short: string; chapter: number; script: Script | null; badge?: string; onPress: () => void; accessibilityLabel: string }) {
   const theme = useTheme();
   const [room, setRoom] = useState(0);
   const [fullWidth, setFullWidth] = useState(0);
@@ -1870,12 +1885,14 @@ function ReaderTitle({ name, short, chapter, script, onPress, accessibilityLabel
       <View style={styles.titleMeasure} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         <Text style={fontStyle} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} onLayout={(e) => setFullWidth(e.nativeEvent.layout.width)}>
           {`${name} ${chapter}`}
+          {badge ? <Text style={styles.titleBadge}>{` · ${badge}`}</Text> : null}
         </Text>
       </View>
       {short ? (
         <View style={styles.titleMeasure} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
           <Text style={fontStyle} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} onLayout={(e) => setShortWidth(e.nativeEvent.layout.width)}>
             {`${short} ${chapter}`}
+            {badge ? <Text style={styles.titleBadge}>{` · ${badge}`}</Text> : null}
           </Text>
         </View>
       ) : null}
@@ -1883,7 +1900,11 @@ function ReaderTitle({ name, short, chapter, script, onPress, accessibilityLabel
         <Text numberOfLines={1} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={[shownStyle, styles.titleName]}>
           {useShort ? short : name}
         </Text>
-        <Text maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={shownStyle}>{` ${chapter}`}</Text>
+        <Text maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={shownStyle}>
+          {` ${chapter}`}
+          {/* Which English Bible is open, where there are two or three (the pill names the next one). */}
+          {badge ? <Text style={[styles.titleBadge, { color: theme.muted }]}>{` · ${badge}`}</Text> : null}
+        </Text>
         {showArrow ? <Icon name="arrow_drop_down" color={theme.accent} /> : null}
       </Pressable>
     </View>
@@ -2115,7 +2136,7 @@ function ActionButton({ icon, label, onPress, accessibilityLabel }: { icon: Icon
       <View style={[styles.actionIcon, { backgroundColor: theme.accentSoft }]}>
         <Icon name={icon} color={theme.accent} />
       </View>
-      <Text style={[styles.actionLabel, { color: theme.text }, !!script && { fontFamily: scriptureFont(script, false), fontWeight: 'normal' }]} numberOfLines={1}>
+      <Text style={[styles.actionLabel, { color: theme.text }, !!script && { fontFamily: scriptureFont(script, false), fontWeight: 'normal' }]} numberOfLines={2}>
         {label}
       </Text>
     </Pressable>
@@ -2132,6 +2153,7 @@ const styles = StyleSheet.create({
   titleButton: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', minHeight: 48, maxWidth: '100%' },
   title: { fontSize: 22, lineHeight: 30, fontWeight: '500' },
   titleName: { flexShrink: 1 },
+  titleBadge: { fontSize: 15, fontWeight: '600' },
   titleRoom: { flex: 1, justifyContent: 'center' },
   titleMeasure: { position: 'absolute', left: 0, top: 0, width: 2000, flexDirection: 'row', opacity: 0 },
   body: { flex: 1 },
@@ -2141,6 +2163,8 @@ const styles = StyleSheet.create({
   listWide: { maxWidth: SIDE_BY_SIDE_MAX_WIDTH },
   pair: { borderBottomWidth: StyleSheet.hairlineWidth, paddingBottom: 4, marginBottom: 4 },
   pairRow: { flexDirection: 'row', gap: 20 },
+  pairHeads: { marginBottom: 6 },
+  pairHead: { fontSize: 14, fontWeight: '700' },
   pairColumn: { flex: 1 },
   pairRight: { paddingVertical: 2, paddingHorizontal: 4, borderRadius: 6 },
   verse: { paddingVertical: 5, borderRadius: 6 },
@@ -2214,8 +2238,9 @@ const styles = StyleSheet.create({
   swatchLabel: { fontSize: 13, fontWeight: '500', marginBottom: 10 },
   swatchRow: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 14 },
   swatch: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  actionButtons: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
-  actionButton: { width: 80, alignItems: 'center', gap: 6, paddingVertical: 4, borderRadius: 12, overflow: 'hidden' },
+  actionButtons: { flexDirection: 'row', justifyContent: 'space-between', columnGap: 4, marginBottom: 16 },
+  // Four share the row; a long Malayalam or Tamil label takes two lines instead of being cut.
+  actionButton: { flex: 1, maxWidth: 96, alignItems: 'center', gap: 6, paddingVertical: 4, borderRadius: 12, overflow: 'hidden' },
   actionIcon: { width: 56, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   actionLabel: { fontSize: 12, fontWeight: '500', textAlign: 'center' },
   notePreview: { flexDirection: 'row', gap: 10, padding: 12, borderRadius: 12, marginBottom: 16 },

@@ -98,7 +98,8 @@ export function CompareSheet({ target, translation, books, onClose, onWord }: Pr
             </View>
           ))}
           {original && original.length > 0 && target ? (
-            <View style={styles.block}>
+            // The last block: no line under it.
+            <View style={[styles.block, styles.lastBlock]}>
               <SectionLabel text={target.book <= 39 ? t('hebrew') : t('greek')} style={styles.label} />
               <InterlinearVerse
                 words={original}
@@ -120,6 +121,7 @@ const styles = StyleSheet.create({
   spinner: { marginVertical: 30 },
   body: { paddingBottom: 8 },
   block: { paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
+  lastBlock: { borderBottomWidth: 0 },
   label: { marginBottom: 6 },
   missing: { fontSize: 15, fontStyle: 'italic' },
 });
