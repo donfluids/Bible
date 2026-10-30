@@ -83,5 +83,5 @@ for Malayalam, the Indian Revised Version for Tamil): look them up in the databa
 spelling and plain words for everything else. Keep the JSON keys and the references as
 they are; translate only the text values. The LORD (the divine name) is യഹോവ / யெகோவா, as
 both Bibles print it; "Lord" (Jesus, and the New Testament) is കർത്താവ് / கர்த்தர். God is
-ദൈവം / தேவன். Pronouns for God and Jesus are the respectful അവിടുന്ന് / அவர். Dates: "ഏകദേശം എ.ഡി. 55–65" / "ஏறக்குறைய கி.பி.
+ദൈവം / தேவன். Pronouns for God and Jesus are the respectful അവിടുന്ന് / அவர். Tamil gives every named person அவர் (Haman, Pharaoh and Diotrephes too, as modern Tamil prose does); only Satan is அவன். Dates: "ഏകദേശം എ.ഡി. 55–65" / "ஏறக்குறைய கி.பி.
 55–65" style, "ബി.സി." / "கி.மு." for BC.

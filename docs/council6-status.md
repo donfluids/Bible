@@ -41,8 +41,8 @@ Status: **done** (committed and pushed), **partly**, **open**, or **yours** (a d
 | 16 | Hindi references: Devanagari digits, dot spellings, Catholic names | done (56e2907) |
 | 17 | "Rom 8:28, 1 Cor 2:9" read as Romans 8:1 | done (20f2416) |
 | 18 | Common Hindi words become links (मर, गिन, गिनती) | done (56e2907) |
-| 19 | Malayalam Books tab shows 1910 spellings | open |
-| 20 | Smaller Malayalam and Tamil strings, intro slips | open |
+| 19 | Malayalam Books tab shows 1910 spellings | done: nine names in modern spelling (data/overrides/text-corrections.json, bookNames) |
+| 20 | Smaller Malayalam and Tamil strings, intro slips | done; check-intros now refuses the mistakes fixed by hand (a short list per language) |
 | 21 | Hindi intros mix spellings | done (b4e9c58) |
 | 22 | Word sheet headline follows the last Indian Bible | done (6616f6a) |
 | 23 | Side by side does nothing before an Indian Bible is opened | done (6616f6a) |

@@ -85,9 +85,28 @@ export function checkIntro(intro, book, verses, lang, english) {
       const refs = (x) => JSON.stringify([...JSON.stringify(x).matchAll(/\((\d+:\d+(?:-(?:\d+:)?\d+)?)\)/g)].map((m) => m[1]).sort());
       if (refs(english.about) !== refs(intro.about)) say('references in "about" differ from the English');
     }
+    // Mistakes fixed by hand once, so they do not come back.
+    const all = JSON.stringify(intro);
+    for (const [re, why] of AVOID[lang] ?? []) {
+      const m = re.exec(all);
+      if (m) say(`"${m[0]}": ${why}`);
+    }
   }
   return problems;
 }
+
+/** Per language: a pattern, and what is wrong with the text it finds (see GUIDE.md). */
+const AVOID = {
+  ml: [
+    [/അവങ്കൽ/, 'old spelling'],
+    [/വാഗ്ദാന/, 'say പ്രതിജ്ഞ, as the 1910 does'],
+    [/സാഹസ/, 'now means "daring", not violence'],
+    [/നിരോധന/, 'now means "a ban", not a siege'],
+    [/[ക-ഹ]യാവു(?=[ \s.,;:)"]|$)/, 'old spelling: -യാവ്'],
+  ],
+  ta: [[/(க்|ச்|ப்) யெகோவா/, 'no doubling before யெகோவா']],
+  hi: [[/उनका लहू/, 'whose blood? name यीशु (GUIDE.md)']],
+};
 
 /** Reads every introduction of `langs`; returns { intros: Map("lang:book" -> intro), problems }. */
 export function readIntros(root, verses, langs = ['en', 'ml', 'ta', 'hi']) {

@@ -851,7 +851,8 @@ function buildEdition(edition) {
           }
         }
       }
-      if (bookName) insBookName.run(t.id, book.id, bookName);
+      const shownName = corrections.bookNames?.[t.id]?.[book.id] ?? bookName;
+      if (shownName) insBookName.run(t.id, book.id, shownName);
       for (const h of headings) {
         const text = splitTags(cleanVerse(h.raw)).text;
         if (text) insHeading.run(t.id, book.id, h.chapter, h.beforeVerse, text);

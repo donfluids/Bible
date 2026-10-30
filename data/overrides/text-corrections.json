@@ -130,5 +130,19 @@
     ]
    ]
   }
+ },
+ "bookNames": {
+  "description": "Book names shown in place of the source's running heads: the 1910 spellings in mal2015's heads (പുറപ്പാടു, യെശയ്യാവു, ഹബക്കൂൿ…) in the modern spelling the app and the introductions use. Typed references match either (src/refs.ts, malayalamKey).",
+  "MAL": {
+   "2": "പുറപ്പാട്",
+   "16": "നെഹെമ്യാവ്",
+   "23": "യെശയ്യാവ്",
+   "24": "യിരെമ്യാവ്",
+   "31": "ഓബദ്യാവ്",
+   "35": "ഹബക്കൂക്ക്",
+   "36": "സെഫന്യാവ്",
+   "38": "സെഖര്യാവ്",
+   "66": "വെളിപ്പാട്"
+  }
  }
 }

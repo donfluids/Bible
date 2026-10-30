@@ -269,19 +269,19 @@ Words chosen for the app's own features, used throughout:
 | choosePassageTitle | Choose a passage | பகுதியைத் தேர்ந்தெடுக்க | |
 | allBooks | ‹ All books | ‹ எல்லாப் புத்தகங்களும் | |
 | groupLaw | Law | நியாயப்பிரமாணம் | |
-| groupHistory | History | சரித்திரம் | |
+| groupHistory | History | வரலாறு | |
 | groupPoetry | Poetry and wisdom | கவிதையும் ஞானமும் | |
 | groupProphets | Prophets | தீர்க்கதரிசிகள் | |
 | groupGospels | Gospels | சுவிசேஷங்கள் | |
 | groupActs | Acts | அப்போஸ்தலர் நடபடிகள் | |
 | groupLetters | Letters | நிருபங்கள் | |
-| groupRevelation | Revelation | வெளிப்படுத்தல் | |
+| groupRevelation | Revelation | வெளிப்படுத்தின விசேஷம் | |
 | copied | Copied | நகலெடுக்கப்பட்டது | |
 | bookmarked | Bookmarked | அடையாளக்குறி இடப்பட்டது | |
 | actCopy | Copy | நகலெடு | |
 | actShare | Share | பகிர் | |
-| actBookmark | Bookmark | அடையாளம் | |
-| actBookmarked | Bookmarked | குறியிடப்பட்டது | |
+| actBookmark | Bookmark | அடையாளக்குறி | |
+| actBookmarked | Bookmarked | அடையாளக்குறி இடப்பட்டது | |
 | actNote | Note | வசனக் குறிப்பு | |
 | noHighlight | No highlight | ஹைலைட் வேண்டாம் | |
 | bookmarkRemoved | Bookmark removed | அடையாளக்குறி நீக்கப்பட்டது | |
@@ -343,7 +343,7 @@ Words chosen for the app's own features, used throughout:
 | dictionaryEntry | {lang} dictionary entry | {lang} அகராதிப் பதிவு | |
 | dictionary | DICTIONARY | அகராதி | |
 | noVerses | No verses found | வசனங்கள் எதுவும் கிடைக்கவில்லை | |
-| allResults | All | அனைத்தும் | |
+| allResults | All | எல்லாம் | |
 | showMore | Show more ({n} left) | மேலும் காட்டு (இன்னும் {n}) | |
 | nVerses | {n} verses | {n} வசனங்கள் | |
 | oneVerse | 1 verse | 1 வசனம் | |
@@ -499,14 +499,14 @@ Words chosen for the app's own features, used throughout:
 | feedbackCopyAddress | Copy address | முகவரியை நகலெடு | |
 | privacy | Privacy | தனியுரிமை | |
 | aboutEnglish | Bibles: the King James Version (1769), the Berean Standard Bible and the World English Bible. The translators' footnotes appear as small letters in the text; tap one to read it. | வேதாகமங்கள்: கிங் ஜேம்ஸ் வெர்ஸன் (1769), பெரியன் ஸ்டாண்டர்டு பைபிள், வேர்ல்டு இங்கிலீஷ் பைபிள். மொழிபெயர்ப்பாளர்களின் அடிக்குறிப்புகள் சிறிய எழுத்துகளாகத் தெரியும்; தொட்டால் படிக்கலாம். | |
-| aboutMalayalam | Bibles: the Sathyavedapusthakam 1910 (Malayalam), in a revised edition in contemporary orthography, and the King James Version (1769). The links from Malayalam words to the Hebrew and Greek are machine-generated and not fully reviewed. | வேதாகமங்கள்: மலையாள சத்தியவேதபுஸ்தகம் 1910 (இன்றைய எழுத்துமுறையில் திருத்தப்பட்ட பதிப்பு), கிங் ஜேம்ஸ் வெர்ஸன் (1769). மலையாள வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திரத்தால் உருவாக்கப்பட்டவை; முழுமையாகச் சரிபார்க்கப்படவில்லை. | |
+| aboutMalayalam | Bibles: the Sathyavedapusthakam 1910 (Malayalam), in a revised edition in contemporary orthography, and the King James Version (1769). The links from Malayalam words to the Hebrew and Greek are machine-generated and not fully reviewed. | வேதாகமங்கள்: மலையாள சத்தியவேதபுஸ்தகம் 1910 (இன்றைய எழுத்துமுறையில்), கிங் ஜேம்ஸ் வெர்ஸன் (1769). மலையாள வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திரத்தால் உருவாக்கப்பட்டவை; முழுமையாகச் சரிபார்க்கப்படவில்லை. | |
 | aboutTamil | Bibles: the Indian Revised Version (Tamil) and the King James Version (1769). The links from Tamil words to the Hebrew and Greek are machine-generated and not reviewed. | வேதாகமங்கள்: இண்டியன் ரிவைஸ்டு வெர்ஸன் (IRV) தமிழ், கிங் ஜேம்ஸ் வெர்ஸன் (1769). தமிழ் வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திர உதவியுடன் உருவாக்கப்பட்டவை; சரிபார்க்கப்படவில்லை. | |
-| aboutAll | Bibles: the King James Version (1769), the Berean Standard Bible, the World English Bible, the Sathyavedapusthakam 1910 (Malayalam) in contemporary orthography, and the Indian Revised Version in Tamil and in Hindi. The links from Malayalam and Tamil words to the Hebrew and Greek are machine-generated and not fully reviewed; the Hindi words are not linked yet. The translators' footnotes appear as small letters in the text; tap one to read it. | வேதாகமங்கள்: கிங் ஜேம்ஸ் வெர்ஸன் (1769), பெரியன் ஸ்டாண்டர்டு பைபிள், வேர்ல்டு இங்கிலீஷ் பைபிள், மலையாள சத்தியவேதபுஸ்தகம் 1910 (இன்றைய எழுத்துமுறையில்), தமிழிலும் இந்தியிலும் இண்டியன் ரிவைஸ்டு வெர்ஸன். மலையாள, தமிழ் வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திரம் உருவாக்கியவை, முழுமையாகச் சரிபார்க்கப்படவில்லை; இந்தி வார்த்தைகள் இன்னும் இணைக்கப்படவில்லை. | |
+| aboutAll | Bibles: the King James Version (1769), the Berean Standard Bible, the World English Bible, the Sathyavedapusthakam 1910 (Malayalam) in contemporary orthography, and the Indian Revised Version in Tamil and in Hindi. The links from Malayalam and Tamil words to the Hebrew and Greek are machine-generated and not fully reviewed; the Hindi words are not linked yet. The translators' footnotes appear as small letters in the text; tap one to read it. | வேதாகமங்கள்: கிங் ஜேம்ஸ் வெர்ஸன் (1769), பெரியன் ஸ்டாண்டர்டு பைபிள், வேர்ல்டு இங்கிலீஷ் பைபிள், மலையாள சத்தியவேதபுஸ்தகம் 1910 (இன்றைய எழுத்துமுறையில்), தமிழிலும் இந்தியிலும் இண்டியன் ரிவைஸ்டு வெர்ஸன். மலையாள, தமிழ் வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திரம் உருவாக்கியவை, முழுமையாகச் சரிபார்க்கப்படவில்லை; இந்தி வார்த்தைகள் இன்னும் இணைக்கப்படவில்லை. மொழிபெயர்ப்பாளர்களின் அடிக்குறிப்புகள் வசனத்தில் சிறிய எழுத்துகளாகத் தெரியும்; தொட்டால் வாசிக்கலாம். | |
 | sideBySideDetailAll | Your Indian Bible beside the English, verse by verse, on a tablet or a phone turned sideways | டேப்லெட்டில் அல்லது தொலைபேசியைச் சாய்த்துப் பிடிக்கும்போது உங்கள் இந்திய வேதாகமமும் ஆங்கிலமும் வசனம் வசனமாக ஒன்றாக | |
 | chooseBible | Choose a Bible | வேதாகமத்தைத் தேர்ந்தெடுக்க | |
 | hindiNote | Hindi words are not yet linked to the Hebrew and Greek, so tapping a word does nothing here. Cross references, parallel passages and the introductions still work, and the English Bibles have the word links. | இந்தி வார்த்தைகள் இன்னும் எபிரெய, கிரேக்க வார்த்தைகளுடன் இணைக்கப்படவில்லை; எனவே இங்கே வார்த்தையைத் தொட்டால் ஒன்றும் நடக்காது. தொடர்புடைய வசனங்கள், இணையான பகுதிகள், புத்தக முன்னுரைகள் வேலை செய்யும்; ஆங்கில வேதாகமங்களில் வார்த்தை இணைப்புகள் உள்ளன. | |
 | moreEntries | More ({n}) | மேலும் ({n}) | |
-| fewerEntries | Fewer | குறைவாக | |
+| fewerEntries | Fewer | குறைவாகக் காட்டு | |
 | englishBibles | English | ஆங்கிலம் | |
 | indianBibles | Indian languages | இந்திய மொழிகள் | |
 | aboutStrongs | Dictionaries: Strong's Hebrew and Greek Dictionaries (1890), Abbott-Smith's Greek lexicon (1922) and the Brown–Driver–Briggs Hebrew lexicon (1906). | அகராதிகள்: ஸ்ட்ராங் எபிரெய, கிரேக்க அகராதிகள் (1890), Abbott-Smith கிரேக்க அகராதி (1922), Brown–Driver–Briggs எபிரெய அகராதி (1906). | |
