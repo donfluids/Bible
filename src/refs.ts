@@ -430,6 +430,8 @@ function findIn(text: string, books: Book[], translation?: TranslationId, verseC
     for (;;) {
       const more = /^(\s*[,;]\s*)(\d{1,3})(?:\s*[:.]\s*(\d{1,3}))?(?:\s*[-–]\s*(\d{1,3}))?(?![\d:])/.exec(text.slice(end));
       if (!more) break;
+      // "8:28, 1 Cor 2:9": a 1, 2 or 3 with a name after it numbers the next book.
+      if (!more[3] && !more[4] && /^[1-3]$/.test(more[2]) && /^\.?\s?[A-Za-z\u0900-\u097f\u0b80-\u0bff\u0d00-\u0d7f]/.test(text.slice(end + more[0].length))) break;
       let ref: ParsedRef | null;
       if (more[3]) ref = withChapter(books, last.book, Number(more[2]), Number(more[3]));
       else if (more[1].includes(',') && !last.chapterOnly) ref = { book: last.book, chapter: last.toChapter, verse: Number(more[2]), chapterOnly: false };
