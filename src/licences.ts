@@ -217,10 +217,10 @@ const APP = (edition: EditionId): Source => ({
 export function sectionsFor(edition: EditionId): Section[] {
   const texts =
     edition === 'ml'
-      ? [MALAYALAM, MALAYALAM_LINKS, KJV]
+      ? [MALAYALAM, MALAYALAM_LINKS, KJV, BSB]
       : edition === 'ta'
         ? // The word links join the list once the Tamil is aligned.
-          [TAMIL, ...(translationInfo('TAM').tagged ? [TAMIL_LINKS] : []), KJV]
+          [TAMIL, ...(translationInfo('TAM').tagged ? [TAMIL_LINKS] : []), KJV, BSB]
         : edition === 'all'
           ? [KJV, BSB, WEB, MALAYALAM, MALAYALAM_LINKS, TAMIL, ...(translationInfo('TAM').tagged ? [TAMIL_LINKS] : []), HINDI]
           : [KJV, BSB, WEB];

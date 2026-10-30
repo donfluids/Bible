@@ -26,7 +26,7 @@ except that Tamil search does not match spelling variants, so that claim is left
 ```
 தமிழ்–ஆங்கில வேதாகமம்: இண்டியன் ரிவைஸ்டு வெர்ஸன் (IRV) தமிழ் வேதாகமத்தையும் கிங் ஜேம்ஸ் வெர்ஸனையும் வாசிக்கவும், ஒவ்வொரு வார்த்தையின் மூலச்சொல்லை, பழைய ஏற்பாட்டில் எபிரெயத்தையும் புதிய ஏற்பாட்டில் கிரேக்கத்தையும், கற்கவும்.
 
-• தமிழ் IRV-யும் கிங் ஜேம்ஸ் வெர்ஸனும் (KJV): ஒரே தொடுதலில் மாறலாம்.
+• தமிழ் IRV, கிங் ஜேம்ஸ் வெர்ஸன் (KJV), இன்றைய ஆங்கிலத்தில் பெரியன் ஸ்டாண்டர்டு பைபிள் (BSB): ஒரே தொடுதலில் மாறலாம்.
 • அடிக்கோடிட்ட ஒரு தமிழ் வார்த்தையைத் தொட்டால் அதன் மூலச்சொல் (பழைய ஏற்பாட்டில் எபிரெயம், புதிய ஏற்பாட்டில் கிரேக்கம்): பொருள், உச்சரிப்பு, இலக்கணம், ஸ்ட்ராங் அகராதி.
 • அந்த மூலச்சொல் வரும் எல்லா வசனங்களும், IRV அதை எந்தெந்த வார்த்தைகளால் மொழிபெயர்க்கிறது என்பதும்.
 • எபிரெய / கிரேக்க வார்த்தைகள்: பழைய ஏற்பாட்டின் ஒவ்வொரு வசனத்தின் எபிரெய உரையும் புதிய ஏற்பாட்டின் கிரேக்க உரையும் வார்த்தை வார்த்தையாக, உச்சரிப்பும் பொருளும் சேர்த்து.
@@ -43,7 +43,7 @@ except that Tamil search does not match spelling variants, so that claim is left
 
 தமிழ் வார்த்தைகளுக்கும் எபிரெய, கிரேக்க வார்த்தைகளுக்கும் இடையிலான இணைப்புகள் கணினி உதவியுடன் உருவாக்கப்பட்டவை; சில இடங்களில் தவறுகள் இருக்கலாம்.
 
-மூலங்கள்: இண்டியன் ரிவைஸ்டு வெர்ஸன் (IRV) தமிழ், © 2017, 2019 Bridge Connectivity Solutions, eBible.org (CC BY-SA 4.0); கிங் ஜேம்ஸ் வெர்ஸன் 1769 (ஐக்கிய இராச்சியத்திற்கு வெளியே பொதுவுடைமை); எபிரெய, கிரேக்க உரையும் பொருள்களும் STEPBible.org, Tyndale House Cambridge (CC BY 4.0); ஸ்ட்ராங் அகராதி, Open Scriptures (CC BY-SA); தொடர்புடைய வசனங்கள் OpenBible.info (CC BY 4.0); இணையான பகுதிகள் UBS Parallel Passages Database, © 2023 United Bible Societies (CC BY-SA 4.0). விவரங்கள் செயலியில் "மூலங்களும் உரிமங்களும்" பகுதியில்.
+மூலங்கள்: இண்டியன் ரிவைஸ்டு வெர்ஸன் (IRV) தமிழ், © 2017, 2019 Bridge Connectivity Solutions, eBible.org (CC BY-SA 4.0); கிங் ஜேம்ஸ் வெர்ஸன் 1769 (ஐக்கிய இராச்சியத்திற்கு வெளியே பொதுவுடைமை); பெரியன் ஸ்டாண்டர்டு பைபிள் (பொதுவுடைமை, CC0); எபிரெய, கிரேக்க உரையும் பொருள்களும் STEPBible.org, Tyndale House Cambridge (CC BY 4.0); ஸ்ட்ராங் அகராதி, Open Scriptures (CC BY-SA); தொடர்புடைய வசனங்கள் OpenBible.info (CC BY 4.0); இணையான பகுதிகள் UBS Parallel Passages Database, © 2023 United Bible Societies (CC BY-SA 4.0). விவரங்கள் செயலியில் "மூலங்களும் உரிமங்களும்" பகுதியில்.
 ```
 
 ## English (translation)
@@ -65,7 +65,7 @@ Tamil-English Bible: Hebrew root words for the OT, Greek for the NT.
 ```
 A Tamil-English Bible: read the Tamil Indian Revised Version (IRV) and the King James Version, and study the root words behind them, Hebrew in the Old Testament and Greek in the New.
 
-• The Tamil IRV and the King James Version, switched with one tap.
+• The Tamil IRV, the King James Version and the Berean Standard Bible in modern English, switched with one tap.
 • Tap an underlined Tamil word for its root word, Hebrew in the Old Testament or Greek in the New: meaning, pronunciation, grammar and Strong's dictionary entry.
 • Every verse where that root word stands, and the Tamil words the IRV uses for it.
 • Hebrew and Greek words: the Hebrew of every Old Testament verse and the Greek of every New Testament verse, word by word, with transliteration and a short meaning.
@@ -84,5 +84,5 @@ No internet needed: the whole text is inside the app. No ads, no account, and no
 
 The links between Tamil words and the Hebrew and Greek were made with computer help and may be wrong in places.
 
-Sources: Tamil Indian Revised Version (IRV), © 2017, 2019 Bridge Connectivity Solutions, from eBible.org (CC BY-SA 4.0); King James Version 1769 (public domain outside the United Kingdom); Hebrew and Greek text and meanings from STEPBible.org, Tyndale House Cambridge (CC BY 4.0); Strong's dictionary from Open Scriptures (CC BY-SA); cross references from OpenBible.info (CC BY 4.0); parallel passages from the UBS Parallel Passages Database, © 2023 United Bible Societies (CC BY-SA 4.0). Details are under Sources and licences in the app.
+Sources: Tamil Indian Revised Version (IRV), © 2017, 2019 Bridge Connectivity Solutions, from eBible.org (CC BY-SA 4.0); King James Version 1769 (public domain outside the United Kingdom); Berean Standard Bible (public domain, CC0); Hebrew and Greek text and meanings from STEPBible.org, Tyndale House Cambridge (CC BY 4.0); Strong's dictionary from Open Scriptures (CC BY-SA); cross references from OpenBible.info (CC BY 4.0); parallel passages from the UBS Parallel Passages Database, © 2023 United Bible Societies (CC BY-SA 4.0). Details are under Sources and licences in the app.
 ```

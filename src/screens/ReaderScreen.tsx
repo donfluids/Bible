@@ -914,6 +914,8 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   const swapTo: TranslationId = previous ?? (isIndian(translation) ? 'KJV' : (nativeBible ?? 'KJV'));
   const pillFont = (id: TranslationId) => scriptureFont(translationInfo(id).script ?? null, false, true);
   const nextTranslation = edition.translations[(edition.translations.indexOf(translation) + 1) % edition.translations.length];
+  // With two English Bibles (KJV and BSB) the pill names the next one, not just "English".
+  const englishCount = edition.translations.filter(isEnglish).length;
   const switchTranslation = async (next: TranslationId) => {
     if (next === translation) return;
     const seen = firstVisible.current;
@@ -1519,7 +1521,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             style={({ pressed }) => [styles.pill, { borderColor: theme.accent, opacity: pressed ? 0.7 : 1 }]}
           >
             <Text style={[styles.pillText, { color: theme.accent }]}>
-              {native ? (isEnglish(nextTranslation) ? t('bibleEnglish') : bibleLabel(nextTranslation)) : translation}
+              {native ? (isEnglish(nextTranslation) ? (englishCount > 1 ? nextTranslation : t('bibleEnglish')) : bibleLabel(nextTranslation)) : translation}
             </Text>
           </Pressable>
           )}

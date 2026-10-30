@@ -25,7 +25,7 @@ Malayalam speaker before it goes live.
 ```
 മലയാളം–ഇംഗ്ലീഷ് പഠന ബൈബിൾ: സത്യവേദപുസ്തകവും (1910) കിംഗ് ജെയിംസ് വേർഷനും വായിക്കാം; മിക്ക വാക്കുകളുടെയും മൂലപദങ്ങൾ (പഴയനിയമത്തിൽ എബ്രായ, പുതിയനിയമത്തിൽ ഗ്രീക്ക്) പഠിക്കാം.
 
-• സത്യവേദപുസ്തകവും കിംഗ് ജെയിംസ് വേർഷനും (KJV): ഒറ്റ സ്പർശത്തിൽ മാറാം.
+• സത്യവേദപുസ്തകം, കിംഗ് ജെയിംസ് വേർഷൻ (KJV), ആധുനിക ഇംഗ്ലീഷിലുള്ള ബെറിയൻ സ്റ്റാൻഡേർഡ് ബൈബിൾ (BSB): ഒറ്റ സ്പർശത്തിൽ മാറാം.
 • അദ്ധ്യായം കേൾക്കാം: ഫോണിന്റെ മലയാളം ശബ്ദത്തിൽ വാക്യം തോറും വായിച്ചു കേൾപ്പിക്കും; വായിക്കുന്ന വാക്യം തെളിഞ്ഞുനിൽക്കും, അടുത്ത അദ്ധ്യായത്തിലേക്കു തുടരും.
 • വാക്യം ആശംസാകാർഡാക്കി പങ്കുവയ്ക്കാം: ജന്മദിനം, വിവാഹം, വിവാഹ വാർഷികം, അനുശോചനം, ക്രിസ്മസ്, ഈസ്റ്റർ, പുതുവത്സരം; വാട്ട്സ്ആപ്പ് സ്റ്റാറ്റസിന് നീളത്തിലുള്ള കാർഡും.
 • അടിവരയിട്ട ഒരു മലയാളം വാക്കിൽ തൊട്ടാൽ അതിന്റെ മൂലപദം (പഴയനിയമത്തിൽ എബ്രായ, പുതിയനിയമത്തിൽ ഗ്രീക്ക്): അർത്ഥം, ഉച്ചാരണം, വ്യാകരണം, സ്ട്രോങ്സ് നിഘണ്ടു.
@@ -44,7 +44,7 @@ Malayalam speaker before it goes live.
 
 മലയാളം വാക്കുകളെ എബ്രായ, ഗ്രീക്ക് വാക്കുകളുമായി ബന്ധിപ്പിച്ചിരിക്കുന്നത് കമ്പ്യൂട്ടർ സഹായത്തോടെയാണ്; ചിലയിടങ്ങളിൽ പിശകുകൾ ഉണ്ടാകാം.
 
-ഉറവിടങ്ങൾ: സത്യവേദപുസ്തകം 1910, ഇന്നത്തെ അക്ഷരരീതിയിലുള്ള പതിപ്പ്, © 2015 The Free Bible Foundation, eBible.org (CC BY-SA 4.0); കിംഗ് ജെയിംസ് വേർഷൻ 1769 (യുണൈറ്റഡ് കിംഗ്ഡത്തിനു പുറത്ത് പൊതുസഞ്ചയം); എബ്രായ, ഗ്രീക്ക് പാഠവും അർത്ഥങ്ങളും STEPBible.org, Tyndale House Cambridge (CC BY 4.0); സ്ട്രോങ്സ് നിഘണ്ടു, Open Scriptures (CC BY-SA); ഒത്തുവാക്യങ്ങൾ OpenBible.info (CC BY 4.0); സമാന്തര ഭാഗങ്ങൾ UBS Parallel Passages Database, © 2023 United Bible Societies (CC BY-SA 4.0). വിശദാംശങ്ങൾ ആപ്പിലെ "ഉറവിടങ്ങളും അനുമതിപത്രങ്ങളും" എന്ന ഭാഗത്ത്.
+ഉറവിടങ്ങൾ: സത്യവേദപുസ്തകം 1910, ഇന്നത്തെ അക്ഷരരീതിയിലുള്ള പതിപ്പ്, © 2015 The Free Bible Foundation, eBible.org (CC BY-SA 4.0); കിംഗ് ജെയിംസ് വേർഷൻ 1769 (യുണൈറ്റഡ് കിംഗ്ഡത്തിനു പുറത്ത് പൊതുസഞ്ചയം); ബെറിയൻ സ്റ്റാൻഡേർഡ് ബൈബിൾ (പൊതുസഞ്ചയം, CC0); എബ്രായ, ഗ്രീക്ക് പാഠവും അർത്ഥങ്ങളും STEPBible.org, Tyndale House Cambridge (CC BY 4.0); സ്ട്രോങ്സ് നിഘണ്ടു, Open Scriptures (CC BY-SA); ഒത്തുവാക്യങ്ങൾ OpenBible.info (CC BY 4.0); സമാന്തര ഭാഗങ്ങൾ UBS Parallel Passages Database, © 2023 United Bible Societies (CC BY-SA 4.0). വിശദാംശങ്ങൾ ആപ്പിലെ "ഉറവിടങ്ങളും അനുമതിപത്രങ്ങളും" എന്ന ഭാഗത്ത്.
 ```
 
 ## English (translation)
@@ -66,7 +66,7 @@ Malayalam-English Study Bible, with Hebrew and Greek root words and book intros
 ```
 A Malayalam-English Study Bible: read the Sathyavedapusthakam (1910) and the King James Version, and study the root words behind most of the Malayalam words, Hebrew in the Old Testament and Greek in the New.
 
-• The Sathyavedapusthakam and the King James Version, switched with one tap.
+• The Sathyavedapusthakam, the King James Version and the Berean Standard Bible in modern English, switched with one tap.
 • Tap an underlined Malayalam word for its root word, Hebrew in the Old Testament or Greek in the New: meaning, pronunciation, grammar and Strong's dictionary entry.
 • Every verse where that root word stands, and the Malayalam words the Sathyavedapusthakam uses for it.
 • Hebrew and Greek words: the Hebrew of every Old Testament verse and the Greek of every New Testament verse, word by word, with transliteration and a short meaning.
@@ -85,5 +85,5 @@ No internet needed: the whole text is inside the app. No ads, no account, and no
 
 The links between Malayalam words and the Hebrew and Greek were made with computer help and may be wrong in places.
 
-Sources: Sathyavedapusthakam 1910, revised edition in contemporary orthography, © 2015 The Free Bible Foundation, from eBible.org (CC BY-SA 4.0); King James Version 1769 (public domain outside the United Kingdom); Hebrew and Greek text and meanings from STEPBible.org, Tyndale House Cambridge (CC BY 4.0); Strong's dictionary from Open Scriptures (CC BY-SA); cross references from OpenBible.info (CC BY 4.0); parallel passages from the UBS Parallel Passages Database, © 2023 United Bible Societies (CC BY-SA 4.0). Details are under Sources and licences in the app.
+Sources: Sathyavedapusthakam 1910, revised edition in contemporary orthography, © 2015 The Free Bible Foundation, from eBible.org (CC BY-SA 4.0); King James Version 1769 (public domain outside the United Kingdom); Berean Standard Bible (public domain, CC0); Hebrew and Greek text and meanings from STEPBible.org, Tyndale House Cambridge (CC BY 4.0); Strong's dictionary from Open Scriptures (CC BY-SA); cross references from OpenBible.info (CC BY 4.0); parallel passages from the UBS Parallel Passages Database, © 2023 United Bible Societies (CC BY-SA 4.0). Details are under Sources and licences in the app.
 ```

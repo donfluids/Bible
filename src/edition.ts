@@ -17,8 +17,8 @@ export interface Edition {
 
 export const EDITIONS: Record<EditionId, Edition> = {
   en: { id: 'en', translations: ['KJV', 'BSB', 'WEB'], defaultTranslation: 'KJV', languages: ['en'] },
-  ml: { id: 'ml', translations: ['MAL', 'KJV'], defaultTranslation: 'MAL', languages: ['ml', 'en'] },
-  ta: { id: 'ta', translations: ['TAM', 'KJV'], defaultTranslation: 'TAM', languages: ['ta', 'en'] },
+  ml: { id: 'ml', translations: ['MAL', 'KJV', 'BSB'], defaultTranslation: 'MAL', languages: ['ml', 'en'] },
+  ta: { id: 'ta', translations: ['TAM', 'KJV', 'BSB'], defaultTranslation: 'TAM', languages: ['ta', 'en'] },
   // The four-language app: every Bible the others carry, and the Hindi. Its interface is
   // English, Malayalam, Tamil or Hindi; the first opening asks which.
   all: { id: 'all', translations: ['KJV', 'BSB', 'WEB', 'MAL', 'TAM', 'HIN'], defaultTranslation: 'KJV', languages: ['en', 'ml', 'ta', 'hi'] },
