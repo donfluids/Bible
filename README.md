@@ -27,11 +27,11 @@ sources, which have drifted from the ones the database was built from (see Rebui
 database), so it could not reproduce this one. Keeping a copy of the sources (for example as
 release files) would let it.
 
-The edition is chosen at build time with `BIBLE_EDITION=en` (default) or
-`BIBLE_EDITION=ml`; see `src/edition.ts`, `app.config.js` and `metro.config.js`.
-Each edition has its own database (`assets/db/bible-en.db`, `assets/db/bible-ml.db`),
-icon set (`assets/icons/<edition>/`), app name and package id, so both can be
-installed side by side. Every feature below is in both apps. In the Malayalam
+The edition is chosen at build time with `BIBLE_EDITION=en` (default), `ml`, `ta` or
+`all`; see `src/edition.ts`, `app.config.js` and `metro.config.js`. Each edition has its
+own database (`assets/db/bible-<edition>.db`), icon set (`assets/icons/<edition>/`), app
+name and package id, so all four can be installed side by side. Every feature below is
+in every app. In the Malayalam
 app, Malayalam words are linked to their Hebrew or Greek by a machine alignment
 (see Malayalam word links below), so tapping a word, the occurrence lists and the
 rendering counts all work in Malayalam.
@@ -134,8 +134,8 @@ rendering counts all work in Malayalam.
   the left edge. Rotates to landscape; on tablets the text keeps a
   comfortable column width.
 - Appearance: light, sepia or dark (or follow the phone), a serif typeface, verse-per-line
-  or paragraph layout, and keep-the-screen-awake. Both apps are brown on cream
-  paper; all three apps share one icon, an open white book under a lamp's flame on brown (Psalm 119:105). Android-style top bars and icons (Material Symbols
+  or paragraph layout, and keep-the-screen-awake. The apps are brown on cream paper
+  (the Tamil one blue); all four share one icon, an open white book under a lamp's flame on brown (Psalm 119:105). Android-style top bars and icons (Material Symbols
   Rounded), and one bottom-sheet style throughout; the verse sheet has Copy, Share,
   Bookmark and Note buttons and highlight colours in one place.
 - Text size in eight steps, from Settings or by pinching the text with two fingers.
@@ -152,6 +152,8 @@ rendering counts all work in Malayalam.
    npm install
    npm start          # English edition
    npm run start:ml   # Malayalam edition
+   npm run start:ta   # Tamil edition
+   npm run start:all  # four-language edition (build its database first, see above)
    ```
 
 4. Scan the QR code shown in the terminal with your phone's camera (iPhone) or
@@ -219,7 +221,7 @@ src/selection.ts         The word whose sheet is open, so only its verse redraws
 src/fonts.ts             Hebrew and Malayalam typefaces built into the app
 src/licences.ts          Sources, licences and changes shown under Sources and licences
 plugins/withAndroidRelease.js  Android release signing and shrinking
-plugins/withBackupRules.js     Keeps the 47 MB database out of Android backup, so notes are backed up
+plugins/withBackupRules.js     Keeps the database (50-105 MB) out of Android backup, so notes are backed up
 app.config.js            Per-edition and per-build values layered over app.json
 src/navigation.ts        Screen names and parameters for the native stack
 src/refs.ts              Parses typed references like "1 Cor 13:4" and finds them in written text
@@ -241,7 +243,7 @@ scripts/make-feature-graphic.mjs  Draws the Play feature graphics from the same 
 scripts/make-icon-font.py  Cuts the interface icons out of Material Symbols Rounded
 scripts/notices.mjs      Lists the third-party software in the app with licences and copyright lines (src/notices.json)
 scripts/review-strings.mjs        Rewrites the strings table of docs/tamil-review.md or docs/hindi-review.md (ta | hi) from src/i18n.ts
-assets/db/               bible-en.db (32 MB) and bible-ml.db (47 MB), one per edition
+assets/db/               bible-en.db (50 MB), bible-ml.db (52 MB), bible-ta.db (55 MB) and bible-all.db (104 MB, not committed), one per edition
 assets/icons/            Icon, adaptive icon layers and splash images per edition (the same in each)
 data/overrides/          Hand corrections: Malayalam text, verse map, short meanings
 src/edition.ts           Which texts and interface languages this build carries
