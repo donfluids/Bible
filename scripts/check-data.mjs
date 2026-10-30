@@ -6,7 +6,8 @@
 // Rules that always hold: 66 books and 1,189 chapters; every chapter's verses numbered
 // from 1 without a gap or a duplicate; the KJV's 31,102 verses; no empty verse; no
 // replacement or control characters, markup or doubled spaces in the text; Malayalam
-// and Tamil text without stray Latin letters; every word link (tags) inside its verse
+// and Tamil text without stray Latin letters or a bridged verse's "-18" at a verse's start;
+// every verse outside the KJV numbering mapped to it (verse_map); every word link (tags) inside its verse
 // and pointing at a Strong's entry that exists; every concordance, rendering, note and
 // heading pointing at a verse that exists; every cross reference from and to KJV verses;
 // every lexicon entry belonging to a Strong's entry. Then the snapshot (data/checks/verse-counts.json): the number of verses in each
@@ -72,7 +73,7 @@ for (const file of readdirSync(DB_DIR).filter((f) => /^bible-\w+\.db$/.test(f)).
     const rows = all('SELECT book, chapter, verse, text, tags, omitted FROM verses WHERE translation = ? ORDER BY book, chapter, verse', t);
     const keys = verseKeys.get(t);
     const counts = {};
-    const gaps = [], empty = [], bad = [], markup = [], spaces = [], latin = [], tagProblems = [], unknown = [], outside = [];
+    const gaps = [], empty = [], bad = [], markup = [], spaces = [], latin = [], tagProblems = [], unknown = [], outside = [], number = [];
     let shown = 0;
     const byChapter = new Map();
     for (const r of rows) {
@@ -88,6 +89,9 @@ for (const file of readdirSync(DB_DIR).filter((f) => /^bible-\w+\.db$/.test(f)).
       if (BAD_CHARS.test(r.text)) bad.push(`${at} ${JSON.stringify(r.text.match(BAD_CHARS)[0])}`);
       if (MARKUP.test(r.text)) markup.push(`${at} …${r.text.slice(Math.max(0, r.text.search(MARKUP) - 15), r.text.search(MARKUP) + 15)}…`);
       if (/ {2,}/.test(r.text)) spaces.push(at);
+      // What is left of a bridged verse number ("-18 அப்பொழுது"). A leading number cannot be
+      // checked so: the Tamil writes numbers as digits ("40 நாட்களுக்குப்").
+      if (SCRIPT[t] && /^-\d/.test(r.text)) number.push(`${at} ${r.text.slice(0, 20)}…`);
       if (SCRIPT[t] && /[A-Za-z]/.test(r.text)) latin.push(`${at} …${r.text.slice(Math.max(0, r.text.search(/[A-Za-z]/) - 10), r.text.search(/[A-Za-z]/) + 10)}…`);
       if (r.tags) {
         const prefix = r.book <= 39 ? 'H' : 'G';
@@ -123,7 +127,20 @@ for (const file of readdirSync(DB_DIR).filter((f) => /^bible-\w+\.db$/.test(f)).
     report(warnings, `${label} ${t}: left-over markup`, markup);
     report(warnings, `${label} ${t}: doubled spaces`, spaces);
     report(warnings, `${label} ${t}: Latin letters in the text`, latin);
+    report(errors, `${label} ${t}: a verse starting with "-" and a number`, number);
     snapshot[label][t] = { verses: shown, chapters: counts };
+  }
+
+  // A verse the KJV numbering lacks (a psalm's title aside) needs a verse_map row, or it has no Hebrew or Greek,
+  // no cross references and no partner side by side (data/overrides/versification.json).
+  const kjvKeys = verseKeys.get('KJV');
+  if (kjvKeys) {
+    const mapped = new Set(all('SELECT translation, book, chapter, verse FROM verse_map').map((r) => `${r.translation} ${r.book}:${r.chapter}:${r.verse}`));
+    for (const t of translations) {
+      if (t === 'KJV') continue;
+      const unmapped = [...verseKeys.get(t)].filter((k) => !k.endsWith(':0') && !kjvKeys.has(k) && !mapped.has(`${t} ${k}`)).map((k) => `${t} ${k}`);
+      report(errors, `${label} ${t}: verses not in the KJV numbering and not mapped to it`, unmapped);
+    }
   }
 
   // Everything that points at a verse or a Strong's entry.

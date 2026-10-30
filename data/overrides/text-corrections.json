@@ -1,5 +1,5 @@
 {
- "description": "Corrections to the Malayalam source text (eBible mal2015). The eBible edition repeats Titus 1 in place of Titus 2 and 3 and has stray test text at the start of Titus 1:1; the same faults are on eBible.org. Titus 2 and 3 here are the 1910 Sathyavedapusthakam text from Malayalam Wikisource (public domain); Titus 1:1 is the eBible text with the stray words removed. Transcription slips in the Wikisource text are corrected to the spelling this Bible uses elsewhere (2:5 ആയിരിപ്പാൻ, ഭർത്താക്കന്മാർക്കും; 2:8 പത്ഥ്യവചനവും; 2:10 കാണിക്കുന്നവരുമായി; 3:2 ഓർമ്മപ്പെടുത്തുക; 3:15 വന്ദനം ചൊല്ലുന്നു and the final full stop), and the old AU sign ൌ is written ൗ as in the rest of the text. The bracketed (കല്പിക്ക) in 2:10 is kept as Wikisource prints it.",
+ "description": "Corrections to the Malayalam source text (eBible mal2015). The eBible edition repeats Titus 1 in place of Titus 2 and 3 and has stray test text at the start of Titus 1:1; the same faults are on eBible.org. Titus 2 and 3 here are the 1910 Sathyavedapusthakam text from Malayalam Wikisource (public domain); Titus 1:1 is the eBible text with the stray words removed. Transcription slips in the Wikisource text are corrected to the spelling this Bible uses elsewhere (2:5 ആയിരിപ്പാൻ, ഭർത്താക്കന്മാർക്കും; 2:8 പത്ഥ്യവചനവും; 2:10 കാണിക്കുന്നവരുമായി; 3:2 ഓർമ്മപ്പെടുത്തുക; 3:15 വന്ദനം ചൊല്ലുന്നു and the final full stop), and the old AU sign ൌ is written ൗ as in the rest of the text. The bracketed (കല്പിക്ക) in 2:10 is kept as Wikisource prints it. Tamil (TAM, eBible tam2017): four verses begin with a stray number in the source, a footnote or line number left in the text (Acts 1:1 \"48\", Joshua 15:11 \"1\", Song of Songs 7:9 \"13\"), and Revelation 12:17 is numbered 17-18, which leaves \"-18\" at its start; these are stripped.",
  "sources": {
   "Titus 2": "https://ml.wikisource.org/wiki/സത്യവേദപുസ്തകം/തീത്തൊസ്/അദ്ധ്യായം_2",
   "Titus 3": "https://ml.wikisource.org/wiki/സത്യവേദപുസ്തകം/തീത്തൊസ്/അദ്ധ്യായം_3"
@@ -46,6 +46,12 @@
  "strip": {
   "MAL": {
    "56:1:1": "Testing ag live sync "
+  },
+  "TAM": {
+   "44:1:1": "48 ",
+   "6:15:11": "1 ",
+   "22:7:9": "13 ",
+   "66:12:17": "-18 "
   }
  },
  "replace": {

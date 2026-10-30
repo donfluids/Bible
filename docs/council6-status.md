@@ -27,8 +27,8 @@ Status: **done** (committed and pushed), **partly**, **open**, or **yours** (a d
 | 7 | Database fingerprint, source checks, CI | partly (d567b69): fingerprint stable, sources checked. CI cannot build the four-language app until a copy of the sources is kept (release files); the Sources screen no longer says that database is on GitHub |
 | 8 | Hindi introductions: Hebrews meaning, honorifics, Esther, grammar | open |
 | 9 | Hindi interface slips | open |
-| 10 | Two Hindi verses without a KJV partner | open |
-| 11 | Four Tamil verses start with a stray number | open |
+| 10 | Two Hindi verses without a KJV partner | done; the data check now fails on any unmapped verse |
+| 11 | Four Tamil verses start with a stray number | done; the data check catches a bridged verse's "-18" |
 | 12 | Introductions' licence and credit; IRV change statements; README | open |
 | 13 | Package name, app name, icon, store languages, the Tamil app | **yours** |
 | 14 | Four-language backups lose their app tag; iOS languages miss Hindi | open |
