@@ -19,7 +19,7 @@ import { TAB_BAR_HEIGHT, TabBar } from '../components/TabBar';
 import { Icon, IconButton } from '../components/Icon';
 import type { IconName } from '../components/Icon';
 import { isMultilingual, pairedBible, useEdition } from '../edition';
-import { scriptOf, scriptureFont } from '../fonts';
+import { languageScript, scriptOf, scriptureFont } from '../fonts';
 import type { Script } from '../fonts';
 import { shortBookName } from '../shortNames';
 import { PassagePicker } from '../components/PassagePicker';
@@ -1221,17 +1221,21 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   const onContentSizeChange = useCallback((_w: number, h: number) => {
     contentHeight.current = h;
   }, []);
+  // The cards above the text follow the reader's size, a little smaller, with room for
+  // Malayalam, Tamil and Hindi vowel signs.
+  const cardSize = Math.max(15, Math.min(fontSize - 3, 26));
+  const cardText = { fontSize: cardSize, lineHeight: Math.round(cardSize * (languageScript(settings.language) ? 1.6 : 1.4)) };
   const listHeader = useMemo(
     () => (
       <>
         {tipSeen ? null : (
           <View style={[styles.tip, { backgroundColor: theme.accentSoft, borderColor: theme.border }]}>
-            <Text style={[styles.tipText, { color: theme.text }]}>{translationInfo(translation).tagged ? t('tip') : t('tipNoTags')}</Text>
+            <Text style={[styles.tipText, cardText, { color: theme.text }]}>{translationInfo(translation).tagged ? t('tip') : t('tipNoTags')}</Text>
             <View style={styles.tipButtons}>
-              <Pressable onPress={onOpenHowTo} hitSlop={8} accessibilityRole="button">
+              <Pressable onPress={onOpenHowTo} accessibilityRole="button" style={styles.tipButton}>
                 <Text style={[styles.tipDismiss, { color: theme.accent }]}>{t('howTo')}</Text>
               </Pressable>
-              <Pressable onPress={() => update({ tipSeen: true })} hitSlop={8} accessibilityRole="button">
+              <Pressable onPress={() => update({ tipSeen: true })} accessibilityRole="button" style={styles.tipButton}>
                 <Text style={[styles.tipDismiss, { color: theme.accent }]}>{t('gotIt')}</Text>
               </Pressable>
             </View>
@@ -1240,9 +1244,9 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
         {/* Once, when the Hindi opens: its words are not linked yet. */}
         {tipSeen && !marking && translation === 'HIN' && !hindiNoteSeen ? (
           <View style={[styles.tip, { backgroundColor: theme.accentSoft, borderColor: theme.border }]}>
-            <Text style={[styles.tipText, { color: theme.text }]}>{t('hindiNote')}</Text>
+            <Text style={[styles.tipText, cardText, { color: theme.text }]}>{t('hindiNote')}</Text>
             <View style={styles.tipButtons}>
-              <Pressable onPress={() => update({ hindiNoteSeen: true })} hitSlop={8} accessibilityRole="button">
+              <Pressable onPress={() => update({ hindiNoteSeen: true })} accessibilityRole="button" style={styles.tipButton}>
                 <Text style={[styles.tipDismiss, { color: theme.accent }]}>{t('gotIt')}</Text>
               </Pressable>
             </View>
@@ -1251,12 +1255,12 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
         {/* After a fortnight with the app, once: an invitation to write to us. */}
         {tipSeen && !marking && feedbackCardDue(feedbackDue, Date.now()) ? (
           <View style={[styles.tip, { backgroundColor: theme.accentSoft, borderColor: theme.border }]}>
-            <Text style={[styles.tipText, { color: theme.text }]}>{t('feedbackCard')}</Text>
+            <Text style={[styles.tipText, cardText, { color: theme.text }]}>{t('feedbackCard')}</Text>
             <View style={styles.tipButtons}>
-              <Pressable onPress={() => update({ feedbackDue: feedbackLater(Date.now()) })} hitSlop={8} accessibilityRole="button">
+              <Pressable onPress={() => update({ feedbackDue: feedbackLater(Date.now()) })} accessibilityRole="button" style={styles.tipButton}>
                 <Text style={[styles.tipDismiss, { color: theme.accent }]}>{t('feedbackNotNow')}</Text>
               </Pressable>
-              <Pressable onPress={() => update({ feedbackDue: FEEDBACK_NEVER })} hitSlop={8} accessibilityRole="button">
+              <Pressable onPress={() => update({ feedbackDue: FEEDBACK_NEVER })} accessibilityRole="button" style={styles.tipButton}>
                 <Text style={[styles.tipDismiss, { color: theme.accent }]}>{t('feedbackNever')}</Text>
               </Pressable>
               <Pressable
@@ -1264,10 +1268,10 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
                   update({ feedbackDue: FEEDBACK_NEVER });
                   writeToUs();
                 }}
-                hitSlop={8}
                 accessibilityRole="button"
+                style={[styles.tipButton, styles.tipMain, { backgroundColor: theme.accent }]}
               >
-                <Text style={[styles.tipDismiss, { color: theme.accent }]}>{t('feedback')}</Text>
+                <Text style={[styles.tipDismiss, { color: theme.onAccent }]}>{t('feedback')}</Text>
               </Pressable>
             </View>
           </View>
@@ -1294,7 +1298,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
       </>
     ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [tipSeen, feedbackDue, hindiNoteSeen, writeToUs, theme, translation, t, update, marking, interlinear, interlinearMode, book?.testament, position.chapter, position.book, books, settings.serif, onOpenIntro, study, onOpenHowTo],
+    [tipSeen, feedbackDue, hindiNoteSeen, writeToUs, theme, translation, t, update, marking, cardSize, cardText.lineHeight, interlinear, interlinearMode, book?.testament, position.chapter, position.book, books, settings.serif, onOpenIntro, study, onOpenHowTo],
   );
   const onScrollToIndexFailed = useCallback((info: { index: number; averageItemLength: number }) => {
     // The row is not measured yet: get near it, then retry with the same placement.
@@ -1497,10 +1501,11 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
                 hitSlop={6}
                 accessibilityRole="button"
                 accessibilityLabel={t('switchTo', { name: bibleName(settings.language, swapTo) })}
-                style={({ pressed }) => [styles.pill, styles.pillIcon, { borderColor: theme.border, opacity: pressed ? 0.7 : 1 }]}
+                // A button's outline (muted, not the faint border) and a label as large as the open Bible's.
+                style={({ pressed }) => [styles.pill, styles.pillIcon, { borderColor: theme.muted, opacity: pressed ? 0.7 : 1 }]}
               >
                 <Icon name="swap_horiz" size={20} color={theme.accent} />
-                <Text style={[styles.pillText, styles.pillSmall, { color: theme.muted }, pillFont(swapTo) ? { fontFamily: pillFont(swapTo), fontWeight: 'normal' } : null]}>{pillLabel(swapTo)}</Text>
+                <Text style={[styles.pillText, { color: theme.text }, pillFont(swapTo) ? { fontFamily: pillFont(swapTo), fontWeight: 'normal' } : null]}>{pillLabel(swapTo)}</Text>
               </Pressable>
             ) : null}
             </>
@@ -1571,14 +1576,17 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
           [t('indianBibles'), edition.translations.filter((id) => !isEnglish(id))],
         ].map(([heading, ids]) => (
           <View key={heading as string}>
-            <Text style={[styles.sheetGroup, { color: theme.accent }]}>{heading as string}</Text>
+            <Text style={[styles.sheetGroup, { color: theme.accent }]} accessibilityRole="header">
+              {heading as string}
+            </Text>
             {(ids as TranslationId[]).map((id) => (
               <SheetAction
                 key={id}
                 icon={id === translation ? 'check' : 'menu_book'}
+                selected={id === translation}
                 label={NATIVE_BIBLE_NAME[id] ?? translationName(settings.language, id)}
                 labelFont={pillFont(id) ? scriptureFont(translationInfo(id).script ?? null, false) : undefined}
-                detail={isEnglish(id) ? `English · ${id}` : `${LANGUAGE_WORD[id]} · ${englishName(id)}`}
+                detail={isEnglish(id) ? `${settings.language === 'en' ? 'English' : t('bibleEnglish')} · ${id}` : `${LANGUAGE_WORD[id]} · ${englishName(id)}`}
                 onPress={() => {
                   setChoosingBible(false);
                   switchTranslation(id);
@@ -2142,7 +2150,10 @@ const styles = StyleSheet.create({
   verseBookmarked: { borderLeftWidth: 3, paddingLeft: 8, marginLeft: -11 },
   tip: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, padding: 14, marginBottom: 10 },
   tipText: { fontSize: 15, lineHeight: 21 },
-  tipButtons: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', columnGap: 24, rowGap: 8, marginTop: 8 },
+  tipButtons: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', alignItems: 'center', columnGap: 4, rowGap: 4, marginTop: 6 },
+  // Each a full 48 dp to touch; the card's main action is filled.
+  tipButton: { minHeight: 48, justifyContent: 'center', paddingHorizontal: 12 },
+  tipMain: { borderRadius: 24, paddingHorizontal: 18 },
   tipDismiss: { fontSize: 15, fontWeight: '700' },
   modeHint: { fontSize: 12, marginBottom: 6 },
   aboutRow: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, marginBottom: 4 },
@@ -2151,7 +2162,6 @@ const styles = StyleSheet.create({
   pillText: { fontSize: 14, fontWeight: '600' },
   pillRow: { flexDirection: 'row', alignItems: 'center', paddingRight: 8 },
   pillIcon: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10 },
-  pillSmall: { fontSize: 12 },
   sheetGroup: { fontSize: 13, fontWeight: '600', marginTop: 10, marginBottom: 2 },
   heading: { fontWeight: '700', letterSpacing: 1, marginTop: 14, marginBottom: 2 },
   // Letter spacing breaks up Malayalam conjuncts on some phones.

@@ -95,10 +95,12 @@ interface ActionProps {
   detailLines?: number;
   /** A bundled typeface for the label, for a name in an Indian script. */
   labelFont?: string;
+  /** The choice now in use, for a screen reader (the tick shows it on screen). */
+  selected?: boolean;
 }
 
 /** A row in a sheet: an icon, a label and an optional line under it. */
-export function SheetAction({ label, detail, icon, onPress, destructive, detailLines = 3, labelFont }: ActionProps) {
+export function SheetAction({ label, detail, icon, onPress, destructive, detailLines = 3, labelFont, selected }: ActionProps) {
   const theme = useTheme();
   const color = destructive ? theme.error : theme.text;
   return (
@@ -107,6 +109,7 @@ export function SheetAction({ label, detail, icon, onPress, destructive, detailL
       android_ripple={{ color: theme.accentSoft }}
       style={({ pressed }) => [styles.action, { backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
       accessibilityRole="button"
+      accessibilityState={selected === undefined ? undefined : { selected }}
     >
       {icon ? <Icon name={icon} color={destructive ? theme.error : theme.muted} /> : null}
       <View style={styles.actionTexts}>

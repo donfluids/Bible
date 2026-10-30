@@ -277,6 +277,7 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | inThisVerse | In this verse | इस पद में | |
 | compoundWord | This word joins {n} Hebrew or Greek words; tap one | यह शब्द {n} इब्रानी या यूनानी शब्दों को जोड़ता है; एक छुएँ | |
 | dictionaryForm | Dictionary form | शब्दकोश रूप | |
+| usualMeaning | Usual meaning across the Bible | पूरी बाइबल में सामान्य अर्थ | |
 | examples | Examples | उदाहरण | |
 | relatedWords | Related words | संबंधित शब्द | |
 | strongsDictionary | Strong's dictionary (1890) | Strong का शब्दकोश (1890) | |

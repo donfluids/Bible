@@ -303,7 +303,8 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
         ) : null}
       </View>
       {multilingual ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled" style={styles.biblesRow} contentContainerStyle={styles.bibles}>
+        // All six at once, on two lines if need be: in a sideways scroll the last were missed.
+        <View accessibilityRole="radiogroup" style={[styles.biblesRow, styles.bibles, styles.biblesWrap]}>
           {edition.translations.map((id) => {
             const active = id === translation;
             const font = scriptureFont(translationInfo(id).script ?? null, false, true);
@@ -311,6 +312,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
               <Pressable
                 key={id}
                 onPress={() => setSearchIn(id)}
+                hitSlop={4}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: active }}
                 accessibilityLabel={bibleName(settings.language, id)}
@@ -321,7 +323,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
               </Pressable>
             );
           })}
-        </ScrollView>
+        </View>
       ) : null}
       <FlatList
         data={results ?? []}
@@ -387,6 +389,7 @@ const styles = StyleSheet.create({
   failed: { fontSize: 15, paddingHorizontal: 18, paddingVertical: 12 },
   // The row keeps its height; the list below would otherwise squeeze it to nothing.
   biblesRow: { flexGrow: 0, flexShrink: 0 },
+  biblesWrap: { flexDirection: 'row', flexWrap: 'wrap' },
   bibles: { paddingHorizontal: 14, paddingBottom: 8, gap: 8 },
   moreRow: { justifyContent: 'center' },
   lexicon: { marginHorizontal: 14, marginBottom: 10, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },

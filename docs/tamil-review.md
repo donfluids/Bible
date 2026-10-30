@@ -377,6 +377,7 @@ Words chosen for the app's own features, used throughout:
 | inThisVerse | In this verse | இந்த வசனத்தில் | |
 | compoundWord | This word joins {n} Hebrew or Greek words; tap one | இந்த வார்த்தை {n} எபிரெய அல்லது கிரேக்கச் சொற்களை இணைக்கிறது; அவற்றில் ஒன்றைத் தொடுங்கள் | |
 | dictionaryForm | Dictionary form | அகராதி வடிவம் | |
+| usualMeaning | Usual meaning across the Bible | வேதாகமம் முழுவதிலும் பொதுவான பொருள் | |
 | examples | Examples | எடுத்துக்காட்டுகள் | |
 | relatedWords | Related words | தொடர்புடைய சொற்கள் | |
 | strongsDictionary | Strong's dictionary (1890) | ஸ்ட்ராங் அகராதி (1890) | |

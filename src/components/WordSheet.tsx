@@ -415,7 +415,11 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                     {entry.gloss ? <Text style={[styles.meaningSub, { color: theme.muted }]}>{entry.gloss}</Text> : null}
                   </>
                 ) : entry.gloss ? (
-                  <Text style={[styles.meaning, { color: theme.text }]}>{entry.gloss}</Text>
+                  <>
+                    {/* Beside this verse's meaning above ("creature"), the word's usual one ("soul"). */}
+                    {inVerse.length > 0 ? <Text style={[styles.inTextLabel, styles.usualLabel, { color: theme.muted }]}>{t('usualMeaning')}</Text> : null}
+                    <Text style={[styles.meaning, { color: theme.text }]}>{entry.gloss}</Text>
+                  </>
                 ) : null}
                 {pron.length > 0 || (entry.translit && !sameTranslit) ? (
                   <Text style={styles.pronRow}>
@@ -798,6 +802,7 @@ const styles = StyleSheet.create({
   compoundLemma: { fontSize: 20 },
   compoundGloss: { fontSize: 13, marginTop: 1 },
   dictionaryLabel: { marginTop: 4 },
+  usualLabel: { marginTop: 4, marginBottom: 0 },
   wordRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', columnGap: 12 },
   tapped: { fontSize: 20, flexShrink: 1, maxWidth: '45%' },
   lemma: { fontSize: 42, lineHeight: 58 },

@@ -26,6 +26,19 @@ const CHOICES: { code: string; name: string; bible: string; go: string; note?: s
   { code: 'hi', name: 'हिन्दी', bible: 'इंडियन रिवाइज्ड वर्जन', go: 'जारी रखें', script: 'hi', choice: { language: 'hi', translation: 'HIN' } },
 ];
 
+/** "Choose your language" in each of the four. */
+const PROMPTS: Record<string, string> = {
+  en: 'Choose your language',
+  ml: 'ഭാഷ തിരഞ്ഞെടുക്കുക',
+  ta: 'மொழியைத் தேர்ந்தெடுக்கவும்',
+  hi: 'भाषा चुनें',
+};
+const PROMPT_ORDER = ['en', 'ml', 'ta', 'hi'];
+const promptFont = (code: string) => {
+  const script = CHOICES.find((c) => c.code === code)?.script;
+  return script ? { fontFamily: scriptureFont(script, false), fontWeight: 'normal' as const } : null;
+};
+
 /** The language the phone is set to, when it is one of the four; English otherwise. */
 export function phoneLanguage(): string {
   try {
@@ -55,16 +68,15 @@ export function LanguageScreen({ onChoose }: { onChoose: (choice: LanguageChoice
     >
       <Image source={require('../../assets/icons/all/splash-icon.png')} style={styles.icon} accessibilityIgnoresInvertColors />
       <Text style={[styles.welcome, { color: theme.muted }]}>Read the Bible in your language</Text>
-      <Text style={[styles.title, { color: theme.text }]} accessibilityRole="header">
-        Choose your language
+      {/* The question in the phone's language first and large, then in the other three. */}
+      <Text style={[styles.title, { color: theme.text }, promptFont(phone)]} accessibilityRole="header">
+        {PROMPTS[phone]}
       </Text>
-      <Text style={[styles.subtitle, { color: theme.muted }]}>
-        <Text style={{ fontFamily: scriptureFont('ml', false) }}>ഭാഷ തിരഞ്ഞെടുക്കുക</Text>
-        {'  ·  '}
-        <Text style={{ fontFamily: scriptureFont('ta', false) }}>மொழியைத் தேர்ந்தெடுக்கவும்</Text>
-        {'  ·  '}
-        <Text style={{ fontFamily: scriptureFont('hi', false) }}>भाषा चुनें</Text>
-      </Text>
+      {PROMPT_ORDER.filter((code) => code !== phone).map((code) => (
+        <Text key={code} style={[styles.subtitle, { color: theme.text }, promptFont(code)]}>
+          {PROMPTS[code]}
+        </Text>
+      ))}
       <View style={styles.list}>
         {choices.map((c) => {
           const first = c.code === phone;
@@ -76,7 +88,8 @@ export function LanguageScreen({ onChoose }: { onChoose: (choice: LanguageChoice
               android_ripple={{ color: theme.accentSoft }}
               accessibilityRole="button"
               accessibilityLabel={`${c.name}, ${c.bible}`}
-              accessibilityState={{ selected: first }}
+              // The phone's language comes first, ticked; a screen reader hears why, not "selected".
+              accessibilityHint={first ? c.go : undefined}
               style={({ pressed }) => [
                 styles.choice,
                 { borderColor: first ? theme.accent : theme.border, backgroundColor: pressed ? theme.accentSoft : first ? theme.accentSoft : theme.card },
@@ -103,7 +116,7 @@ const styles = StyleSheet.create({
   icon: { width: 64, height: 64, alignSelf: 'center', borderRadius: 16 },
   welcome: { fontSize: 14, textAlign: 'center', marginTop: 10 },
   title: { fontSize: 24, fontWeight: '600', textAlign: 'center', marginTop: 2 },
-  subtitle: { fontSize: 13, lineHeight: 22, textAlign: 'center', marginTop: 6 },
+  subtitle: { fontSize: 16, lineHeight: 26, textAlign: 'center', marginTop: 4 },
   list: { marginTop: 18, gap: 8 },
   choice: { minHeight: 64, borderWidth: 1, borderRadius: 16, paddingLeft: 18, paddingRight: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 12 },
   choiceFirst: { borderWidth: 2 },

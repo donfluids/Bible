@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, PixelRatio, StyleSheet, Text, View } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import { Header } from '../components/Header';
 import { IconButton } from '../components/Icon';
@@ -10,6 +10,7 @@ import { selectPosition, selectRecent, usePlace } from '../place';
 import { useSettings } from '../settings';
 import { MAX_CONTENT_WIDTH, bookName } from '../text';
 import { useTheme } from '../theme';
+import { translationInfo } from '../types';
 import type { Book } from '../types';
 
 interface Props {
@@ -23,6 +24,8 @@ interface Props {
 const ROW_H = 50;
 /** A row of the two-column list: a name on two lines if need be. */
 const PAIR_ROW_H = 56;
+/** The two-column names' size; Malayalam, Tamil and Hindi lines get more height for their vowel signs. */
+const CELL_SIZE = 15;
 /** Recently read chapters in the clock's sheet (the reader keeps eight, the open one among them). */
 const MAX_RECENT = 7;
 
@@ -56,7 +59,13 @@ export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
   // The list opens a few rows above the book being read.
   const currentRow = (view === 'ALL' ? (currentTestament === 'OT' ? old : fresh) : shown).findIndex((b) => b.id === current);
   const initialIndex = view === 'ALL' || view === currentTestament ? Math.max(0, currentRow - 3) : 0;
-  const rowHeight = view === 'ALL' ? PAIR_ROW_H : ROW_H;
+  // Rows have a fixed height (the list jumps to the open book), so they grow with the
+  // phone's text size: a name of two lines must fit at Large text too.
+  const scale = Math.max(1, PixelRatio.getFontScale());
+  const cellLine = Math.round(CELL_SIZE * (translationInfo(settings.translation).script ? 1.5 : 1.27));
+  const pairRowH = Math.max(PAIR_ROW_H, Math.ceil(2 * cellLine * scale + 12));
+  const singleRowH = Math.max(ROW_H, Math.ceil(17 * 1.5 * scale + 20));
+  const rowHeight = view === 'ALL' ? pairRowH : singleRowH;
 
   const name = (b: Book) => bookName(books, b.id, settings.translation);
   const cell = (b: Book | undefined, side: 'left' | 'right') => {
@@ -74,7 +83,9 @@ export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
         accessibilityRole="button"
         accessibilityState={{ selected: active }}
       >
-        <Text style={[styles.cellName, { color: theme.text, fontWeight: active ? '700' : '400' }]}>{name(b)}</Text>
+        <Text style={[styles.cellName, { lineHeight: cellLine, color: theme.text, fontWeight: active ? '700' : '400' }]} numberOfLines={2}>
+          {name(b)}
+        </Text>
       </Pressable>
     );
   };
@@ -113,7 +124,7 @@ export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
               accessibilityState={{ selected: on }}
               style={[styles.segment, on && { backgroundColor: theme.accent }]}
             >
-              <Text style={[styles.segmentText, { color: on ? theme.onAccent : theme.accent, fontWeight: on ? '700' : '500' }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+              <Text style={[styles.segmentText, { color: on ? theme.onAccent : theme.accent, fontWeight: on ? '700' : '500' }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.9}>
                 {t(id === 'ALL' ? 'all' : id === 'OT' ? 'oldTestament' : 'newTestament')}
               </Text>
               <Text style={[styles.segmentCount, { color: on ? theme.onAccent : theme.accent }]}>{counts[id]}</Text>
@@ -129,7 +140,7 @@ export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
           initialScrollIndex={initialIndex}
           getItemLayout={(_, index) => ({ length: rowHeight, offset: rowHeight * index, index })}
           renderItem={({ item }) => (
-            <View style={[styles.pairRow, { borderBottomColor: theme.border }]}>
+            <View style={[styles.pairRow, { height: pairRowH, borderBottomColor: theme.border }]}>
               {cell(item.left, 'left')}
               {cell(item.right, 'right')}
             </View>
@@ -150,7 +161,7 @@ export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
               <Pressable
                 onPress={() => onPick(item)}
                 android_ripple={{ color: theme.accentSoft }}
-                style={({ pressed }) => [styles.row, { borderBottomColor: theme.border, backgroundColor: pressed || active ? theme.accentSoft : 'transparent' }]}
+                style={({ pressed }) => [styles.row, { height: singleRowH, borderBottomColor: theme.border, backgroundColor: pressed || active ? theme.accentSoft : 'transparent' }]}
                 accessibilityRole="button"
                 accessibilityState={{ selected: active }}
               >
@@ -171,8 +182,8 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   switch: { flexDirection: 'row', marginHorizontal: 16, marginTop: 2, marginBottom: 8, borderRadius: 24, padding: 4 },
   segment: { flex: 1, minHeight: 48, borderRadius: 20, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 2, paddingVertical: 4 },
-  segmentText: { fontSize: 13, textAlign: 'center' },
-  segmentCount: { fontSize: 12, fontWeight: '400', opacity: 0.85 },
+  segmentText: { fontSize: 14, textAlign: 'center' },
+  segmentCount: { fontSize: 12, fontWeight: '400' },
   row: {
     height: ROW_H,
     flexDirection: 'row',
@@ -183,7 +194,7 @@ const styles = StyleSheet.create({
   },
   pairRow: { height: PAIR_ROW_H, flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
   cell: { flex: 1, justifyContent: 'center', paddingHorizontal: 16 },
-  cellName: { fontSize: 15, lineHeight: 19 },
+  cellName: { fontSize: CELL_SIZE },
   listEnd: { paddingBottom: 24 },
   column: { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
   name: { fontSize: 17 },
