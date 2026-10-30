@@ -74,4 +74,6 @@ unzip -oq hin2017.zip -d hin2017
 unzip -oq bsb-sword.zip -d bsb-sword
 unzip -oq bdbglosses.zip -d bdbglosses
 node "$RAW/../../scripts/bsb-from-sword.mjs" "$RAW/bsb-sword" "$RAW/bsb"
+# The sources must be the ones the databases were built from (data/sources.json).
+node "$RAW/../../scripts/check-sources.mjs"
 echo "done: $(ls kjv/*.usfm | wc -l) KJV files, $(ls web/*.usfm | wc -l) WEB files, $(ls mal2015/*.usfm | wc -l) Malayalam files, $(ls tam2017/*.usfm | wc -l) Tamil files, $(ls hin2017/*.usfm | wc -l) Hindi files"

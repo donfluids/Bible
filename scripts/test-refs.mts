@@ -159,6 +159,8 @@ const SEARCH: [string, string, 'ml' | 'ta' | 'both'][] = [
 
 let failed = 0;
 const hindi = existsSync(new URL('../assets/db/bible-all.db', import.meta.url).pathname);
+// REQUIRE_ALL_DB=1 (set where the four-language database is built) makes its absence a failure.
+if (!hindi && process.env.REQUIRE_ALL_DB) throw new Error('assets/db/bible-all.db is missing (node scripts/build-db.mjs all)');
 if (!hindi) console.log('hi: skipped, assets/db/bible-all.db not built (node scripts/build-db.mjs all)');
 for (const [edition, cases] of [['ml', ML], ['ta', TA], ['en', EN], ...(hindi ? [['all', HI]] : [])] as const) {
   const ctx = load(edition);

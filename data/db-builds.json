@@ -1,0 +1,22 @@
+{
+ "en": {
+  "built": "2026-10-29",
+  "content": "d953355778beb0d8b070df2e252de29a05ff0cdd00952bf2249d6018e4670586",
+  "sha256": "7efbb9705db49d21c7b5f86fd195e87b3e0be8aebad564257534bb49eb5ef2f4"
+ },
+ "ml": {
+  "built": "2026-10-29",
+  "content": "569be64419ef24dc6fd75a6d0319c9914111012cc223b94b3183db594a4797fc",
+  "sha256": "45a84d1e14b14fc7c1b09a169cac2a6fffa2505993c6d2a044c85f71ca3e6ca3"
+ },
+ "ta": {
+  "built": "2026-10-29",
+  "content": "3100c946af539ae711b9ca9f0c1b62fa2c4e3adceba4bd6b6cba09caa8e322ae",
+  "sha256": "aed98e5ad11cdcdef2ffe268bc0edba0cfa62b8a0f676f82ce694afcb425dd9b"
+ },
+ "all": {
+  "built": "2026-10-29",
+  "content": "ca76c4dfd4f339b15678bde45880e0d9482b936d17fccd4d4a3d4426ed9912c7",
+  "sha256": "108f3fb381cb1af66aa46bff80f8d81e64194dd9020dcae8950f2322d2a6d541"
+ }
+}

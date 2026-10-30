@@ -752,7 +752,7 @@ function buildEdition(edition) {
     try { statSync(join(RAW, t.dir)); } catch { throw new Error(`missing data/raw/${t.dir}; run npm run fetch-data first`); }
   }
   mkdirSync(OUT_DIR, { recursive: true });
-  const previous = previousBuild(OUT);
+  const previous = previousBuild(OUT, ROOT, edition);
   rmSync(OUT, { force: true });
   const db = new DatabaseSync(OUT);
   db.exec(`

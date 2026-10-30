@@ -231,7 +231,7 @@ src/notebookBackup.ts    Notebook backup file: written, read back and merged in 
 src/ink.ts               Handwritten pages: strokes, how they are stored, read back and drawn
 src/components/          Header, Icon, SectionLabel, VerseText, InterlinearVerse, WordSheet, CompareSheet, SimpleSheet, VerseListItem
 src/screens/             Reader, Books, Chapters, Saved, Notebook, NotePage, InkPage, Search, Concordance, Settings, Licences
-scripts/fetch-data.sh    Downloads the source texts into data/raw/ (not committed)
+scripts/fetch-data.sh    Downloads the source texts into data/raw/ (not committed) and checks them (scripts/check-sources.mjs, data/sources.json)
 scripts/build-db.mjs     Builds assets/db/bible-<edition>.db from data/raw/
 scripts/make-icons.mjs   Draws the icon, adaptive icon layers, splash images and 512 px Play icons (SVG, rendered with Chromium)
 scripts/make-feature-graphic.mjs  Draws the Play feature graphics from the same art (scripts/icon-art.mjs)
@@ -256,8 +256,18 @@ npm run build-db     # writes assets/db/bible-en.db, -ml, -ta and -all (needs No
 npm run icons        # redraws both editions' icons (needs Chromium; see scripts/make-icons.mjs)
 ```
 
-Then bump the suffix in `DATABASE_NAME` in `src/db.ts` (for example `bible-v2.db`)
-so phones that already hold a copy of the old file pick up the new one.
+`fetch-data` ends with `node scripts/check-sources.mjs`, which compares each source as the
+build reads it with the SHA-256 recorded in `data/sources.json`. eBible.org revises its
+texts now and then (in October 2026 the WEB changed three verses and the Malayalam file's
+markup changed), so a fresh download can differ: the check then fails and names the
+source. Look at the change, and record it with `node scripts/check-sources.mjs --update`
+only if the apps should take it.
+
+`data/db-builds.json` records each database's build date, row hash and SHA-256. A rebuild
+whose rows are unchanged keeps the recorded date, so on any machine it comes out the same
+file, with the same hash in `src/dbHashes.json`, and phones are not made to copy it again.
+A database whose rows changed gets a new hash, and phones copy the new file on the next
+launch.
 
 ### Schema
 

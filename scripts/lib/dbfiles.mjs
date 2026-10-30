@@ -1,10 +1,23 @@
 // What the app is told about each built database (src/db.ts): its size, so a copy cut short
 // on the phone is noticed and made again, and a hash of it, carried in the copy's name, so a
 // rebuilt database reaches phones that have a copy even when its size is unchanged.
+// data/db-builds.json keeps each database's build date and row hash, so a rebuild on
+// another machine, or of a database that is not committed (bible-all.db), comes out the
+// same file when nothing in it changed.
 import { createHash } from 'node:crypto';
 import { readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
+
+const BUILDS = (root) => join(root, 'data', 'db-builds.json');
+
+function readBuilds(root) {
+  try {
+    return JSON.parse(readFileSync(BUILDS(root), 'utf8'));
+  } catch {
+    return {};
+  }
+}
 
 export function recordDatabase(root, edition, file) {
   const update = (name, value) => {
@@ -19,7 +32,15 @@ export function recordDatabase(root, edition, file) {
     writeFileSync(path, JSON.stringify(table, null, 1) + '\n');
   };
   update('dbSizes.json', statSync(file).size);
-  update('dbHashes.json', createHash('sha256').update(readFileSync(file)).digest('hex').slice(0, 12));
+  const sha256 = createHash('sha256').update(readFileSync(file)).digest('hex');
+  update('dbHashes.json', sha256.slice(0, 12));
+  const db = new DatabaseSync(file, { readOnly: true });
+  const built = db.prepare("SELECT value FROM meta WHERE key = 'built'").get()?.value ?? null;
+  const content = contentHash(db);
+  db.close();
+  const builds = readBuilds(root);
+  builds[edition] = { built, content, sha256 };
+  writeFileSync(BUILDS(root), JSON.stringify(builds, null, 1) + '\n');
 }
 
 /**
@@ -39,21 +60,26 @@ export function contentHash(db) {
   return hash.digest('hex');
 }
 
-/** The build date and row hash of a database already built, read before it is replaced; null if there is none. */
-export function previousBuild(file) {
+/**
+ * The build date and row hash of a database already built, read before it is replaced:
+ * from the file when there is one, else as recorded in data/db-builds.json; null if neither.
+ */
+export function previousBuild(file, root, edition) {
+  const recorded = root ? readBuilds(root)[edition] : undefined;
+  const fromRecord = recorded?.built && recorded?.content ? { built: recorded.built, content: recorded.content } : null;
   try {
     statSync(file);
   } catch {
-    return null;
+    return fromRecord;
   }
   try {
     const db = new DatabaseSync(file, { readOnly: true });
     const built = db.prepare("SELECT value FROM meta WHERE key = 'built'").get()?.value ?? null;
     const content = contentHash(db);
     db.close();
-    return built ? { built, content } : null;
+    return built ? { built, content } : fromRecord;
   } catch {
-    return null;
+    return fromRecord;
   }
 }
 
