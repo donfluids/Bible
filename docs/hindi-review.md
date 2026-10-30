@@ -123,9 +123,9 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | cardVeil | Over the photo | फ़ोटो के ऊपर | |
 | cardVeilLight | Light | हल्का | |
 | cardVeilDark | Dark | गहरा | |
-| cardFaint | Faint | धुँधला | |
+| cardFaint | Faint | कम | |
 | cardMedium | Medium | मध्यम | |
-| cardStrong | Strong | गहरा | |
+| cardStrong | Strong | ज़्यादा | |
 | cardBlur | Blur the photo | फ़ोटो धुँधली करें | |
 | cardBlurDetail | The words stand out more | शब्द और साफ़ दिखते हैं | |
 | cardBackground | Background | पृष्ठभूमि | |
@@ -135,7 +135,7 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | cardMiddle | Middle | बीच में | |
 | cardBottom | Bottom | नीचे | |
 | cardFace | Typeface | अक्षर शैली | |
-| cardFaceBook | Book | पुस्तक | |
+| cardFaceBook | Book | किताबी | |
 | cardFacePlain | Plain | सादा | |
 | cardExtras | Pictures and lines | चित्र और रेखाएँ | |
 | cardExtrasDetail | The design's pictures, border and cross | डिज़ाइन के चित्र, किनारा और क्रूस | |
@@ -162,9 +162,9 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | headingChristmas | Merry Christmas | क्रिसमस की बधाई | |
 | headingEaster | Happy Easter | ईस्टर की बधाई | |
 | headingNewYear | Happy New Year | नया साल मुबारक | |
-| tip | Tap any underlined word to see the Hebrew or Greek behind it. Hold a verse to copy, share or bookmark it. The button below shows the whole verse in the original language. | रेखांकित किसी भी शब्द को छूकर उसके पीछे का इब्रानी या यूनानी शब्द देखें। किसी पद को दबाकर रखें: नक़ल, साझा या बुकमार्क करने के लिए। नीचे का बटन पूरे पद को मूल भाषा में दिखाता है। | |
+| tip | Tap any underlined word to see the Hebrew or Greek behind it. Hold a verse to copy, share or bookmark it. The button below shows the whole verse in the original language. | रेखांकित किसी भी शब्द को छूकर उसका मूल इब्रानी या यूनानी शब्द देखें। किसी पद को दबाकर रखें: कॉपी, साझा या बुकमार्क करने के लिए। नीचे का बटन पूरे पद को मूल भाषा में दिखाता है। | |
 | tipNoTags | Hold a verse to highlight it, add a note, compare translations or bookmark it. The button below shows the whole verse in Hebrew or Greek; tap a word there for its meaning. | किसी पद को दबाकर रखें: हाइलाइट करने, टिप्पणी जोड़ने, अनुवादों की तुलना करने या बुकमार्क करने के लिए। नीचे का बटन पूरे पद को इब्रानी या यूनानी में दिखाता है; वहाँ किसी शब्द को छूकर उसका अर्थ देखें। | |
-| gotIt | Got it | समझ गया | |
+| gotIt | Got it | ठीक है | |
 | choosePassage | {title}, choose passage | {title}, अंश चुनें | |
 | choosePassageTitle | Choose a passage | अंश चुनें | |
 | allBooks | ‹ All books | ‹ सब पुस्तकें | |
@@ -176,10 +176,10 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | groupActs | Acts | प्रेरितों के काम | |
 | groupLetters | Letters | पत्रियाँ | |
 | groupRevelation | Revelation | प्रकाशितवाक्य | |
-| copied | Copied | नक़ल हो गई | |
+| copied | Copied | कॉपी हो गया | |
 | bookmarked | Bookmarked | बुकमार्क हो गया | |
-| actCopy | Copy | नक़ल | |
-| actShare | Share | साझा | |
+| actCopy | Copy | कॉपी | |
+| actShare | Share | साझा करें | |
 | actBookmark | Bookmark | बुकमार्क | |
 | actBookmarked | Bookmarked | बुकमार्क हुआ | |
 | actNote | Note | टिप्पणी | |
@@ -202,7 +202,7 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | editNote | Edit note | टिप्पणी बदलें | |
 | compare | Compare translations | अनुवादों की तुलना | |
 | compareDetail | Side by side with the {lang} | {lang} के साथ, आमने-सामने | |
-| copy | Copy | नक़ल करें | |
+| copy | Copy | कॉपी करें | |
 | copyDetail | Verse text with its reference | पद का पाठ, संदर्भ सहित | |
 | share | Share… | साझा करें… | |
 | bookmark | Bookmark | बुकमार्क | |
@@ -216,7 +216,7 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | footnote | Footnote | पादटिप्पणी | |
 | crossReference | Cross reference | संदर्भ पद | |
 | crossReferences | Cross references | संदर्भ पद | |
-| crossReferencesDetail | {n} related passages, the strongest first | {n} संबंधित अंश, सबसे निकट पहले | |
+| crossReferencesDetail | {n} related passages, the strongest first | {n} संबंधित अंश, सबसे गहरे संबंध वाले पहले | |
 | crossReferencesSource | Treasury of Scripture Knowledge, via OpenBible.info (CC BY) | Treasury of Scripture Knowledge, OpenBible.info के माध्यम से (CC BY) | |
 | parallelPassages | Parallel passages | समानांतर अंश | |
 | parallelPassagesDetail | {n} places with the same event or words | {n} जगहें जहाँ वही घटना या वही शब्द हैं | |
@@ -256,11 +256,11 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | notInTranslation | Not in this translation. | इस अनुवाद में नहीं है। | |
 | notTagged | Not tagged in the {translation} | {in} यह शब्द जुड़ा नहीं है | |
 | noEntry | No dictionary entry for {id}. | {id} के लिए कोई शब्दकोश प्रविष्टि नहीं। | |
-| noStrongs | This word has no Strong's number. | इस शब्द का कोई Strong संख्या नहीं है। | |
+| noStrongs | This word has no Strong's number. | इस शब्द की कोई Strong संख्या नहीं है। | |
 | marksQuestion | What do the marks mean? | इन चिह्नों का क्या अर्थ है? | |
 | marksHide | Hide the key to the marks | चिह्नों की कुंजी छिपाएँ | |
 | legendGloss | In the gloss, <a word> in angle brackets is in the original but best left untranslated, and [a word] in square brackets is implied but not in the original. A faded word with no meaning, such as אֵת, marks the object of the verb and is not translated. | अर्थ में, कोण कोष्ठक में <शब्द> मूल में है पर अनुवाद न करना ही ठीक है, और वर्ग कोष्ठक में [शब्द] अभिप्रेत है पर मूल में नहीं है। बिना अर्थ का फीका शब्द, जैसे אֵת, क्रिया के कर्म को दिखाता है और अनूदित नहीं होता। | |
-| legendTranslit |  In the transliteration, dots separate syllables and the capital letter marks the stressed syllable. |  लिप्यंतरण में बिंदु अक्षरों (syllables) को अलग करते हैं और बड़ा अक्षर बलाघात वाले अक्षर को दिखाता है। | |
+| legendTranslit |  In the transliteration, dots separate syllables and the capital letter marks the stressed syllable. |  लिप्यंतरण में बिंदु शब्दांशों को अलग करते हैं, और कैपिटल (बड़ा) अक्षर ज़ोर वाले शब्दांश को दिखाता है। | |
 | legendVariant | A line under a Hebrew or Greek word marks text that differs between editions; the note above explains this one. | किसी इब्रानी या यूनानी शब्द के नीचे की रेखा ऐसे पाठ को दिखाती है जो संस्करणों में भिन्न है; ऊपर की टिप्पणी इसे समझाती है। | |
 | noteTrByz | In the Textus Receptus, which the KJV translates, and in the Byzantine text, but not in the Nestle-Aland editions used by most modern translations. | Textus Receptus में, जिसका KJV अनुवाद है, और Byzantine पाठ में है, पर अधिकांश आधुनिक अनुवादों के Nestle-Aland संस्करणों में नहीं। | |
 | noteTrOnly | Only in the Textus Receptus, which the KJV translates. The Byzantine text and the Nestle-Aland editions do not have it. | केवल Textus Receptus में, जिसका KJV अनुवाद है। Byzantine पाठ और Nestle-Aland संस्करणों में यह नहीं है। | |
@@ -301,7 +301,7 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | usagePhrase | in a phrase | वाक्यांश में | |
 | usageWith | with other words | अन्य शब्दों के साथ | |
 | wordsInVerseDetail | Open the Hebrew or Greek entry for each linked word | हर जुड़े शब्द की इब्रानी या यूनानी प्रविष्टि खोलें | |
-| verseHint | Double-tap and hold for highlight, note, copy and more | हाइलाइट, टिप्पणी, नक़ल और अधिक के लिए दो बार छूकर दबाए रखें | |
+| verseHint | Double-tap and hold for highlight, note, copy and more | हाइलाइट, टिप्पणी, कॉपी और अधिक के लिए दो बार छूकर दबाए रखें | |
 | verseActions | Verse {n}, actions | पद {n}, क्रियाएँ | |
 | recent | Recent | हाल में पढ़े | |
 | openFailed | The Bible text could not be opened. | बाइबल का पाठ नहीं खुल सका। | |
@@ -312,24 +312,24 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | appearance | Appearance | रूप | |
 | theme | Theme | थीम | |
 | themeAuto | Auto | स्वतः | |
-| themeLight | Light | उजला | |
+| themeLight | Light | हल्की | |
 | themeSepia | Sepia | सीपिया | |
 | highlightStyle | Highlights | हाइलाइट | |
 | highlightSoft | Soft | हल्के | |
 | highlightFluorescent | Fluorescent | चमकीले | |
 | highlightStyleDetail | Dark theme only | केवल गहरी थीम में | |
-| themeDark | Dark | गहरा | |
-| layout | Layout | विन्यास | |
+| themeDark | Dark | गहरी | |
+| layout | Layout | पाठ का ढंग | |
 | layoutVerses | Verse per line | हर पद अलग पंक्ति में | |
 | layoutParagraphs | Paragraphs | अनुच्छेद | |
-| serif | Serif typeface | सेरिफ़ अक्षर | |
+| serif | Serif typeface | छपी किताब जैसे अक्षर | |
 | serifDetail | Scripture in a book-style face | पवित्रशास्त्र पुस्तक जैसी अक्षर शैली में | |
-| keepAwake | Keep screen awake | स्क्रीन जगी रखें | |
+| keepAwake | Keep screen awake | स्क्रीन चालू रखें | |
 | keepAwakeDetail | While the app is open | जब तक ऐप खुला है | |
 | sideBySide | Side by side | आमने-सामने | |
 | sideBySideDetail | {native} and English verses together on a tablet or a phone turned sideways | टैबलेट पर या फ़ोन को आड़ा करने पर {native} और अंग्रेज़ी पद साथ-साथ | |
 | studyTools | Study tools | अध्ययन उपकरण | |
-| studyToolsDetail | Tap a word for its Hebrew or Greek, the original words under each verse, cross references, parallel passages, Compare, and an introduction to each book. Off, the app is a plain Bible for reading; your highlights, notes and notebook stay. | किसी शब्द को छूकर उसका इब्रानी या यूनानी, हर पद के नीचे मूल शब्द, संदर्भ पद, समानांतर अंश, तुलना, और हर पुस्तक का परिचय। बंद होने पर ऐप पढ़ने के लिए एक सादी बाइबल है; आपके हाइलाइट, टिप्पणियाँ और नोटबुक बने रहते हैं। | |
+| studyToolsDetail | Tap a word for its Hebrew or Greek, the original words under each verse, cross references, parallel passages, Compare, and an introduction to each book. Off, the app is a plain Bible for reading; your highlights, notes and notebook stay. | चालू होने पर: शब्द छूकर उसका इब्रानी या यूनानी मूल, हर पद के नीचे मूल शब्द, संदर्भ पद, समानांतर अंश, तुलना और हर पुस्तक का परिचय। बंद होने पर ऐप पढ़ने के लिए एक सादी बाइबल बन जाता है; आपके हाइलाइट, टिप्पणियाँ और नोटबुक बने रहते हैं। | |
 | studyToolsOn | Switch the study tools on | अध्ययन उपकरण चालू करें | |
 | studyToolsOff | Switch the study tools off | अध्ययन उपकरण बंद करें | |
 | studyToolsOnNote | Study tools on | अध्ययन उपकरण चालू | |
@@ -349,8 +349,8 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | tappedVersesDetail | Tap a verse number to show or hide its words. Keeps long chapters short. | पद की संख्या छूकर उसके शब्द दिखाएँ या छिपाएँ। लंबे अध्याय छोटे रहते हैं। | |
 | transliteration | Transliteration | लिप्यंतरण | |
 | transliterationDetail | Show how each word is pronounced | हर शब्द का उच्चारण दिखाएँ | |
-| hideCantillation | Hide cantillation marks | स्वर-चिह्न (cantillation) छिपाएँ | |
-| hideCantillationDetail | Hebrew with vowel points only, easier to read at small sizes | केवल मात्राओं के साथ इब्रानी; छोटे आकार में पढ़ना आसान | |
+| hideCantillation | Hide cantillation marks | गायन-चिह्न (cantillation) छिपाएँ | |
+| hideCantillationDetail | Hebrew with vowel points only, easier to read at small sizes | केवल स्वर-बिंदुओं (मात्राओं) के साथ इब्रानी; छोटे आकार में पढ़ना आसान | |
 | reading | Reading | पढ़ना | |
 | underline | Underline linked words | जुड़े शब्दों को रेखांकित करें | |
 | underlineDetail | Marks words that open a Greek or Hebrew entry | उन शब्दों को चिह्नित करता है जो यूनानी या इब्रानी प्रविष्टि खोलते हैं | |
@@ -365,9 +365,9 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | howText2 | The button at the foot of the page switches to the next Bible. On a tablet, or a phone turned on its side, both Bibles can be read together (Settings → Side by side). | पृष्ठ के नीचे का बटन दूसरी बाइबल पर ले जाता है। टैबलेट पर, या फ़ोन को आड़ा करने पर, दोनों बाइबलें साथ-साथ पढ़ी जा सकती हैं (सेटिंग्स → आमने-सामने)। | |
 | howText2All | The Bible button at the foot of the page opens a list of all six Bibles, in English, Malayalam, Tamil and Hindi. The smaller button beside it goes back to the Bible you read before, so two Bibles are one tap apart. On a tablet, or a phone turned on its side, an Indian Bible and an English one can be read together (Settings → Side by side). | पृष्ठ के नीचे बाइबल वाला बटन छूने पर अंग्रेज़ी, मलयालम, तमिल और हिन्दी की छहों बाइबलें दिखती हैं; कोई भी चुनें। उसके पास का छोटा बटन आपको उस बाइबल पर लौटा देता है जो आपने पहले पढ़ी थी, इसलिए दो बाइबलें एक छुअन की दूरी पर रहती हैं। टैबलेट पर, या फ़ोन को आड़ा करने पर, एक भारतीय भाषा की बाइबल और एक अंग्रेज़ी बाइबल साथ-साथ पढ़ी जा सकती हैं (सेटिंग्स → आमने-सामने)। | |
 | howTopic3 | A verse's menu | पद का मेनू | |
-| howText3 | Hold a verse to open its menu: copy, share, bookmark, a highlight colour, a note, a picture card, add to the notebook, read aloud from here, mark part of the verse, compare the Bibles, cross references and parallel passages. | किसी पद को दबाकर रखें और उसका मेनू खुलता है: नक़ल, साझा, बुकमार्क, हाइलाइट का रंग, टिप्पणी, चित्र कार्ड, नोटबुक में जोड़ना, यहाँ से सुनना, पद का कुछ भाग चिह्नित करना, बाइबलों की तुलना, संदर्भ पद और समानांतर अंश। | |
+| howText3 | Hold a verse to open its menu: copy, share, bookmark, a highlight colour, a note, a picture card, add to the notebook, read aloud from here, mark part of the verse, compare the Bibles, cross references and parallel passages. | किसी पद को दबाकर रखें और उसका मेनू खुलता है: कॉपी, साझा, बुकमार्क, हाइलाइट का रंग, टिप्पणी, चित्र कार्ड, नोटबुक में जोड़ना, यहाँ से सुनना, पद का कुछ भाग चिह्नित करना, बाइबलों की तुलना, संदर्भ पद और समानांतर अंश। | |
 | howTopic4 | Words and their Hebrew or Greek | शब्द और उनका इब्रानी या यूनानी | |
-| howText4 | Tap an underlined word to see the Hebrew or Greek word behind it, with its meaning, pronunciation and every verse it is used in. The Hebrew or Greek button at the foot of the page shows the whole verse in the original language, word by word. | रेखांकित शब्द छूकर उसके पीछे का इब्रानी या यूनानी शब्द देखें: अर्थ, उच्चारण और हर वह पद जिसमें वह आया है। पृष्ठ के नीचे का इब्रानी या यूनानी बटन पूरे पद को मूल भाषा में, शब्द-दर-शब्द, दिखाता है। | |
+| howText4 | Tap an underlined word to see the Hebrew or Greek word behind it, with its meaning, pronunciation and every verse it is used in. The Hebrew or Greek button at the foot of the page shows the whole verse in the original language, word by word. | रेखांकित शब्द छूकर उसका मूल इब्रानी या यूनानी शब्द देखें: अर्थ, उच्चारण और हर वह पद जिसमें वह आया है। पृष्ठ के नीचे का इब्रानी या यूनानी बटन पूरे पद को मूल भाषा में, शब्द-दर-शब्द, दिखाता है। | |
 | howTopic5 | Highlighting part of a verse | पद का कुछ भाग हाइलाइट करना | |
 | howText5 | Hold a verse and choose Mark text. Hold a word still, drag to the last word and let go. The bar at the foot picks the colour and has an eraser; tap Done when finished. Everything marked is listed under Saved. | किसी पद को दबाकर रखें और “पाठ चिह्नित करें” चुनें। एक शब्द को स्थिर दबाए रखें, अंतिम शब्द तक खींचें और छोड़ दें। नीचे की पट्टी रंग चुनती है और उसमें रबड़ है; पूरा होने पर “हो गया” छुएँ। चिह्नित सब कुछ “सहेजे हुए” में सूचीबद्ध है। | |
 | howTopic6 | Saved | सहेजे हुए | |
@@ -376,9 +376,9 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | howText7 | Type a word, or a reference such as John 3:16 or Psalm 23, in the search box. Results start in the New Testament; the buttons narrow them to a Testament or a book. | खोज के डिब्बे में कोई शब्द, या यूहन्ना 3:16 या भजन 23 जैसा संदर्भ लिखें। परिणाम नए नियम से शुरू होते हैं; बटन उन्हें एक नियम या एक पुस्तक तक सीमित करते हैं। | |
 | howText7All | Type a word, or a reference such as John 3:16 or Psalm 23, in the search box. The Bible buttons above the results choose which Bible is searched; the Bible you are reading is chosen at first. Results start in the New Testament; the other buttons narrow them to a Testament or a book. A result opens in the Bible it was found in. | खोज के डिब्बे में कोई शब्द, या यूहन्ना 3:16 या भजन 23 जैसा संदर्भ लिखें। परिणामों के ऊपर बाइबल के बटन चुनते हैं कि किस बाइबल में खोजा जाए; शुरू में वही बाइबल चुनी रहती है जो आप पढ़ रहे हैं। परिणाम नए नियम से शुरू होते हैं; दूसरे बटन उन्हें एक नियम या एक पुस्तक तक सीमित करते हैं। कोई परिणाम छूने पर वह उसी बाइबल में खुलता है जिसमें वह मिला। | |
 | howTopic8 | Notebook | नोटबुक | |
-| howText8 | The Notebook tab holds typed pages for sermon notes or a study. A reference typed on a page, such as John 3:16, becomes a link with the verse shown beneath. Hold a verse and choose Add to notebook to put it on a page. A page can be shared as text or as a PDF. | नोटबुक टैब में उपदेश की टिप्पणियों या अध्ययन के लिए लिखे हुए पृष्ठ रहते हैं। पृष्ठ पर लिखा संदर्भ, जैसे यूहन्ना 3:16, एक कड़ी बन जाता है और पद नीचे दिखता है। किसी पद को दबाकर रखें और “नोटबुक में जोड़ें” चुनकर उसे पृष्ठ पर रखें। पृष्ठ पाठ या PDF के रूप में साझा किया जा सकता है। | |
+| howText8 | The Notebook tab holds typed pages for sermon notes or a study. A reference typed on a page, such as John 3:16, becomes a link with the verse shown beneath. Hold a verse and choose Add to notebook to put it on a page. A page can be shared as text or as a PDF. | नोटबुक टैब में उपदेश की टिप्पणियों या अध्ययन के लिए टाइप किए हुए पृष्ठ रहते हैं। पृष्ठ पर लिखा संदर्भ, जैसे यूहन्ना 3:16, एक कड़ी बन जाता है और पद नीचे दिखता है। किसी पद को दबाकर रखें और “नोटबुक में जोड़ें” चुनकर उसे पृष्ठ पर रखें। पृष्ठ पाठ या PDF के रूप में साझा किया जा सकता है। | |
 | howTopic9 | Handwritten pages | हाथ से लिखे पृष्ठ | |
-| howText9 | New page → Handwritten gives a page to write on with a pen or a finger, on plain or lined paper: three pens, a highlighter, an eraser, undo and redo. Two fingers move the page. With a stylus, the pen-only switch lets your hand rest on the screen. The page is shared as a picture or a PDF. | नया पृष्ठ → हाथ से लिखा: सादे या रेखांकित काग़ज़ पर क़लम या उँगली से लिखने का पृष्ठ देता है: तीन क़लम, एक हाइलाइटर, रबड़, पूर्ववत और पुनः। दो उँगलियाँ पृष्ठ को हिलाती हैं। स्टाइलस के साथ, “केवल क़लम” का बटन आपके हाथ को स्क्रीन पर टिकने देता है। पृष्ठ चित्र या PDF के रूप में साझा होता है। | |
+| howText9 | New page → Handwritten gives a page to write on with a pen or a finger, on plain or lined paper: three pens, a highlighter, an eraser, undo and redo. Two fingers move the page. With a stylus, the pen-only switch lets your hand rest on the screen. The page is shared as a picture or a PDF. | नया पृष्ठ → हाथ से लिखा: सादे या रेखांकित काग़ज़ पर क़लम या उँगली से लिखने का पृष्ठ देता है: तीन क़लम, एक हाइलाइटर, रबड़, पहले जैसा करें और फिर से करें। दो उँगलियाँ पृष्ठ को हिलाती हैं। स्टाइलस के साथ, “केवल क़लम” का बटन आपके हाथ को स्क्रीन पर टिकने देता है। पृष्ठ चित्र या PDF के रूप में साझा होता है। | |
 | howTopic10 | Backing up the notebook | नोटबुक का बैकअप | |
 | howText10 | In the Notebook, tap the backup button to save every page to one file, and keep it in Drive, Files or a chat. Restore from a backup adds the file's pages back; a page already here is replaced only by a newer copy of itself, and nothing is deleted. | नोटबुक में बैकअप बटन छूकर हर पृष्ठ को एक फ़ाइल में सहेजें, और उसे Drive, Files या किसी चैट में रखें। “बैकअप से वापस लाएँ” फ़ाइल के पृष्ठ फिर जोड़ता है; यहाँ पहले से मौजूद पृष्ठ केवल अपनी नई प्रति से बदलता है, और कुछ भी मिटता नहीं। | |
 | howTopic11 | Listening | सुनना | |
@@ -396,7 +396,7 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | feedbackSentFrom | Sent from {app} {version} ({build}) on {device}. You may delete this line. | {app} {version} ({build}) से, {device} पर, भेजा गया। आप यह पंक्ति मिटा सकते हैं। | |
 | feedbackNoMail | No mail app found | कोई मेल ऐप नहीं मिला | |
 | feedbackNoMailText | You can write to us at {address}. | आप हमें {address} पर लिख सकते हैं। | |
-| feedbackCopyAddress | Copy address | पता नक़ल करें | |
+| feedbackCopyAddress | Copy address | पता कॉपी करें | |
 | privacy | Privacy | निजता | |
 | aboutEnglish | Bibles: the King James Version (1769), the Berean Standard Bible and the World English Bible. The translators' footnotes appear as small letters in the text; tap one to read it. | बाइबलें: King James Version (1769), Berean Standard Bible और World English Bible। अनुवादकों की पादटिप्पणियाँ पाठ में छोटे अक्षरों के रूप में दिखती हैं; एक को छूकर पढ़ें। | |
 | aboutMalayalam | Bibles: the Sathyavedapusthakam 1910 (Malayalam), in a revised edition in contemporary orthography, and the King James Version (1769). The links from Malayalam words to the Hebrew and Greek are machine-generated and not fully reviewed. | बाइबलें: सत्यवेदपुस्तकम 1910 (मलयालम), आज की वर्तनी में संशोधित संस्करण, और King James Version (1769)। मलयालम शब्दों से इब्रानी और यूनानी तक की कड़ियाँ मशीन से बनी हैं और पूरी तरह जाँची नहीं गईं। | |
@@ -429,7 +429,7 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | sharePage | Share page | पृष्ठ साझा करें | |
 | backupRestore | Back up or restore | बैकअप लें या वापस लाएँ | |
 | saveBackup | Save a backup | बैकअप सहेजें | |
-| saveBackupDetail | Every page, typed and handwritten, in one file to keep in Drive or Files, or to bring to another phone | हर पृष्ठ, लिखा और हाथ से लिखा, एक फ़ाइल में: Drive या Files में रखने, या दूसरे फ़ोन पर ले जाने के लिए | |
+| saveBackupDetail | Every page, typed and handwritten, in one file to keep in Drive or Files, or to bring to another phone | हर पृष्ठ, टाइप किया और हाथ से लिखा, एक फ़ाइल में: Drive या Files में रखने, या दूसरे फ़ोन पर ले जाने के लिए | |
 | restoreBackup | Restore from a backup | बैकअप से वापस लाएँ | |
 | restoreBackupDetail | Pages in the file are added; a page here is replaced only by a newer copy of itself. Nothing is deleted. | फ़ाइल के पृष्ठ जोड़े जाते हैं; यहाँ का पृष्ठ केवल अपनी नई प्रति से बदलता है। कुछ भी मिटता नहीं। | |
 | backupEmpty | The notebook has no pages yet. | नोटबुक में अभी कोई पृष्ठ नहीं है। | |
@@ -445,26 +445,26 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | restoreFailed | The backup could not be restored. Nothing was changed. | बैकअप वापस नहीं लाया जा सका। कुछ भी बदला नहीं गया। | |
 | backupInkUnreadable | The writing on “{page}” cannot be read, so no backup was made. Open the page to check it, then try again. | “{page}” की लिखावट पढ़ी नहीं जा सकी, इसलिए बैकअप नहीं बना। पृष्ठ खोलकर जाँचें, फिर आज़माएँ। | |
 | restoreOtherEdition | This backup was made in the {app} app. Its verses are quoted from that Bible. Restore it here? | यह बैकअप {app} ऐप में बना था। इसके पद उस बाइबल से उद्धृत हैं। इसे यहाँ वापस लाएँ? | |
-| pageTyped | Typed page | लिखा हुआ पृष्ठ | |
+| pageTyped | Typed page | टाइप किया पृष्ठ | |
 | pageTypedDetail | References such as John 3:16 link to the verse | यूहन्ना 3:16 जैसे संदर्भ पद से जुड़ जाते हैं | |
 | pageHandPlain | Handwritten, plain paper | हाथ से लिखा, सादा काग़ज़ | |
 | pageHandLined | Handwritten, lined paper | हाथ से लिखा, रेखांकित काग़ज़ | |
 | pageHandDetail | Write with a pen or your finger | क़लम या उँगली से लिखें | |
 | handwritten | Handwritten | हाथ से लिखा | |
-| penBlack | Black pen | काला क़लम | |
-| penBlue | Blue pen | नीला क़लम | |
+| penBlack | Black pen | काली क़लम | |
+| penBlue | Blue pen | नीली क़लम | |
 | penRed | Red pen | लाल क़लम | |
 | highlighterYellow | Yellow highlighter | पीला हाइलाइटर | |
-| penThin | Thin pen | पतला क़लम | |
-| penThick | Thick pen | मोटा क़लम | |
-| undo | Undo | पूर्ववत | |
-| redo | Redo | पुनः | |
+| penThin | Thin pen | पतली क़लम | |
+| penThick | Thick pen | मोटी क़लम | |
+| undo | Undo | पहले जैसा करें | |
+| redo | Redo | फिर से करें | |
 | linedPaper | Lined paper | रेखांकित काग़ज़ | |
 | plainPaper | Plain paper | सादा काग़ज़ | |
 | inkHint | Write with one finger or a pen. Move the page with two fingers. | एक उँगली या क़लम से लिखें। दो उँगलियों से पृष्ठ हिलाएँ। | |
-| inkPenFound | Pen found: now a finger moves the page and only the pen writes. | क़लम मिला: अब उँगली पृष्ठ हिलाती है और केवल क़लम लिखता है। | |
-| inkPenOnly | Only the pen writes | केवल क़लम लिखे | |
-| inkPenOnlyOn | Only the pen writes now; a finger moves the page. | अब केवल क़लम लिखता है; उँगली पृष्ठ हिलाती है। | |
+| inkPenFound | Pen found: now a finger moves the page and only the pen writes. | क़लम मिली: अब उँगली पृष्ठ हिलाती है और केवल क़लम लिखती है। | |
+| inkPenOnly | Only the pen writes | केवल क़लम से लिखें | |
+| inkPenOnlyOn | Only the pen writes now; a finger moves the page. | अब केवल क़लम लिखती है; उँगली पृष्ठ हिलाती है। | |
 | inkPenOnlyOff | A finger writes again; two fingers move the page. | उँगली फिर लिखती है; दो उँगलियाँ पृष्ठ हिलाती हैं। | |
 | inkMovePen | One finger moves the page. | एक उँगली पृष्ठ हिलाती है। | |
 | inkMoveFingers | Two fingers move the page. | दो उँगलियाँ पृष्ठ हिलाती हैं। | |

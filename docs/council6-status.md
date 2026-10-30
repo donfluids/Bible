@@ -26,7 +26,7 @@ Status: **done** (committed and pushed), **partly**, **open**, or **yours** (a d
 | 6 | First open: space check and language | done (0cd8c63). Later: the language screen before the copy, and one copy instead of two |
 | 7 | Database fingerprint, source checks, CI | partly (d567b69): fingerprint stable, sources checked. CI cannot build the four-language app until a copy of the sources is kept (release files); the Sources screen no longer says that database is on GitHub |
 | 8 | Hindi introductions: Hebrews meaning, honorifics, Esther, grammar | open |
-| 9 | Hindi interface slips | open |
+| 9 | Hindi interface slips | done: क़लम feminine, गायन-चिह्न, Strong संख्या, ठीक है, हल्की/गहरी, card strengths, टाइप किया पृष्ठ, कॉपी, labels, study tools line, two words on the Why page. Reference parsing (Devanagari digits, Catholic names) is Tier 2 item 16 |
 | 10 | Two Hindi verses without a KJV partner | done; the data check now fails on any unmapped verse |
 | 11 | Four Tamil verses start with a stray number | done; the data check catches a bridged verse's "-18" |
 | 12 | Introductions' licence and credit; IRV change statements; README | done. Introductions: © 2026 Rivers Research, CC BY-SA 4.0 (my choice, to match the databases; change it if you prefer another) |
