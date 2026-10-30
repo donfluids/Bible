@@ -842,6 +842,15 @@ function buildEdition(edition) {
         if (raw !== undefined) chapters.get(ch).set(v, raw.replace(junk, ''));
       }
       if (t.dropZwnj) for (const vmap of chapters.values()) for (const [v, raw] of vmap) vmap.set(v, raw.replace(/\u200c/g, ''));
+      // Hindi typing slips in the source: a joiner that is not after a virama (कप्ता\u200dन),
+      // and a nukta typed after the vowel sign instead of before it (पडे\u093c for पड़े).
+      if (t.id === 'HIN') {
+        for (const vmap of chapters.values()) {
+          for (const [v, raw] of vmap) {
+            vmap.set(v, raw.replace(/(?<!\u094d)[\u200c\u200d]/g, '').replace(/([\u093e-\u094c])\u093c/g, '\u093c$1'));
+          }
+        }
+      }
       if (bookName) insBookName.run(t.id, book.id, bookName);
       for (const h of headings) {
         const text = splitTags(cleanVerse(h.raw)).text;

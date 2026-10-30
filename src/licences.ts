@@ -91,7 +91,7 @@ const HINDI: Source = {
   licence: CC_BY_SA,
   source: [{ label: 'eBible.org (hin2017)', url: 'https://ebible.org/find/details.php?id=hin2017' }],
   modifications:
-    "The translators' introduction and outline before each book, section headings and the five book headings of the Psalms omitted; footnote markers set straight after the word they explain rather than after the space following it; the Old Testament references the editors print in bold italics after quoted verses, \u201c(\u092d\u091c. 2:7)\u201d, moved into cross-reference notes; book names taken from each book's short title. The modified text is distributed under CC BY-SA 4.0.",
+    "The translators' introduction and outline before each book, section headings and the five book headings of the Psalms omitted; footnote markers set straight after the word they explain rather than after the space following it; seven stray zero-width joiners removed and seven nuktas typed after a vowel sign put before it; the Old Testament references the editors print in bold italics after quoted verses, \u201c(\u092d\u091c. 2:7)\u201d, moved into cross-reference notes; book names taken from each book's short title. The modified text is distributed under CC BY-SA 4.0.",
 };
 
 const TAMIL_LINKS: Source = {
