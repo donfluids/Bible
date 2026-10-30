@@ -19,8 +19,8 @@ export const MALAYALAM_SHORT_NAMES = [
 /** The Tamil, from the IRV's own abbreviations (\toc3), with a space after the number. */
 export const TAMIL_SHORT_NAMES = [
   'ஆதி', 'யாத்', 'லேவி', 'எண்', 'உபா', 'யோசு', 'நியா', 'ரூத்', '1 சாமு', '2 சாமு',
-  '1 இராஜா', '2 இராஜா', '1 நாளா', '2 நாளா', 'எஸ்றா', 'நெகே', 'எஸ்தர்', 'யோபு', 'சங்', 'நீதி',
-  'பிரச', 'உன்னத', 'ஏசா', 'எரே', 'புலம்', 'எசேக்', 'தானி', 'ஓசியா', 'யோவே', 'ஆமோ',
+  '1 இரா', '2 இரா', '1 நாளா', '2 நாளா', 'எஸ்றா', 'நெகே', 'எஸ்தர்', 'யோபு', 'சங்', 'நீதி',
+  'பிரச', 'உன்', 'ஏசா', 'எரே', 'புலம்', 'எசேக்', 'தானி', 'ஓசியா', 'யோவே', 'ஆமோ',
   'ஒபதி', 'யோனா', 'மீகா', 'நாகூ', 'ஆப', 'செப்ப', 'ஆகாய்', 'சகரி', 'மல்கி', 'மத்',
   'மாற்கு', 'லூக்', 'யோவா', 'அப்', 'ரோமர்', '1 கொரி', '2 கொரி', 'கலா', 'எபே', 'பிலி',
   'கொலோ', '1 தெச', '2 தெச', '1 தீமோ', '2 தீமோ', 'தீத்', 'பிலே', 'எபி', 'யாக்', '1 பேது',
@@ -305,8 +305,8 @@ const ORDINALS: [RegExp, string][] = [
 // Words that are also a book's short name; a chapter alone after them is a number, not a
 // reference. Malayalam: സംഖ്യ (number). Tamil: எண் (number), ஆதி (beginning), நீதி
 // (justice), புலம் (field), வெளி (outside). Hindi: न्याय (justice), नीति (policy), रोम (Rome).
-// Hindi also: मर (die), गिन (count).
-const SHORT_WORDS = new Set(['സംഖ്യ', 'எண்', 'ஆதி', 'நீதி', 'புலம்', 'வெளி', 'न्याय', 'नीति', 'रोम', 'मर', 'गिन']);
+// Tamil also: உன் (your). Hindi also: मर (die), गिन (count).
+const SHORT_WORDS = new Set(['സംഖ്യ', 'எண்', 'ஆதி', 'நீதி', 'புலம்', 'வெளி', 'உன்', 'न्याय', 'नीति', 'रोम', 'मर', 'गिन']);
 // Whole book names that are also common words: a chapter alone after them is a number.
 // Hindi गिनती (Numbers) is "counting".
 const NAME_WORDS = new Set(['गिनती']);

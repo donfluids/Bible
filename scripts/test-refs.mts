@@ -69,6 +69,9 @@ const ML: Expect[] = [
 
 // Tamil: the IRV's names and abbreviations, other spellings, and words that stay plain.
 const TA: Expect[] = [
+  ['உன் 2:1', '22:2:1'],
+  ['உன் 5 பிள்ளைகள்', ''],
+  ['1 இரா 3:9', '11:3:9'],
   ['தேவன் உலகத்தில் அன்புகூர்ந்தார்: யோவான் 3:16', '43:3:16'],
   ['1 கொரி 13:4-7', '46:13:4-7'],
   ['யோவா. 3:16; 4:24', '43:3:16 43:4:24'],
