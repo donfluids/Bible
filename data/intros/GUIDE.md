@@ -65,8 +65,14 @@ Revised Version spells them (`assets/db/bible-all.db`, translation HIN: मू�
 the Old Testament books, as the IRV prints it; "Lord" (Adonai, and the New Testament) is
 प्रभु; God is परमेश्वर; the Holy Spirit पवित्र आत्मा. God and Jesus take the respectful
 plural throughout (वे, उन्होंने, उनका, उनसे), as "Why this Bible" does; other people the
-ordinary forms. Formal register, plain modern Hindi, no Urdu-heavy or Sanskrit-heavy words
-where a common one exists. Dates: "लगभग 55–65 ईस्वी", "लगभग 1446–1406 ई. पू.".
+ordinary forms. Where the people in the sentence are also वे, name God or Jesus
+(परमेश्वर, यहोवा, यीशु) instead of the pronoun: "पुराने बलिदान केवल छाया थे; उनका लहू…"
+read as the sacrifices' blood. The Messiah and the Servant take the respectful plural in
+Old Testament books too. Spell as the IRV does: the half nasal where it writes one (अन्त,
+आरम्भ, मन्दिर, सन्तान, आनन्द), the dot where it does (क्योंकि, चंगा, संकट). Titles of
+themes and outline parts may keep the Bible's own तुम exhortations (पीछे न हटो); the rest
+of the text says आप. Formal register, plain modern Hindi, no Urdu-heavy or Sanskrit-heavy
+words where a common one exists. Dates: "लगभग 55–65 ईस्वी", "लगभग 1446–1406 ई. पू.".
 
 ## Malayalam and Tamil
 
