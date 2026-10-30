@@ -34,7 +34,7 @@ export function nativeTranslation(edition: Edition): TranslationId | null {
 export const isMultilingual = (edition: Edition) => edition.translations.filter(isIndian).length > 1;
 
 /** The Indian Bible of an interface language, in an edition that has it. */
-function bibleOfLanguage(edition: Edition, language: string): TranslationId | null {
+export function bibleOfLanguage(edition: Edition, language: string): TranslationId | null {
   const id: TranslationId | null = language === 'ml' ? 'MAL' : language === 'ta' ? 'TAM' : language === 'hi' ? 'HIN' : null;
   return id && edition.translations.includes(id) ? id : null;
 }

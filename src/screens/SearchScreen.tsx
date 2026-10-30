@@ -107,6 +107,13 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [db, translation, study, query, strongsId, goTo?.book, goTo?.chapter, goTo?.verse]);
 
+  // Another Bible chosen: the list found in the last one goes at once, so none of its
+  // verses is opened in the new Bible, whose numbering can differ.
+  useEffect(() => {
+    setMatches(null);
+    setResults(null);
+  }, [translation]);
+
   // A verse found in another Bible opens in that Bible.
   const openRef = (ref: Ref) => {
     if (translation !== settings.translation) update({ translation });

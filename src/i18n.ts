@@ -1762,15 +1762,15 @@ export function useT(): (key: StringKey, params?: Record<string, string | number
 
 /** Heading for how a translation renders a word: "In the KJV", "സത്യവേദപുസ്തകത്തിൽ", "IRV-இல்". */
 export function renderingsLabel(language: Language, id: string): string {
-  if (language === 'ml') return id === 'MAL' ? 'സത്യവേദപുസ്തകത്തിൽ' : id === 'KJV' ? 'KJV-യിൽ' : id === 'WEB' ? 'WEB-ൽ' : id;
-  if (language === 'ta') return id === 'TAM' ? 'IRV-இல்' : `${id}-இல்`;
-  if (language === 'hi') return id === 'HIN' ? 'IRV (हिन्दी) में' : id === 'MAL' ? 'सत्यवेदपुस्तकम में' : `${id} में`;
-  return id === 'MAL' ? 'In Sathyavedapusthakam' : id === 'TAM' ? 'In the Tamil IRV' : `In the ${id}`;
+  if (language === 'ml') return id === 'MAL' ? 'സത്യവേദപുസ്തകത്തിൽ' : id === 'TAM' ? 'തമിഴ് IRV-യിൽ' : id === 'HIN' ? 'ഹിന്ദി IRV-യിൽ' : id === 'WEB' ? 'WEB-ൽ' : `${id}-യിൽ`;
+  if (language === 'ta') return id === 'TAM' ? 'IRV-இல்' : id === 'MAL' ? 'மலையாள வேதாகமத்தில்' : id === 'HIN' ? 'இந்தி IRV-இல்' : `${id}-இல்`;
+  if (language === 'hi') return id === 'HIN' ? 'IRV (हिन्दी) में' : id === 'MAL' ? 'सत्यवेदपुस्तकम में' : id === 'TAM' ? 'तमिल IRV में' : `${id} में`;
+  return id === 'MAL' ? 'In Sathyavedapusthakam' : id === 'TAM' ? 'In the Tamil IRV' : id === 'HIN' ? 'In the Hindi IRV' : `In the ${id}`;
 }
 
 /** A translation's short name in English running text: "Search the Sathyavedapusthakam". */
 export function shortName(id: string): string {
-  return id === 'MAL' ? 'Sathyavedapusthakam' : id === 'TAM' ? 'Tamil IRV' : id;
+  return id === 'MAL' ? 'Sathyavedapusthakam' : id === 'TAM' ? 'Tamil IRV' : id === 'HIN' ? 'Hindi IRV' : id;
 }
 
 /** Display name of a translation in the interface language. */

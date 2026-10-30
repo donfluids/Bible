@@ -251,7 +251,10 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   // four-language app the Indian Bible is the one open or read last (src/edition.ts).
   const multilingual = isMultilingual(edition);
   const nativeBible = pairedBible(edition, translation, settings.lastIndian, settings.language);
-  const sideBySide = !!nativeBible && settings.sideBySide && windowWidth >= SIDE_BY_SIDE_MIN_WIDTH && !marking;
+  // Side by side pairs an Indian Bible with an English one; in the four-language app, before
+  // any Indian Bible has been read, the first of them.
+  const sideBible = nativeBible ?? edition.translations.find((id) => isIndian(id)) ?? null;
+  const sideBySide = !!sideBible && settings.sideBySide && windowWidth >= SIDE_BY_SIDE_MIN_WIDTH && !marking;
   // A plain reader without the study tools: no tappable words, no Hebrew or Greek, and the
   // verse menu without cross references, parallels, Compare and Words in this verse.
   const study = settings.study;
@@ -929,7 +932,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   const originalLanguage = (v: { book: number }) => (v.book <= 39 ? t('hebrew') : t('greek'));
   // Side by side shows both Bibles: the one open on the left (it is the one read aloud,
   // and stays open when the phone is turned back), the other beside it.
-  const besideTranslation: TranslationId = translation === nativeBible ? 'KJV' : nativeBible ?? 'KJV';
+  const besideTranslation: TranslationId = translation === sideBible ? 'KJV' : sideBible ?? 'KJV';
   // The other Bible's verses beside each verse of the chapter, with the chapter they belong to.
   const [beside, setBeside] = useState<{ key: string; verses: Map<number, VerseRow[]> } | null>(null);
   const besideKey = `${translation}:${besideTranslation}:${chapterKey}`;
