@@ -40,6 +40,7 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
   const EDITION = useEdition();
   const { settings, update } = useSettings();
   const [meta, setMeta] = useState<Record<string, string>>({});
+  const [showBuilt, setShowBuilt] = useState(false);
   const writeToUs = useWriteToUs();
 
   useEffect(() => {
@@ -221,14 +222,13 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
         <Label text={t('aboutTexts')} />
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border, padding: 14 }]}>
           <Text style={[styles.about, { color: theme.text }]}>{t(EDITION.id === 'ml' ? 'aboutMalayalam' : EDITION.id === 'ta' ? 'aboutTamil' : EDITION.id === 'all' ? 'aboutAll' : 'aboutEnglish')}</Text>
-          <Text style={[styles.about, { color: theme.text, marginTop: 10 }]}>{t('aboutStrongs')}</Text>
-          <Text style={[styles.about, { color: theme.text, marginTop: 10 }]}>{t('aboutInterlinear')}</Text>
-          {EDITION.translations.includes('WEB') ? <Text style={[styles.about, { color: theme.muted, marginTop: 10 }]}>{t('aboutWeb')}</Text> : null}
-          {meta.built ? <Text style={[styles.rowSub, { color: theme.muted, marginTop: 10 }]}>{t('databaseBuilt', { date: meta.built })}</Text> : null}
-          {/* The app's version and build number, for a report of a problem (docs/testing). */}
-          <Text style={[styles.rowSub, { color: theme.muted, marginTop: 4 }]} selectable>
+          {/* The app's version and build number, for a report of a problem (docs/testing); a tap
+              shows the database's build date too. Where the texts and data come from is on
+              the Sources and licences page. */}
+          <Text style={[styles.rowSub, { color: theme.muted, marginTop: 10 }]} selectable onPress={() => setShowBuilt((v) => !v)}>
             {t('appVersion', { version: `${Constants.expoConfig?.version ?? '?'} (${Constants.expoConfig?.android?.versionCode ?? Constants.expoConfig?.ios?.buildNumber ?? '?'})` })}
           </Text>
+          {showBuilt && meta.built ? <Text style={[styles.rowSub, { color: theme.muted, marginTop: 4 }]}>{t('databaseBuilt', { date: meta.built })}</Text> : null}
           <Pressable onPress={onOpenHowTo} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>
             <Text style={[styles.rowTitle, { color: theme.accent, flex: 1 }]}>{t('howTo')}</Text>
             <Icon name="chevron_right" color={theme.accent} />

@@ -320,43 +320,43 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | highlightStyle | Highlights | हाइलाइट | |
 | highlightSoft | Soft | हल्के | |
 | highlightFluorescent | Fluorescent | चमकीले | |
-| highlightStyleDetail | Dark theme only | केवल गहरी थीम में | |
+| highlightStyleDetail | Used in the dark theme | गहरी थीम में लागू होता है | |
 | themeDark | Dark | गहरी | |
 | layout | Layout | पाठ का ढंग | |
 | layoutVerses | Verse per line | हर पद अलग पंक्ति में | |
 | layoutParagraphs | Paragraphs | अनुच्छेद | |
 | serif | Serif typeface | छपी किताब जैसे अक्षर | |
-| serifDetail | Scripture in a book-style face | पवित्रशास्त्र पुस्तक जैसी अक्षर शैली में | |
+| serifDetail | Book-style letters for the Bible text | बाइबल के पाठ के लिए छपी किताब जैसे अक्षर | |
 | keepAwake | Keep screen awake | स्क्रीन चालू रखें | |
 | keepAwakeDetail | While the app is open | जब तक ऐप खुला है | |
 | sideBySide | Side by side | साथ-साथ | |
-| sideBySideDetail | {native} and English verses together on a tablet or a phone turned sideways | टैबलेट पर या फ़ोन को आड़ा करने पर {native} और अंग्रेज़ी पद साथ-साथ | |
+| sideBySideDetail | Two Bibles side by side on a tablet or a phone turned sideways | टैबलेट पर या फ़ोन को आड़ा करने पर दो बाइबलें साथ-साथ | |
 | studyTools | Study tools | अध्ययन उपकरण | |
-| studyToolsDetail | Tap a word for its Hebrew or Greek, the original words under each verse, cross references, parallel passages, Compare, and an introduction to each book. Off, the app is a plain Bible for reading; your highlights, notes and notebook stay. | चालू होने पर: शब्द छूकर उसका इब्रानी या यूनानी मूल, हर पद के नीचे मूल शब्द, संदर्भ पद, समानांतर अंश, तुलना और हर पुस्तक का परिचय। बंद होने पर ऐप पढ़ने के लिए एक सादी बाइबल बन जाता है; आपके हाइलाइट, टिप्पणियाँ और नोटबुक बने रहते हैं। | |
+| studyToolsDetail | Word meanings, Hebrew and Greek, cross references and book introductions. Turn off for plain reading. Your highlights and notes are kept. | शब्दों के अर्थ, इब्रानी और यूनानी, संदर्भ पद और पुस्तक परिचय। सादे पढ़ने के लिए इसे बंद करें। आपके हाइलाइट और टिप्पणियाँ बनी रहती हैं। | |
 | studyToolsOn | Switch the study tools on | अध्ययन उपकरण चालू करें | |
 | studyToolsOff | Switch the study tools off | अध्ययन उपकरण बंद करें | |
 | studyToolsOnNote | Study tools on | अध्ययन उपकरण चालू | |
 | studyToolsOffNote | Study tools off: plain reading | अध्ययन उपकरण बंद: सादा पढ़ना | |
-| language | Interface language | ऐप की भाषा | |
+| language | App language | ऐप की भाषा | |
 | translation | Translation | अनुवाद | |
 | textSize | Text size | अक्षरों का आकार | |
 | smallerText | Smaller text | छोटे अक्षर | |
 | largerText | Larger text | बड़े अक्षर | |
-| textSizeHint | You can also pinch the text while reading: spread two fingers to enlarge it, pinch to shrink it. | पढ़ते समय पाठ को दो उँगलियों से भी बदल सकते हैं: फैलाकर बड़ा, सिकोड़कर छोटा। | |
+| textSizeHint | While reading, pinch with two fingers to change the size. | पढ़ते समय दो उँगलियों से आकार बदलें। | |
 | interlinear | Hebrew and Greek words | इब्रानी और यूनानी शब्द | |
 | showInterlinear | Show the Hebrew or Greek words | इब्रानी या यूनानी शब्द दिखाएँ | |
-| showInterlinearDetail | Under each verse, word by word, with transliteration and meaning | हर पद के नीचे, शब्द-दर-शब्द, लिप्यंतरण और अर्थ के साथ | |
+| showInterlinearDetail | Shown under each verse, word by word | हर पद के नीचे, शब्द-दर-शब्द | |
 | everyVerse | Every verse | हर पद | |
-| everyVerseDetail | The whole chapter is shown word by word | पूरा अध्याय शब्द-दर-शब्द दिखता है | |
-| tappedVerses | Only verses I tap | केवल वे पद जिन्हें मैं छुऊँ | |
-| tappedVersesDetail | Tap a verse number to show or hide its words. Keeps long chapters short. | पद की संख्या छूकर उसके शब्द दिखाएँ या छिपाएँ। लंबे अध्याय छोटे रहते हैं। | |
+| everyVerseDetail | The whole chapter, word by word | पूरा अध्याय, शब्द-दर-शब्द | |
+| tappedVerses | Only verses you tap | केवल वे पद जिन्हें आप छुएँ | |
+| tappedVersesDetail | Tap a verse number to show or hide its words | पद संख्या छूकर उसके शब्द दिखाएँ या छिपाएँ | |
 | transliteration | Transliteration | लिप्यंतरण | |
 | transliterationDetail | Show how each word is pronounced | हर शब्द का उच्चारण दिखाएँ | |
 | hideCantillation | Hide cantillation marks | गायन-चिह्न (cantillation) छिपाएँ | |
-| hideCantillationDetail | Hebrew with vowel points only, easier to read at small sizes | केवल स्वर-बिंदुओं (मात्राओं) के साथ इब्रानी; छोटे आकार में पढ़ना आसान | |
+| hideCantillationDetail | Shows vowel points only | केवल स्वर-बिंदु दिखाता है | |
 | reading | Reading | पढ़ना | |
 | underline | Underline linked words | जुड़े शब्दों को रेखांकित करें | |
-| underlineDetail | Marks words that open a Greek or Hebrew entry | उन शब्दों को चिह्नित करता है जो यूनानी या इब्रानी प्रविष्टि खोलते हैं | |
+| underlineDetail | Underlines words you can tap | जिन शब्दों को छू सकते हैं, उनके नीचे रेखा | |
 | aboutTexts | About the texts | पाठों के बारे में | |
 | sourcesLicences | Sources and licences | स्रोत और लाइसेंस | |
 | whyThisBible | Why this Bible | यह बाइबल क्यों | |
@@ -391,7 +391,7 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | howTopic13 | Picture cards | चित्र कार्ड | |
 | howText13 | Press and hold a verse and choose Share as card to put it on a picture, for a birthday, a wedding or any day, with a message of your own and your own photo if you like. A design you make can be saved for next time. | किसी पद को दबाकर रखें और “कार्ड के रूप में साझा करें” चुनें: जन्मदिन, विवाह या किसी भी दिन के लिए, उसे एक चित्र पर रखें, अपने संदेश के साथ और चाहें तो अपनी फ़ोटो के साथ। आपका बनाया डिज़ाइन अगली बार के लिए सहेजा जा सकता है। | |
 | feedback | Write to us | हमें लिखें | |
-| feedbackDetail | A problem, a wish, a word of thanks: anything. Opens your mail app. | कोई समस्या, कोई इच्छा, धन्यवाद के दो शब्द: कुछ भी। आपका मेल ऐप खुलता है। | |
+| feedbackDetail | Tell us about a problem or an idea. Opens your mail app. | कोई समस्या या सुझाव हमें बताएँ। आपका मेल ऐप खुलेगा। | |
 | feedbackCard | You have been reading with this app for a while. What could be better? A line from you helps us more than you might think. | आप कुछ समय से इस ऐप में पढ़ रहे हैं। क्या बेहतर हो सकता है? आपकी एक पंक्ति हमारी जितनी मदद करती है, उतनी आप शायद सोच भी न सकें। | |
 | feedbackNotNow | Not now | अभी नहीं | |
 | feedbackNever | No thanks | नहीं, धन्यवाद | |
@@ -401,20 +401,17 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | feedbackNoMailText | You can write to us at {address}. | आप हमें {address} पर लिख सकते हैं। | |
 | feedbackCopyAddress | Copy address | पता कॉपी करें | |
 | privacy | Privacy | निजता | |
-| aboutEnglish | Bibles: the King James Version (1769), the Berean Standard Bible and the World English Bible. The translators' footnotes appear as small letters in the text; tap one to read it. | बाइबलें: King James Version (1769), Berean Standard Bible और World English Bible। अनुवादकों की पादटिप्पणियाँ पाठ में छोटे अक्षरों के रूप में दिखती हैं; एक को छूकर पढ़ें। | |
-| aboutMalayalam | Bibles: the Sathyavedapusthakam 1910 (Malayalam), in a revised edition in contemporary orthography, the King James Version (1769) and the Berean Standard Bible. The links from Malayalam words to the Hebrew and Greek are machine-generated and not fully reviewed. | बाइबलें: सत्यवेदपुस्तकम 1910 (मलयालम), आज की वर्तनी में संशोधित संस्करण, King James Version (1769) और Berean Standard Bible। मलयालम शब्दों से इब्रानी और यूनानी तक की कड़ियाँ मशीन से बनी हैं और पूरी तरह जाँची नहीं गईं। | |
-| aboutTamil | Bibles: the Indian Revised Version (Tamil), the King James Version (1769) and the Berean Standard Bible. The links from Tamil words to the Hebrew and Greek are machine-generated and not reviewed. | बाइबलें: Indian Revised Version (तमिल), King James Version (1769) और Berean Standard Bible। तमिल शब्दों से इब्रानी और यूनानी तक की कड़ियाँ मशीन से बनी हैं और जाँची नहीं गईं। | |
-| aboutAll | Bibles: the King James Version (1769), the Berean Standard Bible, the World English Bible, the Sathyavedapusthakam 1910 (Malayalam) in contemporary orthography, and the Indian Revised Version in Tamil and in Hindi. The links from Malayalam and Tamil words to the Hebrew and Greek are machine-generated and not fully reviewed; the Hindi words are not linked yet. The translators' footnotes appear as small letters in the text; tap one to read it. | बाइबलें: King James Version (1769), Berean Standard Bible, World English Bible, सत्यवेदपुस्तकम 1910 (मलयालम) आज की वर्तनी में, और तमिल तथा हिन्दी में Indian Revised Version। मलयालम और तमिल शब्दों से इब्रानी और यूनानी तक की कड़ियाँ मशीन से बनी हैं और पूरी तरह जाँची नहीं गईं; हिन्दी शब्द अभी जुड़े नहीं हैं। अनुवादकों की पादटिप्पणियाँ पाठ में छोटे अक्षरों के रूप में दिखती हैं; एक को छूकर पढ़ें। | |
-| sideBySideDetailAll | Your Indian Bible beside the English, verse by verse, on a tablet or a phone turned sideways | टैबलेट पर या फ़ोन को आड़ा करने पर आपकी भारतीय बाइबल और अंग्रेज़ी, पद-दर-पद, साथ-साथ | |
+| aboutEnglish | Bibles: King James Version (1769), Berean Standard Bible and World English Bible. Where each comes from is under Sources and licences. | बाइबलें: King James Version (1769), Berean Standard Bible और World English Bible। हर एक का स्रोत "स्रोत और लाइसेंस" में है। | |
+| aboutMalayalam | Bibles: Sathyavedapusthakam 1910, King James Version and Berean Standard Bible. The links from Malayalam words to the Hebrew and Greek were made by computer and are not fully checked. | बाइबलें: सत्यवेदपुस्तकम 1910 (मलयालम), King James Version और Berean Standard Bible। | |
+| aboutTamil | Bibles: Tamil Indian Revised Version, King James Version and Berean Standard Bible. The links from Tamil words to the Hebrew and Greek were made by computer and are not checked yet. | बाइबलें: Indian Revised Version (तमिल), King James Version और Berean Standard Bible। | |
+| aboutAll | Bibles: KJV, BSB and WEB in English, the Sathyavedapusthakam 1910 in Malayalam, and the Indian Revised Version in Tamil and Hindi. The links from Malayalam and Tamil words to the Hebrew and Greek were made by computer and are not fully checked. Hindi words are not linked yet. | बाइबलें: अंग्रेज़ी में KJV, BSB और WEB; मलयालम में सत्यवेदपुस्तकम 1910; तमिल और हिन्दी में इंडियन रिवाइज्ड वर्जन। मलयालम और तमिल शब्दों से इब्रानी और यूनानी तक की कड़ियाँ कंप्यूटर से बनी हैं और पूरी तरह जाँची नहीं गईं। हिन्दी शब्द अभी जोड़े नहीं गए हैं। | |
+| sideBySideDetailAll | Two Bibles side by side on a tablet or a phone turned sideways | टैबलेट पर या फ़ोन को आड़ा करने पर दो बाइबलें साथ-साथ | |
 | chooseBible | Choose a Bible | बाइबल चुनें | |
 | hindiNote | Hindi words are not yet linked to the Hebrew and Greek, so tapping a word does nothing here. Cross references, parallel passages and the introductions still work, and the English Bibles have the word links. | हिन्दी शब्द अभी इब्रानी और यूनानी से जुड़े नहीं हैं, इसलिए यहाँ शब्द छूने से कुछ नहीं होता। संदर्भ पद, समानांतर अंश और पुस्तक परिचय काम करते हैं, और अंग्रेज़ी बाइबलों में शब्दों की कड़ियाँ हैं। | |
 | moreEntries | More ({n}) | और ({n}) | |
 | fewerEntries | Fewer | कम | |
 | englishBibles | English | अंग्रेज़ी | |
 | indianBibles | Indian languages | भारतीय भाषाएँ | |
-| aboutStrongs | Dictionaries: Strong's Hebrew and Greek Dictionaries (1890), Abbott-Smith's Greek lexicon (1922) and the Brown–Driver–Briggs Hebrew lexicon (1906). | शब्दकोश: Strong के इब्रानी और यूनानी शब्दकोश (1890), Abbott-Smith का यूनानी शब्दकोश (1922) और Brown–Driver–Briggs इब्रानी शब्दकोश (1906)। | |
-| aboutInterlinear | The Hebrew (Leningrad Codex) and Greek words, with transliteration, glosses and grammar are from the Translators Amalgamated Hebrew OT and Greek NT of STEPBible.org (Tyndale House, Cambridge). The Greek is spelled as in the Nestle-Aland 28th edition and has every word of the Textus Receptus and the Byzantine text; where those texts have a different word from Nestle-Aland, their word is shown. Words not in the Nestle-Aland editions have a line beneath; tap one to see which texts have it. | इब्रानी (Leningrad Codex) और यूनानी शब्द, लिप्यंतरण, अर्थ और व्याकरण सहित, STEPBible.org (Tyndale House, Cambridge) के Translators Amalgamated Hebrew OT और Greek NT से हैं। यूनानी की वर्तनी Nestle-Aland 28वें संस्करण की है और इसमें Textus Receptus और Byzantine पाठ का हर शब्द है; जहाँ उन पाठों में Nestle-Aland से भिन्न शब्द है, वहाँ उनका शब्द दिखाया गया है। जो शब्द Nestle-Aland संस्करणों में नहीं हैं, उनके नीचे रेखा है; एक को छूकर देखें कि किन पाठों में वह है। | |
-| aboutWeb | The World English Bible is shown as plain text: the Strong's numbers in its source file are attached to the wrong words too often to use. Word lookups and verse lists use the King James Version; to tap the original words while reading the WEB, switch on Hebrew words or Greek words. | World English Bible सादे पाठ के रूप में दिखाई जाती है: उसकी स्रोत फ़ाइल में Strong संख्याएँ इतनी बार ग़लत शब्दों से जुड़ी हैं कि उपयोग नहीं की जा सकतीं। शब्द खोज और पद सूचियाँ King James Version का उपयोग करती हैं; WEB पढ़ते समय मूल शब्द छूने के लिए इब्रानी या यूनानी शब्द चालू करें। | |
 | databaseBuilt | Database built {date} | डेटाबेस {date} को बना | |
 | appVersion | Version {version} | संस्करण {version} | |
 | previewText | In the beginning | आदि में | |

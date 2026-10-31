@@ -420,43 +420,43 @@ Words chosen for the app's own features, used throughout:
 | highlightStyle | Highlights | ஹைலைட்டுகள் | |
 | highlightSoft | Soft | மென்மை | |
 | highlightFluorescent | Fluorescent | ஃப்ளோரசன்ட் | |
-| highlightStyleDetail | Dark theme only | இருள் நிறத் திட்டத்தில் மட்டும் | |
+| highlightStyleDetail | Used in the dark theme | இருண்ட தீமில் பயன்படும் | |
 | themeDark | Dark | இருள் | |
 | layout | Layout | உரை அமைப்பு | |
 | layoutVerses | Verse per line | வசனம் வசனமாக | |
 | layoutParagraphs | Paragraphs | பத்திகள் | |
 | serif | Serif typeface | புத்தக எழுத்துரு | |
-| serifDetail | Scripture in a book-style face | அச்சிட்ட வேதாகமம் போன்ற எழுத்து வடிவம் | |
+| serifDetail | Book-style letters for the Bible text | வேத உரைக்குப் புத்தகத்தில் உள்ளது போன்ற எழுத்துகள் | |
 | keepAwake | Keep screen awake | திரையை அணையாமல் வை | |
 | keepAwakeDetail | While the app is open | செயலி திறந்திருக்கும் வரை | |
 | sideBySide | Side by side | அருகருகே | |
-| sideBySideDetail | {native} and English verses together on a tablet or a phone turned sideways | டேப்லெட்டில் அல்லது கைபேசியைச் சாய்த்துப் பிடிக்கும்போது தமிழும் ஆங்கிலமும் ஒன்றாக | |
+| sideBySideDetail | Two Bibles side by side on a tablet or a phone turned sideways | டேப்லெட்டில் அல்லது கைபேசியைச் சாய்த்துப் பிடிக்கும்போது இரண்டு வேதாகமங்கள் அருகருகே | |
 | studyTools | Study tools | படிப்புக் கருவிகள் | |
-| studyToolsDetail | Tap a word for its Hebrew or Greek, the original words under each verse, cross references, parallel passages, Compare, and an introduction to each book. Off, the app is a plain Bible for reading; your highlights, notes and notebook stay. | ஒரு வார்த்தையைத் தொட்டால் அதன் எபிரெய / கிரேக்க மூலச்சொல், ஒவ்வொரு வசனத்தின் கீழும் மூல மொழி வார்த்தைகள், தொடர்புடைய வசனங்கள், இணையான பகுதிகள், ஒப்பீடு, ஒவ்வொரு புத்தகத்துக்கும் முன்னுரை. அணைத்தால் வாசிப்பதற்கான சாதாரண வேதாகமம்; ஹைலைட்டுகள், குறிப்புகள், குறிப்பேடு அப்படியே இருக்கும். | |
+| studyToolsDetail | Word meanings, Hebrew and Greek, cross references and book introductions. Turn off for plain reading. Your highlights and notes are kept. | வார்த்தைகளின் பொருள், எபிரெயமும் கிரேக்கமும், தொடர்புடைய வசனங்கள், புத்தக முன்னுரைகள். வெறுமனே வாசிக்க இதை அணையுங்கள். உங்கள் ஹைலைட்டுகளும் குறிப்புகளும் அப்படியே இருக்கும். | |
 | studyToolsOn | Switch the study tools on | படிப்புக் கருவிகளை இயக்கு | |
 | studyToolsOff | Switch the study tools off | படிப்புக் கருவிகளை அணை | |
 | studyToolsOnNote | Study tools on | படிப்புக் கருவிகள் இயக்கத்தில் | |
 | studyToolsOffNote | Study tools off: plain reading | படிப்புக் கருவிகள் அணைக்கப்பட்டன: வெறும் வாசிப்பு | |
-| language | Interface language | செயலியின் மொழி | |
+| language | App language | செயலியின் மொழி | |
 | translation | Translation | மொழிபெயர்ப்பு | |
 | textSize | Text size | எழுத்தளவு | |
 | smallerText | Smaller text | சிறிய எழுத்து | |
 | largerText | Larger text | பெரிய எழுத்து | |
-| textSizeHint | You can also pinch the text while reading: spread two fingers to enlarge it, pinch to shrink it. | வாசிக்கும்போது இரண்டு விரல்களாலும் எழுத்தளவை மாற்றலாம்: பெரிதாக்க விரல்களை விரியுங்கள், சிறிதாக்கக் குவியுங்கள். | |
+| textSizeHint | While reading, pinch with two fingers to change the size. | வாசிக்கும்போது இரண்டு விரல்களால் அளவை மாற்றலாம். | |
 | interlinear | Hebrew and Greek words | எபிரெய, கிரேக்கச் சொற்கள் | |
 | showInterlinear | Show the Hebrew or Greek words | எபிரெய அல்லது கிரேக்கச் சொற்களைக் காட்டு | |
-| showInterlinearDetail | Under each verse, word by word, with transliteration and meaning | ஒவ்வொரு வசனத்தின் கீழும், சொல்லுக்குச் சொல், ஒலிபெயர்ப்பும் பொருளும் சேர்த்து | |
+| showInterlinearDetail | Shown under each verse, word by word | ஒவ்வொரு வசனத்தின் கீழும், வார்த்தை வார்த்தையாக | |
 | everyVerse | Every verse | எல்லா வசனங்களும் | |
-| everyVerseDetail | The whole chapter is shown word by word | முழு அதிகாரமும் சொல்லுக்குச் சொல் காட்டப்படும் | |
-| tappedVerses | Only verses I tap | நான் தொடும் வசனங்கள் மட்டும் | |
-| tappedVersesDetail | Tap a verse number to show or hide its words. Keeps long chapters short. | வசன எண்ணைத் தொட்டு அதன் சொற்களைக் காட்டவோ மறைக்கவோ செய்யலாம். நீண்ட அதிகாரங்கள் அதிகம் நீளாது. | |
+| everyVerseDetail | The whole chapter, word by word | முழு அதிகாரமும், வார்த்தை வார்த்தையாக | |
+| tappedVerses | Only verses you tap | தொடும் வசனங்கள் மட்டும் | |
+| tappedVersesDetail | Tap a verse number to show or hide its words | வசன எண்ணைத் தொட்டு அதன் வார்த்தைகளைக் காட்டலாம் அல்லது மறைக்கலாம் | |
 | transliteration | Transliteration | ஒலிபெயர்ப்பு | |
 | transliterationDetail | Show how each word is pronounced | ஒவ்வொரு சொல்லும் எப்படி உச்சரிக்கப்படுகிறது என்று காட்டு | |
 | hideCantillation | Hide cantillation marks | பாராயணக் குறிகளை மறை | |
-| hideCantillationDetail | Hebrew with vowel points only, easier to read at small sizes | எபிரெயத்தில் உயிர்க்குறிகள் மட்டும்; சிறிய எழுத்தில் வாசிக்க எளிது | |
+| hideCantillationDetail | Shows vowel points only | உயிர்க்குறிகளை மட்டும் காட்டும் | |
 | reading | Reading | வாசிப்பு | |
 | underline | Underline linked words | இணைக்கப்பட்ட சொற்களுக்கு அடிக்கோடு | |
-| underlineDetail | Marks words that open a Greek or Hebrew entry | எபிரெய அல்லது கிரேக்க விவரம் திறக்கும் சொற்களுக்குக் கீழ் கோடு காட்டும் | |
+| underlineDetail | Underlines words you can tap | தொடக்கூடிய வார்த்தைகளின் கீழ் கோடு | |
 | aboutTexts | About the texts | உரைகளைப் பற்றி | |
 | sourcesLicences | Sources and licences | மூலங்களும் உரிமங்களும் | |
 | whyThisBible | Why this Bible | இந்த வேதாகமம் ஏன் | |
@@ -491,7 +491,7 @@ Words chosen for the app's own features, used throughout:
 | howTopic13 | Picture cards | பட அட்டைகள் | |
 | howText13 | Press and hold a verse and choose Share as card to put it on a picture, for a birthday, a wedding or any day, with a message of your own and your own photo if you like. A design you make can be saved for next time. | வசனத்தை அழுத்திப் பிடித்து அட்டையாகப் பகிர் என்பதைத் தேர்ந்தெடுத்தால், பிறந்தநாள், திருமணம் அல்லது எந்த நாளுக்கும் ஒரு படத்தில் வசனத்தை, உங்கள் செய்தியோடும் விரும்பினால் உங்கள் சொந்தப் புகைப்படத்தோடும் பகிரலாம். நீங்கள் உருவாக்கும் வடிவமைப்பை அடுத்த முறைக்குச் சேமிக்கலாம். | |
 | feedback | Write to us | எங்களுக்கு எழுதுங்கள் | |
-| feedbackDetail | A problem, a wish, a word of thanks: anything. Opens your mail app. | ஒரு பிரச்சினை, ஒரு விருப்பம், ஒரு நன்றி வார்த்தை: எதுவும். உங்கள் மெயில் செயலி திறக்கும். | |
+| feedbackDetail | Tell us about a problem or an idea. Opens your mail app. | ஒரு பிரச்சினையையோ யோசனையையோ எங்களுக்குச் சொல்லுங்கள். உங்கள் மெயில் செயலி திறக்கும். | |
 | feedbackCard | You have been reading with this app for a while. What could be better? A line from you helps us more than you might think. | சில நாட்களாக இந்தச் செயலியில் வாசித்து வருகிறீர்கள். எதை மேம்படுத்தலாம்? உங்களிடமிருந்து ஒரு வரி எங்களுக்குப் பெரிய உதவி. | |
 | feedbackNotNow | Not now | இப்போது வேண்டாம் | |
 | feedbackNever | No thanks | வேண்டாம், நன்றி | |
@@ -501,20 +501,17 @@ Words chosen for the app's own features, used throughout:
 | feedbackNoMailText | You can write to us at {address}. | இந்த முகவரிக்கு எழுதலாம்: {address} | |
 | feedbackCopyAddress | Copy address | முகவரியை நகலெடு | |
 | privacy | Privacy | தனியுரிமை | |
-| aboutEnglish | Bibles: the King James Version (1769), the Berean Standard Bible and the World English Bible. The translators' footnotes appear as small letters in the text; tap one to read it. | வேதாகமங்கள்: கிங் ஜேம்ஸ் வெர்ஸன் (1769), பெரியன் ஸ்டாண்டர்டு பைபிள், வேர்ல்டு இங்கிலீஷ் பைபிள். மொழிபெயர்ப்பாளர்களின் அடிக்குறிப்புகள் சிறிய எழுத்துகளாகத் தெரியும்; தொட்டால் படிக்கலாம். | |
-| aboutMalayalam | Bibles: the Sathyavedapusthakam 1910 (Malayalam), in a revised edition in contemporary orthography, the King James Version (1769) and the Berean Standard Bible. The links from Malayalam words to the Hebrew and Greek are machine-generated and not fully reviewed. | வேதாகமங்கள்: மலையாள சத்தியவேதபுஸ்தகம் 1910 (இன்றைய எழுத்துமுறையில்), கிங் ஜேம்ஸ் வெர்ஸன் (1769), பெரியன் ஸ்டாண்டர்டு பைபிள். மலையாள வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திரத்தால் உருவாக்கப்பட்டவை; முழுமையாகச் சரிபார்க்கப்படவில்லை. | |
-| aboutTamil | Bibles: the Indian Revised Version (Tamil), the King James Version (1769) and the Berean Standard Bible. The links from Tamil words to the Hebrew and Greek are machine-generated and not reviewed. | வேதாகமங்கள்: இண்டியன் ரிவைஸ்டு வெர்ஸன் (IRV) தமிழ், கிங் ஜேம்ஸ் வெர்ஸன் (1769), பெரியன் ஸ்டாண்டர்டு பைபிள். தமிழ் வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திர உதவியுடன் உருவாக்கப்பட்டவை; சரிபார்க்கப்படவில்லை. | |
-| aboutAll | Bibles: the King James Version (1769), the Berean Standard Bible, the World English Bible, the Sathyavedapusthakam 1910 (Malayalam) in contemporary orthography, and the Indian Revised Version in Tamil and in Hindi. The links from Malayalam and Tamil words to the Hebrew and Greek are machine-generated and not fully reviewed; the Hindi words are not linked yet. The translators' footnotes appear as small letters in the text; tap one to read it. | வேதாகமங்கள்: கிங் ஜேம்ஸ் வெர்ஸன் (1769), பெரியன் ஸ்டாண்டர்டு பைபிள், வேர்ல்டு இங்கிலீஷ் பைபிள், மலையாள சத்தியவேதபுஸ்தகம் 1910 (இன்றைய எழுத்துமுறையில்), தமிழிலும் இந்தியிலும் இண்டியன் ரிவைஸ்டு வெர்ஸன். மலையாள, தமிழ் வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் இயந்திரம் உருவாக்கியவை, முழுமையாகச் சரிபார்க்கப்படவில்லை; இந்தி வார்த்தைகள் இன்னும் இணைக்கப்படவில்லை. மொழிபெயர்ப்பாளர்களின் அடிக்குறிப்புகள் வசனத்தில் சிறிய எழுத்துகளாகத் தெரியும்; தொட்டால் வாசிக்கலாம். | |
-| sideBySideDetailAll | Your Indian Bible beside the English, verse by verse, on a tablet or a phone turned sideways | டேப்லெட்டில் அல்லது கைபேசியைச் சாய்த்துப் பிடிக்கும்போது உங்கள் இந்திய வேதாகமமும் ஆங்கிலமும் வசனம் வசனமாக ஒன்றாக | |
+| aboutEnglish | Bibles: King James Version (1769), Berean Standard Bible and World English Bible. Where each comes from is under Sources and licences. | வேதாகமங்கள்: கிங் ஜேம்ஸ் வெர்ஸன் (1769), பெரியன் ஸ்டாண்டர்டு பைபிள், வேர்ல்டு இங்கிலீஷ் பைபிள். ஒவ்வொன்றின் மூலமும் "மூலங்களும் உரிமங்களும்" பகுதியில் உள்ளது. | |
+| aboutMalayalam | Bibles: Sathyavedapusthakam 1910, King James Version and Berean Standard Bible. The links from Malayalam words to the Hebrew and Greek were made by computer and are not fully checked. | வேதாகமங்கள்: மலையாள சத்தியவேதபுஸ்தகம் 1910, கிங் ஜேம்ஸ் வெர்ஸன், பெரியன் ஸ்டாண்டர்டு பைபிள். | |
+| aboutTamil | Bibles: Tamil Indian Revised Version, King James Version and Berean Standard Bible. The links from Tamil words to the Hebrew and Greek were made by computer and are not checked yet. | வேதாகமங்கள்: இண்டியன் ரிவைஸ்டு வெர்ஸன் (தமிழ்), கிங் ஜேம்ஸ் வெர்ஸன், பெரியன் ஸ்டாண்டர்டு பைபிள். தமிழ் வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் கணினியால் உருவாக்கப்பட்டவை. இவை இன்னும் சரிபார்க்கப்படவில்லை. | |
+| aboutAll | Bibles: KJV, BSB and WEB in English, the Sathyavedapusthakam 1910 in Malayalam, and the Indian Revised Version in Tamil and Hindi. The links from Malayalam and Tamil words to the Hebrew and Greek were made by computer and are not fully checked. Hindi words are not linked yet. | வேதாகமங்கள்: ஆங்கிலத்தில் KJV, BSB, WEB; மலையாளத்தில் சத்தியவேதபுஸ்தகம் 1910; தமிழிலும் இந்தியிலும் இண்டியன் ரிவைஸ்டு வெர்ஸன். மலையாள, தமிழ் வார்த்தைகளிலிருந்து எபிரெய, கிரேக்க வார்த்தைகளுக்கான இணைப்புகள் கணினியால் உருவாக்கப்பட்டவை, முழுமையாகச் சரிபார்க்கப்படவில்லை. இந்தி வார்த்தைகள் இன்னும் இணைக்கப்படவில்லை. | |
+| sideBySideDetailAll | Two Bibles side by side on a tablet or a phone turned sideways | டேப்லெட்டில் அல்லது கைபேசியைச் சாய்த்துப் பிடிக்கும்போது இரண்டு வேதாகமங்கள் அருகருகே | |
 | chooseBible | Choose a Bible | வேதாகமத்தைத் தேர்ந்தெடுக்க | |
 | hindiNote | Hindi words are not yet linked to the Hebrew and Greek, so tapping a word does nothing here. Cross references, parallel passages and the introductions still work, and the English Bibles have the word links. | இந்தி வார்த்தைகள் இன்னும் எபிரெய, கிரேக்க வார்த்தைகளுடன் இணைக்கப்படவில்லை; எனவே இங்கே வார்த்தையைத் தொட்டால் ஒன்றும் நடக்காது. தொடர்புடைய வசனங்கள், இணையான பகுதிகள், புத்தக முன்னுரைகள் வேலை செய்யும்; ஆங்கில வேதாகமங்களில் வார்த்தை இணைப்புகள் உள்ளன. | |
 | moreEntries | More ({n}) | மேலும் ({n}) | |
 | fewerEntries | Fewer | குறைவாகக் காட்டு | |
 | englishBibles | English | ஆங்கிலம் | |
 | indianBibles | Indian languages | இந்திய மொழிகள் | |
-| aboutStrongs | Dictionaries: Strong's Hebrew and Greek Dictionaries (1890), Abbott-Smith's Greek lexicon (1922) and the Brown–Driver–Briggs Hebrew lexicon (1906). | அகராதிகள்: ஸ்ட்ராங் எபிரெய, கிரேக்க அகராதிகள் (1890), Abbott-Smith கிரேக்க அகராதி (1922), Brown–Driver–Briggs எபிரெய அகராதி (1906). | |
-| aboutInterlinear | The Hebrew (Leningrad Codex) and Greek words, with transliteration, glosses and grammar are from the Translators Amalgamated Hebrew OT and Greek NT of STEPBible.org (Tyndale House, Cambridge). The Greek is spelled as in the Nestle-Aland 28th edition and has every word of the Textus Receptus and the Byzantine text; where those texts have a different word from Nestle-Aland, their word is shown. Words not in the Nestle-Aland editions have a line beneath; tap one to see which texts have it. | எபிரெய (லெனின்கிராட் கோடெக்ஸ்), கிரேக்க வார்த்தைகள், ஒலிபெயர்ப்பு, பொருள், இலக்கணத்துடன், STEPBible.org (Tyndale House Cambridge) தயாரித்த Translators Amalgamated Hebrew OT and Greek NT-இலிருந்து. கிரேக்கம் நெஸ்லே-ஆலந்து 28-ஆம் பதிப்பின் எழுத்துக்கூட்டலில் உள்ளது; டெக்ஸ்டஸ் ரிசெப்டஸ், பைசாந்திய பாடங்களின் ஒவ்வொரு வார்த்தையும் அதில் உண்டு. அவற்றில் வேறு வார்த்தை இருக்கும் இடத்தில் அந்த வார்த்தை காட்டப்படுகிறது. நெஸ்லே-ஆலந்து பதிப்புகளில் இல்லாத வார்த்தைகளுக்குக் கீழே கோடு இருக்கும்; எந்தப் பாடங்களில் அது உள்ளது என்று அறியத் தொடுங்கள். | |
-| aboutWeb | The World English Bible is shown as plain text: the Strong's numbers in its source file are attached to the wrong words too often to use. Word lookups and verse lists use the King James Version; to tap the original words while reading the WEB, switch on Hebrew words or Greek words. | வேர்ல்டு இங்கிலீஷ் பைபிள் வெறும் உரையாக மட்டுமே காட்டப்படுகிறது: அதன் மூலக் கோப்பில் உள்ள ஸ்ட்ராங் எண்கள் அடிக்கடி தவறான வார்த்தைகளில் உள்ளன. சொல் விவரமும் வசனப் பட்டியலும் KJV-ஐப் பயன்படுத்துகின்றன; WEB-ஐ வாசிக்கும்போது மூல வார்த்தைகளைத் தொட, எபிரெய / கிரேக்க வார்த்தைகளை இயக்குங்கள். | |
 | databaseBuilt | Database built {date} | தரவுத்தளம் உருவாக்கப்பட்டது {date} | |
 | appVersion | Version {version} | பதிப்பு {version} | |
 | previewText | In the beginning | ஆதியிலே | |
