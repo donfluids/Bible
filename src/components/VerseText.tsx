@@ -205,7 +205,7 @@ export const VerseText = memo(function VerseText({
           onLongPress={onLongPress}
           accessibilityRole={onNumberPress ? 'button' : undefined}
           accessibilityLabel={onNumberPress ? numberLabel : undefined}
-          style={[styles.number, { color: accent, fontSize: small }]}
+          style={[styles.number, { color: onMark ? accent : theme.muted, fontSize: small }]}
         >
           {withChapter ? `${verse.chapter}:${verse.verse}` : verse.verse}{' '}
         </Text>
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   text: { fontFamily: undefined },
   title: { fontStyle: 'italic' },
   omitted: { fontStyle: 'italic' },
-  number: { fontWeight: '700' },
+  number: { fontWeight: '600' },
 });
 
 /** Which of the verse's words with each of this segment's numbers it is, and how many there are. */

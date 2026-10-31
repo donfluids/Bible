@@ -66,7 +66,7 @@ Tamil-English Bible: Hebrew root words for the OT, Greek for the NT.
 A Tamil-English Bible: read the Tamil Indian Revised Version (IRV) and the King James Version, and study the root words behind them, Hebrew in the Old Testament and Greek in the New.
 
 • The Tamil IRV, the King James Version and the Berean Standard Bible in modern English, switched with one tap.
-• Tap an underlined Tamil word for its root word, Hebrew in the Old Testament or Greek in the New: meaning, pronunciation, grammar and Strong's dictionary entry.
+• Tap a Tamil word for its root word, Hebrew in the Old Testament or Greek in the New: meaning, pronunciation, grammar and Strong's dictionary entry.
 • Every verse where that root word stands, and the Tamil words the IRV uses for it.
 • Hebrew and Greek words: the Hebrew of every Old Testament verse and the Greek of every New Testament verse, word by word, with transliteration and a short meaning.
 • Search in Tamil or English. Type a reference such as சங்கீதம் 23 or John 3:16 to go straight there.

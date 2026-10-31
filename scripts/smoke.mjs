@@ -343,7 +343,7 @@ for (const edition of EDITIONS) {
       await wait(1200);
     });
     await step('plain-reader', async (snap) => {
-      // Study tools off: no tappable words, and the cap in the top bar switches them back on.
+      // Study tools off (the switch at the top of Settings): no tappable words in the reader.
       await vis(page.getByLabel(t.settings)).click();
       await wait(1200);
       await vis(page.getByRole('switch').first()).click();
@@ -351,19 +351,14 @@ for (const edition of EDITIONS) {
       await vis(page.getByLabel(t.back)).click();
       await wait(1500);
       if (await page.getByRole('link').count()) throw new Error('words are still links with the study tools off');
-      // The cap in the top bar now offers to switch them on.
       await snap();
-      const cap = page.getByRole('switch', { name: t.studyTools, exact: true });
-      await vis(cap).click();
-      await shows(t.studyToolsOnNote);
+      // And on again.
+      await vis(page.getByLabel(t.settings)).click();
       await wait(1200);
-      await vis(page.getByRole('link').first()).waitFor({ timeout: 8000 });
-      // Off again from the cap, then Undo in its message puts them back.
-      await vis(cap).click();
-      await shows(t.studyToolsOffNote);
-      await snap('undo');
-      await vis(page.getByRole('button', { name: t.undo, exact: true })).click();
-      await wait(1200);
+      await vis(page.getByRole('switch').first()).click();
+      await wait(600);
+      await vis(page.getByLabel(t.back)).click();
+      await wait(1500);
       await vis(page.getByRole('link').first()).waitFor({ timeout: 8000 });
     });
     await step('how-to', async (snap) => {

@@ -8,6 +8,7 @@ Status: **done** (committed and pushed), **partly**, **open**, or **yours** (a d
 | | Item | Status |
 |---|---|---|
 | — | Card heading lost its second word on some phones ("Stay blessed" → "Stay") | done (7f36c69); not yet seen on a phone |
+| — | Reader redesign: one bar (passage and Bible drop-downs, search, settings), no footer row, chapters by swipe with faint corner arrows, serif and no underlines by default in the English app, grey verse numbers; study tools only in Settings, Hebrew/Greek switch in the Bible list, read aloud from the verse menu | done; not yet seen on a phone |
 
 ## Tier 1: before the next upload of the Malayalam app (and the others)
 

@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AccessibilityInfo, ActivityIndicator, Alert, AppState, FlatList, Share, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { Pressable } from '../components/Pressable';
-import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, ViewToken } from 'react-native';
+import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, ViewStyle, ViewToken } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -16,6 +16,8 @@ import { useIsFocused } from '@react-navigation/native';
 import { HEADER_MAX_FONT_SCALE, Header, HeaderIconButton, SHORT_SCREEN } from '../components/Header';
 import { useHardwareKeys } from '../keys';
 import { TAB_BAR_HEIGHT, TabBar } from '../components/TabBar';
+import { LinearGradient } from 'expo-linear-gradient';
+import { AppSwitch } from '../components/AppSwitch';
 import { Icon, IconButton } from '../components/Icon';
 import type { IconName } from '../components/Icon';
 import { isMultilingual, pairedBible, useEdition } from '../edition';
@@ -212,7 +214,6 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   const insets = useSafeAreaInsets();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   // A phone on its side: the bars take less height, so more of the text shows.
-  const shortScreen = windowHeight < SHORT_SCREEN;
   const { settings, update, commit } = useSettings();
   const {
     translation,
@@ -909,13 +910,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
     id === 'MAL' ? t('bibleMalayalam') : id === 'TAM' ? t('bibleTamil') : id === 'HIN' ? t('bibleHindi') : id;
   // In the four-language app the pill names an Indian Bible's language in its own script (മലയാളം).
   const pillLabel = (id: TranslationId) => LANGUAGE_WORD[id] ?? id;
-  // The swap button's other side: the Bible read before this one, else the paired Indian Bible or the KJV.
-  const previous = edition.translations.find((id) => id === settings.previousTranslation && id !== translation);
-  const swapTo: TranslationId = previous ?? (isIndian(translation) ? 'KJV' : (nativeBible ?? 'KJV'));
   const pillFont = (id: TranslationId) => scriptureFont(translationInfo(id).script ?? null, false, true);
-  const nextTranslation = edition.translations[(edition.translations.indexOf(translation) + 1) % edition.translations.length];
-  // With two English Bibles (KJV and BSB) the pill names the next one, not just "English".
-  const englishCount = edition.translations.filter(isEnglish).length;
   const switchTranslation = async (next: TranslationId) => {
     if (next === translation) return;
     const seen = firstVisible.current;
@@ -1301,11 +1296,10 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             accessibilityLabel={t('aboutBook')}
             style={({ pressed }) => [styles.aboutRow, { opacity: pressed ? 0.6 : 1 }]}
           >
-            <Icon name="info" size={18} color={theme.accent} />
-            <Text style={[styles.aboutText, { color: theme.accent, fontFamily: scriptureFont(scriptOf(bookName(books, position.book, translation)), settings.serif) ?? theme.font }]}>
+            <Text style={[styles.aboutText, { color: theme.muted, fontFamily: scriptureFont(scriptOf(bookName(books, position.book, translation)), settings.serif) ?? theme.font }]}>
               {t('aboutBookNamed', { book: bookName(books, position.book, translation) })}
             </Text>
-            <Icon name="chevron_right" size={18} color={theme.accent} />
+            <Icon name="chevron_right" size={16} color={theme.muted} />
           </Pressable>
         ) : null}
         {!marking && interlinear && interlinearMode === 'tap' ? (
@@ -1331,6 +1325,10 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   const bottomInset = tabs ? 0 : insets.bottom;
   // On a tablet the chapter row and the player keep to the reading width, under the text.
   const barSide = Math.max(0, (windowWidth - (sideBySide ? SIDE_BY_SIDE_MAX_WIDTH : MAX_CONTENT_WIDTH)) / 2);
+  const arrowBottom = bottomInset + (tabs && !barHidden ? TAB_BAR_HEIGHT : 0) + 6;
+  // One psalm is "Psalm 23" in the title, though the book is Psalms.
+  const fullBookName = bookName(books, position.book, translation);
+  const titleBookName = fullBookName === 'Psalms' ? 'Psalm' : fullBookName;
   const atStart = position.book === books[0]?.id && position.chapter === 1;
   const atEnd = position.book === books[books.length - 1]?.id && position.chapter === book?.chapters;
 
@@ -1341,34 +1339,32 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
         backLabel={backLabel}
         maxWidth={sideBySide ? SIDE_BY_SIDE_MAX_WIDTH : undefined}
         center={
+          // Two drop-downs: the passage (book and chapter) and the Bible.
           <ReaderTitle
-            name={bookName(books, position.book, translation)}
+            name={titleBookName}
             short={shortBookName(position.book, translation)}
             chapter={position.chapter}
             script={translationInfo(translation).script ?? null}
-            badge={isEnglish(translation) && englishCount > 1 ? translation : undefined}
             onPress={() => setPicking(true)}
             accessibilityLabel={t('choosePassage', { title })}
+            trailing={
+              <Pressable
+                onPress={() => setChoosingBible(true)}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={`${t('chooseBible')}: ${translationName(settings.language, translation)}`}
+                style={({ pressed }) => [styles.bibleButton, { opacity: pressed ? 0.6 : 1 }]}
+              >
+                <Text style={[styles.bibleButtonText, { color: theme.muted }, pillFont(translation) ? { fontFamily: pillFont(translation), fontWeight: 'normal' } : null]} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE}>
+                  {pillLabel(translation)}
+                </Text>
+                <Icon name="arrow_drop_down" size={20} color={theme.muted} />
+              </Pressable>
+            }
           />
         }
         right={
           <>
-            {/* Study tools on and off: a filled cap when on. */}
-            <IconButton
-              name={study ? 'school_fill' : 'school'}
-              color={study ? theme.accent : theme.text}
-              onPress={() => {
-                const was = study;
-                update({ study: !was });
-                setToast(t(was ? 'studyToolsOffNote' : 'studyToolsOnNote'), () => {
-                  update({ study: was });
-                  setToast(null);
-                });
-              }}
-              checked={study}
-              accessibilityLabel={t('studyTools')}
-            />
-            <HeaderIconButton icon="volume_up" onPress={() => startReading()} accessibilityLabel={t('readAloud')} />
             <HeaderIconButton icon="search" onPress={onOpenSearch} accessibilityLabel={t('search')} />
             <HeaderIconButton icon="settings" onPress={onOpenSettings} accessibilityLabel={t('settings')} />
           </>
@@ -1489,77 +1485,13 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
           </View>
         </View>
       ) : (
-      <View style={[styles.footer, shortScreen && styles.footerShort, { paddingBottom: bottomInset + (shortScreen ? 4 : 8), paddingHorizontal: 12 + barSide, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
-        <ChapterArrow icon="chevron_left" onPress={() => go(-1)} disabled={atStart} accessibilityLabel={t('previousChapter')} />
-        <View style={styles.footerMiddle}>
-          {/* One button for the Bibles. The Malayalam and Tamil apps name the other one, the
-              language a tap takes you to, in the interface language (ENG or ഇംഗ്ലീഷ് while
-              reading Malayalam, MAL or മലയാളം while reading English); the English app names the one open (KJV) and moves on to the next
-              (BSB, then WEB) with each tap. Settings lists each version in full. */}
-          {/* Side by side shows both Bibles, so there is nothing to switch (but a choice of six, in the four-language app). */}
-          {multilingual ? (
-            <>
-            <Pressable
-              android_ripple={{ color: theme.accentSoft }}
-              onPress={() => setChoosingBible(true)}
-              hitSlop={6}
-              accessibilityRole="button"
-              accessibilityLabel={`${t('chooseBible')}: ${translationName(settings.language, translation)}`}
-              style={({ pressed }) => [styles.pill, styles.pillRow, { borderColor: theme.accent, opacity: pressed ? 0.7 : 1 }]}
-            >
-              <Text style={[styles.pillText, { color: theme.accent }, pillFont(translation) ? { fontFamily: pillFont(translation), fontWeight: 'normal' } : null]}>{pillLabel(translation)}</Text>
-              <Icon name="arrow_drop_down" size={20} color={theme.accent} />
-            </Pressable>
-            {/* One tap back and forth between the two Bibles read last. */}
-            {swapTo !== translation ? (
-              <Pressable
-                android_ripple={{ color: theme.accentSoft }}
-                onPress={() => switchTranslation(swapTo)}
-                hitSlop={6}
-                accessibilityRole="button"
-                accessibilityLabel={t('switchTo', { name: bibleName(settings.language, swapTo) })}
-                // A button's outline (muted, not the faint border) and a label as large as the open Bible's.
-                style={({ pressed }) => [styles.pill, styles.pillIcon, { borderColor: theme.muted, opacity: pressed ? 0.7 : 1 }]}
-              >
-                <Icon name="swap_horiz" size={20} color={theme.accent} />
-                <Text style={[styles.pillText, { color: theme.text }, pillFont(swapTo) ? { fontFamily: pillFont(swapTo), fontWeight: 'normal' } : null]}>{pillLabel(swapTo)}</Text>
-              </Pressable>
-            ) : null}
-            </>
-          ) : sideBySide ? null : (
-          <Pressable
-            android_ripple={{ color: theme.accentSoft }}
-            onPress={() => switchTranslation(nextTranslation)}
-            hitSlop={6}
-            accessibilityRole="button"
-            accessibilityLabel={t('switchTo', { name: translationInfo(nextTranslation).name })}
-            style={({ pressed }) => [styles.pill, { borderColor: theme.accent, opacity: pressed ? 0.7 : 1 }]}
-          >
-            <Text style={[styles.pillText, { color: theme.accent }]}>
-              {native ? (isEnglish(nextTranslation) ? (englishCount > 1 ? nextTranslation : t('bibleEnglish')) : bibleLabel(nextTranslation)) : translation}
-            </Text>
-          </Pressable>
-          )}
-          {study ? (
-          <Pressable
-            android_ripple={{ color: theme.accentSoft }}
-            onPress={() => update({ interlinear: !interlinearSetting })}
-            hitSlop={6}
-            accessibilityRole="switch"
-            accessibilityState={{ checked: interlinear }}
-            style={({ pressed }) => [
-              styles.pill,
-              { borderColor: interlinear ? theme.accent : theme.border, backgroundColor: interlinear ? theme.accent : 'transparent', opacity: pressed ? 0.7 : 1 },
-            ]}
-          >
-            <Text style={[styles.pillText, { color: interlinear ? theme.onAccent : theme.muted }]}>
-              {book?.testament === 'OT' ? t('hebrewInterlinear') : t('greekInterlinear')}
-            </Text>
-          </Pressable>
-          ) : null}
-        </View>
-        <ChapterArrow icon="chevron_right" onPress={() => go(1)} disabled={atEnd} accessibilityLabel={t('nextChapter')} />
-      </View>
+        // Chapters turn by swipe; two faint chevrons at the corners of the text for people who
+        // don't swipe. They float over the text, above the tab bar.
+        <>
+          <LinearGradient colors={[`${theme.bg}00`, theme.bg]} pointerEvents="none" style={[styles.fade, { bottom: arrowBottom - 6 }]} />
+          <ChapterArrow icon="chevron_left" onPress={() => go(-1)} disabled={atStart} accessibilityLabel={t('previousChapter')} style={{ left: 2 + barSide, bottom: arrowBottom }} />
+          <ChapterArrow icon="chevron_right" onPress={() => go(1)} disabled={atEnd} accessibilityLabel={t('nextChapter')} style={{ right: 2 + barSide, bottom: arrowBottom }} />
+        </>
       )}
 
       {tabs ? <TabBar current="Reader" hidden={barHidden || marking} /> : null}
@@ -1588,30 +1520,53 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
 
       <SimpleSheet visible={choosingBible} title={t('chooseBible')} onClose={() => setChoosingBible(false)}>
         {/* The English Bibles, then the Indian ones, each under its own name with the English under it. */}
-        {[
-          [t('englishBibles'), edition.translations.filter(isEnglish)],
-          [t('indianBibles'), edition.translations.filter((id) => !isEnglish(id))],
-        ].map(([heading, ids]) => (
-          <View key={heading as string}>
-            <Text style={[styles.sheetGroup, { color: theme.accent }]} accessibilityRole="header">
-              {heading as string}
-            </Text>
-            {(ids as TranslationId[]).map((id) => (
-              <SheetAction
-                key={id}
-                icon={id === translation ? 'check' : 'menu_book'}
-                selected={id === translation}
-                label={NATIVE_BIBLE_NAME[id] ?? translationName(settings.language, id)}
-                labelFont={pillFont(id) ? scriptureFont(translationInfo(id).script ?? null, false) : undefined}
-                detail={isEnglish(id) ? `${settings.language === 'en' ? 'English' : t('bibleEnglish')} · ${id}` : `${LANGUAGE_WORD[id]} · ${englishName(id)}`}
-                onPress={() => {
-                  setChoosingBible(false);
-                  switchTranslation(id);
-                }}
-              />
-            ))}
-          </View>
-        ))}
+        {(
+          [
+            [t('englishBibles'), edition.translations.filter(isEnglish)],
+            [t('indianBibles'), edition.translations.filter((id) => !isEnglish(id))],
+          ] as [string, TranslationId[]][]
+        )
+          .filter(([, ids]) => ids.length)
+          .map(([heading, ids]) => (
+            <View key={heading}>
+              {edition.translations.length > ids.length ? (
+                <Text style={[styles.sheetGroup, { color: theme.accent }]} accessibilityRole="header">
+                  {heading}
+                </Text>
+              ) : null}
+              {ids.map((id) => (
+                <SheetAction
+                  key={id}
+                  icon={id === translation ? 'check' : 'menu_book'}
+                  selected={id === translation}
+                  label={NATIVE_BIBLE_NAME[id] ?? translationName(settings.language, id)}
+                  labelFont={pillFont(id) ? scriptureFont(translationInfo(id).script ?? null, false) : undefined}
+                  detail={isEnglish(id) ? `${settings.language === 'en' ? 'English' : t('bibleEnglish')} · ${id}` : `${LANGUAGE_WORD[id]} · ${englishName(id)}`}
+                  onPress={() => {
+                    setChoosingBible(false);
+                    switchTranslation(id);
+                  }}
+                />
+              ))}
+            </View>
+          ))}
+        {/* The Hebrew or Greek under each verse: the same switch as in Settings. */}
+        {study ? (
+          <Pressable
+            onPress={() => update({ interlinear: !interlinearSetting })}
+            android_ripple={{ color: theme.accentSoft }}
+            accessibilityRole="switch"
+            accessibilityState={{ checked: interlinear }}
+            accessibilityLabel={t('showInterlinear')}
+            style={[styles.sheetSwitch, { borderTopColor: theme.border }]}
+          >
+            <View style={styles.sheetSwitchTexts}>
+              <Text style={[styles.sheetSwitchTitle, { color: theme.text }]}>{t('showInterlinear')}</Text>
+              <Text style={[styles.sheetSwitchDetail, { color: theme.muted }]}>{t('showInterlinearDetail')}</Text>
+            </View>
+            <AppSwitch value={interlinear} onValueChange={(v) => update({ interlinear: v })} />
+          </Pressable>
+        ) : null}
       </SimpleSheet>
       <SimpleSheet visible={!!actions} title={actions ? formatRef(books, actions, translation) : ''} onClose={() => setActions(null)}>
         {actions ? (
@@ -1836,20 +1791,19 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
 }
 
 /** A chapter arrow: a round, see-through button at an end of the bottom row. */
-function ChapterArrow({ icon, onPress, disabled, accessibilityLabel }: { icon: IconName; onPress: () => void; disabled?: boolean; accessibilityLabel: string }) {
+function ChapterArrow({ icon, onPress, disabled, accessibilityLabel, style }: { icon: IconName; onPress: () => void; disabled?: boolean; accessibilityLabel: string; style: ViewStyle }) {
   const theme = useTheme();
+  if (disabled) return null;
   return (
     <Pressable
       android_ripple={{ color: theme.accentSoft, borderless: true }}
       onPress={onPress}
-      disabled={disabled}
-      hitSlop={8}
+      hitSlop={10}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      accessibilityState={{ disabled: !!disabled }}
-      style={({ pressed }) => [styles.arrow, { borderColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent', opacity: disabled ? 0.3 : 1 }]}
+      style={({ pressed }) => [styles.arrow, style, { backgroundColor: pressed ? theme.accentSoft : 'transparent', opacity: pressed ? 1 : 0.45 }]}
     >
-      <Icon name={icon} size={26} color={theme.accent} />
+      <Icon name={icon} size={24} color={theme.muted} />
     </Pressable>
   );
 }
@@ -1862,13 +1816,17 @@ function ChapterArrow({ icon, onPress, disabled, accessibilityLabel }: { icon: I
  * letters shrink to fit, down to MIN_TITLE_SCALE of their size, and on the narrowest
  * screens the drop-down arrow is left out.
  */
-function ReaderTitle({ name, short, chapter, script, badge, onPress, accessibilityLabel }: { name: string; short: string; chapter: number; script: Script | null; badge?: string; onPress: () => void; accessibilityLabel: string }) {
+function ReaderTitle({ name, short, chapter, script, trailing, onPress, accessibilityLabel }: { name: string; short: string; chapter: number; script: Script | null; trailing?: React.ReactNode; onPress: () => void; accessibilityLabel: string }) {
   const theme = useTheme();
-  const [room, setRoom] = useState(0);
+  const [roomAll, setRoomAll] = useState(0);
+  const [trailingWidth, setTrailingWidth] = useState(0);
   const [fullWidth, setFullWidth] = useState(0);
   const [shortWidth, setShortWidth] = useState(0);
+  // The name's room: what is left after the control beside it (the Bible drop-down).
+  const room = roomAll - trailingWidth;
   const measured = room > 0 && fullWidth > 0;
-  const useShort = !!short && measured && fullWidth > room - ARROW_WIDTH;
+  // The full name shrinks a little (to FULL_NAME_SCALE) before the short name takes over.
+  const useShort = !!short && measured && fullWidth * FULL_NAME_SCALE > room - ARROW_WIDTH;
   const needed = useShort ? shortWidth : fullWidth;
   // On the narrowest screens the drop-down arrow gives up its room before the name is cut.
   const showArrow = !measured || needed * MIN_TITLE_SCALE <= room - ARROW_WIDTH - 2;
@@ -1880,43 +1838,43 @@ function ReaderTitle({ name, short, chapter, script, badge, onPress, accessibili
   // Both pieces get the same line height, so a shrunk name stays level with its number.
   const shownStyle = [fontStyle, scale < 1 && { fontSize: baseSize * scale, lineHeight: Math.round(baseSize * 1.5) }];
   return (
-    <View style={styles.titleRoom} onLayout={(e) => setRoom(e.nativeEvent.layout.width)}>
+    <View style={styles.titleRoom} onLayout={(e) => setRoomAll(e.nativeEvent.layout.width)}>
       {/* The full and short titles laid out off screen, to see which fits. */}
       <View style={styles.titleMeasure} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         <Text style={fontStyle} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} onLayout={(e) => setFullWidth(e.nativeEvent.layout.width)}>
           {`${name} ${chapter}`}
-          {badge ? <Text style={styles.titleBadge}>{` · ${badge}`}</Text> : null}
         </Text>
       </View>
       {short ? (
         <View style={styles.titleMeasure} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
           <Text style={fontStyle} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} onLayout={(e) => setShortWidth(e.nativeEvent.layout.width)}>
             {`${short} ${chapter}`}
-            {badge ? <Text style={styles.titleBadge}>{` · ${badge}`}</Text> : null}
           </Text>
         </View>
       ) : null}
-      <Pressable onPress={onPress} hitSlop={8} accessibilityRole="button" accessibilityLabel={accessibilityLabel} style={styles.titleButton}>
-        <Text numberOfLines={1} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={[shownStyle, styles.titleName]}>
-          {useShort ? short : name}
-        </Text>
-        <Text maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={shownStyle}>
-          {` ${chapter}`}
-          {/* Which English Bible is open, where there are two or three (the pill names the next one). */}
-          {badge ? <Text style={[styles.titleBadge, { color: theme.muted }]}>{` · ${badge}`}</Text> : null}
-        </Text>
-        {showArrow ? <Icon name="arrow_drop_down" color={theme.accent} /> : null}
-      </Pressable>
+      <View style={styles.titleRow}>
+        <Pressable onPress={onPress} hitSlop={8} accessibilityRole="button" accessibilityLabel={accessibilityLabel} style={styles.titleButton}>
+          <Text numberOfLines={1} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={[shownStyle, styles.titleName]}>
+            {useShort ? short : name}
+          </Text>
+          <Text maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={shownStyle}>
+            {` ${chapter}`}
+          </Text>
+          {showArrow ? <Icon name="arrow_drop_down" color={theme.accent} /> : null}
+        </Pressable>
+        {trailing ? <View onLayout={(e) => setTrailingWidth(e.nativeEvent.layout.width)}>{trailing}</View> : null}
+      </View>
     </View>
   );
 }
 
 const MIN_TITLE_SCALE = 0.6;
+const FULL_NAME_SCALE = 0.85;
 const ARROW_WIDTH = 28;
 
 const NO_MARKS: [number, number, HighlightColor][] = [];
 const itemKey = (it: Item) => it.key;
-const LIST_FOOTER = <View style={{ height: 24 }} />;
+const LIST_FOOTER = <View style={{ height: 56 }} />;
 
 function sameRanges(a: [number, number, HighlightColor][], b: [number, number, HighlightColor][]): boolean {
   return a.length === b.length && a.every((r, i) => r[0] === b[i][0] && r[1] === b[i][1] && r[2] === b[i][2]);
@@ -2153,7 +2111,6 @@ const styles = StyleSheet.create({
   titleButton: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', minHeight: 48, maxWidth: '100%' },
   title: { fontSize: 22, lineHeight: 30, fontWeight: '500' },
   titleName: { flexShrink: 1 },
-  titleBadge: { fontSize: 15, fontWeight: '600' },
   titleRoom: { flex: 1, justifyContent: 'center' },
   titleMeasure: { position: 'absolute', left: 0, top: 0, width: 2000, flexDirection: 'row', opacity: 0 },
   body: { flex: 1 },
@@ -2182,28 +2139,22 @@ const styles = StyleSheet.create({
   tipMain: { borderRadius: 24, paddingHorizontal: 18 },
   tipDismiss: { fontSize: 15, fontWeight: '700' },
   modeHint: { fontSize: 12, marginBottom: 6 },
-  aboutRow: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, marginBottom: 4 },
-  aboutText: { fontSize: 15, fontWeight: '600' },
-  pill: { minHeight: 36, justifyContent: 'center', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 999, borderWidth: 1 },
-  pillText: { fontSize: 14, fontWeight: '600' },
-  pillRow: { flexDirection: 'row', alignItems: 'center', paddingRight: 8 },
-  pillIcon: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10 },
+  aboutRow: { flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 40, marginBottom: 2 },
+  aboutText: { fontSize: 14, fontWeight: '500' },
   sheetGroup: { fontSize: 13, fontWeight: '600', marginTop: 10, marginBottom: 2 },
   heading: { fontWeight: '700', letterSpacing: 1, marginTop: 14, marginBottom: 2 },
   // Letter spacing breaks up Malayalam conjuncts on some phones.
   headingMalayalam: { letterSpacing: 0 },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingTop: 8,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  footerShort: { paddingTop: 4 },
   nav: { fontSize: 16, fontWeight: '600' },
-  footerMiddle: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 8, marginHorizontal: 8 },
-  arrow: { width: 44, height: 44, borderRadius: 22, borderWidth: StyleSheet.hairlineWidth, alignItems: 'center', justifyContent: 'center' },
+  arrow: { position: 'absolute', width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  fade: { position: 'absolute', left: 0, right: 0, height: 40 },
+  bibleButton: { flexDirection: 'row', alignItems: 'center', minHeight: 48, paddingLeft: 4 },
+  bibleButtonText: { fontSize: 15, fontWeight: '600' },
+  sheetSwitch: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 12, marginTop: 6, borderTopWidth: StyleSheet.hairlineWidth },
+  sheetSwitchTexts: { flex: 1 },
+  sheetSwitchTitle: { fontSize: 16, fontWeight: '500' },
+  sheetSwitchDetail: { fontSize: 13, marginTop: 2 },
   playerBar: { paddingHorizontal: 10, paddingTop: 6, borderTopWidth: StyleSheet.hairlineWidth },
   playerRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   playerRef: { flex: 1, fontSize: 14, marginLeft: 6 },

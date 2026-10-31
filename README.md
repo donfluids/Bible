@@ -13,8 +13,8 @@ Android. All text ships inside each app, so they work without a connection.
 The four-language app (`all`, package `org.riversresearch.bible.india`) asks on first
 opening which language to read in: English, മലയാളം, தமிழ் or हिन्दी (the phone's own
 first, ticked), each opening its Bible, with the menus in that language (the Hindi menus
-are unchecked: docs/hindi-review.md). Its reader's Bible pill opens the six Bibles under their own names, and a swap
-button beside it goes back and forth between the two read last. Search has a row of the
+are unchecked: docs/hindi-review.md). The Bible's name beside the chapter number opens the six Bibles under their
+own names. Search has a row of the
 six Bibles under its box. Side by side pairs the English with the Indian Bible open or
 read last. The Hindi words are not yet linked to the Hebrew and Greek, so the word sheet
 and occurrence lists use the KJV's links while reading the Hindi, as for the WEB; a
@@ -39,7 +39,7 @@ rendering counts all work in Malayalam.
 ## What it does
 
 - Read the King James Version or the World English Bible, switchable with one tap.
-- Tap any underlined word to see the original Hebrew or Greek word in a sheet that
+- Tap any word to see the original Hebrew or Greek word in a sheet that
   opens at half height: the form the Hebrew or Greek has in that verse (with its
   grammar; every form, when the word is there more than once), the word you tapped
   beside the dictionary form, a short modern
@@ -107,10 +107,9 @@ rendering counts all work in Malayalam.
   notebook, handwriting, backup, listening, study tools, cards), in the interface
   language; the reader's first-time tip links to it too (src/screens/HowToScreen.tsx).
 - Settings → Study tools switches the study side of the app off and on: off, words are not
-  tapped, the Hebrew or Greek pill goes, the graduation cap in the reader's top bar switches
-  them back on (filled when on, with a short note each time), the
-  verse menu loses Compare, cross references, parallels and Words in this verse, and the
-  introductions are not offered; highlights, notes and the notebook stay. On by default.
+  tapped, the Hebrew or Greek switch goes from the Bible list, the verse menu loses Compare,
+  cross references, parallels and Words in this verse, and the introductions are not
+  offered; highlights, notes and the notebook stay. On by default, and only in Settings.
 - Settings → Write to us starts a note in the phone's mail app (address, a subject with the
   app's version, a last line naming the build and the phone that the reader may delete);
   the address itself is not shown unless no mail app opens. About two weeks after install,

@@ -71,7 +71,7 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
   sideBySide: true,
   study: true,
   readSpeed: 1,
-  underlineWords: true,
+  underlineWords: false,
   interlinear: false,
   interlinearMode: 'all',
   showTranslit: true,
@@ -96,7 +96,8 @@ function defaultsFor(edition: Edition): Settings {
   // a size once chosen is kept, so this only sets where a new install begins.
   const { width, height } = Dimensions.get('window');
   const fontSize = Math.min(width, height) >= 600 ? 21 : BASE_DEFAULTS.fontSize;
-  return { ...BASE_DEFAULTS, fontSize, translation: edition.defaultTranslation, language: edition.languages[0] };
+  // The English app reads in a serif, like a printed Bible; the Indian-language faces stay sans.
+  return { ...BASE_DEFAULTS, fontSize, serif: edition.id === 'en', translation: edition.defaultTranslation, language: edition.languages[0] };
 }
 
 function load(edition: Edition): Loaded<Settings> {

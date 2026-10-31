@@ -21,7 +21,7 @@ KJV, BSB and WEB Bibles. Hebrew and Greek behind the KJV and BSB words. Offline.
 Read the King James Version, the Berean Standard Bible and the World English Bible, and study the Hebrew and Greek words behind them.
 
 • The KJV, the Berean Standard Bible (a modern translation) and the World English Bible, switched with one tap.
-• Tap an underlined word in the KJV or the BSB for the Hebrew or Greek word behind it: the form in that verse with its grammar in plain words, a short modern meaning, pronunciation, a fuller entry from Abbott-Smith's Greek lexicon or the Brown–Driver–Briggs outline for Hebrew, and Strong's dictionary entry.
+• Tap a word in the KJV or the BSB for the Hebrew or Greek word behind it: the form in that verse with its grammar in plain words, a short modern meaning, pronunciation, a fuller entry from Abbott-Smith's Greek lexicon or the Brown–Driver–Briggs outline for Hebrew, and Strong's dictionary entry.
 • Every verse where that Hebrew or Greek word stands, with how each translation renders it ("God 2,075 · gods 190 · judges 3"); tap a rendering to see only those verses.
 • Hebrew and Greek words: the original text of every verse, word by word, with transliteration and a short meaning. Greek words missing from the modern critical editions are marked.
 • The translators' footnotes and cross references, as small letters in the text.

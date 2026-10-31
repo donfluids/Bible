@@ -31,8 +31,9 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
 - [ ] Turn the phone sideways: the text and bars fit, nothing is cut off, and nothing
       lies under the phone's own buttons or camera at the side. On the Malayalam and
       Tamil apps the two Bibles stand side by side, the one that was open on the left.
-- [ ] With English open, turn the phone sideways: English is on the left. Tap the
-      speaker: it reads English. Turn the phone back: English is still open.
+- [ ] With English open, turn the phone sideways: English is on the left. Press and
+      hold a verse, Read from here: it reads English. Turn the phone back: English is
+      still open.
 
 - [ ] Books tab: all 66 books at once, Old Testament down the left and New Testament down
       the right, names only, the book being read marked and in view.
@@ -47,9 +48,9 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
       to Hindi and reinstall: हिन्दी stands first and opens the Hindi Bible with Hindi menus
       and a one-time card (समझ गया) saying the Hindi words are not linked yet. Every screen
       (Settings, How to use, Why this Bible, Privacy, the notebook) reads in Hindi.
-- [ ] Four-language app, reader: the Bible pill (हिन्दी, മലയാളം, KJV…) opens the six
-      Bibles under their own names; the swap button beside it returns to the Bible read
-      before; in Search the row of Bibles under the box searches each, and a result opens
+- [ ] Four-language app, reader: the Bible's name beside the chapter (हिन्दी, മലയാളം,
+      KJV…) opens the six Bibles under their own names, with the Hebrew/Greek switch at
+      the end; in Search the row of Bibles under the box searches each, and a result opens
       in that Bible. Hindi footnote letters hang off the word before them.
 - [ ] Search dictionary: with study tools on, two entries and a More row that opens the
       rest; with study tools off, no dictionary block.
@@ -60,7 +61,7 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
 
 ## 3. Words and verses
 
-- [ ] Tap an underlined word: the sheet shows the Greek or Hebrew word, its meaning
+- [ ] Tap a word: the sheet shows the Greek or Hebrew word, its meaning
       in Malayalam (or English) and "See all verses". The speaker button says the word
       (it may need a Greek or Hebrew voice).
 - [ ] Hold a verse: the menu opens. Try copy, share, bookmark, a highlight colour, a
@@ -78,8 +79,8 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
 
 ## 4. Listen (read aloud)
 
-- [ ] Tap the speaker in the top bar: the chapter is read in the phone's voice, the
-      verse being read is shown, and it goes on to the next chapter.
+- [ ] Press and hold a verse, Read from here: the chapter is read in the phone's voice
+      from that verse, the verse being read is shown, and it goes on to the next chapter.
 - [ ] Pause, play, next and previous verse, speed.
 - [ ] Lock the screen while it reads: note whether it carries on.
 - [ ] Have someone call you while it reads: it stops or pauses, and you can carry on
@@ -142,11 +143,10 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
 
 - [ ] Settings → How to use: each topic opens and closes; the text is in the app's
       language and follows the text size. The reader's first tip has a How to use link.
-- [ ] Settings → Study tools off: words lose their underlines and do nothing when tapped,
-      the Hebrew/Greek pill is gone from the bottom bar, the verse menu has no Compare,
-      Cross references, Parallel passages or Words in this verse, and the chapter list has
-      no About this book row. Tap the graduation cap in the reader's top bar: everything
-      comes back, the cap fills in, and a note says Study tools on; tap it again to go plain.
+- [ ] Settings → Study tools off: words do nothing when tapped, the Hebrew/Greek switch
+      is gone from the Bible list (the name beside the chapter), the verse menu has no
+      Compare, Cross references, Parallel passages or Words in this verse, and the chapter
+      list has no About this book row. Switch it on again in Settings: everything comes back.
 - [ ] Settings → Write to us opens the mail app with the address, a subject naming the
       app and version, and a last line naming the build and the phone. On a phone with no
       mail app, a message shows the address with Copy address. The invitation card above

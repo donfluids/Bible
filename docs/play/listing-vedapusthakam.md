@@ -67,7 +67,7 @@ Malayalam-English Study Bible, with Hebrew and Greek root words and book intros
 A Malayalam-English Study Bible: read the Sathyavedapusthakam (1910) and the King James Version, and study the root words behind most of the Malayalam words, Hebrew in the Old Testament and Greek in the New.
 
 • The Sathyavedapusthakam, the King James Version and the Berean Standard Bible in modern English, switched with one tap.
-• Tap an underlined Malayalam word for its root word, Hebrew in the Old Testament or Greek in the New: meaning, pronunciation, grammar and Strong's dictionary entry.
+• Tap a Malayalam word for its root word, Hebrew in the Old Testament or Greek in the New: meaning, pronunciation, grammar and Strong's dictionary entry.
 • Every verse where that root word stands, and the Malayalam words the Sathyavedapusthakam uses for it.
 • Hebrew and Greek words: the Hebrew of every Old Testament verse and the Greek of every New Testament verse, word by word, with transliteration and a short meaning.
 • Search in Malayalam or English; small spelling differences (ആത്മാവ്/ആത്മാവു, കൽപിച്ചു/കല്പിച്ചു) don't matter. Type a reference such as സങ്കീർത്തനം 23 or John 3:16 to go straight there.
