@@ -127,10 +127,11 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
   // the choices scroll beside it; otherwise the choices come under the card.
   const wide = window.width >= 760 && window.width > window.height;
   const content = wide ? Math.min(window.width / 2, MAX_CONTENT_WIDTH) - 32 : Math.min(window.width, MAX_CONTENT_WIDTH) - 32;
-  // A tall card is kept short enough to leave the choices in view (beside it: the screen's height).
-  const room = wide ? window.height - 220 : window.height * 0.5;
-  const previewWidth =
-    size === 'square' ? Math.min(content, 420, wide ? room : Infinity) : Math.min(content, (room * CARD_WIDTH) / CARD_HEIGHT.tall);
+  // On a phone the card stays pinned above the choices, which scroll under it, so every
+  // change shows at once; it takes about a third of the screen's height.
+  const room = wide ? window.height - 220 : window.height * 0.34;
+  const previewWidth = size === 'square' ? Math.min(content, 420, room) : Math.min(content, (room * CARD_WIDTH) / CARD_HEIGHT.tall);
+  const [more, setMore] = useState(false);
   // The card that is captured, drawn off screen at the shared picture's size.
   const captureWidth = CARD_PIXELS / PixelRatio.get();
   const photo = look.photo ? { uri: look.photo, veil: look.veil, strength: look.strength, blur: look.blur } : undefined;
@@ -188,9 +189,8 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
     <KeyboardAvoidingView style={[styles.screen, { backgroundColor: theme.bg }]} behavior="padding">
       <Header title={t('shareAsCard')} onBack={onBack} />
       <View style={wide ? styles.wide : styles.screen}>
-      {wide ? <View style={styles.wideCard}>{preview}</View> : null}
+      {wide ? <View style={styles.wideCard}>{preview}</View> : <View style={[styles.pinned, { borderBottomColor: theme.border }]}>{preview}</View>}
       <ScrollView ref={scroll} style={styles.screen} contentContainerStyle={[styles.content, { paddingBottom: 24 }]} keyboardShouldPersistTaps="handled">
-        {wide ? null : preview}
 
         <Segmented
           options={[
@@ -203,15 +203,16 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
 
         {verses.length > 1 ? (
           <View style={styles.versesRow}>
-            <Text style={[styles.label, styles.versesLabel, { color: theme.text }]}>{t('cardVerses')}</Text>
+            <Text style={[styles.label, styles.versesLabel, { color: theme.text }]}>
+              {first && last ? (count > 1 ? t('cardVersesRange', { range: `${first.verse}–${last.verse}` }) : t('cardVerseOne', { n: String(first.verse) })) : ''}
+            </Text>
             <IconButton name="remove" onPress={() => setCount((n) => Math.max(1, n - 1))} disabled={count <= 1} accessibilityLabel={t('cardFewerVerses')} color={theme.accent} />
-            <Text style={[styles.versesValue, { color: theme.text }]}>{first && last ? (count > 1 ? `${first.verse}–${last.verse}` : `${first.verse}`) : ''}</Text>
             <IconButton name="add" onPress={() => setCount((n) => Math.min(verses.length, n + 1))} disabled={count >= verses.length} accessibilityLabel={t('cardMoreVerses')} color={theme.accent} />
           </View>
         ) : null}
 
         <Text style={[styles.label, { color: theme.text }]}>{t('cardOccasion')}</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+        <View style={styles.wrapChips}>
           {OCCASIONS.map((o) => {
             const active = o.id === occasion;
             return (
@@ -226,7 +227,7 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
               </Pressable>
             );
           })}
-        </ScrollView>
+        </View>
 
         <Text style={[styles.label, { color: theme.text }]}>{t('cardDesign')}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
@@ -331,6 +332,11 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
           </>
         )}
 
+        <Pressable onPress={() => setMore((m) => !m)} accessibilityRole="button" accessibilityState={{ expanded: more }} style={styles.linkButton}>
+          <Text style={[styles.linkText, { color: theme.accent }]}>{more ? t('cardFewer') : t('cardMore')}</Text>
+        </Pressable>
+        {more ? (
+        <>
         <Text style={[styles.label, { color: theme.text }]}>{t('cardPlace')}</Text>
         <Segmented
           options={[
@@ -359,6 +365,8 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
         >
           <Text style={[styles.saveLookText, { color: theme.accent }]}>{t('cardSaveLook')}</Text>
         </Pressable>
+        </>
+        ) : null}
 
         <Text style={[styles.label, { color: theme.text }]}>{t('cardHeading')}</Text>
         <TextInput
@@ -367,6 +375,7 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
           onFocus={showInput}
           accessibilityLabel={t('cardHeading')}
           maxLength={40}
+          placeholder={t('cardHeadingHint')}
           style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.card }]}
           placeholderTextColor={theme.muted}
         />
@@ -424,11 +433,12 @@ const styles = StyleSheet.create({
   content: { padding: 16, alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
   wide: { flex: 1, flexDirection: 'row' },
   wideCard: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16 },
-  preview: { alignSelf: 'center', borderWidth: StyleSheet.hairlineWidth, borderRadius: 4, overflow: 'hidden', marginBottom: 6 },
+  preview: { alignSelf: 'center', borderWidth: StyleSheet.hairlineWidth, borderRadius: 4, overflow: 'hidden' },
+  pinned: { paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth },
+  wrapChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   label: { fontSize: 15, fontWeight: '600', marginTop: 18, marginBottom: 8 },
   versesRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
   versesLabel: { flex: 1, marginTop: 0, marginBottom: 0 },
-  versesValue: { fontSize: 16, minWidth: 56, textAlign: 'center' },
   chips: { gap: 8, paddingRight: 16 },
   chip: { minHeight: 40, paddingHorizontal: 14, borderRadius: 20, borderWidth: 1, justifyContent: 'center' },
   chipText: { fontSize: 15 },
