@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -22,6 +22,7 @@ import { Segmented } from '../components/Segmented';
 import { SimpleSheet } from '../components/SimpleSheet';
 import { listVoices, saySample, stopSaying } from '../speech';
 import type { SpokenLanguage } from '../speech';
+import { groupVoices } from '../voiceLabels';
 import type { VoiceOption } from '../voiceLabels';
 import { getVerses } from '../queries';
 import type { TranslationId } from '../types';
@@ -97,12 +98,12 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
     setSampling(key);
     saySample(text, language, voice, settings.readSpeed, () => setSampling((s) => (s === key ? null : s)));
   };
-  const voiceTitle = (language: SpokenLanguage, id: string | undefined) => {
-    if (!id) return t('voiceDefault');
-    const i = voiceList?.findIndex((v) => v.identifier === id) ?? -1;
-    const v = i >= 0 ? voiceList![i] : null;
-    return v?.friendly ?? t('voiceNumber', { n: String(i + 1) });
-  };
+  const voiceGroups = useMemo(() => (voiceList ? groupVoices(voiceList) : []), [voiceList]);
+  // A region's name in the interface language; an unlisted one by its code.
+  const regionName = (region: string | null) =>
+    region === 'IN' ? t('voiceRegionIN') : region === 'US' ? t('voiceRegionUS') : region === 'GB' ? t('voiceRegionGB') : region === 'AU' ? t('voiceRegionAU') : region ?? '';
+  // "Voice 2" within its accent, or the phone's own name for the voice where it has one.
+  const voiceTitle = (v: VoiceOption | null, n: number) => (v ? v.friendly ?? t('voiceNumber', { n: String(n) }) : t('voiceDefault'));
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
@@ -320,38 +321,48 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
       <SimpleSheet visible={!!choosingVoice} title={t('voiceChoose')} onClose={() => setChoosingVoice(null)}>
         {choosingVoice ? (
           <>
-            {[undefined, ...(voiceList ?? []).map((v) => v.identifier)].map((id, i) => {
-              const v = id ? voiceList![i - 1] : null;
-              const chosen = (settings.voices[choosingVoice] ?? undefined) === id;
-              const detail = v ? [v.enhanced ? t('voiceEnhanced') : t('voiceStandard'), v.online ? t('voiceOnline') : t('voiceOffline'), v.code].filter(Boolean).join(' · ') : null;
-              return (
-                <View key={id ?? 'default'} style={[styles.row, i > 0 && divider]}>
-                  <Pressable
-                    onPress={() => {
-                      const voices = { ...settings.voices };
-                      if (id) voices[choosingVoice] = id;
-                      else delete voices[choosingVoice];
-                      update({ voices });
-                    }}
-                    accessibilityRole="radio"
-                    accessibilityState={{ checked: chosen }}
-                    style={styles.voiceChoice}
-                  >
-                    <View style={styles.check}>{chosen ? <Icon name="check" color={theme.accent} /> : null}</View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.rowTitle, { color: theme.text }]}>{voiceTitle(choosingVoice, id)}</Text>
-                      {detail ? <Text style={[styles.rowSub, { color: theme.muted }]}>{detail}</Text> : null}
+            {[{ region: null, voices: [null] }, ...voiceGroups].map((group, gi) => (
+              <View key={gi === 0 ? 'default' : group.region ?? 'other'}>
+                {gi > 0 && voiceGroups.length > 1 && group.region ? (
+                  <Text style={[styles.voiceGroup, { color: theme.accent }]} accessibilityRole="header">
+                    {regionName(group.region)}
+                  </Text>
+                ) : null}
+                {group.voices.map((v, i) => {
+                  const id = v?.identifier;
+                  const chosen = (settings.voices[choosingVoice] ?? undefined) === id;
+                  const detail = v ? [v.enhanced ? t('voiceEnhanced') : t('voiceStandard'), v.online ? t('voiceOnline') : t('voiceOffline')].join(' · ') : null;
+                  return (
+                    <View key={id ?? 'default'} style={[styles.row, (gi > 0 || i > 0) && divider]}>
+                      <Pressable
+                        onPress={() => {
+                          const voices = { ...settings.voices };
+                          if (id) voices[choosingVoice] = id;
+                          else delete voices[choosingVoice];
+                          update({ voices });
+                        }}
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: chosen }}
+                        accessibilityLabel={v ? `${regionName(v.region)} ${voiceTitle(v, i + 1)}` : t('voiceDefault')}
+                        style={styles.voiceChoice}
+                      >
+                        <View style={styles.check}>{chosen ? <Icon name="check" color={theme.accent} /> : null}</View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.rowTitle, { color: theme.text }]}>{voiceTitle(v, i + 1)}</Text>
+                          {detail ? <Text style={[styles.rowSub, { color: theme.muted }]}>{detail}</Text> : null}
+                        </View>
+                      </Pressable>
+                      <IconButton
+                        name={sampling === (id ?? 'default') ? 'pause' : 'play_arrow'}
+                        onPress={() => playSample(choosingVoice, id)}
+                        accessibilityLabel={t('voiceSample')}
+                        color={theme.accent}
+                      />
                     </View>
-                  </Pressable>
-                  <IconButton
-                    name={sampling === (id ?? 'default') ? 'pause' : 'play_arrow'}
-                    onPress={() => playSample(choosingVoice, id)}
-                    accessibilityLabel={t('voiceSample')}
-                    color={theme.accent}
-                  />
-                </View>
-              );
-            })}
+                  );
+                })}
+              </View>
+            ))}
             {voiceList && voiceList.length === 0 ? <Text style={[styles.rowSub, styles.hint, { color: theme.muted }]}>{t('voiceNone')}</Text> : null}
           </>
         ) : null}
@@ -377,6 +388,7 @@ const styles = StyleSheet.create({
   rowSub: { fontSize: 13, lineHeight: 19, marginTop: 2 },
   check: { width: 24, alignItems: 'flex-end' },
   voiceChoice: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 44 },
+  voiceGroup: { fontSize: 13, fontWeight: '600', paddingHorizontal: 20, paddingTop: 14, paddingBottom: 2 },
   preview: { flex: 1, textAlign: 'center' },
   about: { fontSize: 14, lineHeight: 21 },
 });

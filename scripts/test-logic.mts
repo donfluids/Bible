@@ -7,7 +7,7 @@
 //   npx tsx scripts/test-logic.mts
 import { plainMorph } from '../src/morph';
 import assert from 'node:assert/strict';
-import { describeVoice, voicesFor } from '../src/voiceLabels';
+import { describeVoice, groupVoices, voicesFor } from '../src/voiceLabels';
 import { groupForms, isTaBaseForm, taStem } from './lib/forms.mjs';
 import { addPoint, decodeInk, encodeInk, packSteps, pageHeight, parseInk, pathOf, strokePath, touchesStroke, unpackSteps } from '../src/ink';
 import { FEEDBACK_NEVER, deviceLine, feedbackCardDue, feedbackDueFrom, feedbackLater, mailtoUrl } from '../src/feedback';
@@ -411,6 +411,24 @@ test('voices are filtered by language, the phone\'s own first', () => {
     ['ml'],
   );
   assert.deepEqual(list.map((v) => v.identifier), ['ml-in-x-mle-local', 'ml-in-x-mle-network']);
+});
+
+test('voices group by accent, India first, the phone\'s own before online', () => {
+  const groups = groupVoices(
+    voicesFor(
+      [
+        { identifier: 'en-us-x-tpc-network', name: 'en-us-x-tpc-network', quality: 'Enhanced', language: 'en-US' },
+        { identifier: 'en-gb-x-gba-local', name: 'en-gb-x-gba-local', quality: 'Default', language: 'en-GB' },
+        { identifier: 'en-in-x-ene-network', name: 'en-in-x-ene-network', quality: 'Enhanced', language: 'en-IN' },
+        { identifier: 'en-in-x-enc-local', name: 'en-in-x-enc-local', quality: 'Default', language: 'en_IN' },
+        { identifier: 'en-us-x-iob-local', name: 'en-us-x-iob-local', quality: 'Enhanced', language: 'en-US' },
+      ],
+      ['en'],
+    ),
+  );
+  assert.deepEqual(groups.map((g) => g.region), ['IN', 'GB', 'US']);
+  assert.deepEqual(groups[0].voices.map((v) => v.identifier), ['en-in-x-enc-local', 'en-in-x-ene-network']);
+  assert.deepEqual(groups[2].voices.map((v) => v.identifier), ['en-us-x-iob-local', 'en-us-x-tpc-network']);
 });
 
 console.log(`all ${passed} logic tests passed`);
