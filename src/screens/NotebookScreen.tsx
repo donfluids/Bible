@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Svg, { Path } from 'react-native-svg';
 import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import { Header, HeaderIconButton } from '../components/Header';
 import { Icon } from '../components/Icon';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
-import type { Paper } from '../ink';
+import type { Paper, Stroke } from '../ink';
 import { PAGE_WIDTH, emptyInk, inkKey, parseInk, pathOf } from '../ink';
 import { loadEntry } from '../persist';
 import { useEdition } from '../edition';
@@ -151,7 +151,7 @@ export function NotebookScreen({ onOpenPage }: Props) {
                 accessibilityRole="button"
                 style={({ pressed }) => [styles.row, item.ink && styles.inkRow, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
               >
-                {item.ink ? <InkThumb edition={edition.id} pageId={item.id} updated={item.updated} ink={theme.text} border={theme.border} paper={theme.card} /> : null}
+                {item.ink ? <InkThumb edition={edition.id} pageId={item.id} updated={item.updated} count={item.ink.strokes} ink={theme.text} border={theme.border} paper={theme.card} /> : null}
                 <View style={{ flex: 1, gap: 3 }}>
                 <View style={styles.nameRow}>
                   {item.ink ? <Icon name="draw" size={18} color={theme.muted} /> : null}
@@ -209,9 +209,24 @@ const styles = StyleSheet.create({
 /** The top of a handwritten page, small, so pages can be told apart in the list. */
 const THUMB_STROKES = 400;
 const THUMB_HEIGHT = (PAGE_WIDTH * 60) / 84;
-function InkThumb({ edition, pageId, updated, ink, border, paper }: { edition: string; pageId: string; updated: number; ink: string; border: string; paper: string }) {
-  // Read again only when the page has been edited.
-  const strokes = useMemo(() => loadEntry(inkKey(edition, pageId), parseInk, emptyInk()).value.strokes.slice(0, THUMB_STROKES), [edition, pageId, updated]); // eslint-disable-line react-hooks/exhaustive-deps
+function InkThumb({ edition, pageId, updated, count, ink, border, paper }: { edition: string; pageId: string; updated: number; count: number; ink: string; border: string; paper: string }) {
+  // Read after the row is on screen (the page just left writes its last strokes out as it
+  // goes, after this row is first drawn), and again when the page has been edited.
+  const [strokes, setStrokes] = useState<Stroke[]>([]);
+  useEffect(() => {
+    // The page just left may still be writing: a few tries, until something is there.
+    const delays = [50, 600, 2000, 4000];
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const read = (i: number) => {
+      const found = loadEntry(inkKey(edition, pageId), parseInk, emptyInk()).value.strokes;
+      setStrokes(found.slice(0, THUMB_STROKES));
+      if (found.length === 0 && count > 0 && i + 1 < delays.length) timer = setTimeout(() => read(i + 1), delays[i + 1]);
+    };
+    timer = setTimeout(() => read(0), delays[0]);
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [edition, pageId, updated, count]);
   return (
     <View style={[styles.thumb, { borderColor: border, backgroundColor: paper }]} accessible={false} importantForAccessibility="no-hide-descendants">
       <Svg width={84} height={60} viewBox={`0 0 ${PAGE_WIDTH} ${THUMB_HEIGHT}`}>
