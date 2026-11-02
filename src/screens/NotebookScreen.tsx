@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import { Header, HeaderIconButton } from '../components/Header';
 import { Icon } from '../components/Icon';
@@ -30,6 +30,10 @@ export function NotebookScreen({ onOpenPage }: Props) {
   const { pages, create, replaceAll } = useNotebook();
   const edition = useEdition();
   const [backupSheet, setBackupSheet] = useState(false);
+  // A search over titles and writing (a handwritten page by its title only).
+  const [query, setQuery] = useState('');
+  const q = query.trim().toLowerCase();
+  const found = q ? pages.filter((p) => p.title.toLowerCase().includes(q) || (!p.ink && p.body.toLowerCase().includes(q))) : pages;
   const [busy, setBusy] = useState(false);
   const [choosing, setChoosing] = useState(false);
   const newPage = () => setChoosing(true);
@@ -112,9 +116,25 @@ export function NotebookScreen({ onOpenPage }: Props) {
         </View>
       ) : (
         <FlatList
-          data={pages}
+          data={found}
           keyExtractor={(p) => p.id}
           contentContainerStyle={[styles.list, { paddingBottom: 24 }]}
+          keyboardShouldPersistTaps="handled"
+          ListHeaderComponent={
+            pages.length > 2 ? (
+              <TextInput
+                value={query}
+                onChangeText={setQuery}
+                placeholder={t('searchPages')}
+                placeholderTextColor={theme.muted}
+                accessibilityLabel={t('searchPages')}
+                clearButtonMode="while-editing"
+                returnKeyType="search"
+                style={[styles.search, { color: theme.text, borderColor: theme.border, backgroundColor: theme.card }]}
+              />
+            ) : null
+          }
+          ListEmptyComponent={<Text style={[styles.noMatch, { color: theme.muted }]}>{t('noPagesFound')}</Text>}
           renderItem={({ item }) => {
             const name = pageName(item, item.ink ? t('handwritten') : t('untitled'));
             // The first lines after the one used as the name; for a handwritten page, that it is one.
@@ -160,6 +180,8 @@ export function NotebookScreen({ onOpenPage }: Props) {
 }
 
 const styles = StyleSheet.create({
+  search: { minHeight: 44, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, fontSize: 16, marginBottom: 8 },
+  noMatch: { fontSize: 15, textAlign: 'center', marginTop: 24 },
   busy: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center' },
   screen: { flex: 1 },
   list: { alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },

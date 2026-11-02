@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, AppState, KeyboardAvoidingView, ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable } from '../components/Pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header, HeaderIconButton } from '../components/Header';
@@ -14,7 +15,7 @@ import { getVerseCounts, getVerses } from '../queries';
 import { findReferences } from '../refs';
 import type { FoundRef, TextPiece, VerseCount } from '../refs';
 import { useSettings } from '../settings';
-import { MAX_CONTENT_WIDTH, flattenVerse } from '../text';
+import { MAX_CONTENT_WIDTH, flattenVerse, formatRef } from '../text';
 import { useTheme } from '../theme';
 import { translationInfo } from '../types';
 import type { Book, Ref, VerseRow } from '../types';
@@ -84,6 +85,9 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
     setDraft({ title: page.title, body: page.body });
   }, [editing, page?.title, page?.body]);
   const bodyRef = useRef<TextInput>(null);
+  // Where the cursor is, for the reference strip and for lists that carry on.
+  const [selection, setSelection] = useState<{ start: number; end: number } | undefined>(undefined);
+  const cursor = selection?.start ?? draft.body.length;
   const latest = useRef({ page, draft, editing });
   latest.current = { page, draft, editing };
   const flush = useCallback(() => {
@@ -162,6 +166,73 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
     };
   }, [db, lines, translation, verseCount]);
 
+  // While writing, the last reference on the line being typed shows above the keyboard with
+  // the verse it names; a tap puts the verse's text into the page under that line.
+  const lineAt = (body: string, at: number) => {
+    const start = body.lastIndexOf('\n', Math.max(0, at - 1)) + 1;
+    const endIndex = body.indexOf('\n', at);
+    return { start, end: endIndex < 0 ? body.length : endIndex, text: body.slice(start, endIndex < 0 ? body.length : endIndex) };
+  };
+  const typedRef = useMemo(() => {
+    if (!editing || !verseCount) return null;
+    const line = lineAt(draft.body, cursor);
+    const refs = findReferences(line.text, books, translation, verseCount).filter((piece) => piece.ref);
+    const last = refs[refs.length - 1];
+    return last?.ref ? { ref: last.ref, lineEnd: line.end } : null;
+  }, [editing, draft.body, cursor, books, translation, verseCount]);
+  const [stripRows, setStripRows] = useState<{ key: string; rows: VerseRow[]; more: number } | null>(null);
+  useEffect(() => {
+    if (!typedRef || !verseCount) return;
+    const { shown, total } = rangeOf(typedRef.ref, verseCount);
+    if (shown.length === 0) return;
+    const key = `${translation}:${shown.map((r) => verseKey(r.book, r.chapter, r.verse)).join(',')}`;
+    let cancelled = false;
+    getVerses(db, translation, shown)
+      .then((rows) => !cancelled && setStripRows({ key, rows: rows.filter((v) => !v.omitted), more: total - shown.length }))
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [db, typedRef, translation, verseCount]);
+  const strip = typedRef && verseCount && stripRows && stripRows.key === `${translation}:${rangeOf(typedRef.ref, verseCount).shown.map((r) => verseKey(r.book, r.chapter, r.verse)).join(',')}` && stripRows.rows.length > 0 ? stripRows : null;
+  const insertVerse = () => {
+    if (!typedRef || !strip) return;
+    const shown = strip.rows;
+    const text = shown.map((v) => (shown.length > 1 ? `${verseLabel(v, shown)} ${flattenVerse(v.text)}` : flattenVerse(v.text))).join(' ');
+    const quote = `\n“${text}${strip.more > 0 ? ' …' : ''}”`;
+    const at = typedRef.lineEnd;
+    setDraft((d) => ({ ...d, body: d.body.slice(0, at) + quote + d.body.slice(at) }));
+    setSelection({ start: at + quote.length, end: at + quote.length });
+  };
+
+  // A list carries on: a return after "- " or "1. " starts the next line the same way, and a
+  // return on an empty item ends the list.
+  const changeBody = (body: string) => {
+    const before = latest.current.draft.body;
+    if (body.length === before.length + 1) {
+      const at = cursor;
+      if (body[at] === '\n' && body.slice(0, at) === before.slice(0, at) && body.slice(at + 1) === before.slice(at)) {
+        const line = lineAt(before, at);
+        const m = /^(\s*)(?:([-•*])|(\d+)[.)])\s+(.*)$/.exec(line.text);
+        if (m) {
+          if (!m[4].trim()) {
+            // An empty item: the list ends and the marker goes.
+            const next = body.slice(0, line.start) + body.slice(at + 1);
+            setDraft((d) => ({ ...d, body: next }));
+            setSelection({ start: line.start, end: line.start });
+            return;
+          }
+          const marker = m[2] ? `${m[1]}${m[2]} ` : `${m[1]}${Number(m[3]) + 1}. `;
+          const next = body.slice(0, at + 1) + marker + body.slice(at + 1);
+          setDraft((d) => ({ ...d, body: next }));
+          setSelection({ start: at + 1 + marker.length, end: at + 1 + marker.length });
+          return;
+        }
+      }
+    }
+    setDraft((d) => ({ ...d, body }));
+  };
+
   if (!page) return <View style={[styles.screen, { backgroundColor: theme.bg }]}><Header title={t('notebook')} onBack={onBack} /></View>;
 
   // The verses quoted under a reference, without any the translation leaves out, and how
@@ -238,7 +309,9 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
   const renderLine = (pieces: TextPiece[], i: number) => {
     const text = pieces.map((p) => p.text).join('');
     if (!text.trim()) return <View key={i} style={{ height: lineHeight / 2 }} />;
-    const refs = pieces.filter((p) => p.ref).map((p) => p.ref!);
+    // A verse the writer put in under its reference (a line in quotation marks) is not quoted again.
+    const nextLine = lines[i + 1]?.map((p) => p.text).join('') ?? '';
+    const refs = nextLine.trimStart().startsWith('“') ? [] : pieces.filter((p) => p.ref).map((p) => p.ref!);
     return (
       <View key={i} style={styles.line}>
         <Text selectable style={{ fontSize, lineHeight, color: theme.text, fontFamily: textFont(text) }}>
@@ -319,7 +392,9 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
           <TextInput
             ref={bodyRef}
             value={draft.body}
-            onChangeText={(body) => setDraft((d) => ({ ...d, body }))}
+            onChangeText={changeBody}
+            onSelectionChange={(e) => setSelection(e.nativeEvent.selection)}
+            selection={selection}
             placeholder={t('pageBody')}
             placeholderTextColor={theme.muted}
             multiline
@@ -338,6 +413,19 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
           {lines.map(renderLine)}
         </ScrollView>
       )}
+      {editing && typedRef && strip ? (
+        <View style={[styles.strip, { borderTopColor: theme.border, backgroundColor: theme.card, paddingBottom: Math.max(8, insets.bottom) }]}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.stripRef, { color: theme.accent }]}>{formatRef(books, { book: typedRef.ref.book, chapter: typedRef.ref.chapter, verse: Math.max(1, typedRef.ref.verse) }, translation)}</Text>
+            <Text numberOfLines={2} style={[styles.stripText, { color: theme.text, fontFamily: scriptFont }]}>
+              {flattenVerse(strip.rows[0].text)}
+            </Text>
+          </View>
+          <Pressable onPress={insertVerse} accessibilityRole="button" style={[styles.stripButton, { borderColor: theme.accent }]}>
+            <Text style={[styles.stripButtonText, { color: theme.accent }]}>{t('insertVerseText')}</Text>
+          </Pressable>
+        </View>
+      ) : null}
       <SimpleSheet visible={shareSheet} title={t('sharePage')} onClose={() => setShareSheet(false)}>
         <SheetAction
           icon="share"
@@ -369,6 +457,11 @@ const styles = StyleSheet.create({
   more: { fontSize: 13, marginTop: 4 },
   titleInput: { fontSize: 22, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, marginBottom: 8 },
   bodyInput: { minHeight: 320, paddingVertical: 8 },
+  strip: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth },
+  stripRef: { fontSize: 13, fontWeight: '600' },
+  stripText: { fontSize: 14, lineHeight: 20 },
+  stripButton: { minHeight: 40, paddingHorizontal: 14, borderRadius: 20, borderWidth: 1.5, justifyContent: 'center' },
+  stripButtonText: { fontSize: 14, fontWeight: '600' },
 });
 
 /** A reference kept on one line: no-break spaces, a no-break hyphen, and no break at a dash. */

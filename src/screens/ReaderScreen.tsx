@@ -1738,6 +1738,9 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
       <SimpleSheet visible={!!noteEditor} title={noteEditor ? `${t('note')} · ${formatRef(books, noteEditor.verse, translation)}` : ''} onClose={closeNote}>
         {noteEditor ? (
           <View>
+            <Text style={[styles.noteVerse, { color: theme.muted, fontFamily: scriptFont }]} numberOfLines={4}>
+              {flattenVerse(noteEditor.verse.text)}
+            </Text>
             <TextInput
               value={noteEditor.text}
               onChangeText={(text) => setNoteEditor({ ...noteEditor, text })}
@@ -2197,7 +2200,8 @@ const styles = StyleSheet.create({
   notePreview: { flexDirection: 'row', gap: 10, padding: 12, borderRadius: 12, marginBottom: 16 },
   notePreviewText: { flex: 1, fontSize: 14, lineHeight: 20 },
   actionsDivider: { height: StyleSheet.hairlineWidth, marginBottom: 4 },
-  noteInput: { minHeight: 110, maxHeight: 220, borderWidth: StyleSheet.hairlineWidth, borderRadius: 10, padding: 12, fontSize: 16, lineHeight: 22, textAlignVertical: 'top' },
+  noteInput: { minHeight: 120, maxHeight: 220, borderWidth: StyleSheet.hairlineWidth, borderRadius: 10, padding: 12, fontSize: 16, lineHeight: 22, textAlignVertical: 'top' },
+  noteVerse: { fontSize: 15, lineHeight: 22, marginBottom: 10 },
   noteButtons: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 },
   noteDelete: { fontSize: 15 },
   noteSave: { paddingHorizontal: 22, paddingVertical: 10, borderRadius: 10 },

@@ -82,6 +82,11 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
 - [ ] Press and hold a verse, Read from here: the chapter is read in the phone's voice
       from that verse, the verse being read is shown, and it goes on to the next chapter.
 - [ ] Pause, play, next and previous verse, speed.
+- [ ] Notebook, typed page: type "John 3:16" on a line: a strip above the keyboard names
+      the verse with its text; Insert text puts the verse under the line, and the read
+      view does not quote it a second time. Type "- " then words and press return: the
+      next line starts with "- "; return on an empty "- " ends the list. With three or
+      more pages the list has a search box; the verse-note box shows the verse above it.
 - [ ] Settings → Read aloud → English voice: the phone's voices are listed (Standard or
       Enhanced; Online where the phone has Google's network voices), each with a play
       button that reads Psalm 23:1; the chosen one is used for the chapter. Same for the
