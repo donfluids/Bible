@@ -46,7 +46,9 @@ export function bookName(books: Book[], id: number, translation?: TranslationId)
 }
 
 export function formatRef(books: Book[], ref: Ref, translation?: TranslationId): string {
-  const name = bookName(books, ref.book, translation);
+  const full = bookName(books, ref.book, translation);
+  // One psalm is "Psalm 23:1", though the book is Psalms.
+  const name = full === 'Psalms' ? 'Psalm' : full;
   // A Psalm's title is verse 0; it is named in the language of the book name.
   const title = translation === 'MAL' ? '(ശീർഷകം)' : translation === 'TAM' ? '(தலைப்பு)' : translation === 'HIN' ? '(शीर्षक)' : '(title)';
   return ref.verse === 0 ? `${name} ${ref.chapter} ${title}` : `${name} ${ref.chapter}:${ref.verse}`;

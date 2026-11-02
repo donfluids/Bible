@@ -48,7 +48,7 @@ export interface CardLayout {
   align: 'center' | 'left';
 }
 
-export type DesignId = 'celebrate' | 'party' | 'wedding' | 'hearts' | 'rose' | 'tulip' | 'christmas' | 'sunrise' | 'dove' | 'paper';
+export type DesignId = 'paper' | 'linen' | 'gold' | 'dawn' | 'olive' | 'night' | 'ink' | 'celebrate' | 'party' | 'wedding' | 'hearts' | 'rose' | 'tulip' | 'christmas' | 'sunrise' | 'dove';
 
 export interface Design {
   id: DesignId;
@@ -74,6 +74,92 @@ const box = (top: number, left: number, right: number, bottom: number) => ({ top
 const ROSE_RATIO = 787 / 640;
 
 export const DESIGNS: Design[] = [
+  {
+    id: 'paper',
+    background: ['#F6EEDC'],
+    ink: '#3B2A14',
+    accent: '#7A5A2A',
+    faint: 'rgba(59,42,20,0.55)',
+    borders: [
+      { color: '#9B7A4A', inset: 14, width: 1.5 },
+      { color: '#9B7A4A', inset: 19, width: 0.75 },
+    ],
+    cross: '#9B7A4A',
+    square: { box: box(40, 40, 40, 40), align: 'center' },
+    tall: { box: box(70, 42, 42, 70), align: 'center' },
+  },
+  {
+    // Warm grey, like good writing paper, with one thin rule.
+    id: 'linen',
+    background: ['#F3F1EC', '#ECE8E0'],
+    ink: '#2E2B27',
+    accent: '#6B5E4E',
+    faint: 'rgba(46,43,39,0.55)',
+    borders: [{ color: '#C9C1B3', inset: 12, width: 1 }],
+    square: { box: box(36, 36, 36, 36), align: 'center' },
+    tall: { box: box(64, 40, 40, 64), align: 'center' },
+  },
+  {
+    // White with a double gold rule and a small gold cross: weddings and anniversaries without pictures.
+    id: 'gold',
+    background: ['#FFFFFF', '#FBF7EF'],
+    ink: '#3B3226',
+    accent: '#9C7A3C',
+    faint: 'rgba(59,50,38,0.55)',
+    borders: [
+      { color: '#C9A86A', inset: 14, width: 1 },
+      { color: '#E3D1AC', inset: 19, width: 1 },
+    ],
+    cross: '#C9A86A',
+    square: { box: box(40, 40, 40, 40), align: 'center' },
+    tall: { box: box(70, 42, 42, 70), align: 'center' },
+  },
+  {
+    // Rose and apricot with a sun behind the cross.
+    id: 'dawn',
+    background: ['#F9D9D4', '#FDEBDD', '#FFF8F0'],
+    ink: '#4A2B2B',
+    accent: '#A04A3A',
+    faint: 'rgba(74,43,43,0.55)',
+    cross: '#A04A3A',
+    halo: '#FFB88C',
+    square: { box: box(34, 34, 34, 34), align: 'center' },
+    tall: { box: box(60, 36, 36, 60), align: 'center' },
+  },
+  {
+    // Sage green with a deep green rule.
+    id: 'olive',
+    background: ['#E4EBDD', '#D5DFCB'],
+    ink: '#273A2A',
+    accent: '#4F6B46',
+    faint: 'rgba(39,58,42,0.55)',
+    borders: [{ color: '#8FA383', inset: 12, width: 1 }],
+    cross: '#6B8460',
+    square: { box: box(38, 38, 38, 38), align: 'center' },
+    tall: { box: box(68, 40, 40, 68), align: 'center' },
+  },
+  {
+    // Indigo night with a few stars and a gold rule, for any season.
+    id: 'night',
+    background: ['#1E2A4A', '#121A33', '#0A0F22'],
+    ink: '#F3E7C6',
+    accent: '#E8C77A',
+    faint: 'rgba(243,231,198,0.6)',
+    stars: '#F3E7C6',
+    borders: [{ color: 'rgba(232,199,122,0.55)', inset: 12, width: 1 }],
+    square: { box: box(38, 38, 38, 38), align: 'center' },
+    tall: { box: box(68, 40, 40, 68), align: 'center' },
+  },
+  {
+    // Black and white, nothing else: the status look.
+    id: 'ink',
+    background: ['#141414'],
+    ink: '#F4F1EA',
+    accent: '#D9CBA8',
+    faint: 'rgba(244,241,234,0.6)',
+    square: { box: box(40, 36, 36, 40), align: 'center' },
+    tall: { box: box(70, 40, 40, 70), align: 'center' },
+  },
   {
     id: 'celebrate',
     background: ['#FFF4E4', '#FFE1E6', '#F9D2E6'],
@@ -195,20 +281,6 @@ export const DESIGNS: Design[] = [
     square: { above: [{ src: ART.dove, width: 70 }], box: box(28, 34, 34, 30), align: 'center' },
     tall: { above: [{ src: ART.dove, width: 120 }], box: box(60, 36, 36, 60), align: 'center' },
   },
-  {
-    id: 'paper',
-    background: ['#F6EEDC'],
-    ink: '#3B2A14',
-    accent: '#7A5A2A',
-    faint: 'rgba(59,42,20,0.55)',
-    borders: [
-      { color: '#9B7A4A', inset: 14, width: 1.5 },
-      { color: '#9B7A4A', inset: 19, width: 0.75 },
-    ],
-    cross: '#9B7A4A',
-    square: { box: box(40, 40, 40, 40), align: 'center' },
-    tall: { box: box(70, 42, 42, 70), align: 'center' },
-  },
 ];
 
 export type Occasion = 'none' | 'birthday' | 'wedding' | 'anniversary' | 'sympathy' | 'getWell' | 'christmas' | 'easter' | 'newYear';
@@ -227,7 +299,7 @@ export const OCCASIONS: { id: Occasion; label: StringKey; heading: StringKey | n
 ];
 
 export function designById(id: DesignId): Design {
-  return DESIGNS.find((d) => d.id === id) ?? DESIGNS[DESIGNS.length - 1];
+  return DESIGNS.find((d) => d.id === id) ?? DESIGNS[0];
 }
 
 /** Where the verse and its lines stand on the card. */
