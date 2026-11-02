@@ -176,6 +176,8 @@ run number, so every build can be installed over the previous one.
 The iPhone apps build from the same code in Expo's cloud (EAS Build, profiles `ios-en` and
 `ios-ml` in `eas.json`); `docs/ios/README.md` has the steps from Apple enrolment to the App
 Store, with the listing text and screenshots beside it.
+`.github/workflows/ios-build.yml` compiles the iPhone app of each edition unsigned on a Mac
+runner on every push, so a change that breaks the iOS side is caught; it installs nothing.
 
 Release signing is configured by `plugins/withAndroidRelease.js`, which also turns
 on code and resource shrinking and builds for 32- and 64-bit ARM (the Play bundle

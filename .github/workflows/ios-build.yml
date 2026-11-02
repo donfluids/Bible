@@ -1,0 +1,74 @@
+name: iPhone build (unsigned)
+
+# Compiles the iPhone app of each edition on a Mac runner, without signing, so a change
+# that breaks the iOS side is caught on every push. It installs nothing on a phone: a
+# signed build for TestFlight and the App Store comes from EAS Build (docs/ios/README.md),
+# or from this workflow once a certificate, a provisioning profile and an App Store
+# Connect key are added as secrets.
+
+on:
+  push:
+    branches: [ccr-39027e0d-8m0rpn, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        # The four-language app (all) is left out: its database is built, not committed (README).
+        edition: [en, ml, ta]
+    env:
+      BIBLE_EDITION: ${{ matrix.edition }}
+      CI: 1
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate the iOS project
+        run: npx expo prebuild --platform ios --no-install
+
+      - name: Install pods
+        run: |
+          cd ios
+          pod install
+
+      - name: Build (no signing)
+        run: |
+          set -o pipefail
+          workspace=$(ls -d ios/*.xcworkspace | head -1)
+          scheme=$(basename "$workspace" .xcworkspace)
+          echo "workspace $workspace, scheme $scheme"
+          xcodebuild -workspace "$workspace" -scheme "$scheme" -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= \
+            build > xcodebuild.log 2>&1 || {
+              echo "::group::errors"; grep -E "error:|fatal error" xcodebuild.log | head -40; echo "::endgroup::"
+              tail -80 xcodebuild.log
+              exit 1
+            }
+          grep -E "BUILD SUCCEEDED|BUILD FAILED" xcodebuild.log
+          app=$(find build -name '*.app' -path '*Release-iphoneos*' | head -1)
+          echo "built $app"
+          du -sh "$app"
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: xcodebuild-${{ matrix.edition }}.log
+          path: xcodebuild.log
+          retention-days: 14
