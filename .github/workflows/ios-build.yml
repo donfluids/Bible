@@ -38,10 +38,12 @@ jobs:
 
       - name: Select Xcode 26
         # expo-modules-jsi's Swift package needs Swift 6.2, which comes with Xcode 26; the
-        # runner's default Xcode is older.
+        # runner's default Xcode is older, and Xcode 26.3's Swift is newer than the package
+        # compiles with, so the oldest Xcode 26 on the runner is taken.
         run: |
-          xcode=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
-          if [ -z "$xcode" ]; then echo "no Xcode 26 on this runner:"; ls /Applications | grep Xcode; exit 1; fi
+          ls /Applications | grep Xcode
+          xcode=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | head -1)
+          if [ -z "$xcode" ]; then echo "no Xcode 26 on this runner"; exit 1; fi
           sudo xcode-select -s "$xcode"
           xcodebuild -version
           swift --version 2>&1 | head -1
