@@ -36,6 +36,16 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Select Xcode 26
+        # expo-modules-jsi's Swift package needs Swift 6.2, which comes with Xcode 26; the
+        # runner's default Xcode is older.
+        run: |
+          xcode=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$xcode" ]; then echo "no Xcode 26 on this runner:"; ls /Applications | grep Xcode; exit 1; fi
+          sudo xcode-select -s "$xcode"
+          xcodebuild -version
+          swift --version 2>&1 | head -1
+
       - name: Install dependencies
         run: npm ci
 
@@ -57,7 +67,7 @@ jobs:
             -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= \
             build > xcodebuild.log 2>&1 || {
-              echo "::group::errors"; grep -E "error:|fatal error" xcodebuild.log | head -40; echo "::endgroup::"
+              echo "::group::errors"; grep -E -A 6 "error:|fatal error" xcodebuild.log | head -80; echo "::endgroup::"
               tail -80 xcodebuild.log
               exit 1
             }
