@@ -19,6 +19,18 @@ import { translationInfo } from '../types';
 import { useTheme } from '../theme';
 import { useWriteToUs } from '../writeToUs';
 import { Segmented } from '../components/Segmented';
+import { SimpleSheet } from '../components/SimpleSheet';
+import { listVoices, saySample, stopSaying } from '../speech';
+import type { SpokenLanguage } from '../speech';
+import type { VoiceOption } from '../voiceLabels';
+import { getVerses } from '../queries';
+import type { TranslationId } from '../types';
+
+/** The languages read aloud in this edition, each with the Bible whose verse is the sample. */
+const SPOKEN: [SpokenLanguage, TranslationId][] = [['english', 'KJV'], ['malayalam', 'MAL'], ['tamil', 'TAM'], ['hindi', 'HIN']];
+const VOICE_NAME = { english: 'voiceEnglish', malayalam: 'voiceMalayalam', tamil: 'voiceTamil', hindi: 'voiceHindi' } as const;
+// Psalm 23:1, the sample read in a voice.
+const SAMPLE_REF = { book: 19, chapter: 23, verse: 1 };
 
 /** Each interface language in its own script. */
 const LANGUAGE_NAMES: Record<Language, string> = { ml: 'മലയാളം', ta: 'தமிழ்', hi: 'हिन्दी', en: 'English' };
@@ -55,6 +67,42 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
     update({ fontSize: FONT_SIZES[i] });
   };
   const divider = { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.border };
+
+  // The voice for each language read aloud: the phone's own list, with a sample of each.
+  const spoken = SPOKEN.filter(([, id]) => EDITION.translations.includes(id));
+  const [choosingVoice, setChoosingVoice] = useState<SpokenLanguage | null>(null);
+  const [voiceList, setVoiceList] = useState<VoiceOption[] | null>(null);
+  const [sampling, setSampling] = useState<string | null>(null);
+  useEffect(() => {
+    if (!choosingVoice) return;
+    let gone = false;
+    setVoiceList(null);
+    listVoices(choosingVoice).then((list) => !gone && setVoiceList(list));
+    return () => {
+      gone = true;
+      stopSaying();
+      setSampling(null);
+    };
+  }, [choosingVoice]);
+  const playSample = async (language: SpokenLanguage, voice: string | undefined) => {
+    const key = voice ?? 'default';
+    if (sampling === key) {
+      stopSaying();
+      setSampling(null);
+      return;
+    }
+    const translation = spoken.find(([l]) => l === language)?.[1] ?? 'KJV';
+    const [row] = await getVerses(db, translation, [SAMPLE_REF]).catch(() => []);
+    const text = row ? row.text.replace(/<[^>]+>/g, '') : t('previewText');
+    setSampling(key);
+    saySample(text, language, voice, settings.readSpeed, () => setSampling((s) => (s === key ? null : s)));
+  };
+  const voiceTitle = (language: SpokenLanguage, id: string | undefined) => {
+    if (!id) return t('voiceDefault');
+    const i = voiceList?.findIndex((v) => v.identifier === id) ?? -1;
+    const v = i >= 0 ? voiceList![i] : null;
+    return v?.friendly ?? t('voiceNumber', { n: String(i + 1) });
+  };
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
@@ -219,6 +267,20 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
           <AppSwitch value={settings.underlineWords} onValueChange={(v) => update({ underlineWords: v })} />
         </View>
 
+        <Label text={t('readAloudSection')} />
+        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          {spoken.map(([language], i) => (
+            <Pressable key={language} onPress={() => setChoosingVoice(language)} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={[styles.row, i > 0 && divider]}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.rowTitle, { color: theme.text }]}>{t(VOICE_NAME[language])}</Text>
+                <Text style={[styles.rowSub, { color: theme.muted }]}>{settings.voices[language] ? t('voiceChosen') : t('voiceDefault')}</Text>
+              </View>
+              <Icon name="chevron_right" color={theme.muted} />
+            </Pressable>
+          ))}
+        </View>
+        <Text style={[styles.rowSub, styles.hint, { color: theme.muted }]}>{t('voiceMore')}</Text>
+
         <Label text={t('aboutTexts')} />
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border, padding: 14 }]}>
           <Text style={[styles.about, { color: theme.text }]}>{t(EDITION.id === 'ml' ? 'aboutMalayalam' : EDITION.id === 'ta' ? 'aboutTamil' : EDITION.id === 'all' ? 'aboutAll' : 'aboutEnglish')}</Text>
@@ -254,6 +316,46 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
           </Pressable>
         </View>
       </ScrollView>
+
+      <SimpleSheet visible={!!choosingVoice} title={t('voiceChoose')} onClose={() => setChoosingVoice(null)}>
+        {choosingVoice ? (
+          <>
+            {[undefined, ...(voiceList ?? []).map((v) => v.identifier)].map((id, i) => {
+              const v = id ? voiceList![i - 1] : null;
+              const chosen = (settings.voices[choosingVoice] ?? undefined) === id;
+              const detail = v ? [v.enhanced ? t('voiceEnhanced') : t('voiceStandard'), v.online ? t('voiceOnline') : t('voiceOffline'), v.code].filter(Boolean).join(' · ') : null;
+              return (
+                <View key={id ?? 'default'} style={[styles.row, i > 0 && divider]}>
+                  <Pressable
+                    onPress={() => {
+                      const voices = { ...settings.voices };
+                      if (id) voices[choosingVoice] = id;
+                      else delete voices[choosingVoice];
+                      update({ voices });
+                    }}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: chosen }}
+                    style={styles.voiceChoice}
+                  >
+                    <View style={styles.check}>{chosen ? <Icon name="check" color={theme.accent} /> : null}</View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.rowTitle, { color: theme.text }]}>{voiceTitle(choosingVoice, id)}</Text>
+                      {detail ? <Text style={[styles.rowSub, { color: theme.muted }]}>{detail}</Text> : null}
+                    </View>
+                  </Pressable>
+                  <IconButton
+                    name={sampling === (id ?? 'default') ? 'pause' : 'play_arrow'}
+                    onPress={() => playSample(choosingVoice, id)}
+                    accessibilityLabel={t('voiceSample')}
+                    color={theme.accent}
+                  />
+                </View>
+              );
+            })}
+            {voiceList && voiceList.length === 0 ? <Text style={[styles.rowSub, styles.hint, { color: theme.muted }]}>{t('voiceNone')}</Text> : null}
+          </>
+        ) : null}
+      </SimpleSheet>
     </View>
   );
 }
@@ -274,6 +376,7 @@ const styles = StyleSheet.create({
   rowTitle: { fontSize: 16, lineHeight: 24 },
   rowSub: { fontSize: 13, lineHeight: 19, marginTop: 2 },
   check: { width: 24, alignItems: 'flex-end' },
+  voiceChoice: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 44 },
   preview: { flex: 1, textAlign: 'center' },
   about: { fontSize: 14, lineHeight: 21 },
 });

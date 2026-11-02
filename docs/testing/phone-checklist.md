@@ -82,6 +82,10 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
 - [ ] Press and hold a verse, Read from here: the chapter is read in the phone's voice
       from that verse, the verse being read is shown, and it goes on to the next chapter.
 - [ ] Pause, play, next and previous verse, speed.
+- [ ] Settings → Read aloud → English voice: the phone's voices are listed (Standard or
+      Enhanced; Online where the phone has Google's network voices), each with a play
+      button that reads Psalm 23:1; the chosen one is used for the chapter. Same for the
+      Malayalam, Tamil or Hindi voice where the app has that Bible.
 - [ ] Lock the screen while it reads: note whether it carries on.
 - [ ] Have someone call you while it reads: it stops or pauses, and you can carry on
       afterwards.

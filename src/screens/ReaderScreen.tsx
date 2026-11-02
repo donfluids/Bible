@@ -586,7 +586,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
     moveTo(n);
     return true;
   }, [books, position.book, position.chapter, moveTo]);
-  const reading = useReadAloud({ chapterKey, verses: chapterVerses, translation, rate: settings.readSpeed, nextChapter: readOn });
+  const reading = useReadAloud({ chapterKey, verses: chapterVerses, translation, rate: settings.readSpeed, voice: settings.voices[voiceFor(translation)], nextChapter: readOn });
   const readingVerse = reading.verse;
   // The verse being read is kept in view until the reader scrolls the page themselves.
   const [following, setFollowing] = useState(true);

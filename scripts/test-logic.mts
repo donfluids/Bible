@@ -7,6 +7,7 @@
 //   npx tsx scripts/test-logic.mts
 import { plainMorph } from '../src/morph';
 import assert from 'node:assert/strict';
+import { describeVoice, voicesFor } from '../src/voiceLabels';
 import { groupForms, isTaBaseForm, taStem } from './lib/forms.mjs';
 import { addPoint, decodeInk, encodeInk, packSteps, pageHeight, parseInk, pathOf, strokePath, touchesStroke, unpackSteps } from '../src/ink';
 import { FEEDBACK_NEVER, deviceLine, feedbackCardDue, feedbackDueFrom, feedbackLater, mailtoUrl } from '../src/feedback';
@@ -392,6 +393,24 @@ test('word sheet grammar in plain words, in each interface language', () => {
   assert.equal(plainMorph('HNpm', true, 'hi'), 'नाम');
   assert.equal(plainMorph('PREP', false, 'ta'), 'முன்னிடைச்சொல்');
   assert.equal(plainMorph('', false, 'en'), '');
+});
+
+test('a Google network voice is online and coded, an iPhone voice is named', () => {
+  const g = describeVoice({ identifier: 'en-us-x-tpc-network', name: 'en-us-x-tpc-network', quality: 'Enhanced', language: 'en-US' });
+  assert.deepEqual([g.online, g.code, g.friendly, g.enhanced], [true, 'tpc', null, true]);
+  const a = describeVoice({ identifier: 'com.apple.voice.enhanced.en-US.Samantha', name: 'Samantha', quality: 'Enhanced', language: 'en-US' });
+  assert.deepEqual([a.online, a.code, a.friendly, a.enhanced], [false, null, 'Samantha', true]);
+});
+test('voices are filtered by language, the phone\'s own first', () => {
+  const list = voicesFor(
+    [
+      { identifier: 'ml-in-x-mle-network', name: 'ml-in-x-mle-network', quality: 'Enhanced', language: 'ml_IN' },
+      { identifier: 'en-us-x-tpc-local', name: 'en-us-x-tpc-local', quality: 'Default', language: 'en-US' },
+      { identifier: 'ml-in-x-mle-local', name: 'ml-in-x-mle-local', quality: 'Default', language: 'ml-IN' },
+    ],
+    ['ml'],
+  );
+  assert.deepEqual(list.map((v) => v.identifier), ['ml-in-x-mle-local', 'ml-in-x-mle-network']);
 });
 
 console.log(`all ${passed} logic tests passed`);

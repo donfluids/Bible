@@ -10,7 +10,7 @@ or the address chosen when it was first published). This task replaces the page'
 
 Compared with the version dated 20 October 2026 (the one on the website now):
 
-- Effective date **29 October 2026**.
+- Effective date **2 November 2026**.
 - A new section, "Writing to us": the apps can open a note to us in the user's own mail app,
   with the app's version and the phone's system version and model on its last line; the
   reader is invited by a card in the reader, which can be put off or turned off.
@@ -55,7 +55,7 @@ This privacy page is the only change the website needs for these app updates.
 
 - `curl -sI https://riversresearch.org/bible/privacy` (or the page's address) returns
   status 200 with `Content-Type: text/html`.
-- The page shows "Effective 29 October 2026", "Writing to us", "Reading aloud", "picture card", "photo picker", "Notebook backup", "வேதாகமம்", "for Android and iPhone" and
+- The page shows "Effective 2 November 2026", "Writing to us", "Reading aloud", "picture card", "photo picker", "Notebook backup", "வேதாகமம்", "for Android and iPhone" and
   "iCloud", plus "Rivers Research LLC", all three package names and dond@riversresearch.org.
 - It opens on a phone without signing in.
 
@@ -69,7 +69,7 @@ The page's address, and that the text now reads as below.
 
 # Privacy policy
 
-Bible (org.riversresearch.bible), വേദപുസ്തകം (org.riversresearch.bible.malayalam) and வேதாகமம் (org.riversresearch.bible.tamil), for Android and iPhone, published by Rivers Research LLC. Effective 29 October 2026.
+Bible (org.riversresearch.bible), വേദപുസ്തകം (org.riversresearch.bible.malayalam) and வேதாகமம் (org.riversresearch.bible.tamil), for Android and iPhone, published by Rivers Research LLC. Effective 2 November 2026.
 
 > The apps collect no personal data and send nothing to us or to anyone else. They do not connect to the internet. What you save in them stays on your phone, and leaves it only when you share, copy, export or print it yourself, to the place you choose.
 
@@ -91,7 +91,7 @@ You can save your notebook as a backup file, or a notebook page as a PDF or a pi
 
 ## Reading aloud
 
-When you have a chapter, or a Hebrew or Greek word, read aloud, the apps pass that Bible text to your phone's own text-to-speech engine, which is part of your phone, not of the apps. Only the text being read is passed to it. Most engines work without the internet; if the engine on your phone uses online voices, its own privacy terms apply.
+When you have a chapter, or a Hebrew or Greek word, read aloud, the apps pass that Bible text to your phone's own text-to-speech engine, which is part of your phone, not of the apps. Only the text being read is passed to it. Most voices work without the internet. Settings → Read aloud lists the phone's voices; one marked Online is produced by the engine's maker over the internet, and the text being read goes to them under their own privacy terms.
 
 ## Links
 

@@ -110,6 +110,9 @@ rendering counts all work in Malayalam.
   tapped, the Hebrew or Greek switch goes from the Bible list, the verse menu loses Compare,
   cross references, parallels and Words in this verse, and the introductions are not
   offered; highlights, notes and the notebook stay. On by default, and only in Settings.
+- Settings → Read aloud chooses the phone's voice for each language read aloud (standard,
+  enhanced, or online where the engine offers one), with a sample of each; the engine does
+  any downloading, the app stays offline.
 - Settings → Write to us starts a note in the phone's mail app (address, a subject with the
   app's version, a last line naming the build and the phone that the reader may delete);
   the address itself is not shown unless no mail app opens. About two weeks after install,

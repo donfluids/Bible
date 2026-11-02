@@ -3,13 +3,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Speech from 'expo-speech';
 import { LANGUAGE } from './speech';
-import type { VoiceLanguage } from './speech';
+import type { SpokenLanguage } from './speech';
 import { flattenVerse } from './text';
 import type { TranslationId, VerseRow } from './types';
 
 export const READ_SPEEDS = [0.75, 1, 1.25];
 
-export function voiceFor(translation: TranslationId): VoiceLanguage {
+export function voiceFor(translation: TranslationId): SpokenLanguage {
   return translation === 'MAL' ? 'malayalam' : translation === 'TAM' ? 'tamil' : translation === 'HIN' ? 'hindi' : 'english';
 }
 
@@ -38,6 +38,8 @@ interface Options {
   verses: VerseRow[] | null;
   translation: TranslationId;
   rate: number;
+  /** The chosen voice's identifier, or undefined for the phone's default. */
+  voice?: string;
   /** Turns to the next chapter; false at the end of the Bible. */
   nextChapter: () => boolean;
 }
@@ -45,7 +47,7 @@ interface Options {
 // The pause between the end of one chapter and the start of the next.
 const CHAPTER_PAUSE = 900;
 
-export function useReadAloud({ chapterKey, verses, translation, rate, nextChapter }: Options): ReadAloud {
+export function useReadAloud({ chapterKey, verses, translation, rate, voice, nextChapter }: Options): ReadAloud {
   const [index, setIndex] = useState<number | null>(null);
   const [playing, setPlaying] = useState(false);
   const [active, setActive] = useState(false);
@@ -54,8 +56,8 @@ export function useReadAloud({ chapterKey, verses, translation, rate, nextChapte
   // Each utterance carries the token it was started with; a stop or a new start makes the
   // callbacks of the old one do nothing.
   const token = useRef(0);
-  const live = useRef({ verses, translation, rate, nextChapter, chapterKey, index });
-  live.current = { verses, translation, rate, nextChapter, chapterKey, index };
+  const live = useRef({ verses, translation, rate, voice, nextChapter, chapterKey, index });
+  live.current = { verses, translation, rate, voice, nextChapter, chapterKey, index };
   // Set while waiting for the next chapter's verses after turning to it.
   const continuing = useRef<string | null>(null);
   const pauseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -75,7 +77,7 @@ export function useReadAloud({ chapterKey, verses, translation, rate, nextChapte
   const speakAt = useCallback(
     (i: number) => {
       halt();
-      const { verses: list, translation: tr, rate: r, nextChapter: next, chapterKey: key } = live.current;
+      const { verses: list, translation: tr, rate: r, voice: v, nextChapter: next, chapterKey: key } = live.current;
       if (!list) return;
       if (i >= list.length) {
         // The end of the chapter: on to the next, or stop at the end of the Bible.
@@ -96,6 +98,7 @@ export function useReadAloud({ chapterKey, verses, translation, rate, nextChapte
       speaking.current = true;
       Speech.speak(spokenText(list[i]), {
         language: LANGUAGE[voiceFor(tr)],
+        voice: v,
         rate: r,
         onDone: () => {
           if (token.current === mine) speakAt(i + 1);
@@ -187,13 +190,14 @@ export function useReadAloud({ chapterKey, verses, translation, rate, nextChapte
   }, [halt]);
 
   // A new speed applies from the next verse; the verse being read is started again with it.
-  const lastRate = useRef(rate);
+  const lastRate = useRef(`${rate} ${voice ?? ''}`);
   useEffect(() => {
-    if (lastRate.current === rate) return;
-    lastRate.current = rate;
+    const now = `${rate} ${voice ?? ''}`;
+    if (lastRate.current === now) return;
+    lastRate.current = now;
     const i = live.current.index;
     if (i !== null && playingRef.current) speakAt(i);
-  }, [rate, speakAt]);
+  }, [rate, voice, speakAt]);
 
   const verse = index !== null && verses && verses[index] ? verses[index].verse : null;
   return { active, verse, playing, start, pause, resume, step, stop };

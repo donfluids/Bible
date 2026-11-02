@@ -3,6 +3,7 @@ import { Alert, Dimensions, useColorScheme } from 'react-native';
 import { translate } from './i18n';
 import { feedbackDueFrom } from './feedback';
 import { cleanSettings } from './settingsClean';
+import type { SpokenLanguage } from './speech';
 import { loadEntry, useAutosave } from './persist';
 import type { Loaded } from './persist';
 import type { Edition, Language } from './edition';
@@ -32,6 +33,8 @@ export interface Settings {
   study: boolean;
   /** Speaking rate of chapters read aloud: 0.75, 1 or 1.25. */
   readSpeed: number;
+  /** The phone's voice chosen for each language read aloud (its identifier); unset, the phone's default. */
+  voices: Partial<Record<SpokenLanguage, string>>;
   underlineWords: boolean;
   /** Show the Hebrew or Greek words under each verse. */
   interlinear: boolean;
@@ -71,6 +74,7 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
   sideBySide: true,
   study: true,
   readSpeed: 1,
+  voices: {},
   underlineWords: false,
   interlinear: false,
   interlinearMode: 'all',
