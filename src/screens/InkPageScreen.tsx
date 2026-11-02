@@ -299,7 +299,27 @@ export function InkPageScreen({ id, onBack }: Props) {
   // The page fills a tablet's width (it is drawn in PAGE_WIDTH units, so wider is only
   // larger), with a little room at the sides; on a phone it is the screen's width.
   const pageWidth = Math.min(box.width > MAX_CONTENT_WIDTH ? box.width - 24 : box.width, 1200);
-  const scale = pageWidth > 0 ? pageWidth / PAGE_WIDTH : 1;
+  // Pinched larger, the page is drawn wider than the screen and moved under it; the part
+  // on screen stays pageWidth across.
+  const [zoom, setZoom] = useState(1);
+  const [offsetX, setOffsetX] = useState(0);
+  const zoomRef = useRef(1);
+  const offsetXRef = useRef(0);
+  // While two fingers pinch, the page is only scaled on screen; the new size is drawn on release.
+  const [pinch, setPinch] = useState<{ factor: number; x: number; y: number } | null>(null);
+  const scale = (pageWidth > 0 ? pageWidth / PAGE_WIDTH : 1) * zoom;
+  const inkWidth = pageWidth * zoom;
+  const setOffset = (x: number) => {
+    const max = Math.max(0, inkWidth - pageWidth);
+    offsetXRef.current = Math.max(0, Math.min(max, x));
+    setOffsetX(offsetXRef.current);
+  };
+  const fitPage = () => {
+    zoomRef.current = 1;
+    setZoom(1);
+    offsetXRef.current = 0;
+    setOffsetX(0);
+  };
   const [sharing, setSharing] = useState(false);
   // For a shared picture the page ends a little below the writing.
   const heightUnits = useMemo(
@@ -315,9 +335,10 @@ export function InkPageScreen({ id, onBack }: Props) {
   const liveRef = useRef<{ stroke: Stroke; touch: number; started: number } | null>(null);
   const erased = useRef<Set<Stroke> | null>(null);
   const mode = useRef<'none' | 'draw' | 'erase' | 'move'>('none');
-  const move = useRef({ startY: 0, fromY: 0, touches: 0 });
+  const move = useRef({ startY: 0, fromY: 0, startX: 0, fromX: 0, touches: 0, dist: 0, zoom: 1, mid: { x: 0, y: 0 } });
   const scrollY = useRef(0);
   const scroller = useRef<ScrollView>(null);
+  const pinchRef = useRef<{ factor: number; x: number; y: number } | null>(null);
   const [penMode, setPenMode] = useState(false);
   const penModeRef = useRef(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -342,10 +363,51 @@ export function InkPageScreen({ id, onBack }: Props) {
   settingsRef.current = { tool, colour, size, scale };
 
   const averageY = (e: GestureTouchEvent) => e.allTouches.reduce((sum, p) => sum + p.absoluteY, 0) / Math.max(1, e.allTouches.length);
+  const averageX = (e: GestureTouchEvent) => e.allTouches.reduce((sum, p) => sum + p.absoluteX, 0) / Math.max(1, e.allTouches.length);
+  // The distance between two fingers, for pinching.
+  const spread = (e: GestureTouchEvent) => {
+    if (e.allTouches.length < 2) return 0;
+    const [a, b] = e.allTouches;
+    return Math.hypot(a.absoluteX - b.absoluteX, a.absoluteY - b.absoluteY);
+  };
   const startMove = (e: GestureTouchEvent) => {
     mode.current = 'move';
-    move.current = { startY: averageY(e), fromY: scrollY.current, touches: e.allTouches.length };
+    const n = Math.max(1, e.allTouches.length);
+    move.current = {
+      startY: averageY(e),
+      fromY: scrollY.current,
+      startX: averageX(e),
+      fromX: offsetXRef.current,
+      touches: e.allTouches.length,
+      dist: spread(e),
+      zoom: zoomRef.current,
+      // The point between the fingers, in the page's own points (where the gesture is measured).
+      mid: { x: e.allTouches.reduce((sum, p) => sum + p.x, 0) / n, y: e.allTouches.reduce((sum, p) => sum + p.y, 0) / n },
+    };
   };
+  // Pinching done: the page takes its new size, with the point between the fingers kept in place.
+  const finishPinch = (factor: number) => {
+    const from = move.current;
+    const next = Math.max(1, Math.min(3, from.zoom * factor));
+    setPinch(null);
+    if (next === from.zoom) return;
+    const { scale: s } = settingsRef.current;
+    const nextScale = (s / from.zoom) * next;
+    const ux = from.mid.x / s;
+    const uy = from.mid.y / s;
+    const screenX = from.mid.x - from.fromX;
+    const pageTop = from.fromY - titleHeight.current;
+    const screenY = from.mid.y - pageTop;
+    zoomRef.current = next;
+    setZoom(next);
+    const width = (pageWidthRef.current ?? 0) * next;
+    offsetXRef.current = Math.max(0, Math.min(Math.max(0, width - (pageWidthRef.current ?? 0)), ux * nextScale - screenX));
+    setOffsetX(offsetXRef.current);
+    const y = uy * nextScale - screenY + titleHeight.current;
+    requestAnimationFrame(() => scrollTo(y));
+  };
+  const pageWidthRef = useRef(pageWidth);
+  pageWidthRef.current = pageWidth;
   const finishStroke = () => {
     const l = liveRef.current;
     liveRef.current = null;
@@ -416,8 +478,21 @@ export function InkPageScreen({ id, onBack }: Props) {
     },
     move: (e) => {
       if (mode.current === 'move') {
-        if (e.allTouches.length !== move.current.touches) startMove(e);
+        if (e.allTouches.length !== move.current.touches) {
+          if (pinchRef.current) finishPinch(pinchRef.current.factor);
+          pinchRef.current = null;
+          startMove(e);
+        }
         scrollTo(move.current.fromY - (averageY(e) - move.current.startY));
+        if (zoomRef.current > 1) setOffset(move.current.fromX - (averageX(e) - move.current.startX));
+        if (e.allTouches.length >= 2 && move.current.dist > 0) {
+          const factor = spread(e) / move.current.dist;
+          if (Math.abs(factor - 1) > 0.04 || pinchRef.current) {
+            const next = Math.max(1, Math.min(3, move.current.zoom * factor)) / move.current.zoom;
+            pinchRef.current = { factor: next, x: move.current.mid.x, y: move.current.mid.y };
+            setPinch(pinchRef.current);
+          }
+        }
         return;
       }
       const { scale: s } = settingsRef.current;
@@ -432,6 +507,10 @@ export function InkPageScreen({ id, onBack }: Props) {
       if (added) setLive({ ...l.stroke, p: [...l.stroke.p] });
     },
     up: (e, manager) => {
+      if (pinchRef.current && mode.current === 'move') {
+        finishPinch(pinchRef.current.factor);
+        pinchRef.current = null;
+      }
       if (e.allTouches.length > e.changedTouches.length) {
         if (mode.current === 'move') startMove({ ...e, allTouches: e.allTouches.filter((a) => !e.changedTouches.some((c) => c.id === a.id)) });
         return;
@@ -442,6 +521,8 @@ export function InkPageScreen({ id, onBack }: Props) {
       manager.end();
     },
     cancel: (manager) => {
+      pinchRef.current = null;
+      setPinch(null);
       liveRef.current = null;
       setLive(null);
       setWriting(false);
@@ -485,6 +566,7 @@ export function InkPageScreen({ id, onBack }: Props) {
   };
   const share = async () => {
     if (sharing) return;
+    fitPage();
     setSharing(true);
   };
   useEffect(() => {
@@ -608,7 +690,11 @@ export function InkPageScreen({ id, onBack }: Props) {
           {iconTool('undo', t('undo'), 'undo', false, undo, undefined, past.current.length === 0)}
           {iconTool('redo', t('redo'), 'redo', false, redo, undefined, future.current.length === 0)}
         </ScrollView>
-        {hint ? (
+        {zoom > 1 && !notice ? (
+          <Pressable onPress={fitPage} accessibilityRole="button" style={styles.zoomRow}>
+            <Text style={[styles.hint, { color: theme.accent }]}>{t('inkZoom', { z: zoom.toFixed(1).replace(/\.0$/, '') })}</Text>
+          </Pressable>
+        ) : hint ? (
           <Text style={[styles.hint, { color: theme.muted }]} accessibilityLiveRegion="polite">
             {hint}
           </Text>
@@ -635,10 +721,14 @@ export function InkPageScreen({ id, onBack }: Props) {
                   returnKeyType="done"
                 />
               </View>
+              <View style={{ width: pageWidth, height: heightUnits * scale, overflow: 'hidden' }}>
               <GestureDetector gesture={gesture}>
                 <View
                   collapsable={false}
-                  style={{ width: pageWidth, height: heightUnits * scale }}
+                  style={[
+                    { width: inkWidth, height: heightUnits * scale, transform: [{ translateX: -offsetX }, ...(pinch ? [{ scale: pinch.factor }] : [])] },
+                    pinch ? { transformOrigin: `${pinch.x}px ${pinch.y}px` } : null,
+                  ]}
                   accessible
                   accessibilityLabel={`${t('handwritten')}: ${ink.strokes.length}`}
                   accessibilityHint={penMode ? t('inkMovePen') : t('inkHint')}
@@ -646,14 +736,15 @@ export function InkPageScreen({ id, onBack }: Props) {
                   <InkTiles
                     strokes={ink.strokes}
                     dark={theme.dark && !sharing}
-                    width={pageWidth}
+                    width={inkWidth}
                     scale={scale}
                     height={heightUnits}
                     lines={paper === 'lined' ? (sharing ? lineColour(null) : lineColour(theme)) : null}
                   />
-                  <LiveStroke setter={liveSetter} dark={theme.dark && !sharing} width={pageWidth} scale={scale} view={liveView} />
+                  <LiveStroke setter={liveSetter} dark={theme.dark && !sharing} width={inkWidth} scale={scale} view={liveView} />
                 </View>
               </GestureDetector>
+              </View>
             </View>
           </ScrollView>
         ) : null}
@@ -693,6 +784,7 @@ const styles = StyleSheet.create({
   dot: { width: 22, height: 22, borderRadius: 11, borderWidth: StyleSheet.hairlineWidth },
   divider: { width: StyleSheet.hairlineWidth, height: 26, marginHorizontal: 6 },
   hint: { fontSize: 14, textAlign: 'center', paddingHorizontal: 16, paddingTop: 2 },
+  zoomRow: { alignSelf: 'center', minHeight: 28, justifyContent: 'center' },
   area: { flex: 1 },
   titleBox: { paddingHorizontal: 18, paddingTop: 6 },
   hidden: { display: 'none' },

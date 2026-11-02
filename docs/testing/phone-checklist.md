@@ -87,6 +87,10 @@ foot of Settings (for example "0.4.15 (42)") so the notes say which build.
       view does not quote it a second time. Type "- " then words and press return: the
       next line starts with "- "; return on an empty "- " ends the list. With three or
       more pages the list has a search box; the verse-note box shows the verse above it.
+- [ ] Handwritten page: pinch with two fingers: the page grows (up to 3×) around the
+      fingers and can be moved both ways; the line above says "2× · Fit the page" and a tap
+      takes it back; writing at 2× comes out half the size. Share as picture shares the page
+      at its plain size. The notebook list shows the top of the page beside its name.
 - [ ] Settings → Read aloud → English voice: the phone's voices are listed (Standard or
       Enhanced; Online where the phone has Google's network voices), each with a play
       button that reads Psalm 23:1; the chosen one is used for the chapter. Same for the

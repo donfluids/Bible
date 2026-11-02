@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import Svg, { Path } from 'react-native-svg';
 import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import { Header, HeaderIconButton } from '../components/Header';
 import { Icon } from '../components/Icon';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
 import type { Paper } from '../ink';
+import { PAGE_WIDTH, emptyInk, inkKey, parseInk, pathOf } from '../ink';
+import { loadEntry } from '../persist';
 import { useEdition } from '../edition';
 import { InkUnreadable, restoreBackup, saveBackup } from '../notebookFiles';
 import { TabBar } from '../components/TabBar';
@@ -146,8 +149,10 @@ export function NotebookScreen({ onOpenPage }: Props) {
                 onPress={() => onOpenPage(item.id)}
                 android_ripple={{ color: theme.accentSoft }}
                 accessibilityRole="button"
-                style={({ pressed }) => [styles.row, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
+                style={({ pressed }) => [styles.row, item.ink && styles.inkRow, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
               >
+                {item.ink ? <InkThumb edition={edition.id} pageId={item.id} updated={item.updated} ink={theme.text} border={theme.border} paper={theme.card} /> : null}
+                <View style={{ flex: 1, gap: 3 }}>
                 <View style={styles.nameRow}>
                   {item.ink ? <Icon name="draw" size={18} color={theme.muted} /> : null}
                   <Text style={[styles.name, { color: theme.text, fontFamily: font(name, true), fontWeight: scriptOf(name) ? 'normal' : '600' }]} numberOfLines={1}>
@@ -160,6 +165,7 @@ export function NotebookScreen({ onOpenPage }: Props) {
                   </Text>
                 ) : null}
                 <Text style={[styles.date, { color: theme.muted }]}>{t('pageEdited', { date })}</Text>
+                </View>
               </Pressable>
             );
           }}
@@ -186,6 +192,8 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   list: { alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
   row: { paddingHorizontal: 18, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth, gap: 3 },
+  inkRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  thumb: { width: 84, height: 60, borderRadius: 4, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   name: { fontSize: 17, flexShrink: 1 },
   preview: { fontSize: 15, lineHeight: 22 },
@@ -197,3 +205,20 @@ const styles = StyleSheet.create({
   newButton: { marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 6, paddingLeft: 16, paddingRight: 20, minHeight: 48, borderRadius: 22 },
   newButtonText: { fontSize: 16, fontWeight: '600' },
 });
+
+/** The top of a handwritten page, small, so pages can be told apart in the list. */
+const THUMB_STROKES = 400;
+const THUMB_HEIGHT = (PAGE_WIDTH * 60) / 84;
+function InkThumb({ edition, pageId, updated, ink, border, paper }: { edition: string; pageId: string; updated: number; ink: string; border: string; paper: string }) {
+  // Read again only when the page has been edited.
+  const strokes = useMemo(() => loadEntry(inkKey(edition, pageId), parseInk, emptyInk()).value.strokes.slice(0, THUMB_STROKES), [edition, pageId, updated]); // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <View style={[styles.thumb, { borderColor: border, backgroundColor: paper }]} accessible={false} importantForAccessibility="no-hide-descendants">
+      <Svg width={84} height={60} viewBox={`0 0 ${PAGE_WIDTH} ${THUMB_HEIGHT}`}>
+        {strokes.map((s, i) => (
+          <Path key={i} d={pathOf(s)} stroke={s.c < 0 ? '#E8C400' : ink} strokeOpacity={s.c < 0 ? 0.5 : 1} strokeWidth={Math.max(s.w, 7)} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        ))}
+      </Svg>
+    </View>
+  );
+}
