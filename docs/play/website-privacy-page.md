@@ -21,6 +21,9 @@ Compared with the version dated 20 October 2026 (the one on the website now):
 - A new section, "Notebook backup and PDFs": the notebook can be saved to a backup file and
   a page shared as a PDF or picture, through the share menu; a backup is restored from a
   file the user picks, and only that file is read.
+- "Reading aloud": Settings → Read aloud lists the phone's voices; a voice marked Online is
+  made by the engine's maker over the internet, and the text being read goes to them under
+  their own privacy terms.
 - The summary and "What the apps do not do" now say that data leaves the phone only when
   the user shares, copies, exports or prints it, and that a file is opened only when the
   user picks it.
@@ -28,7 +31,8 @@ Compared with the version dated 20 October 2026 (the one on the website now):
 If the page shows an older version (dated 20, 23 or 26 October 2026, or earlier), replace it
 all the same: the text below is the whole current policy.
 
-This privacy page is the only change the website needs for these app updates.
+This text is current for app version 0.4.28 (build 55); nothing in that version needs a
+further change. This privacy page is the only change the website needs for these app updates.
 
 ## What to do
 
