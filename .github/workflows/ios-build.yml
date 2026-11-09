@@ -1,8 +1,11 @@
 name: iPhone build (unsigned)
 
 # Compiles the iPhone app of each edition on a Mac runner, without signing, so a change
-# that breaks the iOS side is caught on every push. It installs nothing on a phone: a
-# signed build for TestFlight and the App Store comes from EAS Build (docs/ios/README.md),
+# that breaks the iOS side is caught on every push. Each run also keeps the app as an
+# unsigned .ipa (a Release build with the Bible text and JavaScript inside, so it runs
+# without a computer attached). An iPhone installs it only after a tool such as
+# Sideloadly or AltStore signs it with the owner's Apple ID (docs/ios/install-test-build.md).
+# A signed build for TestFlight and the App Store comes from EAS Build (docs/ios/README.md),
 # or from this workflow once a certificate, a provisioning profile and an App Store
 # Connect key are added as secrets.
 
@@ -77,6 +80,26 @@ jobs:
           app=$(find build -name '*.app' -path '*Release-iphoneos*' | head -1)
           echo "built $app"
           du -sh "$app"
+          echo "APP_PATH=$app" >> "$GITHUB_ENV"
+
+      - name: Package the unsigned .ipa
+        # An .ipa is a zip with the app under Payload/; signing tools take it as it is.
+        run: |
+          version=$(node -p "require('./app.json').expo.version")
+          case $BIBLE_EDITION in ml) name=Vedapusthakam ;; ta) name=Vedagamam ;; *) name=Bible ;; esac
+          mkdir -p ipa/Payload
+          cp -R "$APP_PATH" ipa/Payload/
+          (cd ipa && zip -qry "../$name-$version-unsigned.ipa" Payload)
+          ls -la "$name-$version-unsigned.ipa"
+          echo "IPA_NAME=$name-$version-unsigned.ipa" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ${{ env.IPA_NAME }}
+          path: ${{ env.IPA_NAME }}
+          # Already compressed; zipping it again gains nothing.
+          compression-level: 0
+          retention-days: 30
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
