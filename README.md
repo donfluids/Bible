@@ -286,7 +286,20 @@ is built, not kept in the repository.
 | [Bibles-0.4.25-b52.aab](https://github.com/donfluids/Bible/raw/apk-builds/Bibles-0.4.25-b52.aab) | 0.4.25 | 52 | release key | 7be1137 | 78.9 MiB | `3b2c1c60c142c191406b5eff2ff1ee9c3824c93dc41b9c92986f154da382e5ad` |
 | [Bibles-0.4.24-b51.aab](https://github.com/donfluids/Bible/raw/apk-builds/Bibles-0.4.24-b51.aab) | 0.4.24 | 51 | release key | 51c3511 | 78.8 MiB | `fb317218ed2fd4edfb9f6c5df3d859ce72ae76f76535d7f3091cef9a7bc91621` |
 
+## iPhone (unsigned)
+
+An iPhone installs these only after they are signed with an Apple ID, for example with
+Sideloadly on a Windows PC or a Mac. With a free Apple ID the app opens for 7 days;
+signing the same file again renews it, and notes and settings stay. Steps:
+`docs/ios/install-test-build.md` on the development branch.
+
+| File | Version | App | Built from | Size | SHA-256 |
+| --- | --- | --- | --- | --- | --- |
+| [Vedapusthakam-0.4.28-unsigned.ipa](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.28-unsigned.ipa) | 0.4.28 | വേദപുസ്തകം (org.riversresearch.bible.malayalam), iOS 16.4 or later | b3b3eea | 36.1 MiB | `de2f233349719016a5aadc6521421b3000834729af40e5559f66844e9c5bb0f7` |
+
 ## Installing
+
+On an Android phone:
 
 1. Open the link on the phone and download the file.
 2. Open the downloaded file. Android asks to allow installs from this source
