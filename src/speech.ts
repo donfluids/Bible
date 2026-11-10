@@ -64,3 +64,20 @@ export function sayWord(word: string, language: OriginalLanguage, onEnd: () => v
 export function stopSaying(): void {
   Speech.stop();
 }
+
+/**
+ * What the phone says about its voices, for telling us why a language is not read: how
+ * many voices, how many per language tag, and each voice for India (or for the language)
+ * in full. Shown in Settings, where it can be photographed or copied.
+ */
+export async function voiceReport(language: VoiceLanguage): Promise<string> {
+  const list = await phoneVoices();
+  const tags = new Map<string, number>();
+  for (const v of list) tags.set(v.language, (tags.get(v.language) ?? 0) + 1);
+  const near = list.filter((v) => /[-_]IN$/i.test(v.language) || CODES[language].includes(v.language.toLowerCase().split(/[-_]/)[0]));
+  return [
+    `${Platform.OS} ${Platform.Version} · ${LANGUAGE[language]} · ${list.length} voices`,
+    [...tags.entries()].sort().map(([tag, n]) => (n > 1 ? `${tag}×${n}` : tag)).join(' '),
+    ...near.map((v) => `${v.language} | ${v.name} | ${v.quality} | ${v.identifier}`),
+  ].join('\n');
+}

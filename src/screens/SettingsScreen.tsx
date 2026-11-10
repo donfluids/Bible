@@ -20,7 +20,7 @@ import { useTheme } from '../theme';
 import { useWriteToUs } from '../writeToUs';
 import { Segmented } from '../components/Segmented';
 import { SimpleSheet } from '../components/SimpleSheet';
-import { listVoices, saySample, stopSaying } from '../speech';
+import { listVoices, saySample, stopSaying, voiceReport } from '../speech';
 import type { SpokenLanguage } from '../speech';
 import { groupVoices } from '../voiceLabels';
 import type { VoiceOption } from '../voiceLabels';
@@ -74,10 +74,12 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
   const [choosingVoice, setChoosingVoice] = useState<SpokenLanguage | null>(null);
   const [voiceList, setVoiceList] = useState<VoiceOption[] | null>(null);
   const [sampling, setSampling] = useState<string | null>(null);
+  const [report, setReport] = useState<string | null>(null);
   useEffect(() => {
     if (!choosingVoice) return;
     let gone = false;
     setVoiceList(null);
+    setReport(null);
     listVoices(choosingVoice).then((list) => !gone && setVoiceList(list));
     return () => {
       gone = true;
@@ -366,6 +368,19 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
               </View>
             ))}
             {voiceList && voiceList.length === 0 ? <Text style={[styles.rowSub, styles.hint, { color: theme.muted }]}>{t('voiceNone')}</Text> : null}
+            {/* What the phone reports about its voices, to send us when a language is not read. */}
+            <Text
+              onPress={() => choosingVoice && voiceReport(choosingVoice).then(setReport)}
+              accessibilityRole="button"
+              style={[styles.rowSub, styles.voiceDetails, { color: theme.accent }]}
+            >
+              {t('voiceDetails')}
+            </Text>
+            {report ? (
+              <Text selectable style={[styles.voiceReport, { color: theme.muted }]}>
+                {report}
+              </Text>
+            ) : null}
           </>
         ) : null}
       </SimpleSheet>
@@ -379,6 +394,8 @@ function Label({ text }: { text: string }) {
 
 const styles = StyleSheet.create({
   hint: { marginTop: 6, marginHorizontal: 4 },
+  voiceDetails: { paddingHorizontal: 20, paddingVertical: 14 },
+  voiceReport: { paddingHorizontal: 20, paddingBottom: 16, fontSize: 11, lineHeight: 15 },
   licencesRow: { marginTop: 12, minHeight: 48, flexDirection: 'row', alignItems: 'center' },
   screen: { flex: 1 },
   content: { padding: 16, paddingBottom: 48, alignSelf: 'center', width: '100%', maxWidth: 720 },
