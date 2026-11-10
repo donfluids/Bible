@@ -82,6 +82,17 @@ jobs:
           du -sh "$app"
           echo "APP_PATH=$app" >> "$GITHUB_ENV"
 
+      - name: Check that React Native came prebuilt
+        # When the runner cannot download React Native's prebuilt frameworks, CocoaPods
+        # builds them from source and takes the newest Hermes from its stable line, which
+        # need not match the hermesc that compiled main.jsbundle; such an app can fail on
+        # opening. A build like that is stopped here instead of being kept.
+        run: |
+          if [ ! -d "$APP_PATH/Frameworks/React.framework" ]; then
+            echo "::error::React Native was built from source on this runner (prebuilt download failed); re-run the job."
+            exit 1
+          fi
+
       - name: Package the unsigned .ipa
         # An .ipa is a zip with the app under Payload/; signing tools take it as it is.
         run: |
