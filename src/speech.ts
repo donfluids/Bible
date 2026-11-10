@@ -14,32 +14,26 @@ export const LANGUAGE: Record<VoiceLanguage, string> = { hebrew: 'he-IL', greek:
 // Older Android engines name Hebrew "iw".
 const CODES: Record<VoiceLanguage, string[]> = { hebrew: ['he', 'iw'], greek: ['el'], english: ['en'], malayalam: ['ml'], tamil: ['ta'], hindi: ['hi'] };
 
-let voices: Promise<Speech.Voice[]> | null = null;
-
-/** Whether the phone has a voice for the language; null when it does not say (some engines list none). */
-export async function hasVoice(language: VoiceLanguage): Promise<boolean | null> {
-  // A browser can wait for its voice list forever; after a moment the answer is "not known".
-  voices ??= Promise.race([
+// The list is asked for each time, not kept: a voice downloaded while the app is open (an
+// iPhone's Malayalam voice from Settings → Accessibility) then shows at once. A browser can
+// wait for its list forever, so after a moment the answer is an empty list.
+function phoneVoices(): Promise<Speech.Voice[]> {
+  return Promise.race([
     Speech.getAvailableVoicesAsync().catch(() => []),
     new Promise<Speech.Voice[]>((resolve) => setTimeout(() => resolve([]), 1500)),
   ]);
-  const list = await voices;
-  if (list.length === 0) {
-    voices = null; // the engine may not have been ready; ask again next time
-    return null;
-  }
+}
+
+/** Whether the phone has a voice for the language; null when it does not say (some engines list none). */
+export async function hasVoice(language: VoiceLanguage): Promise<boolean | null> {
+  const list = await phoneVoices();
+  if (list.length === 0) return null;
   return list.some((v) => CODES[language].includes(v.language.toLowerCase().split(/[-_]/)[0]));
 }
 
 /** The phone's voices for a language, for the choice in Settings; empty when the engine lists none. */
 export async function listVoices(language: VoiceLanguage): Promise<VoiceOption[]> {
-  voices ??= Promise.race([
-    Speech.getAvailableVoicesAsync().catch(() => []),
-    new Promise<Speech.Voice[]>((resolve) => setTimeout(() => resolve([]), 1500)),
-  ]);
-  const list = await voices;
-  if (list.length === 0) voices = null;
-  return voicesFor(list, CODES[language]);
+  return voicesFor(await phoneVoices(), CODES[language]);
 }
 
 /** Reads a sample in a voice (the phone's default when none), for the choice in Settings. */

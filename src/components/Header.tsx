@@ -53,7 +53,18 @@ export function Header({ title, onBack, backLabel, center, right, maxWidth = MAX
     <View style={{ paddingTop: insets.top, backgroundColor: theme.bg }}>
     <View style={[styles.bar, short && styles.barShort, { paddingLeft: onBack ? 4 : 16, maxWidth }]}>
       {onBack ? (
-        <View onLayout={centred ? (e) => setSides((s) => ({ ...s, left: e.nativeEvent.layout.width + 4 })) : undefined}>
+        // The width is read at once: by the time a state update runs, iOS has let go of the
+        // event, and its nativeEvent is null.
+        <View
+          onLayout={
+            centred
+              ? (e) => {
+                  const width = e.nativeEvent.layout.width + 4;
+                  setSides((s) => ({ ...s, left: width }));
+                }
+              : undefined
+          }
+        >
           <IconButton name={IOS ? 'arrow_back_ios_new' : 'arrow_back'} onPress={onBack} accessibilityLabel={backLabel ?? t('back')} color={theme.text} />
         </View>
       ) : null}
@@ -71,7 +82,17 @@ export function Header({ title, onBack, backLabel, center, right, maxWidth = MAX
         )}
       </View>
       {right ? (
-        <View style={styles.right} onLayout={centred ? (e) => setSides((s) => ({ ...s, right: e.nativeEvent.layout.width })) : undefined}>
+        <View
+          style={styles.right}
+          onLayout={
+            centred
+              ? (e) => {
+                  const width = e.nativeEvent.layout.width;
+                  setSides((s) => ({ ...s, right: width }));
+                }
+              : undefined
+          }
+        >
           {right}
         </View>
       ) : null}
