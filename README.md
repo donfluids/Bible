@@ -295,6 +295,7 @@ signing the same file again renews it, and notes and settings stay. Steps:
 
 | File | Version | App | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- |
+| [Vedapusthakam-0.4.28-r2-unsigned.ipa](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.28-r2-unsigned.ipa) | 0.4.28 (second iPhone build: the notebook opens, voices downloaded while the app is open show) | വേദപുസ്തകം (org.riversresearch.bible.malayalam), iOS 16.4 or later | 92d8766 | 36.1 MiB | `5bb6b021900153f78b63235cb5298cb022e91737dd470835e0ae90d86b4ea07d` |
 | [Vedapusthakam-0.4.28-unsigned.ipa](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.28-unsigned.ipa) | 0.4.28 | വേദപുസ്തകം (org.riversresearch.bible.malayalam), iOS 16.4 or later | b3b3eea | 36.1 MiB | `de2f233349719016a5aadc6521421b3000834729af40e5559f66844e9c5bb0f7` |
 
 ## Installing
