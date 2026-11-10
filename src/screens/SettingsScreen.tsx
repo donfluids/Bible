@@ -331,7 +331,9 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
                 {group.voices.map((v, i) => {
                   const id = v?.identifier;
                   const chosen = (settings.voices[choosingVoice] ?? undefined) === id;
-                  const detail = v ? [v.enhanced ? t('voiceEnhanced') : t('voiceStandard'), v.online ? t('voiceOnline') : t('voiceOffline')].join(' · ') : null;
+                  const detail = v
+                    ? [v.enhanced ? t('voiceEnhanced') : t('voiceStandard'), v.online ? t('voiceOnline') : t('voiceOffline'), ...(v.fallback ? [t('voiceIndian', { tag: v.tag })] : [])].join(' · ')
+                    : null;
                   return (
                     <View key={id ?? 'default'} style={[styles.row, (gi > 0 || i > 0) && divider]}>
                       <Pressable

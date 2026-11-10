@@ -22,6 +22,14 @@ export interface VoiceOption {
   online: boolean;
   /** The accent's region from the voice's language tag (IN, US, GB), or null. */
   region: string | null;
+  /** The voice's language tag as the phone gives it (ml-IN, hi-IN). */
+  tag: string;
+  /**
+   * Offered for a language it is not listed under: an iPhone's Indian voices (Aman) speak
+   * several Indian languages but are listed under one, so a Malayalam voice may be listed
+   * as Hindi.
+   */
+  fallback?: boolean;
 }
 
 /** The voices of one accent, in the order offered, numbered from one. */
@@ -45,6 +53,7 @@ export function describeVoice(v: VoiceInfo): VoiceOption {
     enhanced: /enhanced|premium/i.test(v.quality) || /premium|enhanced/i.test(id),
     online,
     region: tag[1] && /^[A-Za-z]{2}$/.test(tag[1]) ? tag[1].toUpperCase() : null,
+    tag: v.language,
   };
 }
 
@@ -74,5 +83,20 @@ export function voicesFor(list: VoiceInfo[], codes: string[]): VoiceOption[] {
   return list
     .filter((v) => codes.includes(v.language.toLowerCase().split(/[-_]/)[0]))
     .map(describeVoice)
+    .sort((a, b) => Number(a.online) - Number(b.online) || Number(b.enhanced) - Number(a.enhanced) || a.identifier.localeCompare(b.identifier));
+}
+
+/**
+ * The phone's voices for a language; when it has none listed and `indian` is set, its
+ * voices for India (any language), marked as a fallback, so an iPhone's shared Indian voice
+ * can be chosen for Malayalam, Tamil or Hindi.
+ */
+export function voicesOrIndian(list: VoiceInfo[], codes: string[], indian: boolean): VoiceOption[] {
+  const own = voicesFor(list, codes);
+  if (own.length > 0 || !indian) return own;
+  return list
+    .map(describeVoice)
+    .filter((v) => v.region === 'IN')
+    .map((v) => ({ ...v, fallback: true }))
     .sort((a, b) => Number(a.online) - Number(b.online) || Number(b.enhanced) - Number(a.enhanced) || a.identifier.localeCompare(b.identifier));
 }

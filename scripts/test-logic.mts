@@ -7,7 +7,7 @@
 //   npx tsx scripts/test-logic.mts
 import { plainMorph } from '../src/morph';
 import assert from 'node:assert/strict';
-import { describeVoice, groupVoices, voicesFor } from '../src/voiceLabels';
+import { describeVoice, groupVoices, voicesFor, voicesOrIndian } from '../src/voiceLabels';
 import { groupForms, isTaBaseForm, taStem } from './lib/forms.mjs';
 import { addPoint, decodeInk, encodeInk, packSteps, pageHeight, parseInk, pathOf, strokePath, touchesStroke, unpackSteps } from '../src/ink';
 import { FEEDBACK_NEVER, deviceLine, feedbackCardDue, feedbackDueFrom, feedbackLater, mailtoUrl } from '../src/feedback';
@@ -429,6 +429,18 @@ test('voices group by accent, India first, the phone\'s own before online', () =
   assert.deepEqual(groups.map((g) => g.region), ['IN', 'GB', 'US']);
   assert.deepEqual(groups[0].voices.map((v) => v.identifier), ['en-in-x-enc-local', 'en-in-x-ene-network']);
   assert.deepEqual(groups[2].voices.map((v) => v.identifier), ['en-us-x-iob-local', 'en-us-x-tpc-network']);
+});
+
+test('an iPhone\'s shared Indian voice is offered for Malayalam when none is listed as Malayalam', () => {
+  const list = [
+    { identifier: 'com.apple.voice.compact.hi-IN.Aman', name: 'Aman', quality: 'Default', language: 'hi-IN' },
+    { identifier: 'com.apple.voice.compact.en-US.Samantha', name: 'Samantha', quality: 'Default', language: 'en-US' },
+  ];
+  const offered = voicesOrIndian(list, ['ml'], true);
+  assert.deepEqual(offered.map((v) => [v.friendly, v.fallback, v.tag]), [['Aman', true, 'hi-IN']]);
+  assert.equal(voicesOrIndian(list, ['ml'], false).length, 0);
+  const own = [...list, { identifier: 'com.apple.voice.compact.ml-IN.Aman', name: 'Aman', quality: 'Default', language: 'ml-IN' }];
+  assert.deepEqual(voicesOrIndian(own, ['ml'], true).map((v) => [v.tag, v.fallback]), [['ml-IN', undefined]]);
 });
 
 console.log(`all ${passed} logic tests passed`);

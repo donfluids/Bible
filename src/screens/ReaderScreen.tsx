@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, ActivityIndicator, Alert, AppState, FlatList, Share, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, Alert, AppState, FlatList, Share, StyleSheet, Text, TextInput, useWindowDimensions, View, Platform } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, ViewStyle, ViewToken } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -599,12 +599,14 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
     listRef.current?.scrollToIndex({ index, viewPosition: 0.2, animated: true });
   }, [readingVerse, following, items]);
   const NO_VOICE = { english: 'noEnglishVoice', malayalam: 'noMalayalamVoice', tamil: 'noTamilVoice', hindi: 'noHindiVoice' } as const;
+  const NO_VOICE_IOS = { english: 'noEnglishVoice', malayalam: 'noMalayalamVoiceIos', tamil: 'noTamilVoiceIos', hindi: 'noHindiVoiceIos' } as const;
   const startReading = async (from?: number) => {
     setActions(null);
     if (marking) setMarkTool(null);
     const language = voiceFor(translation) as keyof typeof NO_VOICE;
     if ((await hasVoice(language)) === false) {
-      Alert.alert(t('noVoiceTitle'), t(NO_VOICE[language]));
+      // An iPhone gets its voices from its own Settings, not from Google's.
+      Alert.alert(t('noVoiceTitle'), t((Platform.OS === 'ios' ? NO_VOICE_IOS : NO_VOICE)[language]));
       return;
     }
     setFollowing(true);

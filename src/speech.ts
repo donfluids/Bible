@@ -2,8 +2,9 @@
 // sheet, and chapters read aloud in the reader. The phone's voices speak modern Hebrew and
 // modern Greek; nothing is downloaded by the app.
 import * as Speech from 'expo-speech';
+import { Platform } from 'react-native';
 import { stripCantillation } from './text';
-import { voicesFor } from './voiceLabels';
+import { voicesOrIndian } from './voiceLabels';
 import type { VoiceOption } from './voiceLabels';
 
 export type OriginalLanguage = 'hebrew' | 'greek';
@@ -24,16 +25,26 @@ function phoneVoices(): Promise<Speech.Voice[]> {
   ]);
 }
 
-/** Whether the phone has a voice for the language; null when it does not say (some engines list none). */
+// An iPhone speaks Malayalam, Tamil and Hindi with a voice shared by several Indian
+// languages (Aman), which its list may give under another of them.
+const INDIAN: VoiceLanguage[] = ['malayalam', 'tamil', 'hindi'];
+const indianOnIphone = (language: VoiceLanguage) => Platform.OS === 'ios' && INDIAN.includes(language);
+
+/**
+ * Whether the phone has a voice for the language; null when it is not known (some engines
+ * list none, and an iPhone with an Indian voice may list it under another language, so
+ * reading is tried).
+ */
 export async function hasVoice(language: VoiceLanguage): Promise<boolean | null> {
   const list = await phoneVoices();
   if (list.length === 0) return null;
-  return list.some((v) => CODES[language].includes(v.language.toLowerCase().split(/[-_]/)[0]));
+  if (list.some((v) => CODES[language].includes(v.language.toLowerCase().split(/[-_]/)[0]))) return true;
+  return voicesOrIndian(list, CODES[language], indianOnIphone(language)).length > 0 ? null : false;
 }
 
 /** The phone's voices for a language, for the choice in Settings; empty when the engine lists none. */
 export async function listVoices(language: VoiceLanguage): Promise<VoiceOption[]> {
-  return voicesFor(await phoneVoices(), CODES[language]);
+  return voicesOrIndian(await phoneVoices(), CODES[language], indianOnIphone(language));
 }
 
 /** Reads a sample in a voice (the phone's default when none), for the choice in Settings. */
