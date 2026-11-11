@@ -57,3 +57,6 @@ assets/db/bible-all.db
 
 # Screen check output (scripts/smoke.mjs)
 smoke-out/
+
+# Build output of the app's own native module
+modules/*/android/build/
