@@ -11,10 +11,13 @@ android {
   defaultConfig {
     versionCode 1
     versionName "1.0.0"
+    consumerProguardFiles 'proguard-rules.pro'
   }
 }
 
 dependencies {
-  // ONNX Runtime (MIT), which runs the voice's model.
-  implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.29.0'
+  // ONNX Runtime (MIT), which runs the voice's model. Kept at 1.22.0: later versions
+  // (seen in 1.29.0) bring telemetry code and ask for the INTERNET and
+  // ACCESS_NETWORK_STATE permissions, which this app does not have and must not gain.
+  implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.22.0'
 }

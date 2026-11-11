@@ -18,8 +18,9 @@ Pod::Spec.new do |s|
   s.static_framework = true
 
   s.dependency 'ExpoModulesCore'
-  # ONNX Runtime (MIT), which runs the voice's model.
-  s.dependency 'onnxruntime-objc', '1.29.0'
+  # ONNX Runtime (MIT), which runs the voice's model. The same version as on Android,
+  # from before the library gained telemetry code.
+  s.dependency 'onnxruntime-objc', '1.22.0'
 
   s.source_files = "**/*.{h,m,swift}"
   s.pod_target_xcconfig = {
