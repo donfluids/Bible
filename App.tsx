@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, useLayoutEffect } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -468,6 +468,11 @@ function NotePageRoute({ navigation, route }: Props<'NotePage'>) {
   // A handwritten page stays one when it is opened again.
   const notebook = useNotebook();
   const [handwritten] = useState(() => !!route.params.handwritten || !!notebook.page(route.params.id)?.ink);
+  // On iPhone a finger drawn across a handwritten page must not drag the whole screen
+  // aside (the system's swipe back); the page is left by its back button.
+  useLayoutEffect(() => {
+    if (handwritten) navigation.setOptions({ gestureEnabled: false });
+  }, [handwritten, navigation]);
   if (handwritten) {
     // Loaded the first time a handwritten page opens, with its drawing library, not at start.
     const { InkPageScreen } = require('./src/screens/InkPageScreen') as typeof import('./src/screens/InkPageScreen');
