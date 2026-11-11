@@ -1,0 +1,20 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'org.riversresearch'
+version = '1.0.0'
+
+android {
+  namespace "org.riversresearch.biblevoice"
+  defaultConfig {
+    versionCode 1
+    versionName "1.0.0"
+  }
+}
+
+dependencies {
+  // ONNX Runtime (MIT), which runs the voice's model.
+  implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.29.0'
+}

@@ -1,0 +1,9 @@
+{
+  "name": "bible-voice",
+  "version": "1.0.0",
+  "description": "Runs the voice the app carries (an ONNX model) and plays what it says",
+  "license": "MIT",
+  "author": "Rivers Research LLC",
+  "homepage": "https://riversresearch.org",
+  "private": true
+}

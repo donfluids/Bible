@@ -160,6 +160,21 @@ const CROSS_REFERENCES: Source = {
   modifications: 'Up to ten links per verse kept, the most voted first, links with no votes left out; a range running on into the next book kept as its first verse; links to verses the KJV does not number left out.',
 };
 
+// The voice the Malayalam app carries. The IIT Madras licence asks that those who receive
+// a work made from its recordings be told it has open-source parts, and that they may not
+// sell, license or reverse-engineer it further; the notice says so.
+const VOICE: Source = {
+  title: 'Malayalam voice (Meera)',
+  notice:
+    'A Piper voice for Malayalam, trained by the Piper project from the Indic TTS Malayalam recordings of the Indian Institute of Technology Madras. The voice has open-source parts; it may not be sold, leased, licensed or reverse-engineered apart from this app. The app works out each verse\u2019s speech sounds beforehand with eSpeak NG and carries only the result.',
+  licence: MIT,
+  source: [
+    { label: 'huggingface.co/rhasspy/piper-voices', url: 'https://huggingface.co/rhasspy/piper-voices/tree/main/ml/ml_IN/meera/medium' },
+    { label: 'Indic TTS, IIT Madras', url: 'https://www.iitm.ac.in/donlab/indictts/database' },
+  ],
+  modifications: 'Read phrase by phrase with rests between phrases and verses; played slightly slower and with a fuller tone.',
+};
+
 const PARALLELS: Source = {
   title: 'Parallel passages',
   notice: 'UBS Parallel Passages Database, \u00a9 2023 United Bible Societies.',
@@ -228,6 +243,7 @@ export function sectionsFor(edition: EditionId): Section[] {
     { heading: 'Scripture texts', sources: texts },
     { heading: 'Hebrew and Greek data', sources: [STEPBIBLE, STRONGS] },
     { heading: 'Dictionaries, cross references, parallels and introductions', sources: [ABBOTT_SMITH, BDB, CROSS_REFERENCES, PARALLELS, INTRODUCTIONS(edition)] },
+    ...(edition === 'ml' || edition === 'all' ? [{ heading: 'Voice', sources: [VOICE] }] : []),
     { heading: 'Fonts, icons and pictures', sources: [FONTS(edition), ICONS, FLUENT, ROSE] },
     { heading: 'Software', sources: [APP(edition)] },
   ];

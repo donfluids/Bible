@@ -5,6 +5,8 @@
 // must stay fast on long text.
 //
 //   npx tsx scripts/test-logic.mts
+import { readFileSync as readVoiceFile } from 'node:fs';
+import { MODEL_RATE, PLAY_RATE, joinPhrases, modelInput, openSpeech, paceFor, wavFile } from '../src/builtinVoice/core';
 import { plainMorph } from '../src/morph';
 import assert from 'node:assert/strict';
 import { describeVoice, groupVoices, voicesFor, voicesOrIndian } from '../src/voiceLabels';
@@ -322,10 +324,6 @@ fast('a long handwritten page read back', () => parseInk(JSON.stringify(encodeIn
 }
 fast('a long Malayalam search', () => new RegExp(malayalamPattern('ൻ്റ'.repeat(200))!.source).test('ന്റ'.repeat(5000)));
 
-if (failures.length) {
-  console.log(`${failures.length} failed, ${passed} passed:\n  ${failures.join('\n  ')}`);
-  process.exit(1);
-}
 
 test('the mail link carries the address, subject and body, encoded', () => {
   const url = mailtoUrl('a@b.org', 'Feedback: Bible 0.4.21', '\n\n\nSent from Bible & more?');
@@ -443,4 +441,30 @@ test('an iPhone\'s shared Indian voice is offered for Malayalam when none is lis
   assert.deepEqual(voicesOrIndian(own, ['ml'], true).map((v) => [v.tag, v.fallback]), [['ml-IN', undefined]]);
 });
 
+test('the app\'s voice: the speech file gives each verse its phrases, laid out for the model', () => {
+  const speech = openSpeech(new Uint8Array(readVoiceFile(new URL('../assets/speech/ml.bin', import.meta.url))));
+  const psalm = speech.chapter(19, 23)!;
+  // Six verses and the psalm's title (verse 0).
+  assert.deepEqual([...psalm.keys()], [0, 1, 2, 3, 4, 5, 6]);
+  const first = psalm.get(1)!;
+  // "യഹോവ എന്റെ ഇടയനാകുന്നു; എനിക്കു മുട്ടുണ്ടാകയില്ല." is two phrases: a breath, then a full stop.
+  assert.deepEqual(first.map((p) => p.rest), [1, 2]);
+  assert.ok(first.every((p) => p.sounds.length > 10));
+  assert.equal(speech.chapter(67, 1), null);
+  assert.equal(speech.chapter(66, 22)!.size, 21);
+  const ids = modelInput(Uint8Array.from([14, 15]));
+  assert.deepEqual(ids, [1, 0, 14, 0, 15, 0, 2]);
+  const verse = joinPhrases([{ samples: new Float32Array(1000), rest: 1 }, { samples: new Float32Array(500), rest: 2 }]);
+  assert.equal(verse.length, 1500 + Math.round(MODEL_RATE * 0.32) + Math.round(MODEL_RATE * 0.55) + Math.round(MODEL_RATE * 0.6));
+  const wav = wavFile(Float32Array.from([0, 1, -1]));
+  assert.equal(wav.length, 44 + 6);
+  assert.equal(new DataView(wav.buffer).getUint32(24, true), PLAY_RATE);
+  assert.equal(new DataView(wav.buffer).getInt16(46, true), 32767);
+  assert.ok(paceFor(1.25) < paceFor(1) && paceFor(0.75) > paceFor(1));
+});
+
+if (failures.length) {
+  console.log(`${failures.length} failed, ${passed} passed:\n  ${failures.join('\n  ')}`);
+  process.exit(1);
+}
 console.log(`all ${passed} logic tests passed`);

@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["BibleVoiceModule"]
+  },
+  "android": {
+    "modules": ["org.riversresearch.biblevoice.BibleVoiceModule"]
+  }
+}

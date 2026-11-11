@@ -21,6 +21,7 @@ import { useWriteToUs } from '../writeToUs';
 import { Segmented } from '../components/Segmented';
 import { SimpleSheet } from '../components/SimpleSheet';
 import { listVoices, saySample, stopSaying, voiceReport } from '../speech';
+import { BUILTIN_NAME, BUILTIN_VOICE, PHONE_VOICE, hasBuiltinVoice, sayVerse, stopBuiltinVoice } from '../builtinVoice';
 import type { SpokenLanguage } from '../speech';
 import { groupVoices } from '../voiceLabels';
 import type { VoiceOption } from '../voiceLabels';
@@ -84,21 +85,30 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
     return () => {
       gone = true;
       stopSaying();
+      stopBuiltinVoice();
       setSampling(null);
     };
   }, [choosingVoice]);
   const playSample = async (language: SpokenLanguage, voice: string | undefined) => {
     const key = voice ?? 'default';
+    stopBuiltinVoice();
     if (sampling === key) {
       stopSaying();
       setSampling(null);
       return;
     }
     const translation = spoken.find(([l]) => l === language)?.[1] ?? 'KJV';
+    const ended = () => setSampling((s) => (s === key ? null : s));
+    if (voice === BUILTIN_VOICE) {
+      stopSaying();
+      setSampling(key);
+      sayVerse(SAMPLE_REF, settings.readSpeed, { onDone: ended, onStopped: ended, onError: ended });
+      return;
+    }
     const [row] = await getVerses(db, translation, [SAMPLE_REF]).catch(() => []);
     const text = row ? row.text.replace(/<[^>]+>/g, '') : t('previewText');
     setSampling(key);
-    saySample(text, language, voice, settings.readSpeed, () => setSampling((s) => (s === key ? null : s)));
+    saySample(text, language, voice, settings.readSpeed, ended);
   };
   const voiceGroups = useMemo(() => (voiceList ? groupVoices(voiceList) : []), [voiceList]);
   // A region's name in the interface language; an unlisted one by its code.
@@ -106,6 +116,36 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
     region === 'IN' ? t('voiceRegionIN') : region === 'US' ? t('voiceRegionUS') : region === 'GB' ? t('voiceRegionGB') : region === 'AU' ? t('voiceRegionAU') : region ?? '';
   // "Voice 2" within its accent, or the phone's own name for the voice where it has one.
   const voiceTitle = (v: VoiceOption | null, n: number) => (v ? v.friendly ?? t('voiceNumber', { n: String(n) }) : t('voiceDefault'));
+  // Whether the app carries a voice of its own for a language's Bible (Meera, for Malayalam).
+  const builtinFor = (language: SpokenLanguage) => hasBuiltinVoice(spoken.find(([l]) => l === language)?.[1] ?? 'KJV');
+  const builtin = !!choosingVoice && builtinFor(choosingVoice);
+  // The choices in the voice sheet. `stored` is what Settings keeps (nothing for the first
+  // choice, the default); `sample` is the voice the play button reads in.
+  interface VoiceRow { key: string; stored: string | undefined; sample: string | undefined; title: string; detail: string | null; label: string }
+  const choices: { key: string; heading: string | null; rows: VoiceRow[] }[] = [
+    {
+      key: 'default',
+      heading: null,
+      rows: builtin
+        ? [
+            { key: 'builtin', stored: undefined, sample: BUILTIN_VOICE, title: BUILTIN_NAME, detail: t('voiceInApp'), label: `${BUILTIN_NAME}, ${t('voiceInApp')}` },
+            { key: 'phone', stored: PHONE_VOICE, sample: undefined, title: t('voiceDefault'), detail: null, label: t('voiceDefault') },
+          ]
+        : [{ key: 'phone', stored: undefined, sample: undefined, title: t('voiceDefault'), detail: null, label: t('voiceDefault') }],
+    },
+    ...voiceGroups.map((group) => ({
+      key: group.region ?? 'other',
+      heading: voiceGroups.length > 1 && group.region ? regionName(group.region) : null,
+      rows: group.voices.map((v, i) => ({
+        key: v.identifier,
+        stored: v.identifier,
+        sample: v.identifier,
+        title: voiceTitle(v, i + 1),
+        detail: [v.enhanced ? t('voiceEnhanced') : t('voiceStandard'), v.online ? t('voiceOnline') : t('voiceOffline'), ...(v.fallback ? [t('voiceIndian', { tag: v.tag })] : [])].join(' · '),
+        label: `${regionName(v.region)} ${voiceTitle(v, i + 1)}`,
+      })),
+    })),
+  ];
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
@@ -276,7 +316,7 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
             <Pressable key={language} onPress={() => setChoosingVoice(language)} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={[styles.row, i > 0 && divider]}>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.rowTitle, { color: theme.text }]}>{t(VOICE_NAME[language])}</Text>
-                <Text style={[styles.rowSub, { color: theme.muted }]}>{settings.voices[language] ? t('voiceChosen') : t('voiceDefault')}</Text>
+                <Text style={[styles.rowSub, { color: theme.muted }]}>{builtinFor(language) && (!settings.voices[language] || settings.voices[language] === BUILTIN_VOICE) ? `${BUILTIN_NAME} · ${t('voiceInApp')}` : settings.voices[language] && settings.voices[language] !== PHONE_VOICE ? t('voiceChosen') : t('voiceDefault')}</Text>
               </View>
               <Icon name="chevron_right" color={theme.muted} />
             </Pressable>
@@ -323,42 +363,38 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
       <SimpleSheet visible={!!choosingVoice} title={t('voiceChoose')} onClose={() => setChoosingVoice(null)}>
         {choosingVoice ? (
           <>
-            {[{ region: null, voices: [null] }, ...voiceGroups].map((group, gi) => (
-              <View key={gi === 0 ? 'default' : group.region ?? 'other'}>
-                {gi > 0 && voiceGroups.length > 1 && group.region ? (
+            {choices.map((group, gi) => (
+              <View key={group.key}>
+                {group.heading ? (
                   <Text style={[styles.voiceGroup, { color: theme.accent }]} accessibilityRole="header">
-                    {regionName(group.region)}
+                    {group.heading}
                   </Text>
                 ) : null}
-                {group.voices.map((v, i) => {
-                  const id = v?.identifier;
-                  const chosen = (settings.voices[choosingVoice] ?? undefined) === id;
-                  const detail = v
-                    ? [v.enhanced ? t('voiceEnhanced') : t('voiceStandard'), v.online ? t('voiceOnline') : t('voiceOffline'), ...(v.fallback ? [t('voiceIndian', { tag: v.tag })] : [])].join(' · ')
-                    : null;
+                {group.rows.map((row, i) => {
+                  const chosen = row.stored === (settings.voices[choosingVoice] ?? undefined) || (row.stored === undefined && settings.voices[choosingVoice] === BUILTIN_VOICE && builtin);
                   return (
-                    <View key={id ?? 'default'} style={[styles.row, (gi > 0 || i > 0) && divider]}>
+                    <View key={row.key} style={[styles.row, (gi > 0 || i > 0) && divider]}>
                       <Pressable
                         onPress={() => {
                           const voices = { ...settings.voices };
-                          if (id) voices[choosingVoice] = id;
+                          if (row.stored) voices[choosingVoice] = row.stored;
                           else delete voices[choosingVoice];
                           update({ voices });
                         }}
                         accessibilityRole="radio"
                         accessibilityState={{ checked: chosen }}
-                        accessibilityLabel={v ? `${regionName(v.region)} ${voiceTitle(v, i + 1)}` : t('voiceDefault')}
+                        accessibilityLabel={row.label}
                         style={styles.voiceChoice}
                       >
                         <View style={styles.check}>{chosen ? <Icon name="check" color={theme.accent} /> : null}</View>
                         <View style={{ flex: 1 }}>
-                          <Text style={[styles.rowTitle, { color: theme.text }]}>{voiceTitle(v, i + 1)}</Text>
-                          {detail ? <Text style={[styles.rowSub, { color: theme.muted }]}>{detail}</Text> : null}
+                          <Text style={[styles.rowTitle, { color: theme.text }]}>{row.title}</Text>
+                          {row.detail ? <Text style={[styles.rowSub, { color: theme.muted }]}>{row.detail}</Text> : null}
                         </View>
                       </Pressable>
                       <IconButton
-                        name={sampling === (id ?? 'default') ? 'pause' : 'play_arrow'}
-                        onPress={() => playSample(choosingVoice, id)}
+                        name={sampling === (row.sample ?? 'default') ? 'pause' : 'play_arrow'}
+                        onPress={() => playSample(choosingVoice, row.sample)}
                         accessibilityLabel={t('voiceSample')}
                         color={theme.accent}
                       />

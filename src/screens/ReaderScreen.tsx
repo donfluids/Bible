@@ -11,6 +11,7 @@ import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
 import { READ_SPEEDS, spokenText, useReadAloud, voiceFor } from '../readAloud';
 import { hasVoice } from '../speech';
+import { usesBuiltinVoice } from '../builtinVoice';
 import { CompareSheet } from '../components/CompareSheet';
 import { useIsFocused } from '@react-navigation/native';
 import { HEADER_MAX_FONT_SCALE, Header, HeaderIconButton, SHORT_SCREEN } from '../components/Header';
@@ -604,7 +605,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
     setActions(null);
     if (marking) setMarkTool(null);
     const language = voiceFor(translation) as keyof typeof NO_VOICE;
-    if ((await hasVoice(language)) === false) {
+    if (!usesBuiltinVoice(translation, settings.voices[language]) && (await hasVoice(language)) === false) {
       // An iPhone gets its voices from its own Settings, not from Google's.
       Alert.alert(t('noVoiceTitle'), t((Platform.OS === 'ios' ? NO_VOICE_IOS : NO_VOICE)[language]));
       return;

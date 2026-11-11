@@ -1,0 +1,7 @@
+org.riversresearch.biblevoice.bible-voice-pngs-0 /home/user/Bible/modules/bible-voice/android/build/generated/res/pngs/release
+org.riversresearch.biblevoice.bible-voice-resValues-1 /home/user/Bible/modules/bible-voice/android/build/generated/res/resValues/release
+org.riversresearch.biblevoice.bible-voice-mergeReleaseResources-2 /home/user/Bible/modules/bible-voice/android/build/intermediates/incremental/release/mergeReleaseResources/merged.dir
+org.riversresearch.biblevoice.bible-voice-mergeReleaseResources-3 /home/user/Bible/modules/bible-voice/android/build/intermediates/incremental/release/mergeReleaseResources/stripped.dir
+org.riversresearch.biblevoice.bible-voice-release-4 /home/user/Bible/modules/bible-voice/android/build/intermediates/merged_res/release/mergeReleaseResources
+org.riversresearch.biblevoice.bible-voice-main-5 /home/user/Bible/modules/bible-voice/android/src/main/res
+org.riversresearch.biblevoice.bible-voice-release-6 /home/user/Bible/modules/bible-voice/android/src/release/res
