@@ -7,11 +7,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { G, Line, Path } from 'react-native-svg';
 import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
-import { Header, HeaderIconButton } from '../components/Header';
+import { HEADER_MAX_FONT_SCALE, Header } from '../components/Header';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
 import { sharePdf } from '../notebookFiles';
 import { inkPageHtml } from '../pagePdf';
-import { Icon } from '../components/Icon';
+import { Icon, IconButton } from '../components/Icon';
 import type { IconName } from '../components/Icon';
 import { Pressable } from '../components/Pressable';
 import { useEdition } from '../edition';
@@ -60,6 +60,12 @@ const PEN_LABELS: StringKey[] = ['penBlack', 'penBlue', 'penRed'];
 /** A stroke this young or this short when a second finger comes down was the start of a scroll. */
 const SCROLL_START_MS = 250;
 const UNDO_STEPS = 100;
+/** How far two fingers must part or close, as a share of their distance, to make the page larger or smaller. */
+const PINCH_START = 0.15;
+/** The same once they have begun moving the page together. */
+const PINCH_LATE = 0.35;
+/** The title's height on a shared picture, in points. */
+const SHARED_TITLE = 60;
 
 /** Strokes are drawn in groups of this many; a new stroke redraws only the last group. */
 const GROUP = 100;
@@ -155,12 +161,16 @@ const Lines = memo(function Lines({ from, to, colour }: { from: number; to: numb
  * redraw; a tile is redrawn only when a stroke on it changes.
  */
 const TILE = 1800;
+/** A lined page's margin line, in units from the left, and its colour: a faint red, as on ruled paper. */
+const MARGIN_X = 44;
+const MARGIN = { light: '#EFD3CA', dark: '#4A3530' };
 
 const Tile = memo(
   function Tile({ top, height, strokes, dark, width, scale, lines }: { top: number; height: number; strokes: Stroke[]; dark: boolean; width: number; scale: number; lines: string | null }) {
     return (
       <Svg style={[StyleSheet.absoluteFill, { top: top * scale, height: height * scale }]} width={width} height={height * scale} viewBox={`0 ${top} ${PAGE_WIDTH} ${height}`}>
         {lines ? <Lines from={top} to={top + height} colour={lines} /> : null}
+        {lines ? <Line x1={MARGIN_X} x2={MARGIN_X} y1={top} y2={top + height} stroke={dark ? MARGIN.dark : MARGIN.light} strokeWidth={1} /> : null}
         <Strokes strokes={strokes} dark={dark} />
       </Svg>
     );
@@ -335,7 +345,8 @@ export function InkPageScreen({ id, onBack }: Props) {
   const liveRef = useRef<{ stroke: Stroke; touch: number; started: number } | null>(null);
   const erased = useRef<Set<Stroke> | null>(null);
   const mode = useRef<'none' | 'draw' | 'erase' | 'move'>('none');
-  const move = useRef({ startY: 0, fromY: 0, startX: 0, fromX: 0, touches: 0, dist: 0, zoom: 1, mid: { x: 0, y: 0 } });
+  // kind: what two fingers are doing, decided once they have moved enough to tell.
+  const move = useRef({ startY: 0, fromY: 0, startX: 0, fromX: 0, touches: 0, dist: 0, zoom: 1, mid: { x: 0, y: 0 }, kind: 'undecided' as 'undecided' | 'pan' | 'pinch' });
   const scrollY = useRef(0);
   const scroller = useRef<ScrollView>(null);
   const pinchRef = useRef<{ factor: number; x: number; y: number } | null>(null);
@@ -381,6 +392,7 @@ export function InkPageScreen({ id, onBack }: Props) {
       touches: e.allTouches.length,
       dist: spread(e),
       zoom: zoomRef.current,
+      kind: 'undecided',
       // The point between the fingers, in the page's own points (where the gesture is measured).
       mid: { x: e.allTouches.reduce((sum, p) => sum + p.x, 0) / n, y: e.allTouches.reduce((sum, p) => sum + p.y, 0) / n },
     };
@@ -486,8 +498,20 @@ export function InkPageScreen({ id, onBack }: Props) {
         scrollTo(move.current.fromY - (averageY(e) - move.current.startY));
         if (zoomRef.current > 1) setOffset(move.current.fromX - (averageX(e) - move.current.startX));
         if (e.allTouches.length >= 2 && move.current.dist > 0) {
-          const factor = spread(e) / move.current.dist;
-          if (Math.abs(factor - 1) > 0.04 || pinchRef.current) {
+          const now = spread(e);
+          const factor = now / move.current.dist;
+          // Two fingers moving a page never keep their distance exactly, so the page is
+          // made larger or smaller only when they clearly part or close (PINCH_START); once
+          // they have travelled together it is a move, and only a wide spread (PINCH_LATE)
+          // turns it into a pinch.
+          if (move.current.kind !== 'pinch') {
+            const change = Math.abs(factor - 1);
+            const apart = Math.abs(now - move.current.dist);
+            const travelled = Math.hypot(averageX(e) - move.current.startX, averageY(e) - move.current.startY);
+            if (change > (move.current.kind === 'pan' ? PINCH_LATE : PINCH_START) && apart > 28) move.current.kind = 'pinch';
+            else if (move.current.kind === 'undecided' && travelled > 14) move.current.kind = 'pan';
+          }
+          if (move.current.kind === 'pinch') {
             const next = Math.max(1, Math.min(3, move.current.zoom * factor)) / move.current.zoom;
             pinchRef.current = { factor: next, x: move.current.mid.x, y: move.current.mid.y };
             setPinch(pinchRef.current);
@@ -577,7 +601,7 @@ export function InkPageScreen({ id, onBack }: Props) {
       try {
         if (!pageRef.current) throw new Error('no page');
         const widthPx = 1080;
-        const totalUnits = heightUnits + (title.trim() ? titleHeight.current : 0) / scale;
+        const totalUnits = heightUnits + (title.trim() ? SHARED_TITLE : 0) / scale;
         let w = widthPx;
         let h = Math.round((widthPx * totalUnits) / PAGE_WIDTH);
         // A very long page is shared smaller rather than not at all.
@@ -599,6 +623,8 @@ export function InkPageScreen({ id, onBack }: Props) {
     };
   }, [sharing]); // eslint-disable-line react-hooks/exhaustive-deps
   const titleHeight = useRef(0);
+  const [picker, setPicker] = useState(false);
+  const [menu, setMenu] = useState(false);
   // The part of the page on screen, in points from the page's top, for the stroke being written.
   const liveView = useCallback(() => {
     const pageTop = Math.max(0, scrollY.current - titleHeight.current);
@@ -626,26 +652,19 @@ export function InkPageScreen({ id, onBack }: Props) {
   };
   const setPaper = (next: 'plain' | 'lined') => edit(id, { ink: { paper: next, strokes: ink.strokes.length } });
 
-  // Nine tools and a divider in a row: 48 points each where they fit, less on a narrow phone,
-  // where each keeps a 48-point reach (hitSlop) so they stay as easy to tap.
-  const toolSize = Math.max(34, Math.min(48, Math.floor((windowWidth - 16 - 13) / 9)));
-  const toolButton = (key: string, label: string, selected: boolean, onPress: () => void, content: React.ReactNode, disabled = false, toggle = false) => (
+  const toolButton = (key: string, label: string, selected: boolean, onPress: () => void, content: React.ReactNode, state?: object) => (
     <Pressable
       key={key}
       onPress={onPress}
-      disabled={disabled}
       android_ripple={{ color: theme.accentSoft, borderless: true, radius: 24 }}
-      accessibilityRole={toggle ? 'switch' : 'button'}
+      accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={toggle ? { checked: selected, disabled } : { selected, disabled }}
-      hitSlop={toolSize < 48 ? (48 - toolSize) / 2 : 0}
-      style={[styles.tool, { width: toolSize, height: toolSize, borderRadius: toolSize / 2, backgroundColor: selected ? theme.accentSoft : 'transparent', borderColor: selected ? theme.accent : 'transparent', opacity: disabled ? 0.35 : 1 }]}
+      accessibilityState={state ?? { selected }}
+      style={[styles.tool, { backgroundColor: selected ? theme.accentSoft : 'transparent', borderColor: selected ? theme.accent : 'transparent' }]}
     >
       {content}
     </Pressable>
   );
-  const iconTool = (key: string, label: string, icon: IconName, selected: boolean, onPress: () => void, color?: string, disabled = false, toggle = false) =>
-    toolButton(key, label, selected, onPress, <Icon name={icon} size={22} color={color ?? theme.text} />, disabled, toggle);
   const togglePenMode = () => {
     penModeRef.current = !penModeRef.current;
     setPenMode(penModeRef.current);
@@ -653,53 +672,54 @@ export function InkPageScreen({ id, onBack }: Props) {
   };
 
   const empty = ink.strokes.length === 0 && !writing;
-  // The first hint on an empty page; after that a short reminder of how the page moves.
-  const hint = notice ?? (empty && !penMode ? t('inkHint') : penMode ? t('inkMovePen') : t('inkMoveFingers'));
+  // A hint only on an empty page, and what the page has just said (a pen found, a full page).
+  const hint = notice ?? (empty ? (penMode ? t('inkMovePen') : t('inkHint')) : null);
+  const closeMenus = () => {
+    setPicker(false);
+    setMenu(false);
+  };
+  const dockBottom = insets.bottom + 18;
   const titleFont = scriptureFont(scriptOf(title) ?? uiScript, settings.serif, true);
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Header
-        title={t('handwritten')}
         onBack={onBack}
+        center={
+          <TextInput
+            value={title}
+            onChangeText={setTitle}
+            placeholder={t('pageTitle')}
+            placeholderTextColor={theme.muted}
+            accessibilityLabel={t('pageTitle')}
+            maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE}
+            style={[styles.titleInput, { color: theme.text, fontFamily: titleFont, fontWeight: scriptOf(title) || uiScript ? 'normal' : '600' }]}
+            returnKeyType="done"
+            onFocus={closeMenus}
+          />
+        }
         right={
           <>
-            <HeaderIconButton
-              icon="format_line_spacing"
-              onPress={() => setPaper(paper === 'lined' ? 'plain' : 'lined')}
-              accessibilityLabel={paper === 'lined' ? t('plainPaper') : t('linedPaper')}
-            />
-            <HeaderIconButton icon="share" onPress={() => setShareSheet(true)} accessibilityLabel={t('sharePage')} />
-            <HeaderIconButton icon="delete" onPress={deletePage} accessibilityLabel={t('deletePage')} />
+            <IconButton name="undo" onPress={undo} accessibilityLabel={t('undo')} disabled={past.current.length === 0} color={theme.text} />
+            <IconButton name="redo" onPress={redo} accessibilityLabel={t('redo')} disabled={future.current.length === 0} color={theme.text} />
+            <Pressable
+              onPress={() => {
+                setPicker(false);
+                setMenu(!menu);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={t('inkMore')}
+              accessibilityState={{ expanded: menu }}
+              android_ripple={{ color: theme.accentSoft, borderless: true, radius: 24 }}
+              style={[styles.more, menu && { backgroundColor: theme.accentSoft }]}
+            >
+              {[0, 1, 2].map((i) => (
+                <View key={i} style={[styles.moreDot, { backgroundColor: theme.text }]} />
+              ))}
+            </Pressable>
           </>
         }
       />
-      <View style={[styles.toolbar, { borderBottomColor: theme.border }]}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tools}>
-          {PEN_COLOURS.map((_, i) =>
-            toolButton(`pen${i}`, t(PEN_LABELS[i]), tool === 'pen' && colour === i, () => {
-              setTool('pen');
-              setColour(i);
-            }, <View style={[styles.dot, { backgroundColor: colours.pens[i], borderColor: theme.border }]} />),
-          )}
-          {iconTool('highlighter', t('highlighterYellow'), 'ink_highlighter', tool === 'highlighter', () => setTool('highlighter'), theme.dark ? '#E8C400' : '#806600')}
-          {iconTool('eraser', t('eraser'), 'ink_eraser', tool === 'eraser', () => setTool('eraser'))}
-          {iconTool('size', t('penThick'), 'line_weight', size === 'thick', () => setSize(size === 'thin' ? 'thick' : 'thin'), undefined, false, true)}
-          {iconTool('penOnly', t('inkPenOnly'), penMode ? 'stylus' : 'touch_app', penMode, togglePenMode, undefined, false, true)}
-          <View style={[styles.divider, { backgroundColor: theme.border }]} />
-          {iconTool('undo', t('undo'), 'undo', false, undo, undefined, past.current.length === 0)}
-          {iconTool('redo', t('redo'), 'redo', false, redo, undefined, future.current.length === 0)}
-        </ScrollView>
-        {zoom > 1 && !notice ? (
-          <Pressable onPress={fitPage} accessibilityRole="button" style={styles.zoomRow}>
-            <Text style={[styles.hint, { color: theme.accent }]}>{t('inkZoom', { z: zoom.toFixed(1).replace(/\.0$/, '') })}</Text>
-          </Pressable>
-        ) : hint ? (
-          <Text style={[styles.hint, { color: theme.muted }]} accessibilityLiveRegion="polite">
-            {hint}
-          </Text>
-        ) : null}
-      </View>
       <View style={styles.area} onLayout={onLayout}>
         {pageWidth > 0 ? (
           <ScrollView
@@ -707,20 +727,17 @@ export function InkPageScreen({ id, onBack }: Props) {
             scrollEnabled={false}
             onLayout={(e) => (viewHeight.current = e.nativeEvent.layout.height)}
             onContentSizeChange={(_, h) => (contentHeight.current = h)}
-            contentContainerStyle={{ alignItems: 'center', paddingBottom: insets.bottom }}
+            contentContainerStyle={{ alignItems: 'center', paddingBottom: sharing ? 0 : dockBottom + DOCK_HEIGHT + 12 }}
             keyboardShouldPersistTaps="handled"
           >
             <View ref={pageRef} collapsable={false} style={{ width: pageWidth, backgroundColor: sharing ? SHARED_PAGE : theme.bg }}>
-              <View onLayout={(e) => (titleHeight.current = e.nativeEvent.layout.height)} style={[styles.titleBox, sharing && !title.trim() && styles.hidden]}>
-                <TextInput
-                  value={title}
-                  onChangeText={setTitle}
-                  placeholder={t('pageTitle')}
-                  placeholderTextColor={theme.muted}
-                  style={[styles.titleInput, { color: sharing ? SHARED_TEXT : theme.text, borderBottomColor: sharing ? 'transparent' : theme.border, fontFamily: titleFont, fontWeight: scriptOf(title) || uiScript ? 'normal' : '600' }]}
-                  returnKeyType="done"
-                />
-              </View>
+              {sharing && title.trim() ? (
+                <View style={styles.sharedTitle}>
+                  <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.sharedTitleText, { color: SHARED_TEXT, fontFamily: titleFont, fontWeight: scriptOf(title) || uiScript ? 'normal' : '600' }]}>
+                    {title.trim()}
+                  </Text>
+                </View>
+              ) : null}
               <View style={{ width: pageWidth, height: heightUnits * scale, overflow: 'hidden' }}>
               <GestureDetector gesture={gesture}>
                 <View
@@ -748,6 +765,84 @@ export function InkPageScreen({ id, onBack }: Props) {
             </View>
           </ScrollView>
         ) : null}
+        {zoom > 1 && !notice ? (
+          <Pressable onPress={fitPage} accessibilityRole="button" style={[styles.pill, styles.float, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Text style={[styles.pillText, { color: theme.accent }]}>{t('inkZoom', { z: zoom.toFixed(1).replace(/\.0$/, '') })}</Text>
+          </Pressable>
+        ) : hint ? (
+          <View pointerEvents="none" style={[styles.pill, styles.float, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Text style={[styles.pillText, { color: theme.muted }]} accessibilityLiveRegion="polite">
+              {hint}
+            </Text>
+          </View>
+        ) : null}
+        {picker || menu ? <Pressable onPress={closeMenus} accessibilityLabel={t('close')} style={StyleSheet.absoluteFill} /> : null}
+        {picker ? (
+          <View style={[styles.card, styles.float, styles.picker, { bottom: dockBottom + DOCK_HEIGHT + 10, backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Text style={[styles.cardLabel, { color: theme.muted }]}>{t('inkColour')}</Text>
+            <View style={styles.cardRow}>
+              {PEN_COLOURS.map((_, i) =>
+                toolButton(`pen${i}`, t(PEN_LABELS[i]), colour === i, () => setColour(i), <View style={[styles.dot, { backgroundColor: colours.pens[i], borderColor: theme.border }]} />),
+              )}
+            </View>
+            <Text style={[styles.cardLabel, styles.cardLabelNext, { color: theme.muted }]}>{t('inkThickness')}</Text>
+            <View style={styles.cardRow}>
+              {(['thin', 'thick'] as const).map((sz) =>
+                toolButton(sz, t(sz === 'thin' ? 'penThin' : 'penThick'), size === sz, () => setSize(sz), <View style={{ width: 26, height: sz === 'thin' ? 3 : 6, borderRadius: 3, backgroundColor: theme.text }} />),
+              )}
+            </View>
+          </View>
+        ) : null}
+        {sharing ? null : (
+          <View style={[styles.dock, styles.float, { bottom: dockBottom, backgroundColor: theme.card, borderColor: theme.border }]}>
+            {toolButton(
+              'pen',
+              `${t(PEN_LABELS[colour])}, ${t(size === 'thin' ? 'penThin' : 'penThick')}`,
+              tool === 'pen',
+              () => {
+                setMenu(false);
+                if (tool === 'pen') setPicker(!picker);
+                else setTool('pen');
+              },
+              <View style={[styles.dot, { backgroundColor: colours.pens[colour], borderColor: theme.border }]} />,
+              { selected: tool === 'pen', expanded: picker },
+            )}
+            {toolButton('highlighter', t('highlighterYellow'), tool === 'highlighter', () => {
+              closeMenus();
+              setTool('highlighter');
+            }, <Icon name="ink_highlighter" size={22} color={theme.dark ? '#E8C400' : '#806600'} />)}
+            {toolButton('eraser', t('eraser'), tool === 'eraser', () => {
+              closeMenus();
+              setTool('eraser');
+            }, <Icon name="ink_eraser" size={22} color={theme.text} />)}
+          </View>
+        )}
+        {menu ? (
+          <View style={[styles.card, styles.menu, { backgroundColor: theme.card, borderColor: theme.border }]} accessibilityRole="menu">
+            {(
+              [
+                ['format_line_spacing', paper === 'lined' ? t('plainPaper') : t('linedPaper'), () => setPaper(paper === 'lined' ? 'plain' : 'lined'), false],
+                [penMode ? 'touch_app' : 'stylus', penMode ? t('inkFingerWrites') : t('inkPenOnly'), togglePenMode, false],
+                ['share', t('sharePage'), () => setShareSheet(true), false],
+                ['delete', t('deletePage'), deletePage, true],
+              ] as [IconName, string, () => void, boolean][]
+            ).map(([icon, label, act, danger]) => (
+              <Pressable
+                key={icon}
+                onPress={() => {
+                  setMenu(false);
+                  act();
+                }}
+                accessibilityRole="menuitem"
+                android_ripple={{ color: theme.accentSoft }}
+                style={styles.menuItem}
+              >
+                <Icon name={icon} size={20} color={danger ? DANGER : theme.muted} />
+                <Text style={[styles.menuText, { color: danger ? DANGER : theme.text }]}>{label}</Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
       </View>
       <SimpleSheet visible={shareSheet} title={t('sharePage')} onClose={() => setShareSheet(false)}>
         <SheetAction
@@ -771,23 +866,35 @@ export function InkPageScreen({ id, onBack }: Props) {
   );
 }
 
-const lineColour = (theme: Theme | null) => (theme?.dark ? '#3A342C' : '#DCD3C3');
+const lineColour = (theme: Theme | null) => (theme?.dark ? '#352F28' : '#E7DFD0');
 /** A shared picture is always light paper with dark writing, as the PDF is, whatever the theme. */
 const SHARED_PAGE = '#FFFDF8';
+/** The floating tools' height. */
+const DOCK_HEIGHT = 60;
 const SHARED_TEXT = '#1E1B16';
+const DANGER = '#B3261E';
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  toolbar: { borderBottomWidth: StyleSheet.hairlineWidth, paddingBottom: 4 },
-  tools: { alignItems: 'center', paddingHorizontal: 8, gap: 0, minWidth: '100%', justifyContent: 'center' },
   tool: { width: 48, height: 48, borderRadius: 24, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   dot: { width: 22, height: 22, borderRadius: 11, borderWidth: StyleSheet.hairlineWidth },
-  divider: { width: StyleSheet.hairlineWidth, height: 26, marginHorizontal: 6 },
-  hint: { fontSize: 14, textAlign: 'center', paddingHorizontal: 16, paddingTop: 2 },
-  zoomRow: { alignSelf: 'center', minHeight: 28, justifyContent: 'center' },
   area: { flex: 1 },
-  titleBox: { paddingHorizontal: 18, paddingTop: 6 },
-  hidden: { display: 'none' },
-  titleInput: { fontSize: 22, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
+  titleInput: { fontSize: 20, paddingVertical: 8, paddingRight: 4 },
+  more: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', gap: 3.5 },
+  moreDot: { width: 4.5, height: 4.5, borderRadius: 3 },
+  sharedTitle: { height: SHARED_TITLE, justifyContent: 'center', paddingHorizontal: 18 },
+  sharedTitleText: { fontSize: 22 },
+  // Over the page: a soft shadow lifts the tools, the picker and the menu off the paper.
+  float: { position: 'absolute', alignSelf: 'center', shadowColor: '#3C280A', shadowOpacity: 0.14, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 5 },
+  pill: { top: 10, borderRadius: 16, borderWidth: StyleSheet.hairlineWidth, paddingHorizontal: 14, paddingVertical: 7, maxWidth: '88%' },
+  pillText: { fontSize: 13, textAlign: 'center' },
+  dock: { height: DOCK_HEIGHT, borderRadius: DOCK_HEIGHT / 2, borderWidth: StyleSheet.hairlineWidth, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, gap: 4 },
+  card: { borderRadius: 18, borderWidth: StyleSheet.hairlineWidth },
+  picker: { paddingHorizontal: 14, paddingVertical: 12 },
+  cardLabel: { fontSize: 12, marginBottom: 6 },
+  cardLabelNext: { marginTop: 10 },
+  cardRow: { flexDirection: 'row', gap: 8 },
+  menu: { position: 'absolute', top: 4, right: 8, minWidth: 220, paddingVertical: 6, shadowColor: '#3C280A', shadowOpacity: 0.18, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 8 },
+  menuItem: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 16, minHeight: 48 },
+  menuText: { fontSize: 15 },
 });
-
