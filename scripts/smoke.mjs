@@ -160,8 +160,24 @@ for (const edition of EDITIONS) {
         await vis(page.getByRole('button', { name: /^English,/ })).click();
         await wait(2500);
       }
-      const tip = page.getByText(t.gotIt, { exact: true });
-      if (await tip.count()) await tip.first().click();
+      // A new install is welcomed: its first screen and the last, then on to the reader,
+      // where the title's hint shows once.
+      const skip = page.getByText(t.welcomeSkip, { exact: true });
+      if (await skip.locator('visible=true').count()) {
+        await page.screenshot({ path: join(shots, '00-welcome.png') });
+        for (let i = 0; i < 3; i++) {
+          await vis(page.getByText(t.welcomeNext, { exact: true })).click();
+          await wait(700);
+        }
+        await page.screenshot({ path: join(shots, '00-welcome-last.png') });
+        await vis(page.getByText(t.welcomeStart, { exact: true })).click();
+        await wait(2500);
+        await shows(t.hintTitleTitle);
+        await page.screenshot({ path: join(shots, '00-hint.png') });
+      }
+      const tip = page.getByRole('button', { name: t.gotIt, exact: true });
+      if (await tip.locator('visible=true').count()) await tip.locator('visible=true').last().click();
+      await wait(500);
       await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', '1') })).waitFor({ timeout: 8000 });
     });
     if (edition === 'all') {
@@ -223,6 +239,8 @@ for (const edition of EDITIONS) {
     await step('compare', async (snap) => {
       await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', '2') })).click();
       await wait(1200);
+      // The verse's menu, also the picture on the welcome's third screen.
+      await snap('menu');
       await vis(page.getByText(t.compare)).click();
       await wait(2500);
       await shows(t.compare);

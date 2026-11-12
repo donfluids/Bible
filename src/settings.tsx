@@ -51,6 +51,11 @@ export interface Settings {
   notes: Record<string, string>;
   /** The first-launch tip about tapping words has been dismissed. */
   tipSeen: boolean;
+  /** The welcome screens of a new install have been seen (or skipped). */
+  welcomeSeen: boolean;
+  /** The reader's two hints, each shown once after the welcome: the title, then holding a verse. */
+  hintTitleSeen: boolean;
+  hintVerseSeen: boolean;
   /** When the reader is next invited to write to us (src/feedback.ts): 0 not yet set, -1 never. */
   feedbackDue: number;
   /** The Indian Bible read last (four-language app): beside the English, and the switch's other side. */
@@ -85,6 +90,11 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
   marks: [],
   notes: {},
   tipSeen: false,
+  // Seen already, for an app that was installed before the welcome existed; a new install
+  // starts with them unseen (freshStart below).
+  welcomeSeen: true,
+  hintTitleSeen: true,
+  hintVerseSeen: true,
   feedbackDue: 0,
   lastIndian: '',
   previousTranslation: '',
@@ -104,7 +114,19 @@ function defaultsFor(edition: Edition): Settings {
   return { ...BASE_DEFAULTS, fontSize, serif: edition.id === 'en', translation: edition.defaultTranslation, language: edition.languages[0] };
 }
 
+/** The title hint had been seen when the app started: the verse hint waits for the next start. */
+export const startedWith = { hintTitleSeen: true };
+
 function load(edition: Edition): Loaded<Settings> {
+  const loaded = loadStored(edition);
+  // Nothing stored: a new install. It is welcomed and hinted; the older word tip is left
+  // out, since the welcome says the same.
+  const value = loaded.source === 'new' ? { ...loaded.value, welcomeSeen: false, hintTitleSeen: false, hintVerseSeen: false, tipSeen: true } : loaded.value;
+  startedWith.hintTitleSeen = value.hintTitleSeen;
+  return { ...loaded, value };
+}
+
+function loadStored(edition: Edition): Loaded<Settings> {
   const defaults = defaultsFor(edition);
   return loadEntry(
     `settings.v1.${edition.id}`,

@@ -338,6 +338,15 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
             <Text style={[styles.rowTitle, { color: theme.accent, flex: 1 }]}>{t('howTo')}</Text>
             <Icon name="chevron_right" color={theme.accent} />
           </Pressable>
+          {/* The welcome and the reader's hints, as a new install sees them. */}
+          <Pressable
+            onPress={() => update({ welcomeSeen: false, hintTitleSeen: false, hintVerseSeen: false })}
+            accessibilityRole="button"
+            android_ripple={{ color: theme.accentSoft }}
+            style={styles.licencesRow}
+          >
+            <Text style={[styles.rowTitle, { color: theme.accent, flex: 1 }]}>{t('welcomeAgain')}</Text>
+          </Pressable>
           <Pressable onPress={writeToUs} accessibilityRole="button" accessibilityHint={t('feedbackDetail')} android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>
             <View style={{ flex: 1 }}>
               <Text style={[styles.rowTitle, { color: theme.accent }]}>{t('feedback')}</Text>

@@ -17,6 +17,7 @@ import { translate, useT } from './src/i18n';
 import type { StringKey } from './src/i18n';
 import { CONFIGURED_EDITION, EDITIONS, EditionContext, isEditionId, isMultilingual, useEdition } from './src/edition';
 import { LanguageScreen, phoneLanguage } from './src/screens/LanguageScreen';
+import { WelcomeScreen } from './src/screens/WelcomeScreen';
 import type { Edition, Language } from './src/edition';
 import { getBooks, getMeta } from './src/queries';
 import { SettingsProvider, useSettings } from './src/settings';
@@ -310,6 +311,15 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
       <>
         <StatusBar style={theme.dark ? 'light' : 'dark'} />
         <LanguageScreen onChoose={(choice) => commit({ ...choice, languageChosen: true })} />
+      </>
+    );
+  }
+  // A new install is shown what the app does, once (src/screens/WelcomeScreen.tsx).
+  if (!settings.welcomeSeen) {
+    return (
+      <>
+        <StatusBar style={theme.dark ? 'light' : 'dark'} />
+        <WelcomeScreen onDone={() => commit({ welcomeSeen: true })} />
       </>
     );
   }

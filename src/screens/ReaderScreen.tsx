@@ -37,7 +37,9 @@ import { noteLetter, VerseText } from '../components/VerseText';
 import { countCrossRefs, getBeside, getChapter, getCrossRefs, getInterlinear, getNotes, mapRef } from '../queries';
 import type { CrossRef, LinkKind } from '../queries';
 import type { ChapterData } from '../queries';
-import { FONT_SIZES, useSettings } from '../settings';
+import { FONT_SIZES, startedWith, useSettings } from '../settings';
+import { Hint } from '../components/Hint';
+import type { Spot } from '../components/Hint';
 import type { Settings } from '../settings';
 import { getPlace, moveMainReader, savePlaceNow, selectBook, selectChapter, selectLastChapters, updatePlace, usePlace } from '../place';
 import type { Position } from '../place';
@@ -248,6 +250,16 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   // Marker mode: the colour a finger marks words with, or the eraser; null while reading.
   const [markTool, setMarkTool] = useState<HighlightColor | 'erase' | null>(null);
   const marking = markTool !== null;
+  // A new install's two hints, in the reader that opens with the app (not one opened from
+  // Saved or Search): the title's drop-downs first, and at a later start holding a verse.
+  const hint: 'title' | 'verse' | null =
+    onBack || marking || !settings.welcomeSeen ? null : !settings.hintTitleSeen ? 'title' : !settings.hintVerseSeen && startedWith.hintTitleSeen ? 'verse' : null;
+  const rootRef = useRef<View>(null);
+  const titleSpot = useRef<View>(null);
+  const verseSpot = useRef<View>(null);
+  const [area, setArea] = useState({ width: 0, height: 0 });
+  // Where the hint points: undefined until it has been looked for, null when not found.
+  const [spot, setSpot] = useState<Spot | null | undefined>(undefined);
   // On a wide screen the edition's own Bible stands on the left and the KJV beside it,
   // verse by verse (Settings: side by side). Marker mode keeps one column. In the
   // four-language app the Indian Bible is the one open or read last (src/edition.ts).
@@ -270,6 +282,28 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   // use one verse per line.
   const paragraphs = layout === 'paragraphs' && !interlinear && !marking && !sideBySide;
   const [items, setItems] = useState<Item[] | null>(null);
+  // The third verse (or paragraph) of the chapter stands for "a verse" in the second hint.
+  const hintKey = useMemo(() => {
+    if (hint !== 'verse' || !items) return null;
+    const rows = items.filter((it) => it.kind !== 'heading');
+    return (rows[2] ?? rows[0])?.key ?? null;
+  }, [hint, items]);
+  // Once the screen has settled, the hinted thing's place within the reader is measured.
+  useEffect(() => {
+    setSpot(undefined);
+    if (!hint || !items) return;
+    const timer = setTimeout(() => {
+      const target = hint === 'title' ? titleSpot.current : verseSpot.current;
+      const root = rootRef.current;
+      if (!target || !root) return setSpot(null);
+      root.measureInWindow((rx, ry) => {
+        target.measureInWindow((x, y, width, height) => {
+          setSpot(width > 0 && height > 0 ? { x: x - rx - 6, y: y - ry - 4, width: width + 12, height: height + 8 } : null);
+        });
+      });
+    }, 700);
+    return () => clearTimeout(timer);
+  }, [hint, items, hintKey]);
   const [loadFailed, setLoadFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   // Original words with the chapter they belong to, so a page turn never shows the last chapter's.
@@ -1003,6 +1037,8 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   const openActions = (v: VerseRow) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
     setActions(v);
+    // The verse menu found without being told of it: its hint is not shown.
+    if (!settings.hintVerseSeen) update({ hintVerseSeen: true });
   };
   const confirmHaptic = () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
 
@@ -1080,7 +1116,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   const onRowWord = useCallback((pick: WordPick) => rowActions.current.word(pick), []);
   const wordTap = study ? onRowWord : undefined;
 
-  const renderItem = useCallback(
+  const renderRow = useCallback(
     ({ item }: { item: Item }) => {
       if (item.kind === 'heading') {
         return (
@@ -1335,8 +1371,23 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   const atStart = position.book === books[0]?.id && position.chapter === 1;
   const atEnd = position.book === books[books.length - 1]?.id && position.chapter === book?.chapters;
 
+  // The verse the second hint points at is wrapped, so its place on screen can be found.
+  const renderItem = useCallback(
+    (info: { item: Item }) => {
+      const row = renderRow(info);
+      return info.item.key === hintKey ? (
+        <View ref={verseSpot} collapsable={false}>
+          {row}
+        </View>
+      ) : (
+        row
+      );
+    },
+    [renderRow, hintKey],
+  );
+
   return (
-    <View style={[styles.screen, { backgroundColor: theme.bg }]}>
+    <View ref={rootRef} collapsable={false} onLayout={(e) => setArea({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height })} style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Header
         onBack={onBack}
         backLabel={backLabel}
@@ -1349,6 +1400,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             chapter={position.chapter}
             script={translationInfo(translation).script ?? null}
             onPress={() => setPicking(true)}
+            spotRef={titleSpot}
             accessibilityLabel={t('choosePassage', { title })}
             trailing={
               <Pressable
@@ -1792,6 +1844,15 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
       </SimpleSheet>
 
       <CompareSheet target={compare} translation={translation} books={books} onClose={() => setCompare(null)} onWord={handleWord} />
+      {hint && spot !== undefined && area.width > 0 ? (
+        <Hint
+          spot={spot}
+          area={area}
+          title={t(hint === 'title' ? 'hintTitleTitle' : 'hintVerseTitle')}
+          text={t(hint === 'title' ? 'hintTitleText' : 'hintVerseText')}
+          onDone={() => update(hint === 'title' ? { hintTitleSeen: true } : { hintVerseSeen: true })}
+        />
+      ) : null}
     </View>
   );
 }
@@ -1822,7 +1883,7 @@ function ChapterArrow({ icon, onPress, disabled, accessibilityLabel, style }: { 
  * letters shrink to fit, down to MIN_TITLE_SCALE of their size, and on the narrowest
  * screens the drop-down arrow is left out.
  */
-function ReaderTitle({ name, short, chapter, script, trailing, onPress, accessibilityLabel }: { name: string; short: string; chapter: number; script: Script | null; trailing?: React.ReactNode; onPress: () => void; accessibilityLabel: string }) {
+function ReaderTitle({ name, short, chapter, script, trailing, onPress, accessibilityLabel, spotRef }: { name: string; short: string; chapter: number; script: Script | null; trailing?: React.ReactNode; onPress: () => void; accessibilityLabel: string; spotRef?: React.Ref<View> }) {
   const theme = useTheme();
   const [roomAll, setRoomAll] = useState(0);
   const [trailingWidth, setTrailingWidth] = useState(0);
@@ -1844,7 +1905,7 @@ function ReaderTitle({ name, short, chapter, script, trailing, onPress, accessib
   // Both pieces get the same line height, so a shrunk name stays level with its number.
   const shownStyle = [fontStyle, scale < 1 && { fontSize: baseSize * scale, lineHeight: Math.round(baseSize * 1.5) }];
   return (
-    <View style={styles.titleRoom} onLayout={(e) => setRoomAll(e.nativeEvent.layout.width)}>
+    <View ref={spotRef} collapsable={false} style={styles.titleRoom} onLayout={(e) => setRoomAll(e.nativeEvent.layout.width)}>
       {/* The full and short titles laid out off screen, to see which fits. */}
       <View style={styles.titleMeasure} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         <Text style={fontStyle} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} onLayout={(e) => setFullWidth(e.nativeEvent.layout.width)}>
