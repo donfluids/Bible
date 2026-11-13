@@ -93,6 +93,11 @@ jobs:
             exit 1
           fi
 
+      - name: Check the app keeps its promises
+        # No link scheme, no loosened transport security, no over-the-air updates, no
+        # tracking or reporting kit, nothing collected, no network call in our own code.
+        run: node scripts/check-ipa.mjs "$APP_PATH" "$BIBLE_EDITION"
+
       - name: Package the unsigned .ipa
         # An .ipa is a zip with the app under Payload/; signing tools take it as it is.
         run: |

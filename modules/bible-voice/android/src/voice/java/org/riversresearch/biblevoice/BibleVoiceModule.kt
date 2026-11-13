@@ -32,6 +32,8 @@ import kotlinx.coroutines.withContext
 
 class VoiceNotLoadedException : CodedException("The voice has not been loaded")
 
+class VoiceFileException : CodedException("Not one of the voice's own files")
+
 class BibleVoiceModule : Module() {
   private var session: OrtSession? = null
   private var track: AudioTrack? = null
@@ -92,12 +94,21 @@ class BibleVoiceModule : Module() {
     hasFocus = false
   }
 
+  // Only the voice's two files, inside the app's own storage, are read: the model (.onnx)
+  // and the speech sounds (.bin). Any other path is refused.
+  private fun ownFile(path: String, ending: String): File {
+    val file = File(path).canonicalFile
+    val home = appContext.reactContext?.applicationInfo?.dataDir?.let { File(it).canonicalPath }
+    if (home == null || !file.path.startsWith(home + File.separator) || file.extension != ending) throw VoiceFileException()
+    return file
+  }
+
   override fun definition() = ModuleDefinition {
     Name("BibleVoice")
 
     // Reads a file the app carries (the verses' speech sounds).
     AsyncFunction("read") Coroutine { path: String ->
-      withContext(modelThread) { File(path).readBytes() }
+      withContext(modelThread) { ownFile(path, "bin").readBytes() }
     }
 
     AsyncFunction("load") Coroutine { path: String ->
@@ -105,7 +116,7 @@ class BibleVoiceModule : Module() {
         if (session == null) {
           val options = OrtSession.SessionOptions()
           options.setIntraOpNumThreads(2)
-          session = OrtEnvironment.getEnvironment().createSession(path, options)
+          session = OrtEnvironment.getEnvironment().createSession(ownFile(path, "onnx").path, options)
         }
       }
     }

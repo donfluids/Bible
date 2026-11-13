@@ -2,7 +2,7 @@
   "expo": {
     "name": "Bible",
     "slug": "bible",
-    "version": "0.4.30",
+    "version": "0.4.31",
     "orientation": "default",
     "userInterfaceStyle": "automatic",
     "assetBundlePatterns": [
@@ -25,6 +25,7 @@
       "./plugins/withAndroidRelease",
       "./plugins/withBackupRules",
       "./plugins/withKeyboardKeys",
+      "./plugins/withIosLockdown",
       [
         "expo-image-picker",
         {

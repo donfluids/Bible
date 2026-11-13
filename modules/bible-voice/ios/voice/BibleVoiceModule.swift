@@ -13,6 +13,23 @@ internal final class VoiceNotLoadedException: Exception {
   }
 }
 
+internal final class VoiceFileException: Exception {
+  override var reason: String {
+    "Not one of the voice's own files"
+  }
+}
+
+// Only the voice's two files, inside the app itself or its own storage, are read: the model
+// (.onnx) and the speech sounds (.bin). Any other path is refused.
+private func ownFile(_ path: String, ending: String) throws -> URL {
+  let file = URL(fileURLWithPath: path).standardizedFileURL.resolvingSymlinksInPath()
+  let homes = [Bundle.main.bundleURL, URL(fileURLWithPath: NSHomeDirectory())].map { $0.standardizedFileURL.resolvingSymlinksInPath().path + "/" }
+  guard file.pathExtension == ending, homes.contains(where: { file.path.hasPrefix($0) }) else {
+    throw VoiceFileException()
+  }
+  return file
+}
+
 internal final class VoiceOutputException: Exception {
   override var reason: String {
     "The voice returned no sound"
@@ -78,17 +95,18 @@ public final class BibleVoiceModule: Module {
 
     // Reads a file the app carries (the verses' speech sounds).
     AsyncFunction("read") { (path: String) -> Data in
-      return try Data(contentsOf: URL(fileURLWithPath: path))
+      return try Data(contentsOf: ownFile(path, ending: "bin"))
     }.runOnQueue(work)
 
     AsyncFunction("load") { (path: String) in
       if self.session != nil {
         return
       }
+      let model = try ownFile(path, ending: "onnx").path
       let env = try ORTEnv(loggingLevel: ORTLoggingLevel.warning)
       let options = try ORTSessionOptions()
       try options.setIntraOpNumThreads(2)
-      self.session = try ORTSession(env: env, modelPath: path, sessionOptions: options)
+      self.session = try ORTSession(env: env, modelPath: model, sessionOptions: options)
       self.env = env
     }.runOnQueue(work)
 
