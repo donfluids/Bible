@@ -49,7 +49,24 @@ export async function pickPhoto(size: CardSize): Promise<string | null> {
   });
   if (result.canceled || !result.assets?.[0]) return null;
   const { uri, width } = result.assets[0];
-  return shrink(uri, width);
+  const small = await shrink(uri, width);
+  // The picker's own copy is not kept once a smaller one has been made.
+  if (small !== uri) forgetPhoto(uri);
+  return small;
+}
+
+/**
+ * Removes a photo the picker left in the cache, once the card no longer shows it. A saved
+ * design's own copy is not touched, nor anything outside the app's cache.
+ */
+export function forgetPhoto(uri: string | undefined): void {
+  if (!uri || !uri.startsWith('file:') || isSavedCopy(uri) || !uri.startsWith(Paths.cache.uri)) return;
+  try {
+    const file = new File(uri);
+    if (file.exists) file.delete();
+  } catch {
+    // The cache is the phone's to clear.
+  }
 }
 
 /**

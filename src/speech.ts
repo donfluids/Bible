@@ -4,6 +4,7 @@
 import * as Speech from 'expo-speech';
 import { Platform } from 'react-native';
 import { stripCantillation } from './text';
+import { stopBuiltinVoice } from './builtinVoice';
 import { voicesOrIndian } from './voiceLabels';
 import type { VoiceOption } from './voiceLabels';
 
@@ -50,12 +51,25 @@ export async function listVoices(language: VoiceLanguage): Promise<VoiceOption[]
 /** Reads a sample in a voice (the phone's default when none), for the choice in Settings. */
 export function saySample(text: string, language: VoiceLanguage, voice: string | undefined, rate: number, onEnd: () => void): void {
   Speech.stop();
-  Speech.speak(text, { language: LANGUAGE[language], voice, rate, onDone: onEnd, onStopped: onEnd, onError: onEnd });
+  usableVoice(voice).then((v) => Speech.speak(text, { language: LANGUAGE[language], voice: v, rate, onDone: onEnd, onStopped: onEnd, onError: onEnd }));
+}
+
+/**
+ * The chosen voice if the phone still has it, else none (the phone's default reads). An
+ * iPhone asked for a voice that has been removed says nothing and never reports an end,
+ * so the choice is checked first; where the phone lists no voices at all it is trusted.
+ */
+export async function usableVoice(voice: string | undefined): Promise<string | undefined> {
+  if (!voice) return undefined;
+  const list = await phoneVoices();
+  return list.length === 0 || list.some((v) => v.identifier === voice) ? voice : undefined;
 }
 
 /** Says the word slowly; `onEnd` runs when it finishes, is stopped or fails. */
 export function sayWord(word: string, language: OriginalLanguage, onEnd: () => void): void {
   Speech.stop();
+  // The app's own voice, if it is reading, gives way to the word too.
+  stopBuiltinVoice();
   // Accents (cantillation) are not read; the vowel points are kept.
   const text = language === 'hebrew' ? stripCantillation(word) : word;
   Speech.speak(text, { language: LANGUAGE[language], rate: 0.75, onDone: onEnd, onStopped: onEnd, onError: onEnd });

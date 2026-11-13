@@ -6,6 +6,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { Header, HeaderIconButton } from '../components/Header';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
 import { sharePdf } from '../notebookFiles';
+import { afterSheet } from '../platform';
 import { typedPageHtml } from '../pagePdf';
 import type { TypedLine } from '../pagePdf';
 import { languageScript, scriptOf, scriptureFont } from '../fonts';
@@ -432,7 +433,7 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
           label={t('shareAsText')}
           onPress={() => {
             setShareSheet(false);
-            sharePage();
+            afterSheet(sharePage);
           }}
         />
         <SheetAction
@@ -440,7 +441,7 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
           label={t('shareAsPdf')}
           onPress={() => {
             setShareSheet(false);
-            sharePagePdf();
+            afterSheet(sharePagePdf);
           }}
         />
       </SimpleSheet>

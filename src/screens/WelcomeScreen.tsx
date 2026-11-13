@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Image, PixelRatio, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import type { ImageSourcePropType, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Pressable } from '../components/Pressable';
@@ -47,13 +47,19 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
   const scroller = useRef<ScrollView>(null);
   const titleFont = scriptureFont(languageScript(settings.language), true, true);
   // The picture takes what is left above the words, within a phone's shape.
-  const pictureHeight = Math.max(160, Math.min(height * 0.46, (Math.min(width, 520) - 120) * PICTURE_RATIO));
+  // Less of it where the phone's text is set large, so the words keep their room.
+  const share = PixelRatio.getFontScale() > 1.15 ? 0.34 : 0.42;
+  const pictureHeight = Math.max(140, Math.min(height * share, (Math.min(width, 520) - 120) * PICTURE_RATIO));
   const pictureWidth = pictureHeight / PICTURE_RATIO;
   const last = index === list.length - 1;
   const go = (i: number) => {
     setIndex(i);
     scroller.current?.scrollTo({ x: i * width, animated: true });
   };
+  // Turning the phone changes each page's width: the page being shown is kept in place.
+  useEffect(() => {
+    scroller.current?.scrollTo({ x: index * width, animated: false });
+  }, [width]); // eslint-disable-line react-hooks/exhaustive-deps
   const onScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => setIndex(Math.max(0, Math.min(list.length - 1, Math.round(e.nativeEvent.contentOffset.x / width))));
 
   return (
@@ -67,7 +73,15 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
       </View>
       <ScrollView ref={scroller} horizontal pagingEnabled showsHorizontalScrollIndicator={false} onMomentumScrollEnd={onScrollEnd} style={styles.pager}>
         {list.map((page, i) => (
-          <View key={page.title} style={[styles.page, { width }]} accessibilityElementsHidden={i !== index} importantForAccessibility={i === index ? 'auto' : 'no-hide-descendants'}>
+          // Each page scrolls on its own, so long words in a large size are never cut off.
+          <ScrollView
+            key={page.title}
+            style={{ width }}
+            contentContainerStyle={styles.page}
+            showsVerticalScrollIndicator={false}
+            accessibilityElementsHidden={i !== index}
+            importantForAccessibility={i === index ? 'auto' : 'no-hide-descendants'}
+          >
             <View style={[styles.phone, { width: pictureWidth + 12, height: pictureHeight + 12, borderColor: theme.dark ? '#4A4239' : '#2A241C' }]}>
               <Image source={page.picture} style={{ width: pictureWidth, height: pictureHeight }} resizeMode="cover" accessibilityIgnoresInvertColors />
               {page.ring ? (
@@ -81,7 +95,7 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
               {t(page.title)}
             </Text>
             <Text style={[styles.text, { color: theme.muted }]}>{t(page.text)}</Text>
-          </View>
+          </ScrollView>
         ))}
       </ScrollView>
       <View style={styles.dots} accessibilityLabel={`${index + 1} / ${list.length}`}>
@@ -107,7 +121,7 @@ const styles = StyleSheet.create({
   skip: { minHeight: 44, justifyContent: 'center' },
   skipText: { fontSize: 16 },
   pager: { flex: 1 },
-  page: { alignItems: 'center', paddingHorizontal: 30 },
+  page: { alignItems: 'center', paddingHorizontal: 30, paddingBottom: 12 },
   phone: { borderWidth: 6, borderRadius: 26, overflow: 'hidden', backgroundColor: '#FFFFFF' },
   ring: { position: 'absolute', borderWidth: 3, borderRadius: 999 },
   title: { fontSize: 25, lineHeight: 34, textAlign: 'center', marginTop: 26, fontWeight: '600' },

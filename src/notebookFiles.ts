@@ -68,6 +68,33 @@ function sharedFolder(): Directory {
   return folder;
 }
 
+/** Empties the folder of shared files: at the app's start, so the last share's file is not kept. */
+export function clearShared(): void {
+  if (Platform.OS === 'web') return;
+  try {
+    const folder = new Directory(Paths.cache, 'shared');
+    if (folder.exists) folder.delete();
+  } catch {
+    // Left for the next share to clear.
+  }
+}
+
+/**
+ * Moves a picture made for sharing (a card, a handwritten page) into the shared folder,
+ * so it is cleared with the rest and not left in the cache; its new address, or the old
+ * one if it could not be moved.
+ */
+export function stageShared(uri: string, name: string): string {
+  if (Platform.OS === 'web') return uri;
+  try {
+    const staged = new File(sharedFolder(), name);
+    new File(uri).move(staged);
+    return staged.uri;
+  } catch {
+    return uri;
+  }
+}
+
 function today(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -114,12 +141,33 @@ export async function restoreBackup(pages: NotePage[], edition: string, otherEdi
   const picked = await DocumentPicker.getDocumentAsync({ type: ['application/json', 'text/plain', '*/*'], copyToCacheDirectory: true, multiple: false });
   if (picked.canceled || !picked.assets?.[0]) return { kind: 'cancelled' };
   const asset = picked.assets[0];
-  if ((asset.size ?? 0) > MAX_BACKUP_BYTES) return { kind: 'tooLarge' };
+  // The picker's copy in the cache (a whole notebook, in plain text) is removed once read.
+  const copy = Platform.OS === 'web' ? null : new File(asset.uri);
+  const forget = () => {
+    try {
+      if (copy?.exists) copy.delete();
+    } catch {
+      // The cache is the phone's to clear.
+    }
+  };
+  // The copy's own size, where the picker did not say: nothing too large is read into memory.
+  let size = asset.size ?? 0;
+  try {
+    size = Math.max(size, copy?.size ?? 0);
+  } catch {
+    // The picker's figure stands.
+  }
+  if (size > MAX_BACKUP_BYTES) {
+    forget();
+    return { kind: 'tooLarge' };
+  }
   let text: string;
   try {
-    text = Platform.OS === 'web' ? await (await fetch(asset.uri)).text() : await new File(asset.uri).text();
+    text = copy ? await copy.text() : await (await fetch(asset.uri)).text();
   } catch {
     return { kind: 'notBackup' };
+  } finally {
+    forget();
   }
   if (text.length > MAX_BACKUP_BYTES) return { kind: 'tooLarge' };
   let backup;

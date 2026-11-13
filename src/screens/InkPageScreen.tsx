@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, Alert, AppState, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { AccessibilityInfo, Alert, AppState, BackHandler, Platform, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import type { LayoutChangeEvent } from 'react-native';
 import { Gesture, GestureDetector, PointerType } from 'react-native-gesture-handler';
 import type { GestureTouchEvent } from 'react-native-gesture-handler';
@@ -9,7 +9,8 @@ import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
 import { HEADER_MAX_FONT_SCALE, Header } from '../components/Header';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
-import { sharePdf } from '../notebookFiles';
+import { sharePdf, stageShared } from '../notebookFiles';
+import { afterSheet, captureSize } from '../platform';
 import { inkPageHtml } from '../pagePdf';
 import { Icon, IconButton } from '../components/Icon';
 import type { IconName } from '../components/Icon';
@@ -156,11 +157,12 @@ const Lines = memo(function Lines({ from, to, colour }: { from: number; to: numb
 });
 
 /**
- * Pages are drawn in tiles this tall (in units), each a picture of its own: Android draws a
- * picture whole, so one for a long page would grow past what it can hold and slow each
- * redraw; a tile is redrawn only when a stroke on it changes.
+ * Pages are drawn in tiles this tall (in units), each a picture of its own, and only the
+ * tiles on or near the screen are drawn: Android gives every picture a bitmap of its full
+ * size, so one for a long page (or a page pinched larger) would take more memory than the
+ * phone allows; a tile is redrawn only when a stroke on it changes.
  */
-const TILE = 1800;
+const TILE = 450;
 /** A lined page's margin line, in units from the left, and its colour: a faint red, as on ruled paper. */
 const MARGIN_X = 44;
 const MARGIN = { light: '#EFD3CA', dark: '#4A3530' };
@@ -179,10 +181,12 @@ const Tile = memo(
 );
 
 /** The finished strokes, in tiles down the page; a stroke across two tiles is in both. */
-function InkTiles({ strokes, dark, width, scale, height, lines }: { strokes: Stroke[]; dark: boolean; width: number; scale: number; height: number; lines: string | null }) {
+function InkTiles({ strokes, dark, width, scale, height, lines, shown }: { strokes: Stroke[]; dark: boolean; width: number; scale: number; height: number; lines: string | null; shown: { from: number; to: number } | null }) {
   const tiles = [];
   for (let top = 0; top < height; top += TILE) {
     const h = Math.min(TILE, height - top);
+    // Off the screen: not drawn until the page is moved to it.
+    if (shown && (top + h < shown.from || top > shown.to)) continue;
     const here = strokes.filter((st) => {
       const [, t, , b] = boundsOf(st);
       return b + st.w >= top && t - st.w <= top + h;
@@ -342,7 +346,9 @@ export function InkPageScreen({ id, onBack }: Props) {
   const setLive = (s: Stroke | null) => liveSetter.current?.(s);
   // Whether a stroke is being written, for the hint; changes twice a stroke, not on each move.
   const [writing, setWriting] = useState(false);
-  const liveRef = useRef<{ stroke: Stroke; touch: number; started: number } | null>(null);
+  const liveRef = useRef<{ stroke: Stroke; touch: number; started: number; pen: boolean } | null>(null);
+  // When the page was last touched, for Android's Back gesture (below).
+  const lastTouch = useRef(0);
   const erased = useRef<Set<Stroke> | null>(null);
   const mode = useRef<'none' | 'draw' | 'erase' | 'move'>('none');
   // kind: what two fingers are doing, decided once they have moved enough to tell.
@@ -362,10 +368,21 @@ export function InkPageScreen({ id, onBack }: Props) {
 
   const contentHeight = useRef(0);
   const viewHeight = useRef(0);
+  // The part of the page whose tiles are drawn, in units: the screen and a little either
+  // side (less when the page is pinched larger, where each tile is a bigger picture).
+  const [shown, setShown] = useState({ from: 0, to: TILE * 4 });
+  const showAround = () => {
+    const s = settingsRef.current.scale || 1;
+    const spare = zoomRef.current > 1 ? TILE / 2 : TILE;
+    const from = Math.max(0, Math.floor((scrollY.current / s - spare) / TILE) * TILE);
+    const to = Math.ceil(((scrollY.current + (viewHeight.current || 900)) / s + spare) / TILE) * TILE;
+    setShown((now) => (now.from === from && now.to === to ? now : { from, to }));
+  };
   const scrollTo = (y: number) => {
     const max = Math.max(0, contentHeight.current - viewHeight.current);
     scrollY.current = Math.max(0, Math.min(max, y));
     scroller.current?.scrollTo({ y: scrollY.current, animated: false });
+    showAround();
   };
 
   const inkRef = useRef(ink);
@@ -420,6 +437,10 @@ export function InkPageScreen({ id, onBack }: Props) {
   };
   const pageWidthRef = useRef(pageWidth);
   pageWidthRef.current = pageWidth;
+  // A new size (pinched, or the window's) changes which tiles are on the screen.
+  useEffect(() => {
+    showAround();
+  }, [scale]); // eslint-disable-line react-hooks/exhaustive-deps
   const finishStroke = () => {
     const l = liveRef.current;
     liveRef.current = null;
@@ -448,7 +469,13 @@ export function InkPageScreen({ id, onBack }: Props) {
   handlers.current = {
     down: (e, manager) => {
       manager.activate();
-      if (e.allTouches.length >= 2) {
+      lastTouch.current = Date.now();
+      const pen = e.pointerType === PointerType.STYLUS;
+      // A hand resting on the page while the pen writes is not a second finger: it is left out.
+      if (e.allTouches.length >= 2 && mode.current === 'draw' && liveRef.current?.pen && !pen) return;
+      // The pen coming down beside a resting hand writes; it does not join the hand in moving the page.
+      const penBesideHand = e.allTouches.length >= 2 && pen && penModeRef.current && mode.current !== 'draw';
+      if (e.allTouches.length >= 2 && !penBesideHand) {
         // A second finger: the page is being moved. A stroke just begun was the first finger of it.
         const l = liveRef.current;
         if (mode.current === 'draw' && l) {
@@ -464,7 +491,6 @@ export function InkPageScreen({ id, onBack }: Props) {
       }
       const touch = e.changedTouches[0];
       if (!touch) return;
-      const pen = e.pointerType === PointerType.STYLUS;
       if (pen && !penModeRef.current) {
         penModeRef.current = true;
         setPenMode(true);
@@ -484,11 +510,12 @@ export function InkPageScreen({ id, onBack }: Props) {
       mode.current = 'draw';
       const stroke: Stroke = tl === 'highlighter' ? { c: -1, w: HIGHLIGHTER_WIDTH, p: [] } : { c, w: PEN_WIDTHS[sz], p: [] };
       addPoint(stroke.p, touch.x / s, touch.y / s);
-      liveRef.current = { stroke, touch: touch.id, started: Date.now() };
+      liveRef.current = { stroke, touch: touch.id, started: Date.now(), pen };
       setLive({ ...stroke, p: [...stroke.p] });
       setWriting(true);
     },
     move: (e) => {
+      lastTouch.current = Date.now();
       if (mode.current === 'move') {
         if (e.allTouches.length !== move.current.touches) {
           if (pinchRef.current) finishPinch(pinchRef.current.factor);
@@ -535,6 +562,13 @@ export function InkPageScreen({ id, onBack }: Props) {
         finishPinch(pinchRef.current.factor);
         pinchRef.current = null;
       }
+      // The writing pen or finger has lifted while a resting hand is still down: the stroke is done.
+      const writing = liveRef.current;
+      if (mode.current === 'draw' && writing && e.allTouches.length > e.changedTouches.length && e.changedTouches.some((c) => c.id === writing.touch)) {
+        finishStroke();
+        mode.current = 'none';
+        return;
+      }
       if (e.allTouches.length > e.changedTouches.length) {
         if (mode.current === 'move') startMove({ ...e, allTouches: e.allTouches.filter((a) => !e.changedTouches.some((c) => c.id === a.id)) });
         return;
@@ -579,6 +613,15 @@ export function InkPageScreen({ id, onBack }: Props) {
     setSteps((n) => n + 1);
   }
 
+  // On Android a stroke begun at the screen's edge is also the system's Back gesture; a
+  // Back that comes while the page is being touched is that, not a wish to leave, and is
+  // not followed. The page's own back arrow leaves at any time.
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => Date.now() - lastTouch.current < 700);
+    return () => sub.remove();
+  }, []);
+
   const pageRef = useRef<View>(null);
   const [shareSheet, setShareSheet] = useState(false);
   const sharePagePdf = async () => {
@@ -609,8 +652,8 @@ export function InkPageScreen({ id, onBack }: Props) {
           w = Math.round((w * 16000) / h);
           h = 16000;
         }
-        const uri = await captureRef(pageRef.current, { format: 'png', result: 'tmpfile', width: w, height: h });
-        if (!cancelled) await Sharing.shareAsync(uri, { mimeType: 'image/png', UTI: 'public.png', dialogTitle: t('sharePage') });
+        const uri = await captureRef(pageRef.current, { format: 'png', result: 'tmpfile', width: captureSize(w), height: captureSize(h) });
+        if (!cancelled) await Sharing.shareAsync(stageShared(uri, 'notebook-page.png'), { mimeType: 'image/png', UTI: 'public.png', dialogTitle: t('sharePage') });
       } catch {
         if (!cancelled) Alert.alert(t('inkShareFailed'));
       } finally {
@@ -725,7 +768,10 @@ export function InkPageScreen({ id, onBack }: Props) {
           <ScrollView
             ref={scroller}
             scrollEnabled={false}
-            onLayout={(e) => (viewHeight.current = e.nativeEvent.layout.height)}
+            onLayout={(e) => {
+              viewHeight.current = e.nativeEvent.layout.height;
+              showAround();
+            }}
             onContentSizeChange={(_, h) => (contentHeight.current = h)}
             contentContainerStyle={{ alignItems: 'center', paddingBottom: sharing ? 0 : dockBottom + DOCK_HEIGHT + 12 }}
             keyboardShouldPersistTaps="handled"
@@ -757,6 +803,7 @@ export function InkPageScreen({ id, onBack }: Props) {
                     scale={scale}
                     height={heightUnits}
                     lines={paper === 'lined' ? (sharing ? lineColour(null) : lineColour(theme)) : null}
+                    shown={sharing ? null : shown}
                   />
                   <LiveStroke setter={liveSetter} dark={theme.dark && !sharing} width={inkWidth} scale={scale} view={liveView} />
                 </View>
@@ -850,7 +897,7 @@ export function InkPageScreen({ id, onBack }: Props) {
           label={t('shareAsPicture')}
           onPress={() => {
             setShareSheet(false);
-            share();
+            afterSheet(share);
           }}
         />
         <SheetAction
@@ -858,7 +905,7 @@ export function InkPageScreen({ id, onBack }: Props) {
           label={t('shareAsPdf')}
           onPress={() => {
             setShareSheet(false);
-            sharePagePdf();
+            afterSheet(sharePagePdf);
           }}
         />
       </SimpleSheet>

@@ -10,6 +10,7 @@ import { PAGE_WIDTH, emptyInk, inkKey, parseInk, pathOf } from '../ink';
 import { loadEntry } from '../persist';
 import { useEdition } from '../edition';
 import { InkUnreadable, restoreBackup, saveBackup } from '../notebookFiles';
+import { afterSheet } from '../platform';
 import { TabBar } from '../components/TabBar';
 import { scriptOf, scriptureFont } from '../fonts';
 import { useT } from '../i18n';
@@ -40,8 +41,8 @@ export function NotebookScreen({ onOpenPage }: Props) {
   const [busy, setBusy] = useState(false);
   const [choosing, setChoosing] = useState(false);
   const newPage = () => setChoosing(true);
+  // The sheet is closed at once; the share sheet or file picker opens after it has gone (afterSheet).
   const backUp = async () => {
-    setBackupSheet(false);
     if (pages.length === 0) {
       Alert.alert(t('backupEmpty'));
       return;
@@ -65,7 +66,6 @@ export function NotebookScreen({ onOpenPage }: Props) {
       ], { cancelable: true, onDismiss: () => resolve(false) }),
     );
   const restore = async () => {
-    setBackupSheet(false);
     setBusy(true);
     try {
       const outcome = await restoreBackup(pages, edition.id, (from) => askOtherEdition(from));
@@ -177,8 +177,14 @@ export function NotebookScreen({ onOpenPage }: Props) {
         <SheetAction icon="gesture" label={t('pageHandPlain')} detail={t('pageHandDetail')} onPress={() => start('plain')} detailLines={0} />
       </SimpleSheet>
       <SimpleSheet visible={backupSheet} title={t('backupRestore')} onClose={() => setBackupSheet(false)}>
-        <SheetAction icon="backup" label={t('saveBackup')} detail={t('saveBackupDetail')} onPress={backUp} detailLines={0} />
-        <SheetAction icon="history" label={t('restoreBackup')} detail={t('restoreBackupDetail')} onPress={restore} detailLines={0} />
+        <SheetAction icon="backup" label={t('saveBackup')} detail={t('saveBackupDetail')} onPress={() => {
+            setBackupSheet(false);
+            afterSheet(backUp);
+          }} detailLines={0} />
+        <SheetAction icon="history" label={t('restoreBackup')} detail={t('restoreBackupDetail')} onPress={() => {
+            setBackupSheet(false);
+            afterSheet(restore);
+          }} detailLines={0} />
       </SimpleSheet>
       <TabBar current="Notebook" />
     </View>

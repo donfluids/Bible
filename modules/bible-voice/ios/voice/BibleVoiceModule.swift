@@ -1,5 +1,6 @@
 import AVFoundation
 import ExpoModulesCore
+import UIKit
 import onnxruntime_objc
 
 // The voice the app carries: runs its model (ONNX Runtime) on speech sounds handed over
@@ -19,18 +20,18 @@ internal final class VoiceOutputException: Exception {
 }
 
 private final class PlayerDelegate: NSObject, AVAudioPlayerDelegate {
-  private let done: (Bool) -> Void
+  private let done: (AVAudioPlayer, Bool) -> Void
 
-  init(done: @escaping (Bool) -> Void) {
+  init(done: @escaping (AVAudioPlayer, Bool) -> Void) {
     self.done = done
   }
 
   func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-    done(flag)
+    done(player, flag)
   }
 
   func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: Error?) {
-    done(false)
+    done(player, false)
   }
 }
 
@@ -40,10 +41,40 @@ public final class BibleVoiceModule: Module {
   private var player: AVAudioPlayer?
   private var playerDelegate: PlayerDelegate?
   private var pending: Promise?
+  private var observers: [NSObjectProtocol] = []
+  private var sessionActive = false
   private let work = DispatchQueue(label: "org.riversresearch.biblevoice")
 
   public func definition() -> ModuleDefinition {
     Name("BibleVoice")
+
+    // A call, Siri, another app taking the sound, or this app leaving the screen pauses
+    // the player without telling it; the verse is ended as stopped, so reading shows as
+    // paused and goes on from that verse when the reader returns.
+    OnCreate {
+      let center = NotificationCenter.default
+      let stopped: (Notification) -> Void = { [weak self] _ in
+        DispatchQueue.main.async {
+          self?.finish(false)
+        }
+      }
+      self.observers = [
+        center.addObserver(forName: AVAudioSession.interruptionNotification, object: nil, queue: nil) { note in
+          let raw = note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
+          if raw == AVAudioSession.InterruptionType.began.rawValue {
+            stopped(note)
+          }
+        },
+        center.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: nil, using: stopped)
+      ]
+    }
+
+    OnDestroy {
+      for observer in self.observers {
+        NotificationCenter.default.removeObserver(observer)
+      }
+      self.observers = []
+    }
 
     // Reads a file the app carries (the verses' speech sounds).
     AsyncFunction("read") { (path: String) -> Data in
@@ -83,20 +114,29 @@ public final class BibleVoiceModule: Module {
       guard let output = outputs["output"] else {
         throw VoiceOutputException()
       }
-      return try output.tensorData() as Data
+      // A copy of its own: the model's buffer goes when its value does.
+      let samples = try output.tensorData()
+      return Data(bytes: samples.bytes, count: samples.length)
     }.runOnQueue(work)
 
     // Plays a WAV; resolves true when it has played to its end, false when stopped.
     AsyncFunction("play") { (wav: Data, promise: Promise) in
       self.finish(false)
       do {
+        // Other sound (music, a podcast) pauses while the voice reads; release() lets it go on.
         let audio = AVAudioSession.sharedInstance()
-        try audio.setCategory(.playback, mode: .spokenAudio, options: [])
-        try audio.setActive(true)
+        if !self.sessionActive {
+          try audio.setCategory(.playback, mode: .spokenAudio, options: [])
+          try audio.setActive(true)
+          self.sessionActive = true
+        }
         let player = try AVAudioPlayer(data: wav)
-        let delegate = PlayerDelegate { [weak self] ok in
+        let delegate = PlayerDelegate { [weak self] ended, ok in
           DispatchQueue.main.async {
-            self?.finish(ok)
+            // Only the player still playing ends the verse: one already replaced is ignored.
+            if self?.player === ended {
+              self?.finish(ok)
+            }
           }
         }
         player.delegate = delegate
@@ -116,6 +156,15 @@ public final class BibleVoiceModule: Module {
 
     AsyncFunction("stop") {
       self.finish(false)
+    }.runOnQueue(.main)
+
+    // Reading has ended: the phone's sound goes back to what was playing before.
+    AsyncFunction("release") {
+      self.finish(false)
+      if self.sessionActive {
+        self.sessionActive = false
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+      }
     }.runOnQueue(.main)
   }
 

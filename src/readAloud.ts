@@ -2,8 +2,8 @@
 // mark the verse being read, step back and forth, and go on into the next chapter.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Speech from 'expo-speech';
-import { PHONE_VOICE, prepareVerse, sayVerse, stopBuiltinVoice, usesBuiltinVoice } from './builtinVoice';
-import { LANGUAGE } from './speech';
+import { PHONE_VOICE, sayVerse, stopBuiltinVoice, usesBuiltinVoice } from './builtinVoice';
+import { LANGUAGE, usableVoice } from './speech';
 import type { SpokenLanguage } from './speech';
 import { flattenVerse } from './text';
 import type { TranslationId, VerseRow } from './types';
@@ -64,17 +64,16 @@ export function useReadAloud({ chapterKey, verses, translation, rate, voice, nex
   const pauseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Set while this reader's own verse is being spoken. Another reader (one opened from
   // Saved or Search) stopping, or the word sheet closing, must not stop this one.
-  const speaking = useRef(false);
+  const speaking = useRef<false | 'phone' | 'app'>(false);
 
   const halt = useCallback(() => {
     token.current++;
     continuing.current = null;
     if (pauseTimer.current) clearTimeout(pauseTimer.current);
     pauseTimer.current = null;
-    if (speaking.current) {
-      Speech.stop();
-      stopBuiltinVoice();
-    }
+    // Only the voice that was reading is stopped: stopping the phone's wakes its engine.
+    if (speaking.current === 'phone') Speech.stop();
+    if (speaking.current === 'app') stopBuiltinVoice();
     speaking.current = false;
   }, []);
 
@@ -99,7 +98,7 @@ export function useReadAloud({ chapterKey, verses, translation, rate, voice, nex
       setIndex(i);
       setPlaying(true);
       setActive(true);
-      speaking.current = true;
+      speaking.current = usesBuiltinVoice(tr, v) ? 'app' : 'phone';
       const onDone = () => {
         if (token.current === mine) speakAt(i + 1);
       };
@@ -116,20 +115,29 @@ export function useReadAloud({ chapterKey, verses, translation, rate, voice, nex
         setPlaying(false);
         setActive(false);
       };
+      // A chosen voice the phone no longer has gives way to its default (src/speech.ts).
       const withPhone = () =>
-        Speech.speak(spokenText(list[i]), { language: LANGUAGE[voiceFor(tr)], voice: v === PHONE_VOICE || v?.startsWith('builtin:') ? undefined : v, rate: r, onDone, onStopped, onError });
+        usableVoice(v === PHONE_VOICE || v?.startsWith('builtin:') ? undefined : v).then((voice) => {
+          if (token.current === mine) Speech.speak(spokenText(list[i]), { language: LANGUAGE[voiceFor(tr)], voice, rate: r, onDone, onStopped, onError });
+        });
       if (usesBuiltinVoice(tr, v)) {
         // The app's own voice; the verse after this one is made while this one is read.
         // Where it cannot run on a phone, the phone's voice reads instead.
         const ref = (row: VerseRow) => ({ book: row.book, chapter: row.chapter, verse: row.verse });
-        sayVerse(ref(list[i]), r, {
-          onDone,
-          onStopped,
-          onError: () => {
-            if (token.current === mine) withPhone();
+        sayVerse(
+          ref(list[i]),
+          r,
+          {
+            onDone,
+            onStopped,
+            onError: () => {
+              if (token.current !== mine) return;
+              speaking.current = 'phone';
+              withPhone();
+            },
           },
-        });
-        if (i + 1 < list.length) prepareVerse(ref(list[i + 1]), r);
+          i + 1 < list.length ? ref(list[i + 1]) : undefined,
+        );
       } else withPhone();
     },
     [halt],

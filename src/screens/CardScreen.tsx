@@ -6,7 +6,9 @@ import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
 import { CARD_COLOURS, CARD_HEIGHT, CARD_PIXELS, CARD_WIDTH, DEFAULT_LOOK, DESIGNS, OCCASIONS, lookDesign } from '../cards';
 import type { CardLook, CardSize, Occasion, TextPlace, VeilStrength } from '../cards';
-import { photoExists, pickPhoto, useSavedLooks } from '../cardLooks';
+import { forgetPhoto, photoExists, pickPhoto, useSavedLooks } from '../cardLooks';
+import { stageShared } from '../notebookFiles';
+import { captureSize } from '../platform';
 import type { SavedLook } from '../cardLooks';
 import { AppSwitch } from '../components/AppSwitch';
 import { Header } from '../components/Header';
@@ -98,11 +100,23 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
   };
   // A design from the row starts afresh, keeping where the text stands and its face.
   const chooseDesign = (id: CardLook['design']) => setLook((l) => ({ ...DEFAULT_LOOK, design: id, place: l.place, plainFace: l.plainFace }));
+  // Photos the picker left in the cache for this card: removed when the screen closes (a
+  // saved design has a copy of its own), so the app keeps none.
+  const picked = useRef(new Set<string>());
+  useEffect(
+    () => () => {
+      for (const uri of picked.current) forgetPhoto(uri);
+    },
+    [],
+  );
   const choosePhoto = async () => {
     try {
       const uri = await pickPhoto(size);
       // Over a photo the design's pictures would cover it; its lines can be turned back on.
-      if (uri) setLook((l) => ({ ...l, photo: uri, colour: undefined, extras: l.photo ? l.extras : false }));
+      if (uri) {
+        picked.current.add(uri);
+        setLook((l) => ({ ...l, photo: uri, colour: undefined, extras: l.photo ? l.extras : false }));
+      }
     } catch {
       Alert.alert(t('cardPhotoFailed'));
     }
@@ -162,10 +176,10 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
       const uri = await captureRef(card.current, {
         format: 'png',
         result: 'tmpfile',
-        width: CARD_PIXELS,
-        height: (CARD_PIXELS * CARD_HEIGHT[size]) / CARD_WIDTH,
+        width: captureSize(CARD_PIXELS),
+        height: captureSize((CARD_PIXELS * CARD_HEIGHT[size]) / CARD_WIDTH),
       });
-      await Sharing.shareAsync(uri, { mimeType: 'image/png', UTI: 'public.png', dialogTitle: t('shareAsCard') });
+      await Sharing.shareAsync(stageShared(uri, 'verse-card.png'), { mimeType: 'image/png', UTI: 'public.png', dialogTitle: t('shareAsCard') });
     } catch {
       Alert.alert(t('cardFailed'));
     } finally {

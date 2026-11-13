@@ -18,6 +18,10 @@ import type { StringKey } from './src/i18n';
 import { CONFIGURED_EDITION, EDITIONS, EditionContext, isEditionId, isMultilingual, useEdition } from './src/edition';
 import { LanguageScreen, phoneLanguage } from './src/screens/LanguageScreen';
 import { WelcomeScreen } from './src/screens/WelcomeScreen';
+import { clearShared } from './src/notebookFiles';
+
+// A file handed to the share sheet last time is not kept past the next start.
+clearShared();
 import type { Edition, Language } from './src/edition';
 import { getBooks, getMeta } from './src/queries';
 import { SettingsProvider, useSettings } from './src/settings';

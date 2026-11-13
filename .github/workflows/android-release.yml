@@ -97,6 +97,11 @@ jobs:
           cp app/build/outputs/apk/release/app-release.apk "../$NAME-$VERSION-build${{ github.run_number }}.apk"
           echo "APK=$NAME-$VERSION-build${{ github.run_number }}.apk" >> "$GITHUB_ENV"
 
+      - name: Check what the APK asks of the phone
+        # Only vibration, no component that was not put there on purpose, and the voice's
+        # library only in the app that has a voice (scripts/check-apk.mjs).
+        run: node scripts/check-apk.mjs "$APK" "$BIBLE_EDITION"
+
       - name: Report signing
         run: |
           CERTS=$("$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$APK")

@@ -11,6 +11,7 @@ import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
 import { READ_SPEEDS, spokenText, useReadAloud, voiceFor } from '../readAloud';
 import { hasVoice } from '../speech';
+import { afterSheet } from '../platform';
 import { usesBuiltinVoice } from '../builtinVoice';
 import { CompareSheet } from '../components/CompareSheet';
 import { useIsFocused } from '@react-navigation/native';
@@ -298,12 +299,15 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
       if (!target || !root) return setSpot(null);
       root.measureInWindow((rx, ry) => {
         target.measureInWindow((x, y, width, height) => {
-          setSpot(width > 0 && height > 0 ? { x: x - rx - 6, y: y - ry - 4, width: width + 12, height: height + 8 } : null);
+          // A verse scrolled off the screen is not pointed at: the hint then stands alone.
+          const top = y - ry;
+          const onScreen = width > 0 && height > 0 && top >= 0 && top + height <= area.height;
+          setSpot(onScreen ? { x: x - rx - 6, y: top - 4, width: width + 12, height: height + 8 } : null);
         });
       });
     }, 700);
     return () => clearTimeout(timer);
-  }, [hint, items, hintKey]);
+  }, [hint, items, hintKey, area.width, area.height]);
   const [loadFailed, setLoadFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   // Original words with the chapter they belong to, so a page turn never shows the last chapter's.
@@ -1019,7 +1023,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   };
   const shareVerse = async (v: VerseRow) => {
     setActions(null);
-    await Share.share({ message: verseForClipboard(v) });
+    afterSheet(() => Share.share({ message: verseForClipboard(v) }).catch(() => undefined));
   };
   const toggleBookmark = (v: VerseRow) => {
     setActions(null);
