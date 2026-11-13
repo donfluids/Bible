@@ -11,14 +11,14 @@ export interface Edition {
   /** Translations bundled in this edition's database, in display order. */
   translations: TranslationId[];
   defaultTranslation: TranslationId;
-  /** Interface languages offered; the first is the default. */
+  /** Interface languages offered; the first, English in every app, is the default. */
   languages: Language[];
 }
 
 export const EDITIONS: Record<EditionId, Edition> = {
   en: { id: 'en', translations: ['KJV', 'BSB', 'WEB'], defaultTranslation: 'KJV', languages: ['en'] },
-  ml: { id: 'ml', translations: ['MAL', 'KJV', 'BSB'], defaultTranslation: 'MAL', languages: ['ml', 'en'] },
-  ta: { id: 'ta', translations: ['TAM', 'KJV', 'BSB'], defaultTranslation: 'TAM', languages: ['ta', 'en'] },
+  ml: { id: 'ml', translations: ['MAL', 'KJV', 'BSB'], defaultTranslation: 'MAL', languages: ['en', 'ml'] },
+  ta: { id: 'ta', translations: ['TAM', 'KJV', 'BSB'], defaultTranslation: 'TAM', languages: ['en', 'ta'] },
   // The four-language app: every Bible the others carry, and the Hindi. Its interface is
   // English, Malayalam, Tamil or Hindi; the first opening asks which.
   all: { id: 'all', translations: ['KJV', 'BSB', 'WEB', 'MAL', 'TAM', 'HIN'], defaultTranslation: 'KJV', languages: ['en', 'ml', 'ta', 'hi'] },

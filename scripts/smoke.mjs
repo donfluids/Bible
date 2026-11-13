@@ -26,7 +26,7 @@ const SIZES = [
   ['phone-sideways', 915, 412, 2],
   ['tablet-sideways', 1366, 1024, 1],
 ];
-const LANGUAGE = { en: 'en', ml: 'ml', ta: 'ta', all: 'en' };
+const LANGUAGE = { en: 'en', ml: 'en', ta: 'en', all: 'en' };
 const QUERY = { en: 'love', ml: 'സ്നേഹം', ta: 'அன்பு', all: 'love' };
 const PAGE = { en: 'Love – John 3:16', ml: 'സ്നേഹം – യോഹന്നാൻ 3:16', ta: 'அன்பு – யோவான் 3:16', all: 'Love – John 3:16' };
 

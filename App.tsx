@@ -16,7 +16,7 @@ import type { RootStackParamList } from './src/navigation';
 import { translate, useT } from './src/i18n';
 import type { StringKey } from './src/i18n';
 import { CONFIGURED_EDITION, EDITIONS, EditionContext, isEditionId, isMultilingual, useEdition } from './src/edition';
-import { LanguageScreen, phoneLanguage } from './src/screens/LanguageScreen';
+import { LanguageScreen } from './src/screens/LanguageScreen';
 import { WelcomeScreen } from './src/screens/WelcomeScreen';
 import { clearShared } from './src/notebookFiles';
 
@@ -58,10 +58,8 @@ export default function App() {
   );
 }
 
-// The four-language app speaks the phone's language before the reader has chosen one.
-const STARTUP_LANGUAGE: Language = isMultilingual(CONFIGURED_EDITION)
-  ? (CONFIGURED_EDITION.languages.find((l) => l === phoneLanguage()) ?? CONFIGURED_EDITION.languages[0])
-  : CONFIGURED_EDITION.languages[0];
+// Before the reader's settings are read, every app speaks its default language, English.
+const STARTUP_LANGUAGE: Language = CONFIGURED_EDITION.languages[0];
 /** The free space to ask for, in MB, rounded up to tens. */
 const SPACE_MB = Math.ceil(firstCopySpace() / (1024 * 1024) / 10) * 10;
 
