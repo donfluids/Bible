@@ -48,7 +48,10 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
   const titleFont = scriptureFont(languageScript(settings.language), true, true);
   // The picture takes what is left above the words, within a phone's shape.
   // Less of it where the phone's text is set large, so the words keep their room.
-  const share = PixelRatio.getFontScale() > 1.15 ? 0.34 : 0.42;
+  // A short or narrow phone gives the picture less too, and a smaller heading, so the
+  // words fit without scrolling (Malayalam and Tamil run to more lines than English).
+  const small = height < 720 || width < 380;
+  const share = PixelRatio.getFontScale() > 1.15 ? 0.3 : small ? 0.32 : 0.42;
   const pictureHeight = Math.max(140, Math.min(height * share, (Math.min(width, 520) - 120) * PICTURE_RATIO));
   const pictureWidth = pictureHeight / PICTURE_RATIO;
   const last = index === list.length - 1;
@@ -91,10 +94,10 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
                 />
               ) : null}
             </View>
-            <Text style={[styles.title, { color: theme.text, fontFamily: titleFont }]} accessibilityRole="header">
+            <Text style={[styles.title, small && styles.titleSmall, { color: theme.text, fontFamily: titleFont }]} accessibilityRole="header">
               {t(page.title)}
             </Text>
-            <Text style={[styles.text, { color: theme.muted }]}>{t(page.text)}</Text>
+            <Text style={[styles.text, small && styles.textSmall, { color: theme.muted }]}>{t(page.text)}</Text>
           </ScrollView>
         ))}
       </ScrollView>
@@ -121,11 +124,13 @@ const styles = StyleSheet.create({
   skip: { minHeight: 44, justifyContent: 'center' },
   skipText: { fontSize: 16 },
   pager: { flex: 1 },
-  page: { alignItems: 'center', paddingHorizontal: 30, paddingBottom: 12 },
+  page: { alignItems: 'center', paddingHorizontal: 24, paddingBottom: 12 },
   phone: { borderWidth: 6, borderRadius: 26, overflow: 'hidden', backgroundColor: '#FFFFFF' },
   ring: { position: 'absolute', borderWidth: 3, borderRadius: 999 },
   title: { fontSize: 25, lineHeight: 34, textAlign: 'center', marginTop: 26, fontWeight: '600' },
+  titleSmall: { fontSize: 20, lineHeight: 28, marginTop: 14 },
   text: { fontSize: 16, lineHeight: 24, textAlign: 'center', marginTop: 12, maxWidth: 420 },
+  textSmall: { fontSize: 14.5, lineHeight: 21, marginTop: 8 },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 8, marginBottom: 18 },
   dot: { width: 8, height: 8, borderRadius: 4 },
   dotOn: { width: 22 },
