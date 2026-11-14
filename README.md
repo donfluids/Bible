@@ -159,6 +159,7 @@ From 0.4.1 the bundles carry 32- and 64-bit ARM, and from 0.4.11 64-bit Intel to
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Vedapusthakam-0.4.33-b63.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.33-b63.apk) | 0.4.33 (shorter verse sheet; Indic Tiny TTS male voice) | 63 | release key | d7763b5 | 92.2 MiB | `9264eeb74e900b8f5108352ad29e15f11748625cfd34712144750945fe4e60cf` |
 | [Vedapusthakam-0.4.32-b62.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.32-b62.apk) | 0.4.32 (trial: Indic Tiny TTS male voice in place of Meera) | 62 | release key | 94c6438 | 92.2 MiB | `b6612944353cab7e404d8e31c8573e42f9273692c6567a49305c6bc720fbd800` |
 | [Vedapusthakam-0.4.31-b61.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.31-b61.apk) | 0.4.31 | 61 | release key | 1283e9a | 79.0 MiB | `ad7dce3b7385e68dda21e676e9967766ee837985bf3996902a6afcd1ae408344` |
 | [Vedapusthakam-0.4.30-b60.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.30-b60.apk) | 0.4.30 | 60 | release key | 9ddbdc5 | 79.1 MiB | `256bf886f898d0a31c93de6fe2ddbc2100b6f27792c1ceb9143cf2b2c3bce75a` |
@@ -301,6 +302,7 @@ signing the same file again renews it, and notes and settings stay. Steps:
 
 | File | Version | App | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- |
+| [Vedapusthakam-0.4.33-unsigned.ipa](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.33-unsigned.ipa) | 0.4.33 (shorter verse sheet; Indic Tiny TTS male voice) | വേദപുസ്തകം (org.riversresearch.bible.malayalam), iOS 16.4 or later | d7763b5 | 84.9 MiB | `067a4fda26e2910a1d4ac9ba35ef091e0e63ec64e8ee2519008c02183bb27213` |
 | [Vedapusthakam-0.4.32-unsigned.ipa](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.32-unsigned.ipa) | 0.4.32 (trial: Indic Tiny TTS male voice in place of Meera) | വേദപുസ്തകം (org.riversresearch.bible.malayalam), iOS 16.4 or later | 94c6438 | 85.0 MiB | `3cd87040b1330fdec15f163713f45bf74536adb197661d8650cb245d1036fec7` |
 | [Vedapusthakam-0.4.31-unsigned.ipa](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.31-unsigned.ipa) | 0.4.31 (English menus by default, security hardening) | വേദപുസ്തകം (org.riversresearch.bible.malayalam), iOS 16.4 or later | 1283e9a | 73.1 MiB | `5b490f14e01d81cbf9c0bc62f9f233c323d34de5e1c10239e63043c77f0fdd5c` |
 | [Bible-0.4.31-unsigned.ipa](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.4.31-unsigned.ipa) | 0.4.31 (English menus by default, security hardening) | Bible (org.riversresearch.bible), iOS 16.4 or later | 1283e9a | 33.4 MiB | `d49f76b73944c4a3f8bfe69ae51bd2d9ed22b981f81b9b566de509fad45f9623` |
