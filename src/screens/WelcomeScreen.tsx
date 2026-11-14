@@ -34,6 +34,8 @@ const pages = (edition: EditionId): Page[] => [
 
 /** The pictures' shape: 412 wide by 692 tall. */
 const PICTURE_RATIO = 692 / 412;
+/** A page's space below its words (styles.page paddingBottom). */
+const PAGE_PADDING = 12;
 
 export function WelcomeScreen({ onDone }: { onDone: () => void }) {
   const theme = useTheme();
@@ -46,13 +48,18 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
   const [index, setIndex] = useState(0);
   const scroller = useRef<ScrollView>(null);
   const titleFont = scriptureFont(languageScript(settings.language), true, true);
-  // The picture takes what is left above the words, within a phone's shape.
-  // Less of it where the phone's text is set large, so the words keep their room.
-  // A short or narrow phone gives the picture less too, and a smaller heading, so the
-  // words fit without scrolling (Malayalam and Tamil run to more lines than English).
+  // The picture takes the height the words leave: the pages are measured, and the
+  // picture is as tall as the room above the longest page's words allows, the same on
+  // every page, within the width of the screen (a phone's shape, never stretched). Until
+  // the words are measured, a share of the screen as before; a short or narrow phone also
+  // gets a smaller heading, so the words fit (Malayalam and Tamil run to more lines).
   const small = height < 720 || width < 380;
+  const [pagerHeight, setPagerHeight] = useState(0);
+  const [wordsHeight, setWordsHeight] = useState<number[]>([]);
+  const tallestWords = wordsHeight.length === list.length ? Math.max(...wordsHeight) : 0;
   const share = PixelRatio.getFontScale() > 1.15 ? 0.3 : small ? 0.32 : 0.42;
-  const pictureHeight = Math.max(140, Math.min(height * share, (Math.min(width, 520) - 120) * PICTURE_RATIO));
+  const room = pagerHeight && tallestWords ? pagerHeight - tallestWords - PAGE_PADDING - 12 : height * share;
+  const pictureHeight = Math.max(140, Math.min(room, (Math.min(width, 520) - 64) * PICTURE_RATIO));
   const pictureWidth = pictureHeight / PICTURE_RATIO;
   const last = index === list.length - 1;
   const go = (i: number) => {
@@ -74,7 +81,15 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
           </Pressable>
         )}
       </View>
-      <ScrollView ref={scroller} horizontal pagingEnabled showsHorizontalScrollIndicator={false} onMomentumScrollEnd={onScrollEnd} style={styles.pager}>
+      <ScrollView
+        ref={scroller}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={onScrollEnd}
+        style={styles.pager}
+        onLayout={(e) => setPagerHeight(e.nativeEvent.layout.height)}
+      >
         {list.map((page, i) => (
           // Each page scrolls on its own, so long words in a large size are never cut off.
           <ScrollView
@@ -94,10 +109,18 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
                 />
               ) : null}
             </View>
-            <Text style={[styles.title, small && styles.titleSmall, { color: theme.text, fontFamily: titleFont }]} accessibilityRole="header">
-              {t(page.title)}
-            </Text>
-            <Text style={[styles.text, small && styles.textSmall, { color: theme.muted }]}>{t(page.text)}</Text>
+            <View
+              style={styles.words}
+              onLayout={(e) => {
+                const h = Math.ceil(e.nativeEvent.layout.height);
+                setWordsHeight((all) => (all[i] === h ? all : Object.assign([...all], { [i]: h })));
+              }}
+            >
+              <Text style={[styles.title, small && styles.titleSmall, { color: theme.text, fontFamily: titleFont }]} accessibilityRole="header">
+                {t(page.title)}
+              </Text>
+              <Text style={[styles.text, small && styles.textSmall, { color: theme.muted }]}>{t(page.text)}</Text>
+            </View>
           </ScrollView>
         ))}
       </ScrollView>
@@ -124,7 +147,9 @@ const styles = StyleSheet.create({
   skip: { minHeight: 44, justifyContent: 'center' },
   skipText: { fontSize: 16 },
   pager: { flex: 1 },
-  page: { alignItems: 'center', paddingHorizontal: 24, paddingBottom: 12 },
+  // Room left over (a tablet, where the width limits the picture) goes above and below.
+  page: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, paddingBottom: PAGE_PADDING },
+  words: { alignItems: 'center', alignSelf: 'stretch' },
   phone: { borderWidth: 6, borderRadius: 26, overflow: 'hidden', backgroundColor: '#FFFFFF' },
   ring: { position: 'absolute', borderWidth: 3, borderRadius: 999 },
   title: { fontSize: 25, lineHeight: 34, textAlign: 'center', marginTop: 26, fontWeight: '600' },
