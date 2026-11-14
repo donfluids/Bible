@@ -145,14 +145,22 @@ export function sayVerse(ref: VerseRef, speed: number, on: { onDone: () => void;
   })();
 }
 
-export function stopBuiltinVoice(): void {
+/**
+ * Stops the voice. `release` says when the phone's sound goes back to what was playing
+ * before (music): 'later', a moment after (a word or a sample stopped it, and reading may
+ * go on); 'now', reading has ended; 'keep', not yet: reading moved to another verse or is
+ * paused, with the play bar still showing. ('later' waits on a timer, which Android does
+ * not run while the app is in the background: reading itself uses 'now' or 'keep'.)
+ */
+export function stopBuiltinVoice(release: 'later' | 'now' | 'keep' = 'later'): void {
   turn++;
   keepOnly([]);
   if (!native) return;
   native.stop().catch(() => {});
-  // Reading has stopped, not merely moved to the next verse: a moment later the phone's
-  // sound goes back to what was playing before.
   if (releasing) clearTimeout(releasing);
+  releasing = null;
+  if (release === 'now') native.release().catch(() => {});
+  if (release !== 'later') return;
   releasing = setTimeout(() => {
     releasing = null;
     native.release().catch(() => {});

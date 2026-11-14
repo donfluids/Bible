@@ -147,6 +147,9 @@ module.exports = ({ config }) => {
         CFBundleDevelopmentRegion: e.languages[0],
         CFBundleLocalizations: e.languages,
         CFBundleAllowMixedLocalizations: true,
+        // Reading aloud goes on when the app is left, with the controls on the lock screen
+        // (modules/bible-media). Nothing else runs in the background.
+        UIBackgroundModes: ['audio'],
       },
       // Apple's privacy manifest: no tracking, nothing collected; the system APIs React
       // Native and Expo read (settings storage, file dates, uptime, free space) with the

@@ -1,5 +1,6 @@
-// What a built APK asks of the phone, checked against what the apps promise: the only
-// permission is vibration, and nothing runs that was not put there on purpose. A library
+// What a built APK asks of the phone, checked against what the apps promise: vibration,
+// and reading aloud that goes on when the app is left (a foreground service that plays
+// media), and nothing runs that was not put there on purpose. A library
 // that brings a permission or a component of its own (as ONNX Runtime 1.29 did, with its
 // telemetry) fails the build here instead of reaching a phone.
 //   node scripts/check-apk.mjs <app.apk> [edition]
@@ -24,8 +25,15 @@ const run = (tool, args) => execFileSync(bin(tool), args, { encoding: 'utf8', ma
 const permissions = run('aapt2', ['dump', 'permissions', apk]);
 const pkg = /^package: (\S+)/m.exec(permissions)?.[1] ?? '';
 const asked = [...permissions.matchAll(/^uses-permission: name='([^']+)'/gm)].map((m) => m[1]).sort();
-// Vibration, and the permission Android's own library defines to keep the app's broadcasts to itself.
-const allowed = ['android.permission.VIBRATE', `${pkg}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`].sort();
+// Vibration; reading aloud in the background (a foreground service of the media-playback
+// kind, modules/bible-media); and the permission Android's own library defines to keep
+// the app's broadcasts to itself.
+const allowed = [
+  'android.permission.VIBRATE',
+  'android.permission.FOREGROUND_SERVICE',
+  'android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK',
+  `${pkg}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`,
+].sort();
 
 // The providers, services and receivers the apps are known to carry (file sharing, the
 // photo picker, start-up, Android's profile installer); anything else is new.
@@ -38,6 +46,8 @@ const COMPONENTS = [
   'expo.modules.filesystem.FileSystemFileProvider',
   'expo.modules.imagepicker.fileprovider.ImagePickerFileProvider',
   'expo.modules.sharing.SharingFileProvider',
+  // The play bar while reading aloud (modules/bible-media).
+  'org.riversresearch.biblemedia.BibleMediaService',
 ];
 const tree = run('aapt2', ['dump', 'xmltree', '--file', 'AndroidManifest.xml', apk]).split('\n');
 const components = [];

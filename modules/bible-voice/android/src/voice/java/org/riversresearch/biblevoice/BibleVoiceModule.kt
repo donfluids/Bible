@@ -197,11 +197,9 @@ class BibleVoiceModule : Module() {
       }
     }
 
-    // The app has left the screen (another app, or the phone locked): the verse stops and
-    // reading shows as paused.
-    OnActivityEntersBackground {
-      main.post { finish(false) }
-    }
+    // Leaving the app does not stop the verse: reading goes on, with the play bar in the
+    // notifications (modules/bible-media). A call or another app's sound still stops it
+    // (audio focus, above).
 
     OnDestroy {
       main.post {

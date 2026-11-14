@@ -1,0 +1,18 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'org.riversresearch'
+version = '1.0.0'
+
+// The play bar for reading aloud, in every app: a media notification kept by a foreground
+// service of the media-playback kind, so reading goes on when the app is left. Only the
+// phone's own media classes are used; nothing is added to the build.
+android {
+  namespace "org.riversresearch.biblemedia"
+  defaultConfig {
+    versionCode 1
+    versionName "1.0.0"
+  }
+}

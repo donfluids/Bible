@@ -112,7 +112,7 @@ Settings has a Write to us row, and after about two weeks of reading a small car
 - No analytics, tracking or crash reporting.
 - No access to your contacts, location, camera or microphone. The apps open a file only when you pick it yourself (see Notebook backup and PDFs), and see only that file.
 
-On Android, the only permission the apps use is vibration, for the light ticks you feel when you hold a verse, mark text, save a highlight or change the text size. On iPhone the apps ask for no permissions; the same ticks use the phone's haptics, which need none, and the photo and file pickers are the phone's own, which show only what you choose.
+On Android, the apps use two kinds of permission, and ask you for neither: vibration, for the light ticks you feel when you hold a verse, mark text, save a highlight or change the text size; and the two that let reading aloud go on when you leave the app ("run foreground service" and "run foreground service of the media playback type"), with its controls in your notifications. They do not reach the internet. On iPhone the apps ask for no permissions; reading aloud goes on when you leave the app, with its controls on the lock screen; the same ticks use the phone's haptics, which need none, and the photo and file pickers are the phone's own, which show only what you choose.
 
 ## Children
 

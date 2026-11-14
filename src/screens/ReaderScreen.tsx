@@ -13,6 +13,8 @@ import { READ_SPEEDS, spokenText, useReadAloud, voiceFor } from '../readAloud';
 import { hasVoice } from '../speech';
 import { afterSheet } from '../platform';
 import { usesBuiltinVoice } from '../builtinVoice';
+import Constants from 'expo-constants';
+import { hideBar, showBar } from '../mediaBar';
 import { CompareSheet } from '../components/CompareSheet';
 import { useIsFocused } from '@react-navigation/native';
 import { HEADER_MAX_FONT_SCALE, Header, HeaderIconButton, SHORT_SCREEN } from '../components/Header';
@@ -629,6 +631,32 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   }, [books, position.book, position.chapter, moveTo]);
   const reading = useReadAloud({ chapterKey, verses: chapterVerses, translation, rate: settings.readSpeed, voice: settings.voices[voiceFor(translation)], nextChapter: readOn });
   const readingVerse = reading.verse;
+  // The play bar outside the app (notifications, lock screen) while this reader reads.
+  const barKey = useRef(Symbol('reader')).current;
+  const readingRef = useRef(reading);
+  readingRef.current = reading;
+  useEffect(() => {
+    if (!reading.active) {
+      hideBar(barKey);
+      return;
+    }
+    const title = readingVerse ? formatRef(books, { book: position.book, chapter: position.chapter, verse: readingVerse }, translation) : `${bookName(books, position.book, translation)} ${position.chapter}`;
+    showBar(
+      barKey,
+      title,
+      Constants.expoConfig?.name ?? '',
+      reading.playing,
+      { channel: t('readAloudSection'), previous: t('previousVerse'), play: t('resumeReading'), pause: t('pauseReading'), next: t('nextVerse') },
+      {
+        play: () => readingRef.current.resume(),
+        pause: () => readingRef.current.pause(),
+        next: () => readingRef.current.step(1),
+        previous: () => readingRef.current.step(-1),
+        stop: () => readingRef.current.stop(),
+      },
+    );
+  }, [reading.active, reading.playing, readingVerse, books, position.book, position.chapter, translation, t, barKey]);
+  useEffect(() => () => hideBar(barKey), [barKey]);
   // The verse being read is kept in view until the reader scrolls the page themselves.
   const [following, setFollowing] = useState(true);
   useEffect(() => {

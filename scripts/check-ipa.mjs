@@ -62,7 +62,10 @@ for (const [key, value] of Object.entries(transport)) {
 // The one thing the app asks the reader for: a photo for a card, through the photo picker.
 const ASKS = new Set(['NSPhotoLibraryUsageDescription']);
 for (const key of Object.keys(info)) if (/UsageDescription$/.test(key) && !ASKS.has(key)) fail(`Info.plist asks for something new: ${key}`);
-for (const key of ['UIBackgroundModes', 'UIFileSharingEnabled', 'LSSupportsOpeningDocumentsInPlace', 'NSBonjourServices']) {
+// In the background the apps only read aloud (audio); nothing else may run there.
+const background = info.UIBackgroundModes ?? [];
+if (background.length !== 1 || background[0] !== 'audio') fail(`Info.plist background modes are not just audio (reading aloud): ${JSON.stringify(info.UIBackgroundModes)}`);
+for (const key of ['UIFileSharingEnabled', 'LSSupportsOpeningDocumentsInPlace', 'NSBonjourServices']) {
   if (info[key] && !(Array.isArray(info[key]) && info[key].length === 0)) fail(`Info.plist sets ${key}: ${JSON.stringify(info[key])}`);
 }
 

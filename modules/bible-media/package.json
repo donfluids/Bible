@@ -1,0 +1,9 @@
+{
+  "name": "bible-media",
+  "version": "1.0.0",
+  "description": "The play bar for reading aloud: Android's media notification and the iPhone's lock-screen controls",
+  "license": "MIT",
+  "author": "Rivers Research LLC",
+  "homepage": "https://riversresearch.org",
+  "private": true
+}

@@ -1,0 +1,15 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Reading aloud goes on when the app is left: Android allows that only to a foreground
+       service, which must say that it plays media. Neither permission is asked of the
+       reader, and neither reaches the internet. -->
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+  <application>
+    <!-- Ends with the app: closing the app from the recent apps stops the reading. -->
+    <service
+      android:name="org.riversresearch.biblemedia.BibleMediaService"
+      android:exported="false"
+      android:stopWithTask="true"
+      android:foregroundServiceType="mediaPlayback" />
+  </application>
+</manifest>

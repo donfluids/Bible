@@ -65,9 +65,10 @@ public final class BibleVoiceModule: Module {
   public func definition() -> ModuleDefinition {
     Name("BibleVoice")
 
-    // A call, Siri, another app taking the sound, or this app leaving the screen pauses
-    // the player without telling it; the verse is ended as stopped, so reading shows as
-    // paused and goes on from that verse when the reader returns.
+    // A call, Siri or another app taking the sound pauses the player without telling it;
+    // the verse is ended as stopped, so reading shows as paused and goes on from that verse
+    // when the reader returns. Leaving the app does not stop it: reading goes on, with the
+    // controls on the lock screen (modules/bible-media).
     OnCreate {
       let center = NotificationCenter.default
       let stopped: (Notification) -> Void = { [weak self] _ in
@@ -81,8 +82,7 @@ public final class BibleVoiceModule: Module {
           if raw == AVAudioSession.InterruptionType.began.rawValue {
             stopped(note)
           }
-        },
-        center.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: nil, using: stopped)
+        }
       ]
     }
 

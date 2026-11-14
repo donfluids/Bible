@@ -1,6 +1,9 @@
-// Reading a chapter aloud with the phone's own voice: verse by verse, so the reader can
-// mark the verse being read, step back and forth, and go on into the next chapter.
+// Reading a chapter aloud, with the phone's voice or the app's own: verse by verse, so the
+// reader can mark the verse being read, step back and forth, and go on into the next
+// chapter. Reading goes on when the app is left; the play bar (src/mediaBar.ts) shows
+// outside it.
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 import * as Speech from 'expo-speech';
 import { PHONE_VOICE, sayVerse, stopBuiltinVoice, usesBuiltinVoice } from './builtinVoice';
 import { LANGUAGE, usableVoice } from './speech';
@@ -66,14 +69,16 @@ export function useReadAloud({ chapterKey, verses, translation, rate, voice, nex
   // Saved or Search) stopping, or the word sheet closing, must not stop this one.
   const speaking = useRef<false | 'phone' | 'app'>(false);
 
-  const halt = useCallback(() => {
+  // `ended`: the reading is over, so the phone's sound goes back to what played before;
+  // otherwise it moves to another verse or pauses, and keeps the sound for now.
+  const halt = useCallback((ended = false) => {
     token.current++;
     continuing.current = null;
     if (pauseTimer.current) clearTimeout(pauseTimer.current);
     pauseTimer.current = null;
     // Only the voice that was reading is stopped: stopping the phone's wakes its engine.
     if (speaking.current === 'phone') Speech.stop();
-    if (speaking.current === 'app') stopBuiltinVoice();
+    if (speaking.current === 'app') stopBuiltinVoice(ended ? 'now' : 'keep');
     speaking.current = false;
   }, []);
 
@@ -88,6 +93,7 @@ export function useReadAloud({ chapterKey, verses, translation, rate, voice, nex
           continuing.current = key;
           setIndex(null);
         } else {
+          halt(true);
           setIndex(null);
           setPlaying(false);
           setActive(false);
@@ -150,7 +156,10 @@ export function useReadAloud({ chapterKey, verses, translation, rate, voice, nex
     const first = verses[0];
     if (!first || `${first.book}:${first.chapter}` !== chapterKey) return;
     continuing.current = null;
-    pauseTimer.current = setTimeout(() => speakAt(0), CHAPTER_PAUSE);
+    // Android runs no timers for an app in the background: there the next chapter starts
+    // at once, without the short pause.
+    if (AppState.currentState !== 'active') speakAt(0);
+    else pauseTimer.current = setTimeout(() => speakAt(0), CHAPTER_PAUSE);
   }, [chapterKey, verses, speakAt]);
 
   // A chapter or translation changed by the reader, not by reading on, ends the reading.
@@ -161,14 +170,14 @@ export function useReadAloud({ chapterKey, verses, translation, rate, voice, nex
     if (before.chapterKey === chapterKey && before.translation === translation) return;
     if (continuing.current !== null && before.translation === translation) return;
     if (live.current.index !== null || continuing.current !== null) {
-      halt();
+      halt(true);
       setIndex(null);
       setPlaying(false);
       setActive(false);
     }
   }, [chapterKey, translation, halt]);
 
-  useEffect(() => halt, [halt]);
+  useEffect(() => () => halt(true), [halt]);
 
   const start = useCallback(
     (fromVerse?: number) => {
@@ -205,7 +214,7 @@ export function useReadAloud({ chapterKey, verses, translation, rate, voice, nex
     [speakAt],
   );
   const stop = useCallback(() => {
-    halt();
+    halt(true);
     setIndex(null);
     setPlaying(false);
     setActive(false);
