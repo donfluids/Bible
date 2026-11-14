@@ -303,6 +303,7 @@ signing the same file again renews it, and notes and settings stay. Steps:
 
 | File | Version | App | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- |
+| [Vedapusthakam-0.4.34-unsigned.ipa](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.34-unsigned.ipa) | 0.4.34 (welcome: larger pictures; shorter verse sheet; Indic Tiny TTS male voice) | വേദപുസ്തകം (org.riversresearch.bible.malayalam), iOS 16.4 or later | f5a2705 | 85.0 MiB | `64046d63f90fce093ee63e9516c78b77d3250478577518a26dc8df8495e2c117` |
 | [Vedapusthakam-0.4.33-unsigned.ipa](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.33-unsigned.ipa) | 0.4.33 (shorter verse sheet; Indic Tiny TTS male voice) | വേദപുസ്തകം (org.riversresearch.bible.malayalam), iOS 16.4 or later | d7763b5 | 84.9 MiB | `067a4fda26e2910a1d4ac9ba35ef091e0e63ec64e8ee2519008c02183bb27213` |
 | [Vedapusthakam-0.4.32-unsigned.ipa](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.32-unsigned.ipa) | 0.4.32 (trial: Indic Tiny TTS male voice in place of Meera) | വേദപുസ്തകം (org.riversresearch.bible.malayalam), iOS 16.4 or later | 94c6438 | 85.0 MiB | `3cd87040b1330fdec15f163713f45bf74536adb197661d8650cb245d1036fec7` |
 | [Vedapusthakam-0.4.31-unsigned.ipa](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.31-unsigned.ipa) | 0.4.31 (English menus by default, security hardening) | വേദപുസ്തകം (org.riversresearch.bible.malayalam), iOS 16.4 or later | 1283e9a | 73.1 MiB | `5b490f14e01d81cbf9c0bc62f9f233c323d34de5e1c10239e63043c77f0fdd5c` |
