@@ -14,6 +14,11 @@ interface Props {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
+  /**
+   * Rows opened at the end of the sheet (a group shown in place): when this turns true, the
+   * sheet scrolls to its end once they are laid out, so they are seen, not left below the edge.
+   */
+  openedAtEnd?: boolean;
 }
 
 /**
@@ -21,16 +26,16 @@ interface Props {
  * slides up, has 24 dp corners and a grip, and closes by dragging it down, tapping
  * outside or the close button.
  */
-export function SimpleSheet({ visible, title, onClose, children }: Props) {
+export function SimpleSheet({ visible, title, onClose, children, openedAtEnd }: Props) {
   if (!visible) return null;
   return (
-    <SheetBody title={title} onClose={onClose}>
+    <SheetBody title={title} onClose={onClose} openedAtEnd={openedAtEnd}>
       {children}
     </SheetBody>
   );
 }
 
-function SheetBody({ title, onClose, children }: Omit<Props, 'visible'>) {
+function SheetBody({ title, onClose, children, openedAtEnd }: Omit<Props, 'visible'>) {
   // An arrow key on a keyboard does not turn the chapter under an open sheet.
   useBlockKeys(true);
   const theme = useTheme();
@@ -57,6 +62,15 @@ function SheetBody({ title, onClose, children }: Omit<Props, 'visible'>) {
       }),
     [drag, onClose],
   );
+  // Only a change while the sheet is open scrolls: one opened with the group already shown
+  // starts at its top, as any sheet does.
+  const scroller = useRef<ScrollView>(null);
+  const wasOpened = useRef(openedAtEnd);
+  const toEnd = useRef(false);
+  useEffect(() => {
+    if (openedAtEnd && !wasOpened.current) toEnd.current = true;
+    wasOpened.current = openedAtEnd;
+  }, [openedAtEnd]);
   const translateY = Animated.add(shown.interpolate({ inputRange: [0, 1], outputRange: [0, 600] }), drag);
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
@@ -76,7 +90,16 @@ function SheetBody({ title, onClose, children }: Omit<Props, 'visible'>) {
               <IconButton name="close" onPress={onClose} accessibilityLabel={t('close')} style={styles.close} />
             </View>
           </View>
-          <ScrollView style={{ flexGrow: 0 }} keyboardShouldPersistTaps="handled">
+          <ScrollView
+            ref={scroller}
+            style={{ flexGrow: 0 }}
+            keyboardShouldPersistTaps="handled"
+            onContentSizeChange={() => {
+              if (!toEnd.current) return;
+              toEnd.current = false;
+              scroller.current?.scrollToEnd({ animated: true });
+            }}
+          >
             {children}
           </ScrollView>
         </Animated.View>
@@ -97,29 +120,44 @@ interface ActionProps {
   labelFont?: string;
   /** The choice now in use, for a screen reader (the tick shows it on screen). */
   selected?: boolean;
+  /** What the row does, read by a screen reader but not shown: a short row on screen. */
+  hint?: string;
+  /** A number after the label (how many cross references, for instance). */
+  count?: number;
+  /** A row that shows or hides the rows under it: whether they are shown. */
+  expanded?: boolean;
+  /** A row shown under an open row, set in a little. */
+  inner?: boolean;
 }
 
 /** A row in a sheet: an icon, a label and an optional line under it. */
-export function SheetAction({ label, detail, icon, onPress, destructive, detailLines = 3, labelFont, selected }: ActionProps) {
+export function SheetAction({ label, detail, icon, onPress, destructive, detailLines = 3, labelFont, selected, hint, count, expanded, inner }: ActionProps) {
   const theme = useTheme();
   const color = destructive ? theme.error : theme.text;
+  const state = selected === undefined && expanded === undefined ? undefined : { ...(selected === undefined ? {} : { selected }), ...(expanded === undefined ? {} : { expanded }) };
   return (
     <Pressable
       onPress={onPress}
       android_ripple={{ color: theme.accentSoft }}
-      style={({ pressed }) => [styles.action, { backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
+      style={({ pressed }) => [styles.action, inner ? styles.inner : null, { backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
       accessibilityRole="button"
-      accessibilityState={selected === undefined ? undefined : { selected }}
+      accessibilityLabel={count === undefined ? undefined : `${label}, ${count}`}
+      accessibilityHint={hint}
+      accessibilityState={state}
     >
       {icon ? <Icon name={icon} color={destructive ? theme.error : theme.muted} /> : null}
       <View style={styles.actionTexts}>
-        <Text style={[styles.actionText, { color }, labelFont ? { fontFamily: labelFont } : null]}>{label}</Text>
+        <Text style={[styles.actionText, { color }, labelFont ? { fontFamily: labelFont } : null]}>
+          {label}
+          {count === undefined ? null : <Text style={{ color: theme.muted }}>{`  ${count}`}</Text>}
+        </Text>
         {detail ? (
           <Text style={[styles.actionDetail, { color: theme.muted }]} numberOfLines={detailLines || undefined}>
             {detail}
           </Text>
         ) : null}
       </View>
+      {expanded === undefined ? null : <Icon name={expanded ? 'expand_less' : 'expand_more'} color={theme.muted} />}
     </Pressable>
   );
 }
@@ -145,6 +183,7 @@ const styles = StyleSheet.create({
   close: { marginRight: -12 },
   action: { flexDirection: 'row', alignItems: 'center', gap: 16, minHeight: 56, paddingVertical: 8, marginHorizontal: -20, paddingHorizontal: 20 },
   actionTexts: { flex: 1 },
+  inner: { paddingLeft: 60, minHeight: 52 },
   actionText: { fontSize: 16 },
   actionDetail: { fontSize: 13, lineHeight: 18, marginTop: 2 },
 });

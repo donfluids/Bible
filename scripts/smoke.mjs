@@ -236,11 +236,20 @@ for (const edition of EDITIONS) {
       await snap();
       await closeSheet();
     });
+    // Opens the verse sheet's study row, unless it is open already (it stays as it was left).
+    const openStudy = async () => {
+      if (await page.getByText(t.compare).locator('visible=true').count()) return;
+      await vis(page.getByText(t.studyVerse, { exact: true })).click();
+      await wait(800);
+    };
     await step('compare', async (snap) => {
       await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', '2') })).click();
       await wait(1200);
       // The verse's menu, also the picture on the welcome's third screen.
       await snap('menu');
+      // The study tools are behind one row, opened in place.
+      await openStudy();
+      await snap('menu-study');
       await vis(page.getByText(t.compare)).click();
       await wait(2500);
       await shows(t.compare);
@@ -252,6 +261,7 @@ for (const edition of EDITIONS) {
     await step('cross-references', async (snap) => {
       await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', '1') })).click();
       await wait(1500);
+      await openStudy();
       await vis(page.getByText(t.crossReferences, { exact: true })).click();
       await wait(2500);
       // The list has loaded when its source line shows.

@@ -319,6 +319,8 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   const [actions, setActions] = useState<VerseRow | null>(null);
   const [wordsFor, setWordsFor] = useState<VerseRow | null>(null);
   const [compare, setCompare] = useState<Ref | null>(null);
+  // Whether the verse sheet's study tools are shown (kept from one verse to the next).
+  const [studyOpen, setStudyOpen] = useState(false);
   // The passage picker, from the title: any book and chapter in two taps.
   const [picking, setPicking] = useState(false);
   const lastChapters = usePlace(selectLastChapters);
@@ -1627,10 +1629,10 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
           </Pressable>
         ) : null}
       </SimpleSheet>
-      <SimpleSheet visible={!!actions} title={actions ? formatRef(books, actions, translation) : ''} onClose={() => setActions(null)}>
+      <SimpleSheet visible={!!actions} title={actions ? formatRef(books, actions, translation) : ''} onClose={() => setActions(null)} openedAtEnd={study && studyOpen}>
         {actions ? (
           <>
-            <Text style={[styles.actionsPreview, { color: theme.muted, fontFamily: scriptFont }]} numberOfLines={3}>
+            <Text style={[styles.actionsPreview, { color: theme.muted, fontFamily: scriptFont }]} numberOfLines={1}>
               {flattenVerse(actions.text)}
             </Text>
             <View style={styles.actionButtons}>
@@ -1681,10 +1683,11 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
               </Pressable>
             </View>
             <View style={[styles.actionsDivider, { backgroundColor: theme.border }]} />
+            {/* One line a row; what each does is read by TalkBack (hint), not shown. */}
             <SheetAction
               icon="image"
               label={t('shareAsCard')}
-              detail={t('shareAsCardDetail')}
+              hint={t('shareAsCardDetail')}
               onPress={() => {
                 setActions(null);
                 onOpenCard({ book: actions.book, chapter: actions.chapter, verse: actions.verse }, translation);
@@ -1693,42 +1696,60 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             <SheetAction
               icon="note_add"
               label={t('addToNotebook')}
-              detail={t('addToNotebookDetail')}
+              hint={t('addToNotebookDetail')}
               onPress={() => {
                 setActions(null);
                 setToNotebook(actions);
               }}
             />
-            <SheetAction icon="volume_up" label={t('readFromHere')} detail={t('readFromHereDetail')} onPress={() => startReading(actions.verse)} />
-            <SheetAction icon="ink_highlighter" label={t('markText')} detail={t('markTextDetail')} onPress={() => startMarking(actions)} />
+            <SheetAction icon="volume_up" label={t('readFromHere')} hint={t('readFromHereDetail')} onPress={() => startReading(actions.verse)} />
+            <SheetAction icon="ink_highlighter" label={t('markText')} hint={t('markTextDetail')} onPress={() => startMarking(actions)} />
+            {/* The study tools behind one row, opened in place; it stays as the reader left it. */}
             {study ? (
-            <SheetAction
-              icon="compare_arrows"
-              label={t('compare')}
-              detail={t('compareDetail', { lang: originalLanguage(actions) })}
-              onPress={() => {
-                setActions(null);
-                setCompare({ book: actions.book, chapter: actions.chapter, verse: actions.verse });
-              }}
-            />
-            ) : null}
-            {/* Shown once their counts are known; last, so their coming moves nothing under them. */}
-            {study && actions.tags ? (
               <SheetAction
-                icon="translate"
-                label={t('wordsInVerse')}
-                detail={t('wordsInVerseDetail')}
+                icon="menu_book"
+                label={t('studyVerse')}
+                detail={studyOpen ? undefined : t('studyVerseDetail')}
+                detailLines={1}
+                expanded={studyOpen}
                 onPress={() => {
-                  setActions(null);
-                  setWordsFor(actions);
+                  setStudyOpen(!studyOpen);
+                  AccessibilityInfo.announceForAccessibility(t(studyOpen ? 'studyVerseClosed' : 'studyVerseOpen'));
                 }}
               />
             ) : null}
-            {study && crossCount && crossCount.key === bookmarkKey(actions) && crossCount.n > 0 ? (
-              <SheetAction icon="link" label={t('crossReferences')} detail={t('crossReferencesDetail', { n: crossCount.n })} onPress={() => openCross(actions, 'crossrefs')} />
-            ) : null}
-            {study && crossCount && crossCount.key === bookmarkKey(actions) && crossCount.parallels > 0 ? (
-              <SheetAction icon="view_column" label={t('parallelPassages')} detail={t('parallelPassagesDetail', { n: crossCount.parallels })} onPress={() => openCross(actions, 'parallels')} />
+            {study && studyOpen ? (
+              <>
+                <SheetAction
+                  inner
+                  icon="compare_arrows"
+                  label={t('compare')}
+                  hint={t('compareDetail', { lang: originalLanguage(actions) })}
+                  onPress={() => {
+                    setActions(null);
+                    setCompare({ book: actions.book, chapter: actions.chapter, verse: actions.verse });
+                  }}
+                />
+                {actions.tags ? (
+                  <SheetAction
+                    inner
+                    icon="translate"
+                    label={t('wordsInVerse')}
+                    hint={t('wordsInVerseDetail')}
+                    onPress={() => {
+                      setActions(null);
+                      setWordsFor(actions);
+                    }}
+                  />
+                ) : null}
+                {/* Shown once their counts are known; last, so their coming moves nothing under them. */}
+                {crossCount && crossCount.key === bookmarkKey(actions) && crossCount.n > 0 ? (
+                  <SheetAction inner icon="link" label={t('crossReferences')} count={crossCount.n} hint={t('crossReferencesDetail', { n: crossCount.n })} onPress={() => openCross(actions, 'crossrefs')} />
+                ) : null}
+                {crossCount && crossCount.key === bookmarkKey(actions) && crossCount.parallels > 0 ? (
+                  <SheetAction inner icon="view_column" label={t('parallelPassages')} count={crossCount.parallels} hint={t('parallelPassagesDetail', { n: crossCount.parallels })} onPress={() => openCross(actions, 'parallels')} />
+                ) : null}
+              </>
             ) : null}
           </>
         ) : null}
@@ -2274,7 +2295,7 @@ const styles = StyleSheet.create({
   noteDelete: { fontSize: 15 },
   noteSave: { paddingHorizontal: 22, paddingVertical: 10, borderRadius: 10 },
   noteSaveText: { fontSize: 16, fontWeight: '600' },
-  actionsPreview: { fontSize: 15, lineHeight: 22, marginBottom: 16 },
+  actionsPreview: { fontSize: 15, lineHeight: 22, marginBottom: 12 },
   failed: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24 },
   failedText: { fontSize: 16, textAlign: 'center' },
   failedButton: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 12 },
