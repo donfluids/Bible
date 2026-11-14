@@ -301,6 +301,7 @@ signing the same file again renews it, and notes and settings stay. Steps:
 
 | File | Version | App | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- |
+| [Vedapusthakam-0.4.32-unsigned.ipa](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.32-unsigned.ipa) | 0.4.32 (trial: Indic Tiny TTS male voice in place of Meera) | വേദപുസ്തകം (org.riversresearch.bible.malayalam), iOS 16.4 or later | 94c6438 | 85.0 MiB | `3cd87040b1330fdec15f163713f45bf74536adb197661d8650cb245d1036fec7` |
 | [Vedapusthakam-0.4.31-unsigned.ipa](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.31-unsigned.ipa) | 0.4.31 (English menus by default, security hardening) | വേദപുസ്തകം (org.riversresearch.bible.malayalam), iOS 16.4 or later | 1283e9a | 73.1 MiB | `5b490f14e01d81cbf9c0bc62f9f233c323d34de5e1c10239e63043c77f0fdd5c` |
 | [Bible-0.4.31-unsigned.ipa](https://github.com/donfluids/Bible/raw/apk-builds/Bible-0.4.31-unsigned.ipa) | 0.4.31 (English menus by default, security hardening) | Bible (org.riversresearch.bible), iOS 16.4 or later | 1283e9a | 33.4 MiB | `d49f76b73944c4a3f8bfe69ae51bd2d9ed22b981f81b9b566de509fad45f9623` |
 | [Vedagamam-0.4.31-unsigned.ipa](https://github.com/donfluids/Bible/raw/apk-builds/Vedagamam-0.4.31-unsigned.ipa) | 0.4.31 (English menus by default, security hardening) | வேதாகமம் (org.riversresearch.bible.tamil), iOS 16.4 or later | 1283e9a | 36.9 MiB | `7dfbbb95d495d1162185ea0f311d170058093f23bab202d563e889ff676d76dc` |
