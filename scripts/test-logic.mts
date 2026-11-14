@@ -442,7 +442,7 @@ test('an iPhone\'s shared Indian voice is offered for Malayalam when none is lis
 });
 
 test('the app\'s voice: the speech file gives each verse its phrases, laid out for the model', () => {
-  const speech = openSpeech(new Uint8Array(readVoiceFile(new URL('../assets/speech/ml-tiny.bin', import.meta.url))));
+  const speech = openSpeech(new Uint8Array(readVoiceFile(new URL('../assets/speech/ml-letters.bin', import.meta.url))));
   const psalm = speech.chapter(19, 23)!;
   // Six verses and the psalm's title (verse 0).
   assert.deepEqual([...psalm.keys()], [0, 1, 2, 3, 4, 5, 6]);

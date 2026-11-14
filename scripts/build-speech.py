@@ -17,7 +17,7 @@ reader does (its textnorm, read from its page): NFC, the old chillu spellings jo
 zero-width joiners removed, a colon or semicolon read as a comma, other unknown marks as
 spaces.
 
-    python3 scripts/build-speech.py assets/db/bible-ml.db MAL <indic-tiny config.json> assets/speech/ml-tiny.bin
+    python3 scripts/build-speech.py assets/db/bible-ml.db MAL <indic-tiny config.json> assets/speech/ml-letters.bin
 
 The file: "BSP1", the number of chapters, then for each chapter its book, chapter and
 where it starts (u8, u8, u32); then each chapter: the number of verses (u8) and for each

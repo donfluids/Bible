@@ -1,4 +1,4 @@
-// The voice the Malayalam app carries (Indic Tiny TTS, its female reader; until 0.4.31,
+// The voice the Malayalam app carries (Indic Tiny TTS, its male reader; until 0.4.31,
 // Meera, a Piper voice): the parts that are plain arithmetic, kept free of the phone's
 // libraries so they are tested on a computer. The verses' letters come ready-made from
 // scripts/build-speech.py and the model from scripts/build-tiny-voice.py; here the letters
@@ -11,12 +11,12 @@ export const MODEL_RATE = 24000;
 export const PLAY_RATE = MODEL_RATE;
 /**
  * The model's three settings (the voice module passes them as they are): its temperature
- * (variation in tone), its length scale (pace; 0.9895 is the female reader's own), and
- * the reader (0 female, 1 male).
+ * (variation in tone), its length scale (pace; 0.9336 is the male reader's own, 0.9895 the
+ * female's), and the reader (1 male, 0 female).
  */
 export const NOISE = 0.667;
-export const PACE = 0.9895;
-export const READER = 0;
+export const PACE = 0.9336;
+export const READER = 1;
 /** Rests, in seconds of the model's time: after a phrase, after a sentence, after the verse. */
 const REST = { 1: 0.32, 2: 0.55 } as const;
 const VERSE_REST = 0.6;
