@@ -159,6 +159,7 @@ From 0.4.1 the bundles carry 32- and 64-bit ARM, and from 0.4.11 64-bit Intel to
 
 | File | Version | Code | Signing | Built from | Size | SHA-256 |
 | --- | --- | --- | --- | --- | --- | --- |
+| [Vedapusthakam-0.4.32-b62.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.32-b62.apk) | 0.4.32 (trial: Indic Tiny TTS male voice in place of Meera) | 62 | release key | 94c6438 | 92.2 MiB | `b6612944353cab7e404d8e31c8573e42f9273692c6567a49305c6bc720fbd800` |
 | [Vedapusthakam-0.4.31-b61.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.31-b61.apk) | 0.4.31 | 61 | release key | 1283e9a | 79.0 MiB | `ad7dce3b7385e68dda21e676e9967766ee837985bf3996902a6afcd1ae408344` |
 | [Vedapusthakam-0.4.30-b60.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.30-b60.apk) | 0.4.30 | 60 | release key | 9ddbdc5 | 79.1 MiB | `256bf886f898d0a31c93de6fe2ddbc2100b6f27792c1ceb9143cf2b2c3bce75a` |
 | [Vedapusthakam-0.4.29-b57.apk](https://github.com/donfluids/Bible/raw/apk-builds/Vedapusthakam-0.4.29-b57.apk) | 0.4.29 | 57 | release key | bd075eb | 78.4 MiB | `9920e38c611e547d49857ead625c57371f24cb354bdeb484f6bc9f5503889f84` |
