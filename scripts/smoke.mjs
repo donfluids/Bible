@@ -238,7 +238,8 @@ for (const edition of EDITIONS) {
     });
     // Opens the verse sheet's study row, unless it is open already (it stays as it was left).
     const openStudy = async () => {
-      if (await page.getByText(t.compare).locator('visible=true').count()) return;
+      // Exact: the row's own line under it also starts with "Compare translations".
+      if (await page.getByText(t.compare, { exact: true }).locator('visible=true').count()) return;
       await vis(page.getByText(t.studyVerse, { exact: true })).click();
       await wait(800);
     };
@@ -250,7 +251,7 @@ for (const edition of EDITIONS) {
       // The study tools are behind one row, opened in place.
       await openStudy();
       await snap('menu-study');
-      await vis(page.getByText(t.compare)).click();
+      await vis(page.getByText(t.compare, { exact: true })).click();
       await wait(2500);
       await shows(t.compare);
       await snap();
@@ -262,7 +263,8 @@ for (const edition of EDITIONS) {
       await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', '1') })).click();
       await wait(1500);
       await openStudy();
-      await vis(page.getByText(t.crossReferences, { exact: true })).click();
+      // The row says how many there are after its name ("Cross references, 10" to TalkBack).
+      await vis(page.getByRole('button', { name: new RegExp(`^${t.crossReferences}, \\d+$`) })).click();
       await wait(2500);
       // The list has loaded when its source line shows.
       await shows(t.crossReferencesSource);
