@@ -28,7 +28,14 @@ const SIZES = [
 ];
 const LANGUAGE = { en: 'en', ml: 'en', ta: 'en', all: 'en' };
 const QUERY = { en: 'love', ml: 'സ്നേഹം', ta: 'அன்பு', all: 'love' };
-const PAGE = { en: 'Love – John 3:16', ml: 'സ്നേഹം – യോഹന്നാൻ 3:16', ta: 'அன்பு – யோவான் 3:16', all: 'Love – John 3:16' };
+// A notebook page: a heading and three verses, each quoted under its reference (also the
+// picture on the welcome's last screen, so it is a page with something on it).
+const PAGE = {
+  en: 'Love – John 3:16\nRomans 5:8\n1 John 4:8',
+  ml: 'സ്നേഹം – യോഹന്നാൻ 3:16\nറോമർ 5:8\n1. യോഹന്നാൻ 4:8',
+  ta: 'அன்பு – யோவான் 3:16\nரோமர் 5:8\n1 யோவான் 4:8',
+  all: 'Love – John 3:16\nRomans 5:8\n1 John 4:8',
+};
 
 for (const pkg of ['react-dom', 'react-native-web']) {
   if (!existsSync(join(ROOT, 'node_modules', pkg))) {
