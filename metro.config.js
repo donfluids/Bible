@@ -31,8 +31,8 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   const voice = edition === 'ml' || edition === 'all';
   // The welcome's pictures show the app in its own language; the four-language app uses the English ones.
   target = target.replace('/assets/welcome/edition/', `/assets/welcome/${edition === 'all' ? 'en' : edition}/`);
-  if (target.endsWith('/assets/speech/voice.onnx')) target = target.replace(/voice\.onnx$/, voice ? 'ml-meera.onnx' : 'no-model.onnx');
-  if (target.endsWith('/assets/speech/voice.bin')) target = target.replace(/voice\.bin$/, voice ? 'ml.bin' : 'no-sounds.bin');
+  if (target.endsWith('/assets/speech/voice.onnx')) target = target.replace(/voice\.onnx$/, voice ? 'ml-tiny.onnx' : 'no-model.onnx');
+  if (target.endsWith('/assets/speech/voice.bin')) target = target.replace(/voice\.bin$/, voice ? 'ml-tiny.bin' : 'no-sounds.bin');
   return defaultResolve ? defaultResolve(context, target, platform) : context.resolveRequest(context, target, platform);
 };
 

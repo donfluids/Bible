@@ -160,19 +160,29 @@ const CROSS_REFERENCES: Source = {
   modifications: 'Up to ten links per verse kept, the most voted first, links with no votes left out; a range running on into the next book kept as its first verse; links to verses the KJV does not number left out.',
 };
 
-// The voice the Malayalam app carries. The IIT Madras licence asks that those who receive
-// a work made from its recordings be told it has open-source parts, and that they may not
-// sell, license or reverse-engineer it further; the notice says so.
+// The voice the Malayalam app carries: Indic Tiny TTS, whose CC BY licence asks for credit
+// to the model and to the Rasa recordings it learnt from; its vocoder is Vocos, MIT.
 const VOICE: Source = {
-  title: 'Malayalam voice (Meera)',
+  title: 'Malayalam voice (Indic Tiny TTS)',
   notice:
-    'A Piper voice for Malayalam, trained by the Piper project from the Indic TTS Malayalam recordings of the Indian Institute of Technology Madras. The voice has open-source parts; it may not be sold, leased, licensed or reverse-engineered apart from this app. The app works out each verse\u2019s speech sounds beforehand with eSpeak NG and carries only the result.',
+    'Indic Tiny TTS: Malayalam, by Sulabh Katiyar (2026), trained on the Malayalam recordings of Rasa, AI4Bharat (Rasa: Building Expressive Speech Synthesis Systems for Indian Languages in Low-resource Settings, Interspeech 2024). The voice reads Malayalam script itself; no speech-sound converter is used.',
+  licence: CC_BY,
+  source: [
+    { label: 'huggingface.co/sulabhkatiyar/indic-tiny-tts-malayalam', url: 'https://huggingface.co/sulabhkatiyar/indic-tiny-tts-malayalam' },
+    { label: 'Rasa, AI4Bharat', url: 'https://huggingface.co/datasets/ai4bharat/Rasa' },
+  ],
+  modifications:
+    'Its three parts and the steps between them joined into one model for the phone, with its numbers stored at 16-bit precision; read phrase by phrase, with rests between phrases and verses, each verse brought to one level.',
+};
+
+const VOCODER: Source = {
+  title: 'Vocos (the voice\u2019s vocoder)',
+  notice: 'Copyright (c) 2023 Charactr Inc. The pretrained weights charactr/vocos-mel-24khz, unchanged.',
   licence: MIT,
   source: [
-    { label: 'huggingface.co/rhasspy/piper-voices', url: 'https://huggingface.co/rhasspy/piper-voices/tree/main/ml/ml_IN/meera/medium' },
-    { label: 'Indic TTS, IIT Madras', url: 'https://www.iitm.ac.in/donlab/indictts/database' },
+    { label: 'github.com/gemelo-ai/vocos', url: 'https://github.com/gemelo-ai/vocos' },
+    { label: 'huggingface.co/charactr/vocos-mel-24khz', url: 'https://huggingface.co/charactr/vocos-mel-24khz' },
   ],
-  modifications: 'Read phrase by phrase with rests between phrases and verses; played slightly slower and with a fuller tone.',
 };
 
 const PARALLELS: Source = {
@@ -243,7 +253,7 @@ export function sectionsFor(edition: EditionId): Section[] {
     { heading: 'Scripture texts', sources: texts },
     { heading: 'Hebrew and Greek data', sources: [STEPBIBLE, STRONGS] },
     { heading: 'Dictionaries, cross references, parallels and introductions', sources: [ABBOTT_SMITH, BDB, CROSS_REFERENCES, PARALLELS, INTRODUCTIONS(edition)] },
-    ...(edition === 'ml' || edition === 'all' ? [{ heading: 'Voice', sources: [VOICE] }] : []),
+    ...(edition === 'ml' || edition === 'all' ? [{ heading: 'Voice', sources: [VOICE, VOCODER] }] : []),
     { heading: 'Fonts, icons and pictures', sources: [FONTS(edition), ICONS, FLUENT, ROSE] },
     { heading: 'Software', sources: [APP(edition)] },
   ];

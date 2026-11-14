@@ -1,17 +1,22 @@
-// The voice the Malayalam app carries (Meera, a Piper model): the parts that are plain
-// arithmetic, kept free of the phone's libraries so they are tested on a computer. The
-// verses' speech sounds come ready-made from scripts/build-speech.py; here they are laid
-// out for the model, and what the model returns is shaped into a measured reading: a
-// breath after each phrase, a longer rest at a full stop, a fuller and slightly deeper tone.
+// The voice the Malayalam app carries (Indic Tiny TTS, its female reader; until 0.4.31,
+// Meera, a Piper voice): the parts that are plain arithmetic, kept free of the phone's
+// libraries so they are tested on a computer. The verses' letters come ready-made from
+// scripts/build-speech.py and the model from scripts/build-tiny-voice.py; here the letters
+// are laid out for the model, and what it returns is shaped into a measured reading: a
+// breath after each phrase, a longer rest at a full stop, one level for the verse.
 
 /** The model's sample rate. */
-export const MODEL_RATE = 22050;
-/** Played a little slower than made, which deepens the voice. */
-export const PLAY_RATE = Math.round(MODEL_RATE * 0.93);
-/** The model's settings for a steady reading: variation in tone, pace, variation in timing. */
-export const NOISE = 0.35;
-export const PACE = 1.18;
-export const NOISE_W = 0.5;
+export const MODEL_RATE = 24000;
+/** Played as made. (Meera was played a little slower, which deepened her voice.) */
+export const PLAY_RATE = MODEL_RATE;
+/**
+ * The model's three settings (the voice module passes them as they are): its temperature
+ * (variation in tone), its length scale (pace; 0.9895 is the female reader's own), and
+ * the reader (0 female, 1 male).
+ */
+export const NOISE = 0.667;
+export const PACE = 0.9895;
+export const READER = 0;
 /** Rests, in seconds of the model's time: after a phrase, after a sentence, after the verse. */
 const REST = { 1: 0.32, 2: 0.55 } as const;
 const VERSE_REST = 0.6;
@@ -19,6 +24,7 @@ const VERSE_REST = 0.6;
 export interface Phrase {
   /** 1: a breath follows (comma, semicolon); 2: a longer rest (full stop). */
   rest: 1 | 2;
+  /** What the model reads: the phrase's letters (Meera's file held speech sounds). */
   sounds: Uint8Array;
 }
 
@@ -62,11 +68,10 @@ export function openSpeech(bytes: Uint8Array): SpeechFile {
   };
 }
 
-/** A phrase as the model takes it: start mark, each sound followed by a pad, end mark. */
-export function modelInput(sounds: Uint8Array): number[] {
-  const ids = [1, 0];
-  for (const s of sounds) ids.push(s, 0);
-  ids.push(2);
+/** A phrase as the model takes it: its letters, with a blank (0) between and around them. */
+export function modelInput(letters: Uint8Array): number[] {
+  const ids = [0];
+  for (const s of letters) ids.push(s, 0);
   return ids;
 }
 
@@ -128,8 +133,17 @@ function lowPass1(x: Float32Array, cutoff: number, rate: number): Float32Array {
   return y;
 }
 
+/** The verse brought to one level: its loudest sample at `level`. */
+export function levelled(x: Float32Array, level = 0.92): Float32Array {
+  let peak = 1e-9;
+  for (let i = 0; i < x.length; i++) peak = Math.max(peak, Math.abs(x[i]));
+  const y = new Float32Array(x.length);
+  for (let i = 0; i < x.length; i++) y[i] = (x[i] / peak) * level;
+  return y;
+}
+
 /**
- * A fuller tone: more body below about 220 Hz, a little less edge at the top, and the
+ * Meera's tone, not used for the present voice: more body below about 220 Hz, a little less edge at the top, and the
  * quiet parts lifted towards the loud ones so the level is firm. `level` is the loudest
  * sample the result reaches; one level for a whole verse, so its phrases match.
  */

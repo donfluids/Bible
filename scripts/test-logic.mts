@@ -6,7 +6,7 @@
 //
 //   npx tsx scripts/test-logic.mts
 import { readFileSync as readVoiceFile } from 'node:fs';
-import { MODEL_RATE, PLAY_RATE, joinPhrases, modelInput, openSpeech, paceFor, wavFile } from '../src/builtinVoice/core';
+import { MODEL_RATE, PLAY_RATE, joinPhrases, levelled, modelInput, openSpeech, paceFor, wavFile } from '../src/builtinVoice/core';
 import { plainMorph } from '../src/morph';
 import assert from 'node:assert/strict';
 import { describeVoice, groupVoices, voicesFor, voicesOrIndian } from '../src/voiceLabels';
@@ -442,7 +442,7 @@ test('an iPhone\'s shared Indian voice is offered for Malayalam when none is lis
 });
 
 test('the app\'s voice: the speech file gives each verse its phrases, laid out for the model', () => {
-  const speech = openSpeech(new Uint8Array(readVoiceFile(new URL('../assets/speech/ml.bin', import.meta.url))));
+  const speech = openSpeech(new Uint8Array(readVoiceFile(new URL('../assets/speech/ml-tiny.bin', import.meta.url))));
   const psalm = speech.chapter(19, 23)!;
   // Six verses and the psalm's title (verse 0).
   assert.deepEqual([...psalm.keys()], [0, 1, 2, 3, 4, 5, 6]);
@@ -450,10 +450,15 @@ test('the app\'s voice: the speech file gives each verse its phrases, laid out f
   // "യഹോവ എന്റെ ഇടയനാകുന്നു; എനിക്കു മുട്ടുണ്ടാകയില്ല." is two phrases: a breath, then a full stop.
   assert.deepEqual(first.map((p) => p.rest), [1, 2]);
   assert.ok(first.every((p) => p.sounds.length > 10));
+  // The model reads letters (scripts/build-speech.py with Indic Tiny's config): one id for
+  // each letter, vowel sign and space of the phrase, its semicolon included.
+  assert.equal(first[0].sounds.length, 'യഹോവ എന്റെ ഇടയനാകുന്നു;'.length);
   assert.equal(speech.chapter(67, 1), null);
   assert.equal(speech.chapter(66, 22)!.size, 21);
   const ids = modelInput(Uint8Array.from([14, 15]));
-  assert.deepEqual(ids, [1, 0, 14, 0, 15, 0, 2]);
+  assert.deepEqual(ids, [0, 14, 0, 15, 0]);
+  const level = levelled(Float32Array.from([0, 0.2, -0.4]));
+  assert.ok(Math.abs(level[2] + 0.92) < 1e-6 && Math.abs(level[1] - 0.46) < 1e-6);
   const verse = joinPhrases([{ samples: new Float32Array(1000), rest: 1 }, { samples: new Float32Array(500), rest: 2 }]);
   assert.equal(verse.length, 1500 + Math.round(MODEL_RATE * 0.32) + Math.round(MODEL_RATE * 0.55) + Math.round(MODEL_RATE * 0.6));
   const wav = wavFile(Float32Array.from([0, 1, -1]));

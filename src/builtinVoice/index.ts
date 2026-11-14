@@ -1,16 +1,17 @@
-// The voice the Malayalam app carries (Meera): reads a verse of the Malayalam Bible in a
-// measured way, on the phone, with no internet. The model and the verses' speech sounds
+// The voice the Malayalam app carries (Indic Tiny TTS): reads a verse of the Malayalam
+// Bible in a measured way, on the phone, with no internet. The model and the verses' speech sounds
 // are in the app (assets/speech); modules/bible-voice runs the model and plays the sound.
 import { Asset } from 'expo-asset';
 import { requireOptionalNativeModule } from 'expo';
 import { CONFIGURED_EDITION } from '../edition';
 import type { TranslationId } from '../types';
-import { NOISE, NOISE_W, fuller, joinPhrases, modelInput, openSpeech, paceFor, trim, wavFile } from './core';
+import { NOISE, READER, joinPhrases, levelled, modelInput, openSpeech, paceFor, trim, wavFile } from './core';
 import type { SpeechFile } from './core';
 
 interface Native {
   read(path: string): Promise<Uint8Array>;
   load(path: string): Promise<void>;
+  /** The third setting is the model's own: for the present voice, which reader (core.ts READER). */
   synthesize(ids: number[], noise: number, pace: number, noiseW: number): Promise<Uint8Array>;
   play(wav: Uint8Array): Promise<boolean>;
   stop(): Promise<void>;
@@ -20,11 +21,14 @@ interface Native {
 
 const native = requireOptionalNativeModule<Native>('BibleVoice');
 
-/** What Settings keeps for this voice, beside the phone's own voice identifiers. */
+/**
+ * What Settings keeps for this voice, beside the phone's own voice identifiers. It still
+ * says Meera, the voice before, so a reader who chose the app's voice keeps it.
+ */
 export const BUILTIN_VOICE = 'builtin:meera';
 /** What Settings keeps when the phone's default voice is chosen over the app's own. */
 export const PHONE_VOICE = 'phone';
-export const BUILTIN_NAME = 'Meera';
+export const BUILTIN_NAME = 'Indic Tiny';
 
 let failed = false;
 
@@ -85,12 +89,12 @@ function make(ref: VerseRef, speed: number): Promise<Uint8Array> {
     const parts = [];
     for (const phrase of phrases) {
       if (!job.wanted) throw new Error('not wanted');
-      const bytes = await native!.synthesize(modelInput(phrase.sounds), NOISE, paceFor(speed), NOISE_W);
+      const bytes = await native!.synthesize(modelInput(phrase.sounds), NOISE, paceFor(speed), READER);
       // The floats are read where they lie; copied first only if they do not start on a boundary of four bytes.
       const aligned = bytes.byteOffset % 4 === 0 ? bytes : bytes.slice();
       parts.push({ samples: trim(new Float32Array(aligned.buffer, aligned.byteOffset, Math.floor(aligned.byteLength / 4))), rest: phrase.rest });
     }
-    return wavFile(fuller(joinPhrases(parts)));
+    return wavFile(levelled(joinPhrases(parts)));
   };
   job.wav = line.then(run, run);
   line = job.wav.catch(() => undefined);
