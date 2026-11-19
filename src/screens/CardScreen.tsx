@@ -199,8 +199,11 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
         height: captureSize((CARD_PIXELS * CARD_HEIGHT[size]) / CARD_WIDTH),
       });
       await Sharing.shareAsync(stageShared(uri, 'verse-card.png'), { mimeType: 'image/png', UTI: 'public.png', dialogTitle: t('shareAsCard') });
-    } catch {
-      Alert.alert(t('cardFailed'));
+    } catch (e) {
+      // The phone's own reason goes under the message, so a report of it says what failed.
+      const reason = e instanceof Error ? e.message : String(e);
+      console.error('card picture failed:', reason);
+      Alert.alert(t('cardFailed'), reason.slice(0, 300));
     } finally {
       setSharing(false);
     }
