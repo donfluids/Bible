@@ -332,7 +332,8 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
       {/* On a wide screen (a tablet on its side, a Chromebook) the word sheet stands as a
           panel at the right and the screens make room for it, so the text stays in view. */}
       <View style={[styles.root, wide && styles.rootWide, { paddingLeft: insets.left, paddingRight: insets.right, backgroundColor: theme.bg }]}>
-      <View style={styles.root}>
+      {/* While the word sheet covers the screens, a screen reader reads only the sheet. */}
+      <View style={styles.root} importantForAccessibility={pick && !wide ? 'no-hide-descendants' : 'auto'} accessibilityElementsHidden={!!pick && !wide}>
       <NavigationContainer ref={navigationRef} theme={navTheme}>
         <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.bg } }}>
           <Stack.Screen name="Reader" component={ReaderRoute} />

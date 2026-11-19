@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Animated, BackHandler, Modal, PanResponder, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Alert, Animated, BackHandler, PanResponder, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { Pressable } from './Pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -171,15 +171,28 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
     },
     [fullH, halfY, offset, onClose],
   );
-  // A new word starts at half height; going back from a followed link keeps the height.
-  // Before paint, so a sheet closed by dragging does not flash empty when next opened.
+  // A new word starts at half height, sliding up from below; going back from a followed
+  // link keeps the height. Before paint, so a sheet closed by dragging does not flash
+  // empty when next opened.
+  // A turned phone (a new half height, or the panel coming or going) only resets it.
+  const shownRoot = useRef<WordPick | null>(null);
   useLayoutEffect(() => {
-    if (!rootPick) return;
-    offset.setValue(halfY);
+    if (!rootPick) {
+      shownRoot.current = null;
+      return;
+    }
+    const isNew = shownRoot.current !== rootPick;
+    shownRoot.current = rootPick;
     restY.current = halfY;
     setExpanded(false);
     setShowLegend(false);
-  }, [rootPick, halfY, offset]);
+    if (panel || !isNew) {
+      offset.setValue(halfY);
+      return;
+    }
+    offset.setValue(fullH);
+    Animated.spring(offset, { toValue: halfY, useNativeDriver: true, bounciness: 0, speed: 18 }).start();
+  }, [rootPick, halfY, fullH, panel, offset]);
   const startY = useRef(0);
   const drag = useMemo(() => {
     const settle = (dy: number, vy: number) => {
@@ -265,15 +278,15 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
     };
   }, [db, pick, tagged, withKjv, nativeFirst]);
 
-  // A panel is no modal, so Back has to be caught here.
+  // The sheet is drawn in the app's own window (no system modal), so Back is caught here.
   useEffect(() => {
-    if (!panel || !pick) return;
+    if (!pick) return;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
       (onBack ?? onClose)();
       return true;
     });
     return () => sub.remove();
-  }, [panel, pick, onBack, onClose]);
+  }, [pick, onBack, onClose]);
   if (!pick) return null;
   const original = pick.original;
   const hebrew = pick.strongs ? isHebrew(pick.strongs) : !!original && /[֐-׿]/.test(original.text);
@@ -322,7 +335,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
   // On a wide screen the sheet is a panel at the right, and the text beside it stays in view.
   const Frame = panel ? PanelFrame : ModalFrame;
   return (
-    <Frame onClose={onClose} onBack={onBack} closeLabel={t('close')} theme={theme}>
+    <Frame onClose={onClose} onBack={onBack} closeLabel={t('close')} theme={theme} dim={backdropDim(offset, halfY, fullH)}>
       <Animated.View
         style={[styles.sheet, panel && styles.panelSheet, { height: fullH, backgroundColor: theme.card, borderColor: theme.border, transform: [{ translateY: offset }] }]}
       >
@@ -570,16 +583,30 @@ interface FrameProps {
   onBack?: () => void;
   closeLabel: string;
   theme: Theme;
+  /** How dark the backdrop is, 0 to 1, as the sheet rises and falls. */
+  dim: Animated.AnimatedInterpolation<number>;
   children: React.ReactNode;
 }
 
-/** The sheet over the screen, on a dimmed backdrop that closes it. */
-function ModalFrame({ onClose, onBack, closeLabel, children }: FrameProps) {
+/** The backdrop darkens as the sheet comes up from closed to half height. */
+function backdropDim(offset: Animated.Value, halfY: number, fullH: number): Animated.AnimatedInterpolation<number> {
+  return offset.interpolate({ inputRange: [Math.min(halfY, fullH - 1), fullH], outputRange: [1, 0], extrapolate: 'clamp' });
+}
+
+/**
+ * The sheet over the screen, on a dimmed backdrop that closes it. It is a layer over the
+ * app's screens rather than a system modal: on the iPhone a modal asked for while a screen
+ * slides, or while another sheet closes, can fail to appear yet still hold every touch,
+ * which froze the app.
+ */
+function ModalFrame({ onClose, closeLabel, dim, children }: FrameProps) {
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onBack ?? onClose} statusBarTranslucent>
-      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={closeLabel} />
+    <View style={StyleSheet.absoluteFill} accessibilityViewIsModal>
+      <Animated.View style={[StyleSheet.absoluteFill, { opacity: dim }]}>
+        <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={closeLabel} />
+      </Animated.View>
       {children}
-    </Modal>
+    </View>
   );
 }
 
