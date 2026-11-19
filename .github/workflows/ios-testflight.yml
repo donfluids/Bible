@@ -152,10 +152,11 @@ jobs:
           echo "the key reads as a private key"
           echo "ASC_KEY_PATH=$out" >> "$GITHUB_ENV"
 
-      - name: Archive (signed for the App Store)
+      - name: Archive
+        # Unsigned here: automatic signing at this step would make a development
+        # profile, which needs a registered device. The upload step signs the app for
+        # the App Store instead (its distribution profile needs no device).
         env:
-          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-          ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           set -o pipefail
@@ -164,9 +165,8 @@ jobs:
           xcodebuild -workspace "$workspace" -scheme "$scheme" -configuration Release \
             -sdk iphoneos -destination 'generic/platform=iOS' \
             -archivePath "$RUNNER_TEMP/app.xcarchive" \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$ASC_KEY_PATH" -authenticationKeyID "$KEY_ID" -authenticationKeyIssuerID "$ISSUER_ID" \
             DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= \
             archive > xcodebuild-archive.log 2>&1 || {
               echo "::group::errors"; grep -E -A 6 "error:|fatal error" xcodebuild-archive.log | head -80; echo "::endgroup::"
               tail -60 xcodebuild-archive.log
@@ -178,7 +178,9 @@ jobs:
       - name: Check the app keeps its promises
         run: node scripts/check-ipa.mjs "$APP_PATH" "$BIBLE_EDITION"
 
-      - name: Upload to App Store Connect
+      - name: Sign for the App Store and upload
+        # Xcode makes (or reuses) the Apple Distribution certificate and the App Store
+        # profile with the API key, signs the app and its frameworks, and uploads.
         env:
           KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}

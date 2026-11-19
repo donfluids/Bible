@@ -14,7 +14,7 @@ on:
     # A push that only asks for a TestFlight upload (ios-testflight.yml) does not build
     # the three apps here as well: Mac machines are few, and a job left waiting for one
     # is cancelled.
-    paths-ignore: ['.github/testflight.txt']
+    paths-ignore: ['.github/testflight.txt', '.github/workflows/ios-testflight.yml']
   workflow_dispatch:
 
 permissions:
