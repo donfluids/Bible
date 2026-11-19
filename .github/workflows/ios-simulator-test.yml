@@ -1,0 +1,146 @@
+name: iPhone simulator test (Malayalam)
+
+# Builds the Malayalam app for Apple's iPhone simulator on a Mac runner and goes through
+# its main screens with Maestro (the flows in .maestro/): past the Welcome, a word, a
+# verse's menu, Compare, Share as card, the Notebook, Search, and back from Settings to
+# a word. The log says which flows passed, what was on the screen after each, and the
+# app's own error lines (a failed card picture among them); the screenshots and logs are
+# kept as an artifact.
+#
+# It starts by hand (Run workflow), or with a push that changes .github/simulator-test.txt,
+# this file or a flow. Mac machines are few, so it does not run on every push; the
+# three-app build (ios-build.yml) leaves these paths out for the same reason.
+
+on:
+  push:
+    branches: [ccr-39027e0d-8m0rpn, main]
+    paths: ['.github/simulator-test.txt', '.github/workflows/ios-simulator-test.yml', '.maestro/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  simulator:
+    runs-on: macos-15
+    timeout-minutes: 90
+    env:
+      BIBLE_EDITION: ml
+      CI: 1
+      # Maestro's own version, from its installer; a newer one is tried by changing it here.
+      MAESTRO_VERSION: 2.12.0
+      MAESTRO_CLI_NO_ANALYTICS: 1
+      MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: true
+      # Its driver can take a while to start on a busy runner.
+      MAESTRO_DRIVER_STARTUP_TIMEOUT: 240000
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Select Xcode 26
+        # As in ios-build.yml: expo-modules-jsi needs the Swift of Xcode 26.
+        run: |
+          xcode=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$xcode" ]; then echo "no Xcode 26 on this runner"; exit 1; fi
+          sudo xcode-select -s "$xcode"
+          xcodebuild -version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate the iOS project
+        run: npx expo prebuild --platform ios --no-install
+
+      - name: Install pods
+        run: |
+          cd ios
+          pod install
+
+      - name: Build for the simulator
+        # Release, so the JavaScript and the Bible text are inside the app and no Metro
+        # server is needed; for this Mac's own chip only, which halves the build.
+        run: |
+          set -o pipefail
+          workspace=$(ls -d ios/*.xcworkspace | head -1)
+          scheme=$(basename "$workspace" .xcworkspace)
+          xcodebuild -workspace "$workspace" -scheme "$scheme" -configuration Release \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build \
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= \
+            build > xcodebuild.log 2>&1 || {
+              echo "::group::errors"; grep -E -A 6 "error:|fatal error" xcodebuild.log | head -80; echo "::endgroup::"
+              tail -80 xcodebuild.log
+              exit 1
+            }
+          grep -E "BUILD SUCCEEDED|BUILD FAILED" xcodebuild.log
+          app=$(find build -name '*.app' -path '*Release-iphonesimulator*' | head -1)
+          echo "built $app"
+          binary=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/Info.plist")
+          echo "APP_PATH=$app" >> "$GITHUB_ENV"
+          echo "APP_BINARY=$binary" >> "$GITHUB_ENV"
+
+      - name: Start an iPhone simulator
+        # The newest iOS on the runner, on an iPhone 16 (or the newest iPhone it has).
+        run: |
+          runtime=$(xcrun simctl list runtimes available -j | python3 -c '
+          import json, sys
+          r = [x for x in json.load(sys.stdin)["runtimes"] if x["platform"] == "iOS"]
+          print(sorted(r, key=lambda x: [int(p) for p in x["version"].split(".")])[-1]["identifier"])')
+          type=$(xcrun simctl list devicetypes -j | python3 -c '
+          import json, sys
+          names = [t["identifier"] for t in json.load(sys.stdin)["devicetypes"] if t["name"].startswith("iPhone")]
+          pick = [n for n in names if n.endswith("iPhone-16")]
+          print(pick[0] if pick else names[-1])')
+          echo "runtime $runtime, device $type"
+          udid=$(xcrun simctl create test-phone "$type" "$runtime")
+          xcrun simctl boot "$udid"
+          xcrun simctl bootstatus "$udid" -b
+          xcrun simctl install "$udid" "$APP_PATH"
+          echo "SIM_UDID=$udid" >> "$GITHUB_ENV"
+
+      - name: Install Maestro
+        # Its official installer, at the version set above.
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" -o maestro-install.sh
+          MAESTRO_VERSION=$MAESTRO_VERSION bash maestro-install.sh
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+          java -version 2>&1 | head -1
+
+      - name: Go through the app
+        id: flows
+        # Each flow is run on its own; the step fails at the end if any did.
+        run: OUT=$PWD/maestro-out .maestro/run.sh
+
+      - name: What the app reported
+        if: always()
+        # The app's own error lines, the card's above all ("card picture failed: <reason>"),
+        # and the text of any alert seen after a flow.
+        run: |
+          mkdir -p maestro-out
+          xcrun simctl spawn booted log show --style compact --last 30m \
+            --predicate "process == \"$APP_BINARY\"" > maestro-out/device.log 2>&1 || true
+          echo "== card picture: alert text and log lines"
+          grep -h -A2 "could not be made" maestro-out/hierarchy/*.txt 2>/dev/null || echo "(no 'could not be made' alert on any screen)"
+          grep -i "card picture failed" maestro-out/device.log || echo "(no 'card picture failed' log line)"
+          echo "== app errors in the device log"
+          grep -iE "error|exception|fatal|crash|failed" maestro-out/device.log | grep -v "^Filtering" | tail -80 || true
+          echo "== crash reports"
+          ls ~/Library/Logs/DiagnosticReports 2>/dev/null | grep -i "$APP_BINARY" || echo "(none)"
+          cp ~/Library/Logs/DiagnosticReports/*"$APP_BINARY"* maestro-out/ 2>/dev/null || true
+          echo "== results"
+          cat maestro-out/results.txt 2>/dev/null || echo "(the flows did not run)"
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: simulator-test-ml
+          path: |
+            maestro-out
+            xcodebuild.log
+          retention-days: 14

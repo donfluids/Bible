@@ -348,6 +348,14 @@ npm run smoke        # every main screen of each app in a browser, at four sizes
 - `npm run smoke` needs the web packages once: `npm install --no-save react-dom@19.2.3
   react-native-web@^0.21.2`. It fails on a screen that does not open, a step that does
   not work or a JavaScript error, and leaves a screenshot of each step in `smoke-out/`.
+- The iPhone simulator test (`.github/workflows/ios-simulator-test.yml`) builds the
+  Malayalam app for the simulator on a Mac runner and goes through the main screens
+  with [Maestro](https://maestro.dev), from the flows in `.maestro/`. Start it with Run
+  workflow, or by changing `.github/simulator-test.txt` in a push. Its log lists each
+  flow as passed or failed, what was on the screen after it and the app's error lines;
+  the screenshots are in the run's artifact. On a Mac with the app in a booted
+  simulator and Maestro installed, `.maestro/run.sh` (or `.maestro/run.sh 03-word`) runs
+  them there.
 - What only a phone can show (the photo picker, voices, the back button, TalkBack, an
   update over the old version) is in [`docs/testing/phone-checklist.md`](docs/testing/phone-checklist.md),
   about 20 minutes a phone.

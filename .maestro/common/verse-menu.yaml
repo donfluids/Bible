@@ -1,0 +1,17 @@
+# Opens the menu of John 1:2 with a long press on the verse. The verse number, a button
+# of its own ("Verse 2, actions"), is pressed when iOS lists it; else the verse's text.
+appId: org.riversresearch.bible.malayalam
+---
+- runFlow:
+    when:
+      visible: "Verse 2, actions"
+    commands:
+      - longPressOn: "Verse 2, actions"
+- runFlow:
+    when:
+      notVisible: "Share as card.*"
+    commands:
+      - longPressOn: ".*അവൻ ആദിയിൽ ദൈവത്തോടുകൂടെ.*"
+- extendedWaitUntil:
+    visible: "Share as card.*"
+    timeout: 10000

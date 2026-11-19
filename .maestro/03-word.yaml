@@ -1,0 +1,21 @@
+# A tapped word opens the word sheet, which offers every verse with that word; Close shuts it.
+appId: org.riversresearch.bible.malayalam
+name: Word sheet opens and closes
+---
+- runFlow: common/start.yaml
+- runFlow: common/tap-word.yaml
+- extendedWaitUntil:
+    visible: "In this verse"
+    timeout: 15000
+- extendedWaitUntil:
+    visible: "See all .* verses.*"
+    timeout: 10000
+- takeScreenshot: 03-word-sheet
+- tapOn:
+    text: "Close"
+    index: 0
+- extendedWaitUntil:
+    notVisible: "In this verse"
+    timeout: 10000
+- assertVisible: "യോഹന്നാൻ 1, choose passage"
+- takeScreenshot: 03-word-closed

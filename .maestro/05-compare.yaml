@@ -1,0 +1,24 @@
+# Compare, behind the menu's "Study this verse" row: the verse in each translation.
+appId: org.riversresearch.bible.malayalam
+name: Compare translations
+---
+- runFlow: common/start.yaml
+- runFlow: common/verse-menu.yaml
+- tapOn: "Study this verse.*"
+- extendedWaitUntil:
+    visible: "Compare translations.*"
+    timeout: 10000
+- takeScreenshot: 05-study-row
+- tapOn:
+    text: "Compare translations.*"
+    index: 0
+- extendedWaitUntil:
+    visible: "Compare translations · .*"
+    timeout: 15000
+- takeScreenshot: 05-compare
+- tapOn:
+    text: "Close"
+    index: 0
+- extendedWaitUntil:
+    notVisible: "Compare translations · .*"
+    timeout: 10000

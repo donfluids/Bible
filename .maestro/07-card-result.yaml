@@ -1,0 +1,21 @@
+# Passes when Share picture brought up the share sheet (which it then closes); fails while
+# the "could not be made" alert is up. Runs straight after 06-card.yaml, without a relaunch.
+appId: org.riversresearch.bible.malayalam
+name: Card picture shared
+---
+- assertNotVisible: "The picture could not be made\\."
+- runFlow:
+    when:
+      visible: "Close"
+    commands:
+      - tapOn: "Close"
+- runFlow:
+    when:
+      notVisible: "Share picture"
+    commands:
+      - swipe:
+          direction: DOWN
+- extendedWaitUntil:
+    visible: "Share picture"
+    timeout: 10000
+- takeScreenshot: 07-card-after-share

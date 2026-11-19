@@ -1,0 +1,8 @@
+# The reader opens on John 1 (യോഹന്നാൻ 1) with its first verse.
+appId: org.riversresearch.bible.malayalam
+name: Reader shows John 1
+---
+- runFlow: common/start.yaml
+- assertVisible: "യോഹന്നാൻ 1, choose passage"
+- assertVisible: ".*ആദിയിൽ വചനം ഉണ്ടായിരുന്നു.*"
+- takeScreenshot: 02-reader

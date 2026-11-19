@@ -1,0 +1,17 @@
+# Taps "ആദിയിൽ" (in the beginning), the first word of John 1:1, which opens the word sheet.
+# iOS lists each tappable word of a verse as a link of its own; should it not, the middle
+# of verse 1 is tapped instead (every word of that verse is a link).
+appId: org.riversresearch.bible.malayalam
+---
+- runFlow:
+    when:
+      visible: "ആദിയിൽ"
+    commands:
+      - tapOn:
+          text: "ആദിയിൽ"
+          index: 0
+- runFlow:
+    when:
+      notVisible: "In this verse"
+    commands:
+      - tapOn: ".*ആദിയിൽ വചനം ഉണ്ടായിരുന്നു.*"

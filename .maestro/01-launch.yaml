@@ -1,0 +1,27 @@
+# A new install: the four Welcome screens, then the reader with its one-time tip.
+appId: org.riversresearch.bible.malayalam
+name: Launch past Welcome
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Skip"
+    timeout: 60000
+- takeScreenshot: 01-welcome
+- tapOn: "Next"
+- tapOn: "Next"
+- tapOn: "Next"
+- extendedWaitUntil:
+    visible: "Start reading"
+    timeout: 10000
+- takeScreenshot: 01-welcome-last
+- tapOn: "Start reading"
+- extendedWaitUntil:
+    visible: ".*, choose passage"
+    timeout: 30000
+- takeScreenshot: 01-reader-first
+- runFlow:
+    when:
+      visible: "Got it"
+    commands:
+      - tapOn: "Got it"

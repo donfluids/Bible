@@ -11,10 +11,15 @@ name: iPhone build (unsigned)
 on:
   push:
     branches: [ccr-39027e0d-8m0rpn, main]
-    # A push that only asks for a TestFlight upload (ios-testflight.yml) does not build
-    # the three apps here as well: Mac machines are few, and a job left waiting for one
-    # is cancelled.
-    paths-ignore: ['.github/testflight.txt', '.github/workflows/ios-testflight.yml']
+    # A push that only asks for a TestFlight upload (ios-testflight.yml) or a simulator
+    # test (ios-simulator-test.yml) does not build the three apps here as well: Mac
+    # machines are few, and a job left waiting for one is cancelled.
+    paths-ignore:
+      - '.github/testflight.txt'
+      - '.github/workflows/ios-testflight.yml'
+      - '.github/simulator-test.txt'
+      - '.github/workflows/ios-simulator-test.yml'
+      - '.maestro/**'
   workflow_dispatch:
 
 permissions:

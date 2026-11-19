@@ -1,0 +1,9 @@
+# A long press on a verse opens its menu.
+appId: org.riversresearch.bible.malayalam
+name: Verse menu
+---
+- runFlow: common/start.yaml
+- runFlow: common/verse-menu.yaml
+- assertVisible: "Add to notebook.*"
+- assertVisible: "Study this verse.*"
+- takeScreenshot: 04-verse-menu

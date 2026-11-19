@@ -1,0 +1,10 @@
+# The Notebook tab opens on its list of pages.
+appId: org.riversresearch.bible.malayalam
+name: Notebook opens
+---
+- runFlow: common/start.yaml
+- tapOn: "Notebook"
+- extendedWaitUntil:
+    visible: "New page.*"
+    timeout: 15000
+- takeScreenshot: 08-notebook

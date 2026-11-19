@@ -1,0 +1,32 @@
+# A freeze was reported here: back from Settings to the reader, a word tapped at once,
+# and the app took no more touches. The word sheet must open and close, and Settings
+# must open again afterwards.
+appId: org.riversresearch.bible.malayalam
+name: Back from Settings, then a word
+---
+- runFlow: common/start.yaml
+- tapOn: "Settings"
+- extendedWaitUntil:
+    visible: ".*Theme.*"
+    timeout: 15000
+- takeScreenshot: 10-settings
+- tapOn:
+    text: "Back"
+    # Straight on, while the reader slides back in.
+    waitToSettleTimeoutMs: 100
+- runFlow: common/tap-word.yaml
+- extendedWaitUntil:
+    visible: "In this verse"
+    timeout: 15000
+- takeScreenshot: 10-word-after-back
+- tapOn:
+    text: "Close"
+    index: 0
+- extendedWaitUntil:
+    notVisible: "In this verse"
+    timeout: 10000
+- tapOn: "Settings"
+- extendedWaitUntil:
+    visible: ".*Theme.*"
+    timeout: 15000
+- takeScreenshot: 10-settings-again

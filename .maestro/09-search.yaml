@@ -1,0 +1,16 @@
+# Search for സ്നേഹം (love): the count of verses found shows.
+appId: org.riversresearch.bible.malayalam
+name: Search finds a word
+---
+- runFlow: common/start.yaml
+- tapOn: "Search"
+- waitForAnimationToEnd
+# The box takes the keyboard by itself; a tap on it does no harm if it has.
+- tapOn:
+    text: "Words, a reference like John 3:16, or G26"
+    optional: true
+- inputText: "സ്നേഹം"
+- extendedWaitUntil:
+    visible: ".*[0-9,]+ verses.*"
+    timeout: 30000
+- takeScreenshot: 09-search

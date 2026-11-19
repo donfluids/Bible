@@ -1,0 +1,44 @@
+# Share as card: a heading and a message typed in (the Share picture button steps aside
+# while the keyboard is up), the keyboard put away, then Share picture. It ends when the
+# share sheet or the "could not be made" alert is up; the workflow then records what the
+# screen says, and 07-card-result.yaml judges it.
+appId: org.riversresearch.bible.malayalam
+name: Share as card
+---
+- runFlow: common/start.yaml
+- runFlow: common/verse-menu.yaml
+- tapOn: "Share as card.*"
+- extendedWaitUntil:
+    visible: "Share picture"
+    timeout: 15000
+- assertVisible:
+    id: "card-preview"
+- takeScreenshot: 06-card
+- scrollUntilVisible:
+    element: "For example: With love"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "For example: With love"
+- inputText: "With love"
+- assertNotVisible: "Share picture"
+- takeScreenshot: 06-card-typing-heading
+- scrollUntilVisible:
+    element: "For example: Happy birthday, Mum!"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "For example: Happy birthday, Mum!"
+- inputText: "Happy birthday"
+- assertNotVisible: "Share picture"
+- takeScreenshot: 06-card-typing-message
+# Return ends a one-line box and puts the keyboard away.
+- pressKey: Enter
+- extendedWaitUntil:
+    visible: "Share picture"
+    timeout: 10000
+- takeScreenshot: 06-card-typed
+- tapOn: "Share picture"
+# The share sheet (its Copy or Save Image row), or the alert.
+- extendedWaitUntil:
+    visible: "The picture could not be made\\.|Copy|Save Image|Save to Files|AirDrop"
+    timeout: 30000
+- takeScreenshot: 06-card-share-result

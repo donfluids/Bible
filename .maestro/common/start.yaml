@@ -1,0 +1,13 @@
+# Opens the app afresh (it keeps what it stored: the Welcome is not shown again) and
+# waits for the reader. A one-time tip that is up is closed, so it does not cover the page.
+appId: org.riversresearch.bible.malayalam
+---
+- launchApp
+- extendedWaitUntil:
+    visible: ".*, choose passage"
+    timeout: 60000
+- runFlow:
+    when:
+      visible: "Got it"
+    commands:
+      - tapOn: "Got it"
