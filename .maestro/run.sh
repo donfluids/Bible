@@ -52,7 +52,6 @@ fail=0
 for flow in "${flows[@]}"; do
   name=$(basename "$flow" .yaml)
   echo "::group::$name"
-  # takeScreenshot writes into the current folder.
   # A hung flow (the app frozen, say) is stopped after seven minutes.
   if (cd "$OUT/screens" && perl -e 'alarm shift; exec @ARGV' 420 \
         maestro test --debug-output "$OUT/debug/$name" "$flow") > "$OUT/logs/$name.txt" 2>&1; then
@@ -63,6 +62,8 @@ for flow in "${flows[@]}"; do
     fail=$((fail + 1))
   fi
   cat "$OUT/logs/$name.txt"
+  # The flow's own screenshots, kept by Maestro with its debug output.
+  find "$OUT/debug/$name" -name '*.png' -exec cp {} "$OUT/screens/" \; 2>/dev/null || true
   xcrun simctl io booted screenshot "$OUT/screens/$name-end.png" > /dev/null 2>&1 || true
   perl -e 'alarm shift; exec @ARGV' 120 maestro hierarchy > "$OUT/hierarchy/$name.json" 2> /dev/null || true
   labels < "$OUT/hierarchy/$name.json" > "$OUT/hierarchy/$name.txt"

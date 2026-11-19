@@ -1,13 +1,17 @@
 # Opens the app afresh (it keeps what it stored: the Welcome is not shown again) and
-# waits for the reader. A one-time tip that is up is closed, so it does not cover the page.
+# waits for the reader. A one-time tip that is up is closed first: while it shows, it is
+# all iOS lists on the screen, so the reader's title cannot be seen behind it.
 appId: org.riversresearch.bible.malayalam
 ---
 - launchApp
 - extendedWaitUntil:
-    visible: ".*, choose passage"
+    visible: "Got it|.*, choose passage"
     timeout: 60000
 - runFlow:
     when:
       visible: "Got it"
     commands:
       - tapOn: "Got it"
+- extendedWaitUntil:
+    visible: ".*, choose passage"
+    timeout: 10000

@@ -1,0 +1,10 @@
+# Closes the word sheet with its own Close button. The dimmed backdrop behind the sheet
+# is also called "Close" and comes first; a tap in its middle would land on the sheet.
+appId: org.riversresearch.bible.malayalam
+---
+- tapOn:
+    text: "Close"
+    index: 1
+- extendedWaitUntil:
+    notVisible: "In this verse"
+    timeout: 10000

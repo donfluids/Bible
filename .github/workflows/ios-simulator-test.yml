@@ -123,13 +123,19 @@ jobs:
         # and the text of any alert seen after a flow.
         run: |
           mkdir -p maestro-out
+          # Maestro's helper runs inside the app's process and logs every query it makes;
+          # its lines are left out.
           xcrun simctl spawn booted log show --style compact --last 30m \
-            --predicate "process == \"$APP_BINARY\"" > maestro-out/device.log 2>&1 || true
+            --predicate "process == \"$APP_BINARY\" AND NOT subsystem BEGINSWITH \"com.apple.dt.xctest\"" > maestro-out/device.log 2>&1 || true
+          xcrun simctl spawn booted log show --style compact --last 30m \
+            --predicate "process == \"$APP_BINARY\" AND (subsystem == \"com.facebook.react.log\" OR eventMessage CONTAINS[c] \"card picture\")" > maestro-out/app-js.log 2>&1 || true
           echo "== card picture: alert text and log lines"
           grep -h -A2 "could not be made" maestro-out/hierarchy/*.txt 2>/dev/null || echo "(no 'could not be made' alert on any screen)"
-          grep -i "card picture failed" maestro-out/device.log || echo "(no 'card picture failed' log line)"
-          echo "== app errors in the device log"
-          grep -iE "error|exception|fatal|crash|failed" maestro-out/device.log | grep -v "^Filtering" | tail -80 || true
+          grep -i "card picture failed" maestro-out/app-js.log || echo "(no 'card picture failed' log line)"
+          echo "== the app's JavaScript log (React Native)"
+          tail -60 maestro-out/app-js.log
+          echo "== errors and faults in the device log"
+          grep -E "^[0-9-]+ [0-9:.]+ (E|F) " maestro-out/device.log | tail -60 || true
           echo "== crash reports"
           ls ~/Library/Logs/DiagnosticReports 2>/dev/null | grep -i "$APP_BINARY" || echo "(none)"
           cp ~/Library/Logs/DiagnosticReports/*"$APP_BINARY"* maestro-out/ 2>/dev/null || true
@@ -143,4 +149,6 @@ jobs:
           path: |
             maestro-out
             xcodebuild.log
+          # Maestro keeps its debug output (the failed step's screen and hierarchy) in .maestro/ folders.
+          include-hidden-files: true
           retention-days: 14

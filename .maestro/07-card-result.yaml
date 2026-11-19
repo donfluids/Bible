@@ -4,6 +4,7 @@ appId: org.riversresearch.bible.malayalam
 name: Card picture shared
 ---
 - assertNotVisible: "The picture could not be made\\."
+- assertVisible: "Copy|Save Image|Save to Files|AirDrop"
 - runFlow:
     when:
       visible: "Close"

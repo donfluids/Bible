@@ -11,11 +11,6 @@ name: Word sheet opens and closes
     visible: "See all .* verses.*"
     timeout: 10000
 - takeScreenshot: 03-word-sheet
-- tapOn:
-    text: "Close"
-    index: 0
-- extendedWaitUntil:
-    notVisible: "In this verse"
-    timeout: 10000
+- runFlow: common/close-word.yaml
 - assertVisible: "യോഹന്നാൻ 1, choose passage"
 - takeScreenshot: 03-word-closed

@@ -16,12 +16,13 @@ name: Launch past Welcome
     timeout: 10000
 - takeScreenshot: 01-welcome-last
 - tapOn: "Start reading"
+# The reader, under its one-time tip about the title.
+- extendedWaitUntil:
+    visible: "Got it"
+    timeout: 30000
+- takeScreenshot: 01-reader-tip
+- tapOn: "Got it"
 - extendedWaitUntil:
     visible: ".*, choose passage"
-    timeout: 30000
-- takeScreenshot: 01-reader-first
-- runFlow:
-    when:
-      visible: "Got it"
-    commands:
-      - tapOn: "Got it"
+    timeout: 10000
+- takeScreenshot: 01-reader

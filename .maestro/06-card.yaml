@@ -14,23 +14,37 @@ name: Share as card
 - assertVisible:
     id: "card-preview"
 - takeScreenshot: 06-card
-- scrollUntilVisible:
-    element: "For example: With love"
-    direction: DOWN
-    timeout: 20000
+# The card stays pinned at the top and only the choices under it scroll, so the swipe is
+# made there (a plain scroll swipes the middle of the screen, the card).
+- repeat:
+    while:
+      notVisible: "For example: With love"
+    times: 8
+    commands:
+      - swipe:
+          start: 50%, 80%
+          end: 50%, 55%
 - tapOn: "For example: With love"
 - inputText: "With love"
 - assertNotVisible: "Share picture"
 - takeScreenshot: 06-card-typing-heading
-- scrollUntilVisible:
-    element: "For example: Happy birthday, Mum!"
-    direction: DOWN
-    timeout: 20000
+# Return ends a one-line box and puts the keyboard away; the button comes back.
+- pressKey: Enter
+- extendedWaitUntil:
+    visible: "Share picture"
+    timeout: 10000
+- repeat:
+    while:
+      notVisible: "For example: Happy birthday, Mum!"
+    times: 8
+    commands:
+      - swipe:
+          start: 50%, 80%
+          end: 50%, 55%
 - tapOn: "For example: Happy birthday, Mum!"
 - inputText: "Happy birthday"
 - assertNotVisible: "Share picture"
 - takeScreenshot: 06-card-typing-message
-# Return ends a one-line box and puts the keyboard away.
 - pressKey: Enter
 - extendedWaitUntil:
     visible: "Share picture"

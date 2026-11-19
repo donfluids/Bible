@@ -19,12 +19,7 @@ name: Back from Settings, then a word
     visible: "In this verse"
     timeout: 15000
 - takeScreenshot: 10-word-after-back
-- tapOn:
-    text: "Close"
-    index: 0
-- extendedWaitUntil:
-    notVisible: "In this verse"
-    timeout: 10000
+- runFlow: common/close-word.yaml
 - tapOn: "Settings"
 - extendedWaitUntil:
     visible: ".*Theme.*"
