@@ -1,0 +1,6 @@
+ml
+# The first word names the app the TestFlight workflow uploads when this file changes
+# in a push (ml, en or ta); the lines after it are notes. Edit it (the note below will
+# do) and push to start an upload.
+#
+# 2026-11-19: first upload of the Malayalam app (after the key fix).

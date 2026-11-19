@@ -1,8 +1,10 @@
 name: iPhone build to TestFlight
 
 # Builds one app for iPhone, signs it for the App Store and uploads it to App Store
-# Connect, where it appears in TestFlight and can then be sent for review. It runs only
-# when started from the Actions tab ("Run workflow"), never on a push.
+# Connect, where it appears in TestFlight and can then be sent for review. It runs when
+# started from the Actions tab ("Run workflow"), or when a push changes
+# .github/testflight.txt, whose first word names the app (ml, en or ta): an upload asked
+# for by a commit. Other pushes never upload.
 #
 # Signing is Apple's automatic (cloud) signing with an App Store Connect API key: Xcode
 # makes or reuses the distribution certificate and the App Store profile itself, so no
@@ -18,6 +20,9 @@ name: iPhone build to TestFlight
 # The steps are in docs/ios/app-store.md.
 
 on:
+  push:
+    branches: [ccr-39027e0d-8m0rpn, main]
+    paths: ['.github/testflight.txt']
   workflow_dispatch:
     inputs:
       edition:
@@ -34,7 +39,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: testflight-${{ inputs.edition }}
+  group: testflight
   cancel-in-progress: false
 
 jobs:
@@ -42,9 +47,23 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 75
     env:
-      BIBLE_EDITION: ${{ inputs.edition }}
       CI: 1
     steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Which app
+        # From the Run workflow form, or from .github/testflight.txt on a push.
+        env:
+          CHOSEN: ${{ inputs.edition }}
+        run: |
+          e="$CHOSEN"
+          if [ -z "$e" ]; then e=$(awk 'NF { print $1; exit }' .github/testflight.txt); fi
+          case "$e" in ml|en|ta) ;; *) echo "::error::.github/testflight.txt must start with ml, en or ta (found '$e')"; exit 1 ;; esac
+          echo "BIBLE_EDITION=$e" >> "$GITHUB_ENV"
+          echo "app: $e"
+
       - name: Check the secrets are there
         env:
           KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
@@ -70,10 +89,6 @@ jobs:
           case "$n" in ''|*[!0-9]*) echo "::error::build number must be a whole number"; exit 1 ;; esac
           echo "BIBLE_VERSION_CODE=$n" >> "$GITHUB_ENV"
           echo "build number $n"
-
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-        with:
-          persist-credentials: false
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
