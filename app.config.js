@@ -21,7 +21,9 @@ const EDITIONS = {
     adaptiveBackground: '#6C4520',
   },
   ml: {
-    name: 'വേദപുസ്തകം',
+    // Under the icon in English letters, so it reads the same on any phone; the app itself
+    // still calls itself വേദപുസ്തകം (src/licences.ts, src/screens/NotebookScreen.tsx).
+    name: 'Vedapusthakam',
     slug: 'bible-malayalam',
     package: 'org.riversresearch.bible.malayalam',
     icons: './assets/icons/ml',
@@ -44,7 +46,8 @@ const EDITIONS = {
     adaptiveBackground: '#6C4520',
   },
   ta: {
-    name: 'வேதாகமம்',
+    // Under the icon in English letters, as the Malayalam app; inside it is வேதாகமம்.
+    name: 'Vedagamam',
     slug: 'bible-tamil',
     package: 'org.riversresearch.bible.tamil',
     icons: './assets/icons/ta',
