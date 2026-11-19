@@ -1,0 +1,5 @@
+# A push that changes this file runs the iPhone simulator test (ios-simulator-test.yml):
+# the Malayalam app in Apple's simulator, through the flows in .maestro/. Add a line
+# saying why, and push.
+#
+# 2026-11-19: first run (the card picture's error on iPhone, the freeze after Settings).
