@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, KeyboardAvoidingView, PixelRatio, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import { Alert, Keyboard, KeyboardAvoidingView, PixelRatio, Platform, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import * as Sharing from 'expo-sharing';
@@ -60,7 +60,21 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
   const card = useRef<View>(null);
   const scroll = useRef<ScrollView>(null);
   // The text boxes are at the foot of the page: keep the one being typed in above the keyboard.
-  const showInput = () => setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 250);
+  const boxAt = useRef<Record<'heading' | 'message', number>>({ heading: 0, message: 0 });
+  const showInput = (box: 'heading' | 'message') => () =>
+    setTimeout(() => scroll.current?.scrollTo({ y: Math.max(0, boxAt.current[box] - 12), animated: true }), 250);
+  // While the keyboard is up the card shrinks and the Share button steps aside, so the
+  // text box being typed in has room under the card.
+  const [keyboard, setKeyboard] = useState(0);
+  useEffect(() => {
+    const ios = Platform.OS === 'ios';
+    const shown = Keyboard.addListener(ios ? 'keyboardWillShow' : 'keyboardDidShow', (e) => setKeyboard(e.endCoordinates.height));
+    const hidden = Keyboard.addListener(ios ? 'keyboardWillHide' : 'keyboardDidHide', () => setKeyboard(0));
+    return () => {
+      shown.remove();
+      hidden.remove();
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -143,7 +157,9 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
   const content = wide ? Math.min(window.width / 2, MAX_CONTENT_WIDTH) - 32 : Math.min(window.width, MAX_CONTENT_WIDTH) - 32;
   // On a phone the card stays pinned above the choices, which scroll under it, so every
   // change shows at once; it takes about a third of the screen's height.
-  const room = wide ? window.height - 220 : window.height * 0.34;
+  // While typing, the card takes what the keyboard, the header and one text box leave.
+  const typingRoom = window.height - keyboard - insets.top - 56 - TYPING_BOX - 16;
+  const room = wide ? window.height - 220 : keyboard ? Math.max(80, Math.min(window.height * 0.34, typingRoom)) : window.height * 0.34;
   const previewWidth = size === 'square' ? Math.min(content, 420, room) : Math.min(content, (room * CARD_WIDTH) / CARD_HEIGHT.tall);
   const [more, setMore] = useState(false);
   // The card that is captured, drawn off screen at the shared picture's size.
@@ -175,6 +191,9 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
     try {
       const uri = await captureRef(card.current, {
         format: 'png',
+        // The card is drawn off screen, which the iPhone's usual snapshot refuses
+        // ("drawViewHierarchyInRect was not successful"); drawing its layers works anywhere.
+        useRenderInContext: Platform.OS === 'ios',
         result: 'tmpfile',
         width: captureSize(CARD_PIXELS),
         height: captureSize((CARD_PIXELS * CARD_HEIGHT[size]) / CARD_WIDTH),
@@ -382,22 +401,26 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
         </>
         ) : null}
 
-        <Text style={[styles.label, { color: theme.text }]}>{t('cardHeading')}</Text>
+        <Text style={[styles.label, { color: theme.text }]} onLayout={(e) => (boxAt.current.heading = e.nativeEvent.layout.y)}>
+          {t('cardHeading')}
+        </Text>
         <TextInput
           value={heading}
           onChangeText={setHeading}
-          onFocus={showInput}
+          onFocus={showInput('heading')}
           accessibilityLabel={t('cardHeading')}
           maxLength={40}
           placeholder={t('cardHeadingHint')}
           style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: theme.card }]}
           placeholderTextColor={theme.muted}
         />
-        <Text style={[styles.label, { color: theme.text }]}>{t('cardMessage')}</Text>
+        <Text style={[styles.label, { color: theme.text }]} onLayout={(e) => (boxAt.current.message = e.nativeEvent.layout.y)}>
+          {t('cardMessage')}
+        </Text>
         <TextInput
           value={message}
           onChangeText={setMessage}
-          onFocus={showInput}
+          onFocus={showInput('message')}
           accessibilityLabel={t('cardMessage')}
           maxLength={80}
           placeholder={t('cardMessageHint')}
@@ -407,16 +430,18 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
       </ScrollView>
       </View>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 12, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
-        <Pressable
-          onPress={share}
-          disabled={!first || sharing}
-          accessibilityRole="button"
-          style={[styles.shareButton, { backgroundColor: theme.accent, opacity: !first || sharing ? 0.6 : 1 }]}
-        >
-          <Text style={[styles.shareText, { color: theme.onAccent }]}>{t('cardShare')}</Text>
-        </Pressable>
-      </View>
+      {keyboard ? null : (
+        <View style={[styles.footer, { paddingBottom: insets.bottom + 12, borderTopColor: theme.border, backgroundColor: theme.bg }]}>
+          <Pressable
+            onPress={share}
+            disabled={!first || sharing}
+            accessibilityRole="button"
+            style={[styles.shareButton, { backgroundColor: theme.accent, opacity: !first || sharing ? 0.6 : 1 }]}
+          >
+            <Text style={[styles.shareText, { color: theme.onAccent }]}>{t('cardShare')}</Text>
+          </Pressable>
+        </View>
+      )}
 
       {/* Drawn at the picture's own size, out of sight, so the shared picture is sharp. */}
       {first ? (
@@ -441,6 +466,9 @@ function SwitchRow({ label, detail, value, onChange }: { label: string; detail: 
     </View>
   );
 }
+
+// The height one text box and its label need under the card while typing.
+const TYPING_BOX = 130;
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
