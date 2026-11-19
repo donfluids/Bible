@@ -8,3 +8,4 @@ ml
 # 2026-11-19 15:35: asked again after the signing fix (archive unsigned, sign at upload).
 # 2026-11-19 17:25: build with the card screen fixes (picture made on iPhone, room to type).
 # 2026-11-19: build that shows the reason when the card picture fails.
+# 2026-11-19: build with the card share fix (wait for the picture to be moved).
