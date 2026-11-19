@@ -6,3 +6,4 @@ ml
 # 2026-11-19: first upload of the Malayalam app (after the key fix).
 # 2026-11-19 15:20: asked again on its own (the first request waited behind three iPhone builds and was cancelled).
 # 2026-11-19 15:35: asked again after the signing fix (archive unsigned, sign at upload).
+# 2026-11-19 17:25: build with the card screen fixes (picture made on iPhone, room to type).
