@@ -101,13 +101,41 @@ jobs:
 
       - name: The API key, for this run only
         # Written to the runner's temporary folder, readable by this user only, and
-        # removed at the end of the job (last step).
+        # removed at the end of the job (last step). The secret may hold the .p8 file as
+        # it is, the same with its line breaks lost or written as \n, only the part
+        # between the BEGIN and END lines, or the whole file in base64: each is put back
+        # into the form Xcode reads, and checked before anything is built. Nothing of the
+        # key is printed.
         env:
           KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
         run: |
           umask 077
-          printf '%s\n' "$KEY" > "$RUNNER_TEMP/asc_key.p8"
-          echo "ASC_KEY_PATH=$RUNNER_TEMP/asc_key.p8" >> "$GITHUB_ENV"
+          out="$RUNNER_TEMP/asc_key.p8"
+          python3 - "$out" <<'PY'
+          import base64, os, re, sys
+          raw = os.environ["KEY"].replace("\\n", "\n").replace("\r", "")
+          if "BEGIN PRIVATE KEY" not in raw:
+              # Base64 of the whole file, or the key's body alone.
+              try:
+                  decoded = base64.b64decode(re.sub(r"\s+", "", raw), validate=True).decode("ascii")
+              except Exception:
+                  decoded = ""
+              if "BEGIN PRIVATE KEY" in decoded:
+                  raw = decoded
+          m = re.search(r"-----BEGIN PRIVATE KEY-----(.*?)-----END PRIVATE KEY-----", raw, re.S)
+          body = re.sub(r"\s+", "", m.group(1) if m else raw)
+          if not re.fullmatch(r"[A-Za-z0-9+/]+=*", body or "!"):
+              sys.exit("APP_STORE_CONNECT_KEY does not look like a .p8 key: paste the whole file, from -----BEGIN PRIVATE KEY----- to -----END PRIVATE KEY-----")
+          lines = [body[i:i + 64] for i in range(0, len(body), 64)]
+          open(sys.argv[1], "w").write("-----BEGIN PRIVATE KEY-----\n" + "\n".join(lines) + "\n-----END PRIVATE KEY-----\n")
+          PY
+          if ! openssl pkey -in "$out" -noout 2>/dev/null; then
+            rm -f "$out"
+            echo "::error::APP_STORE_CONNECT_KEY is not a readable private key. Open the .p8 file in a text editor and paste all of it, BEGIN and END lines included, as the secret's value."
+            exit 1
+          fi
+          echo "the key reads as a private key"
+          echo "ASC_KEY_PATH=$out" >> "$GITHUB_ENV"
 
       - name: Archive (signed for the App Store)
         env:
