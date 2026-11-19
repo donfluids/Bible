@@ -1,0 +1,173 @@
+name: iPhone build to TestFlight
+
+# Builds one app for iPhone, signs it for the App Store and uploads it to App Store
+# Connect, where it appears in TestFlight and can then be sent for review. It runs only
+# when started from the Actions tab ("Run workflow"), never on a push.
+#
+# Signing is Apple's automatic (cloud) signing with an App Store Connect API key: Xcode
+# makes or reuses the distribution certificate and the App Store profile itself, so no
+# certificate or profile is kept here. The repository's secrets (Settings -> Secrets and
+# variables -> Actions) must hold:
+#   APP_STORE_CONNECT_KEY_ID     the key's ID
+#   APP_STORE_CONNECT_ISSUER_ID  the Issuer ID shown above the keys
+#   APP_STORE_CONNECT_KEY        the whole .p8 file, as text
+#   APPLE_TEAM_ID                the Team ID (Membership details)
+# The key needs the Admin role: only Admin (or the Account Holder) may make the
+# distribution certificate. The app's bundle ID must be registered (Certificates,
+# Identifiers & Profiles -> Identifiers) and its app made in App Store Connect first.
+# The steps are in docs/ios/app-store.md.
+
+on:
+  workflow_dispatch:
+    inputs:
+      edition:
+        description: 'Which app'
+        type: choice
+        options: [ml, en, ta]
+        default: ml
+      build:
+        description: 'Build number (blank: one higher each run)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: testflight-${{ inputs.edition }}
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    runs-on: macos-15
+    timeout-minutes: 75
+    env:
+      BIBLE_EDITION: ${{ inputs.edition }}
+      CI: 1
+    steps:
+      - name: Check the secrets are there
+        env:
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          missing=""
+          [ -n "$KEY_ID" ] || missing="$missing APP_STORE_CONNECT_KEY_ID"
+          [ -n "$ISSUER_ID" ] || missing="$missing APP_STORE_CONNECT_ISSUER_ID"
+          [ -n "$KEY" ] || missing="$missing APP_STORE_CONNECT_KEY"
+          [ -n "$TEAM_ID" ] || missing="$missing APPLE_TEAM_ID"
+          if [ -n "$missing" ]; then echo "::error::Missing secrets:$missing (see docs/ios/app-store.md)"; exit 1; fi
+
+      - name: Build number
+        # Each upload of an app needs a higher build number than the one before; by
+        # default this workflow's own run count, which only goes up.
+        env:
+          GIVEN: ${{ inputs.build }}
+          RUN: ${{ github.run_number }}
+        run: |
+          if [ -n "$GIVEN" ]; then n="$GIVEN"; else n=$((100 + RUN)); fi
+          case "$n" in ''|*[!0-9]*) echo "::error::build number must be a whole number"; exit 1 ;; esac
+          echo "BIBLE_VERSION_CODE=$n" >> "$GITHUB_ENV"
+          echo "build number $n"
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Select Xcode 26
+        # As in ios-build.yml: expo-modules-jsi needs the Swift of Xcode 26.
+        run: |
+          xcode=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$xcode" ]; then echo "no Xcode 26 on this runner"; exit 1; fi
+          sudo xcode-select -s "$xcode"
+          xcodebuild -version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate the iOS project
+        run: npx expo prebuild --platform ios --no-install
+
+      - name: Install pods
+        run: |
+          cd ios
+          pod install
+
+      - name: The API key, for this run only
+        # Written to the runner's temporary folder, readable by this user only, and
+        # removed at the end of the job (last step).
+        env:
+          KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
+        run: |
+          umask 077
+          printf '%s\n' "$KEY" > "$RUNNER_TEMP/asc_key.p8"
+          echo "ASC_KEY_PATH=$RUNNER_TEMP/asc_key.p8" >> "$GITHUB_ENV"
+
+      - name: Archive (signed for the App Store)
+        env:
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -o pipefail
+          workspace=$(ls -d ios/*.xcworkspace | head -1)
+          scheme=$(basename "$workspace" .xcworkspace)
+          xcodebuild -workspace "$workspace" -scheme "$scheme" -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/app.xcarchive" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" -authenticationKeyID "$KEY_ID" -authenticationKeyIssuerID "$ISSUER_ID" \
+            DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic \
+            archive > xcodebuild-archive.log 2>&1 || {
+              echo "::group::errors"; grep -E -A 6 "error:|fatal error" xcodebuild-archive.log | head -80; echo "::endgroup::"
+              tail -60 xcodebuild-archive.log
+              exit 1
+            }
+          grep -E "ARCHIVE SUCCEEDED|ARCHIVE FAILED" xcodebuild-archive.log
+          echo "APP_PATH=$(ls -d "$RUNNER_TEMP"/app.xcarchive/Products/Applications/*.app)" >> "$GITHUB_ENV"
+
+      - name: Check the app keeps its promises
+        run: node scripts/check-ipa.mjs "$APP_PATH" "$BIBLE_EDITION"
+
+      - name: Upload to App Store Connect
+        env:
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -o pipefail
+          cat > "$RUNNER_TEMP/export.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>${TEAM_ID}</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>uploadSymbols</key><true/>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+          </dict>
+          </plist>
+          PLIST
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/app.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/export.plist" -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" -authenticationKeyID "$KEY_ID" -authenticationKeyIssuerID "$ISSUER_ID" \
+            > xcodebuild-upload.log 2>&1 || {
+              echo "::group::errors"; grep -E -i -A 6 "error" xcodebuild-upload.log | head -80; echo "::endgroup::"
+              tail -60 xcodebuild-upload.log
+              exit 1
+            }
+          grep -E -i "upload|export succeeded|EXPORT SUCCEEDED" xcodebuild-upload.log | tail -5
+          echo "Uploaded build $BIBLE_VERSION_CODE of the $BIBLE_EDITION app; it shows in App Store Connect -> TestFlight once Apple has processed it (usually within 30 minutes)."
+
+      - name: Remove the API key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/asc_key.p8"

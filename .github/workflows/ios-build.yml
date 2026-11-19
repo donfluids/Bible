@@ -5,9 +5,8 @@ name: iPhone build (unsigned)
 # unsigned .ipa (a Release build with the Bible text and JavaScript inside, so it runs
 # without a computer attached). An iPhone installs it only after a tool such as
 # Sideloadly or AltStore signs it with the owner's Apple ID (docs/ios/install-test-build.md).
-# A signed build for TestFlight and the App Store comes from EAS Build (docs/ios/README.md),
-# or from this workflow once a certificate, a provisioning profile and an App Store
-# Connect key are added as secrets.
+# A signed build for TestFlight and the App Store comes from ios-testflight.yml, started
+# by hand (docs/ios/app-store.md).
 
 on:
   push:

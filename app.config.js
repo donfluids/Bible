@@ -138,8 +138,12 @@ module.exports = ({ config }) => {
     ios: {
       ...config.ios,
       bundleIdentifier: e.package,
-      // iPhone and iPad; the layout keeps text and bars to a reading width on a wide screen.
-      supportsTablet: true,
+      // The build number App Store Connect sees: each upload needs a higher one
+      // (.github/workflows/ios-testflight.yml passes it, as the Android version code is).
+      buildNumber: String(Number(process.env.BIBLE_VERSION_CODE) || 1),
+      // iPhone only for now (an iPad runs it as an iPhone app); the layout already keeps
+      // text and bars to a reading width, for when iPad is added.
+      supportsTablet: false,
       infoPlist: {
         // No encryption beyond what iOS itself does: no export compliance papers needed.
         ITSAppUsesNonExemptEncryption: false,
