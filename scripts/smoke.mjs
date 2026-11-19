@@ -20,12 +20,17 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'smoke-out');
 const editions = process.argv.slice(2).filter((a) => ['en', 'ml', 'ta', 'all'].includes(a));
 const EDITIONS = editions.length ? editions : ['en', 'ml', 'ta', 'all'];
-const SIZES = [
-  ['phone', 412, 915, 2],
-  ['small-phone', 360, 640, 2],
-  ['phone-sideways', 915, 412, 2],
-  ['tablet-sideways', 1366, 1024, 1],
-];
+// SMOKE_SIZES=store: one large iPhone at three times resolution only, for the App Store
+// pictures (scripts/store-shots.mjs).
+const SIZES =
+  process.env.SMOKE_SIZES === 'store'
+    ? [['store', 430, 932, 3]]
+    : [
+        ['phone', 412, 915, 2],
+        ['small-phone', 360, 640, 2],
+        ['phone-sideways', 915, 412, 2],
+        ['tablet-sideways', 1366, 1024, 1],
+      ];
 const LANGUAGE = { en: 'en', ml: 'en', ta: 'en', all: 'en' };
 const QUERY = { en: 'love', ml: 'സ്നേഹം', ta: 'அன்பு', all: 'love' };
 // A notebook page: a heading and three verses, each quoted under its reference (also the
