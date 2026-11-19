@@ -128,7 +128,7 @@ export function useSavedLooks(editionId: string, onFail: () => void) {
           const dir = photoDir();
           if (!dir.exists) dir.create({ intermediates: true });
           const copy = new File(dir, `${id}.jpg`);
-          new File(photo).copy(copy);
+          new File(photo).copySync(copy);
           photo = copy.uri;
         } catch {
           // Saved with the picker's copy; it lasts until the phone clears the app's cache.

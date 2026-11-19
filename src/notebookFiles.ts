@@ -88,10 +88,14 @@ export function stageShared(uri: string, name: string): string {
   if (Platform.OS === 'web') return uri;
   try {
     const staged = new File(sharedFolder(), name);
-    new File(uri).move(staged);
+    // moveSync, not move: move runs in the background and returns at once, and the
+    // share sheet then looked for the file before it had arrived ("You don't have
+    // access to the provided file" on iPhone).
+    new File(uri).moveSync(staged);
     return staged.uri;
   } catch {
-    return uri;
+    // The iPhone hands back a bare path; the share sheet wants a file address.
+    return uri.startsWith('/') ? `file://${uri}` : uri;
   }
 }
 
@@ -218,7 +222,7 @@ export async function sharePdf(html: string, title: string, dialogTitle: string)
   let shared = printed;
   try {
     const named = new File(sharedFolder(), name);
-    printed.move(named);
+    printed.moveSync(named);
     shared = named;
   } catch {
     // Shared under the printer's own name instead.
