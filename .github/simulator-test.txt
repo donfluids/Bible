@@ -3,3 +3,4 @@
 # saying why, and push.
 #
 # 2026-11-19: first run (the card picture's error on iPhone, the freeze after Settings).
+# 2026-11-19 19:50: asked again (the second run waited 15 minutes for a Mac and was cancelled).
