@@ -135,7 +135,9 @@ jobs:
           echo "== the app's JavaScript log (React Native)"
           tail -60 maestro-out/app-js.log
           echo "== errors and faults in the device log"
-          grep -E "^[0-9-]+ [0-9:.]+ (E|F) " maestro-out/device.log | tail -60 || true
+          # Less the simulator's own noise: it has no haptics files and logs that at each key press.
+          grep -E "^[0-9-]+ [0-9:.]+ (E|F) " maestro-out/device.log \
+            | grep -vE "hapticpatternlibrary|focusItemsInRect|UIScene. lifecycle" | tail -60 || true
           echo "== crash reports"
           ls ~/Library/Logs/DiagnosticReports 2>/dev/null | grep -i "$APP_BINARY" || echo "(none)"
           cp ~/Library/Logs/DiagnosticReports/*"$APP_BINARY"* maestro-out/ 2>/dev/null || true

@@ -5,18 +5,13 @@ name: Card picture shared
 ---
 - assertNotVisible: "The picture could not be made\\."
 - assertVisible: "Copy|Save Image|Save to Files|AirDrop"
-- runFlow:
-    when:
-      visible: "Close"
-    commands:
-      - tapOn: "Close"
-- runFlow:
-    when:
-      notVisible: "Share picture"
-    commands:
-      - swipe:
-          direction: DOWN
+# The picture handed to the share sheet ("verse-card", "PNG Image · 105 KB").
+- assertVisible: "verse-card.*|PNG Image.*"
+# The share sheet closes with a tap outside it (iOS calls that area "dismiss popup").
+- tapOn:
+    id: "PopoverDismissRegion"
 - extendedWaitUntil:
     visible: "Share picture"
     timeout: 10000
+- assertNotVisible: "Save Image"
 - takeScreenshot: 07-card-after-share
