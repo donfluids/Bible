@@ -12,17 +12,14 @@ export const CARD_HEIGHT: Record<CardSize, number> = { square: 360, tall: 640 };
 export const CARD_PIXELS = 1080;
 
 const ART = {
-  balloon: require('../assets/cards/balloon.png'),
-  birthdayCake: require('../assets/cards/birthday_cake.png'),
-  bouquet: require('../assets/cards/bouquet.png'),
-  christmasTree: require('../assets/cards/christmas_tree.png'),
-  dove: require('../assets/cards/dove.png'),
-  partyPopper: require('../assets/cards/party_popper.png'),
-  ring: require('../assets/cards/ring.png'),
+  wreath: require('../assets/cards/lawrance_wreath.png'),
+  bouquet: require('../assets/cards/monnoyer_bouquet.png'),
+  lily: require('../assets/cards/piquet_lily.png'),
+  doves: require('../assets/cards/audubon_doves.png'),
+  tulip: require('../assets/cards/holsteyn_tulip.png'),
+  holly: require('../assets/cards/prang_holly.png'),
+  dove: require('../assets/cards/hoefnagel_dove.png'),
   rose: require('../assets/cards/redoute_rose.png'),
-  tulip: require('../assets/cards/tulip.png'),
-  twoHearts: require('../assets/cards/two_hearts.png'),
-  wrappedGift: require('../assets/cards/wrapped_gift.png'),
 } satisfies Record<string, ImageSourcePropType>;
 
 /** A picture placed on the card, in card units; `ratio` is height over width. */
@@ -72,6 +69,13 @@ export interface Design {
 
 const box = (top: number, left: number, right: number, bottom: number) => ({ top, left, right, bottom });
 const ROSE_RATIO = 787 / 640;
+const WREATH = 480 / 378;
+const BOUQUET = 480 / 346;
+const LILY = 480 / 355;
+const DOVES = 384 / 480;
+const TULIP = 480 / 290;
+const HOLLY = 480 / 312;
+const DOVE = 291 / 480;
 
 export const DESIGNS: Design[] = [
   {
@@ -167,24 +171,8 @@ export const DESIGNS: Design[] = [
     ink: '#3E1D27',
     accent: '#9A2F4C',
     faint: 'rgba(62,29,39,0.55)',
-    square: {
-      art: [
-        { src: ART.balloon, width: 60, left: 20, top: 16, rotate: -12 },
-        { src: ART.birthdayCake, width: 84, left: 138, top: 16 },
-        { src: ART.balloon, width: 52, right: 24, top: 30, rotate: 10, flip: true },
-      ],
-      box: box(104, 30, 30, 22),
-      align: 'center',
-    },
-    tall: {
-      art: [
-        { src: ART.balloon, width: 84, left: 26, top: 40, rotate: -12 },
-        { src: ART.birthdayCake, width: 120, left: 120, top: 70 },
-        { src: ART.balloon, width: 72, right: 30, top: 60, rotate: 10, flip: true },
-      ],
-      box: box(210, 32, 32, 48),
-      align: 'center',
-    },
+    square: { above: [{ src: ART.wreath, width: 104, ratio: WREATH }], box: box(24, 30, 30, 24), align: 'center' },
+    tall: { above: [{ src: ART.wreath, width: 170, ratio: WREATH }], box: box(50, 32, 32, 50), align: 'center' },
   },
   {
     id: 'party',
@@ -193,22 +181,8 @@ export const DESIGNS: Design[] = [
     accent: '#8A5A1E',
     faint: 'rgba(59,42,20,0.55)',
     borders: [{ color: '#B38E57', inset: 12, width: 1.5 }],
-    square: {
-      art: [
-        { src: ART.partyPopper, width: 46, left: 24, top: 22 },
-        { src: ART.wrappedGift, width: 54, right: 24, bottom: 24 },
-      ],
-      box: box(58, 34, 34, 54),
-      align: 'center',
-    },
-    tall: {
-      art: [
-        { src: ART.partyPopper, width: 72, left: 30, top: 34 },
-        { src: ART.wrappedGift, width: 84, right: 30, bottom: 36 },
-      ],
-      box: box(120, 34, 34, 130),
-      align: 'center',
-    },
+    square: { above: [{ src: ART.bouquet, width: 84, ratio: BOUQUET }], box: box(28, 34, 34, 28), align: 'center' },
+    tall: { above: [{ src: ART.bouquet, width: 140, ratio: BOUQUET }], box: box(56, 34, 34, 56), align: 'center' },
   },
   {
     id: 'wedding',
@@ -220,8 +194,8 @@ export const DESIGNS: Design[] = [
       { color: '#C9A86A', inset: 14, width: 1 },
       { color: '#E3D1AC', inset: 19, width: 1 },
     ],
-    square: { above: [{ src: ART.bouquet, width: 60 }, { src: ART.ring, width: 42 }], box: box(34, 36, 36, 34), align: 'center' },
-    tall: { above: [{ src: ART.bouquet, width: 96 }, { src: ART.ring, width: 66 }], box: box(60, 38, 38, 60), align: 'center' },
+    square: { above: [{ src: ART.lily, width: 86, ratio: LILY }], box: box(34, 36, 36, 34), align: 'center' },
+    tall: { above: [{ src: ART.lily, width: 140, ratio: LILY }], box: box(60, 38, 38, 60), align: 'center' },
   },
   {
     id: 'hearts',
@@ -230,8 +204,8 @@ export const DESIGNS: Design[] = [
     accent: '#A3404E',
     faint: 'rgba(64,38,42,0.55)',
     borders: [{ color: '#E5B7B5', inset: 14, width: 1 }],
-    square: { above: [{ src: ART.twoHearts, width: 64 }], box: box(34, 36, 36, 34), align: 'center' },
-    tall: { above: [{ src: ART.twoHearts, width: 100 }], box: box(60, 38, 38, 60), align: 'center' },
+    square: { above: [{ src: ART.doves, width: 136, ratio: DOVES }], box: box(34, 36, 36, 34), align: 'center' },
+    tall: { above: [{ src: ART.doves, width: 220, ratio: DOVES }], box: box(60, 38, 38, 60), align: 'center' },
   },
   {
     id: 'rose',
@@ -248,8 +222,8 @@ export const DESIGNS: Design[] = [
     ink: '#2F4433',
     accent: '#4F7356',
     faint: 'rgba(47,68,51,0.55)',
-    square: { above: [{ src: ART.tulip, width: 64 }], box: box(30, 34, 34, 30), align: 'center' },
-    tall: { above: [{ src: ART.tulip, width: 104 }], box: box(60, 36, 36, 60), align: 'center' },
+    square: { above: [{ src: ART.tulip, width: 66, ratio: TULIP }], box: box(30, 34, 34, 30), align: 'center' },
+    tall: { above: [{ src: ART.tulip, width: 110, ratio: TULIP }], box: box(60, 36, 36, 60), align: 'center' },
   },
   {
     id: 'christmas',
@@ -258,8 +232,8 @@ export const DESIGNS: Design[] = [
     accent: '#E8C77A',
     faint: 'rgba(243,231,198,0.6)',
     stars: '#F3E7C6',
-    square: { art: [{ src: ART.christmasTree, width: 116, left: -6, bottom: 20 }], box: box(24, 120, 26, 24), align: 'left' },
-    tall: { art: [{ src: ART.christmasTree, width: 170, left: 95, bottom: 34 }], box: box(56, 32, 32, 220), align: 'center' },
+    square: { art: [{ src: ART.holly, width: 100, ratio: HOLLY, left: 12, bottom: 18 }], box: box(24, 120, 26, 24), align: 'left' },
+    tall: { art: [{ src: ART.holly, width: 120, ratio: HOLLY, left: 120, bottom: 30 }], box: box(56, 32, 32, 220), align: 'center' },
   },
   {
     id: 'sunrise',
@@ -278,8 +252,8 @@ export const DESIGNS: Design[] = [
     ink: '#22313F',
     accent: '#2D5D8A',
     faint: 'rgba(34,49,63,0.55)',
-    square: { above: [{ src: ART.dove, width: 70 }], box: box(28, 34, 34, 30), align: 'center' },
-    tall: { above: [{ src: ART.dove, width: 120 }], box: box(60, 36, 36, 60), align: 'center' },
+    square: { above: [{ src: ART.dove, width: 150, ratio: DOVE }], box: box(28, 34, 34, 30), align: 'center' },
+    tall: { above: [{ src: ART.dove, width: 240, ratio: DOVE }], box: box(60, 36, 36, 60), align: 'center' },
   },
 ];
 

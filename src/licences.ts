@@ -215,18 +215,17 @@ const ICONS: Source = {
   modifications: 'Reduced to the icons used, at one weight and size.',
 };
 
-const FLUENT: Source = {
+const PRINTS: Source = {
   title: 'Verse card pictures',
-  notice: 'Fluent Emoji. © Microsoft Corporation.',
-  licence: MIT,
-  source: [{ label: 'github.com/microsoft/fluentui-emoji', url: 'https://github.com/microsoft/fluentui-emoji' }],
-};
-
-const ROSE: Source = {
-  title: 'Verse card rose',
-  notice: 'Pierre-Joseph Redouté, Rosa turbinata, from Les Roses (1817–24). Public domain. The Metropolitan Museum of Art, Open Access.',
-  source: [{ label: 'metmuseum.org', url: 'https://www.metmuseum.org/art/collection/search/762055' }],
-  modifications: 'Background removed; edges faded.',
+  notice:
+    'Old prints and paintings, all public domain: Mary Lawrance, A Wreath of Roses (1799); Jean-Baptiste Monnoyer, Bouquet (c. 1680–95); Pieter Holsteyn II, Study of a Tulip (c. 1645), all The Cleveland Museum of Art, Open Access. Auguste Piquet de Brienne, Witte lelie (1822), Rijksmuseum. Robert Havell after John James Audubon, Carolina Pigeon or Turtle Dove (1827); Joris Hoefnagel, Doves and Pigeons (c. 1575/1590s), both National Gallery of Art, Washington, Open Access. Louis Prang & Co., Holly (1862); Pierre-Joseph Redouté, Rosa turbinata, from Les Roses (1817–24), both The Metropolitan Museum of Art, Open Access.',
+  source: [
+    { label: 'clevelandart.org', url: 'https://www.clevelandart.org/open-access' },
+    { label: 'rijksmuseum.nl', url: 'https://www.rijksmuseum.nl/en/collection/RP-P-1922-355' },
+    { label: 'nga.gov', url: 'https://www.nga.gov/open-access-images.html' },
+    { label: 'metmuseum.org', url: 'https://www.metmuseum.org/hubs/open-access' },
+  ],
+  modifications: 'Cropped to the flower or bird; the paper and any lettering removed; edges faded.',
 };
 
 const APP_NAME: Record<EditionId, string> = { en: 'Bible', ml: 'വേദപുസ്തകം', ta: 'வேதாகமம்', all: 'Bibles' };
@@ -254,7 +253,7 @@ export function sectionsFor(edition: EditionId): Section[] {
     { heading: 'Hebrew and Greek data', sources: [STEPBIBLE, STRONGS] },
     { heading: 'Dictionaries, cross references, parallels and introductions', sources: [ABBOTT_SMITH, BDB, CROSS_REFERENCES, PARALLELS, INTRODUCTIONS(edition)] },
     ...(edition === 'ml' || edition === 'all' ? [{ heading: 'Voice', sources: [VOICE, VOCODER] }] : []),
-    { heading: 'Fonts, icons and pictures', sources: [FONTS(edition), ICONS, FLUENT, ROSE] },
+    { heading: 'Fonts, icons and pictures', sources: [FONTS(edition), ICONS, PRINTS] },
     { heading: 'Software', sources: [APP(edition)] },
   ];
 }

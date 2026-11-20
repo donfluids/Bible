@@ -436,10 +436,10 @@ npm run smoke        # every main screen of each app in a browser, at four sizes
   `material-symbols` npm package. `scripts/make-icon-font.py` keeps only the icons the
   app uses, at one weight and size, as `assets/fonts/BibleIcons.ttf` (8 KB) with the
   code points in `src/iconCodes.json`; `src/components/Icon.tsx` draws them.
-- **Verse card pictures** (`assets/cards`, see `SOURCES.md` there): Microsoft Fluent
-  Emoji, 3D style, MIT licence; and a rose by Pierre-Joseph Redouté from *Les Roses*
-  (The Metropolitan Museum of Art, Open Access, public domain), its paper taken out by
-  `scripts/card-rose.mjs`.
+- **Verse card pictures** (`assets/cards`, see `SOURCES.md` there): old prints and
+  paintings in the public domain, from The Cleveland Museum of Art, the Rijksmuseum, the
+  National Gallery of Art (Washington) and The Metropolitan Museum of Art, their paper
+  taken out by `scripts/card-art.mjs` (the Redouté rose by `scripts/card-rose.mjs`).
 
 The app shows these sources, their licences with links and the modifications made to
 each under Settings → Sources and licences, in English (`src/licences.ts`), followed by
