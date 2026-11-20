@@ -40,6 +40,8 @@ const STARS: [number, number, number][] = [
 // The space one character of each script takes at size 1, line height included.
 const CHAR_AREA: Record<Script | 'latin', number> = { latin: 0.62, ml: 1.15, ta: 1.2, hi: 0.95 };
 const LINE_HEIGHT: Record<Script | 'latin', number> = { latin: 1.5, ml: 1.75, ta: 1.7, hi: 1.7 };
+// The width one letter (one code point) takes at size 1, roughly; for the longest word.
+const CHAR_WIDTH: Record<Script | 'latin', number> = { latin: 0.55, ml: 0.62, ta: 0.62, hi: 0.55 };
 
 /**
  * The verse as a card, drawn at `width` and captured from here for sharing. The verse is
@@ -77,7 +79,10 @@ export const VerseCard = forwardRef<View, Props>(function VerseCard({ design, si
     (message ? 14 + messageLine * lines(message, messageSize, msgScript) : 0);
   const boxH = CARD_HEIGHT[size] - layout.box.top - layout.box.bottom - used;
   const estimate = Math.sqrt((boxW * Math.max(boxH, 40) * 0.9) / (Math.max(text.length, 1) * CHAR_AREA[v]));
-  const maxSize = tall ? 34 : 26;
+  // No larger than lets the longest word fit on a line: a short verse grows to fill the box,
+  // and a long Malayalam word was broken in two ("ദൈവത്തോടുകൂ / ടെ").
+  const longest = Math.max(1, ...text.split(/\s+/).map((w) => w.length));
+  const maxSize = Math.min(tall ? 34 : 26, (boxW * 0.92) / (longest * CHAR_WIDTH[v]));
   const [fitScale, setFitScale] = useState(1);
   const tries = useRef(0);
   const content = `${design.id}|${size}|${heading}|${text}|${reference}|${message}|${plainFace}`;
@@ -103,6 +108,10 @@ export const VerseCard = forwardRef<View, Props>(function VerseCard({ design, si
     }
   };
   const align = layout.align === 'left' ? 'left' : 'center';
+  // A painting at the card's height and its own shape: a little wider than the tall card, much
+  // narrower than the square one; `fade` is how far in its sides blend into the paper there.
+  const paintingWidth = design.painting ? height / design.painting.ratio : 0;
+  const fade = paintingWidth * 0.14;
 
   const art = (a: Art, i: number, placed: boolean) => (
     <Image
@@ -131,7 +140,29 @@ export const VerseCard = forwardRef<View, Props>(function VerseCard({ design, si
           <View style={[StyleSheet.absoluteFill, { backgroundColor: VEIL_COLOUR[photo.veil], opacity: VEIL_OPACITY[photo.veil][photo.strength] }]} />
         </>
       ) : null}
-      {!photo && design.background.length > 1 ? (
+      {!photo && design.painting ? (
+        // The whole painting at the card's height: on the tall card it covers the card; on the
+        // square one it is narrower, and its sides fade into the paper colour behind it.
+        <>
+          <Image
+            source={design.painting.src}
+            resizeMode="cover"
+            style={{ position: 'absolute', top: 0, height, left: (width - paintingWidth) / 2, width: paintingWidth }}
+          />
+          {paintingWidth < width
+            ? ([-1, 1] as const).map((side) => (
+                <LinearGradient
+                  key={side}
+                  colors={side < 0 ? [design.background[0], `${design.background[0]}00`] : [`${design.background[0]}00`, design.background[0]]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{ position: 'absolute', top: 0, height, width: fade, left: side < 0 ? (width - paintingWidth) / 2 : (width + paintingWidth) / 2 - fade }}
+                />
+              ))
+            : null}
+        </>
+      ) : null}
+      {!photo && !design.painting && design.background.length > 1 ? (
         <LinearGradient
           colors={design.background as [string, string, ...string[]]}
           start={{ x: 0, y: 0 }}

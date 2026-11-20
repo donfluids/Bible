@@ -11,15 +11,22 @@ export const CARD_HEIGHT: Record<CardSize, number> = { square: 360, tall: 640 };
 /** Pixels across the shared picture. */
 export const CARD_PIXELS = 1080;
 
-const ART = {
-  wreath: require('../assets/cards/lawrance_wreath.png'),
-  bouquet: require('../assets/cards/monnoyer_bouquet.png'),
-  lily: require('../assets/cards/piquet_lily.png'),
-  doves: require('../assets/cards/audubon_doves.png'),
-  tulip: require('../assets/cards/holsteyn_tulip.png'),
-  holly: require('../assets/cards/prang_holly.png'),
-  dove: require('../assets/cards/hoefnagel_dove.png'),
-  rose: require('../assets/cards/redoute_rose.png'),
+// Watercolour paintings made for these cards (assets/cards/SOURCES.md): each fills the card,
+// its subject in the lower third and a pale wash above it for the words.
+const PAINTING = {
+  birthday: require('../assets/cards/painting_birthday.jpg'),
+  party: require('../assets/cards/painting_party.jpg'),
+  wedding: require('../assets/cards/painting_wedding.jpg'),
+  anniversary: require('../assets/cards/painting_anniversary.jpg'),
+  getWell: require('../assets/cards/painting_getwell.jpg'),
+  sympathy: require('../assets/cards/painting_sympathy.jpg'),
+  christmas: require('../assets/cards/painting_christmas.jpg'),
+  easter: require('../assets/cards/painting_easter.jpg'),
+  newYear: require('../assets/cards/painting_newyear.jpg'),
+  lavender: require('../assets/cards/wash_lavender.jpg'),
+  peach: require('../assets/cards/wash_peach.jpg'),
+  sage: require('../assets/cards/wash_sage.jpg'),
+  honey: require('../assets/cards/wash_gold.jpg'),
 } satisfies Record<string, ImageSourcePropType>;
 
 /** A picture placed on the card, in card units; `ratio` is height over width. */
@@ -45,7 +52,10 @@ export interface CardLayout {
   align: 'center' | 'left';
 }
 
-export type DesignId = 'paper' | 'linen' | 'gold' | 'dawn' | 'olive' | 'night' | 'ink' | 'celebrate' | 'party' | 'wedding' | 'hearts' | 'rose' | 'tulip' | 'christmas' | 'sunrise' | 'dove';
+export type DesignId =
+  | 'paper' | 'linen' | 'gold' | 'dawn' | 'olive' | 'night' | 'ink'
+  | 'celebrate' | 'party' | 'wedding' | 'hearts' | 'rose' | 'tulip' | 'christmas' | 'sunrise' | 'dove'
+  | 'lavender' | 'peach' | 'sage' | 'honey';
 
 export interface Design {
   id: DesignId;
@@ -56,6 +66,8 @@ export interface Design {
   ink: string;
   accent: string;
   faint: string;
+  /** A painting that fills the card, anchored at its foot (`ratio` is height over width). */
+  painting?: { src: ImageSourcePropType; ratio: number };
   /** Lines drawn inside the edge, `inset` units in. */
   borders?: { color: string; inset: number; width: number }[];
   /** A small cross drawn above the text, and a soft sun behind it. */
@@ -68,14 +80,34 @@ export interface Design {
 }
 
 const box = (top: number, left: number, right: number, bottom: number) => ({ top, left, right, bottom });
-const ROSE_RATIO = 787 / 640;
-const WREATH = 480 / 378;
-const BOUQUET = 480 / 346;
-const LILY = 480 / 355;
-const DOVES = 384 / 480;
-const TULIP = 480 / 290;
-const HOLLY = 480 / 312;
-const DOVE = 291 / 480;
+// The paintings are 448 by 768, on white watercolour paper of this colour at their edges.
+const TALL_PAINTING = 768 / 448;
+const PAPER = '#F9FAFC';
+
+/** A design on one of the paintings: the words in the wash above the subject. */
+const painted = (id: DesignId, src: ImageSourcePropType, colour: string, ink: string, accent: string, faint: string, square?: CardLayout): Design => ({
+  id,
+  background: [colour],
+  painting: { src, ratio: TALL_PAINTING },
+  ink,
+  accent,
+  faint,
+  // The square card shows the whole painting, narrower, its sides fading into the paper.
+  square: square ?? { box: box(22, 24, 24, 182), align: 'center' },
+  tall: { box: box(46, 30, 30, 272), align: 'center' },
+});
+
+/** A plain wash for any verse: the words in the middle. */
+const washed = (id: DesignId, src: ImageSourcePropType): Design => ({
+  id,
+  background: [PAPER],
+  painting: { src, ratio: TALL_PAINTING },
+  ink: '#3A2E28',
+  accent: '#7A4E1C',
+  faint: 'rgba(58,46,40,0.55)',
+  square: { box: box(40, 36, 36, 40), align: 'center' },
+  tall: { box: box(70, 38, 38, 70), align: 'center' },
+});
 
 export const DESIGNS: Design[] = [
   {
@@ -164,97 +196,20 @@ export const DESIGNS: Design[] = [
     square: { box: box(40, 36, 36, 40), align: 'center' },
     tall: { box: box(70, 40, 40, 70), align: 'center' },
   },
-  {
-    id: 'celebrate',
-    background: ['#FFF4E4', '#FFE1E6', '#F9D2E6'],
-    diagonal: true,
-    ink: '#3E1D27',
-    accent: '#9A2F4C',
-    faint: 'rgba(62,29,39,0.55)',
-    square: { above: [{ src: ART.wreath, width: 104, ratio: WREATH }], box: box(24, 30, 30, 24), align: 'center' },
-    tall: { above: [{ src: ART.wreath, width: 170, ratio: WREATH }], box: box(50, 32, 32, 50), align: 'center' },
-  },
-  {
-    id: 'party',
-    background: ['#F7F0E2'],
-    ink: '#3B2A14',
-    accent: '#8A5A1E',
-    faint: 'rgba(59,42,20,0.55)',
-    borders: [{ color: '#B38E57', inset: 12, width: 1.5 }],
-    square: { above: [{ src: ART.bouquet, width: 84, ratio: BOUQUET }], box: box(28, 34, 34, 28), align: 'center' },
-    tall: { above: [{ src: ART.bouquet, width: 140, ratio: BOUQUET }], box: box(56, 34, 34, 56), align: 'center' },
-  },
-  {
-    id: 'wedding',
-    background: ['#FFFFFF', '#F7F2EA'],
-    ink: '#3B3226',
-    accent: '#9C7A3C',
-    faint: 'rgba(59,50,38,0.55)',
-    borders: [
-      { color: '#C9A86A', inset: 14, width: 1 },
-      { color: '#E3D1AC', inset: 19, width: 1 },
-    ],
-    square: { above: [{ src: ART.lily, width: 86, ratio: LILY }], box: box(34, 36, 36, 34), align: 'center' },
-    tall: { above: [{ src: ART.lily, width: 140, ratio: LILY }], box: box(60, 38, 38, 60), align: 'center' },
-  },
-  {
-    id: 'hearts',
-    background: ['#FFF7F5', '#FBE6E4'],
-    ink: '#40262A',
-    accent: '#A3404E',
-    faint: 'rgba(64,38,42,0.55)',
-    borders: [{ color: '#E5B7B5', inset: 14, width: 1 }],
-    square: { above: [{ src: ART.doves, width: 136, ratio: DOVES }], box: box(34, 36, 36, 34), align: 'center' },
-    tall: { above: [{ src: ART.doves, width: 220, ratio: DOVES }], box: box(60, 38, 38, 60), align: 'center' },
-  },
-  {
-    id: 'rose',
-    background: ['#F4F0EA'],
-    ink: '#3A3434',
-    accent: '#7A3A4A',
-    faint: 'rgba(58,52,52,0.55)',
-    square: { art: [{ src: ART.rose, width: 196, ratio: ROSE_RATIO, left: -26, top: -4 }], box: box(26, 168, 22, 26), align: 'left' },
-    tall: { art: [{ src: ART.rose, width: 250, ratio: ROSE_RATIO, left: 55, top: 6 }], box: box(330, 34, 34, 40), align: 'center' },
-  },
-  {
-    id: 'tulip',
-    background: ['#F1F7EC', '#FFFFFF'],
-    ink: '#2F4433',
-    accent: '#4F7356',
-    faint: 'rgba(47,68,51,0.55)',
-    square: { above: [{ src: ART.tulip, width: 66, ratio: TULIP }], box: box(30, 34, 34, 30), align: 'center' },
-    tall: { above: [{ src: ART.tulip, width: 110, ratio: TULIP }], box: box(60, 36, 36, 60), align: 'center' },
-  },
-  {
-    id: 'christmas',
-    background: ['#2A3E6E', '#14214A', '#0B1430'],
-    ink: '#F3E7C6',
-    accent: '#E8C77A',
-    faint: 'rgba(243,231,198,0.6)',
-    stars: '#F3E7C6',
-    square: { art: [{ src: ART.holly, width: 100, ratio: HOLLY, left: 12, bottom: 18 }], box: box(24, 120, 26, 24), align: 'left' },
-    tall: { art: [{ src: ART.holly, width: 120, ratio: HOLLY, left: 120, bottom: 30 }], box: box(56, 32, 32, 220), align: 'center' },
-  },
-  {
-    id: 'sunrise',
-    background: ['#FFE3BD', '#FFF2E2', '#FFFFFF'],
-    ink: '#3B2A14',
-    accent: '#B0561E',
-    faint: 'rgba(59,42,20,0.55)',
-    cross: '#B0561E',
-    halo: '#FFC977',
-    square: { box: box(34, 34, 34, 34), align: 'center' },
-    tall: { box: box(60, 36, 36, 60), align: 'center' },
-  },
-  {
-    id: 'dove',
-    background: ['#DDEBF6', '#F4F7FA', '#FFFFFF'],
-    ink: '#22313F',
-    accent: '#2D5D8A',
-    faint: 'rgba(34,49,63,0.55)',
-    square: { above: [{ src: ART.dove, width: 150, ratio: DOVE }], box: box(28, 34, 34, 30), align: 'center' },
-    tall: { above: [{ src: ART.dove, width: 240, ratio: DOVE }], box: box(60, 36, 36, 60), align: 'center' },
-  },
+  painted('celebrate', PAINTING.birthday, PAPER, '#4A2A22', '#A3404E', 'rgba(74,42,34,0.55)'),
+  painted('party', PAINTING.party, PAPER, '#3B2A14', '#8A5A1E', 'rgba(59,42,20,0.55)'),
+  painted('wedding', PAINTING.wedding, PAPER, '#3B3226', '#9C7A3C', 'rgba(59,50,38,0.55)'),
+  painted('hearts', PAINTING.anniversary, PAPER, '#40262A', '#A3404E', 'rgba(64,38,42,0.55)'),
+  painted('rose', PAINTING.sympathy, PAPER, '#2A3440', '#4A5E78', 'rgba(42,52,64,0.55)'),
+  painted('tulip', PAINTING.getWell, PAPER, '#2F4433', '#4F7356', 'rgba(47,68,51,0.55)'),
+  // Light words on the dark wash: on the square card, only as wide as the painting.
+  painted('christmas', PAINTING.christmas, PAPER, '#F4EEDF', '#E8C77A', 'rgba(244,238,223,0.65)', { box: box(26, 88, 88, 124), align: 'center' }),
+  painted('sunrise', PAINTING.easter, PAPER, '#3B2A14', '#B0561E', 'rgba(59,42,20,0.55)'),
+  painted('dove', PAINTING.newYear, PAPER, '#22313F', '#2D5D8A', 'rgba(34,49,63,0.55)'),
+  washed('lavender', PAINTING.lavender),
+  washed('peach', PAINTING.peach),
+  washed('sage', PAINTING.sage),
+  washed('honey', PAINTING.honey),
 ];
 
 export type Occasion = 'none' | 'birthday' | 'wedding' | 'anniversary' | 'sympathy' | 'getWell' | 'christmas' | 'easter' | 'newYear';
@@ -336,6 +291,7 @@ export function lookDesign(look: CardLook): { design: Design; lightWords: boolea
     ...base,
     ...(words ?? {}),
     background: look.photo ? [VEIL_COLOUR[look.veil]] : look.colour ? [look.colour] : base.background,
+    ...(look.photo || look.colour || !look.extras ? { painting: undefined } : {}),
     ...(look.extras ? {} : { borders: undefined, cross: undefined, halo: undefined, stars: undefined }),
     ...(look.extras && words ? { borders: base.borders?.map((b) => ({ ...b, color: words.accent })), cross: base.cross ? words.accent : undefined } : {}),
     square: look.extras ? base.square : { ...base.square, art: undefined, above: undefined },
