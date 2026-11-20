@@ -1,0 +1,150 @@
+{
+ "effort": "medium",
+ "created": "2026-11-20T21:20:36.767Z",
+ "cost": 0.0596164,
+ "usage": {
+  "in": 2,
+  "cacheRead": 1224,
+  "cacheCreate": 14195,
+  "out": 271
+ },
+ "problems": [],
+ "verses": [
+  {
+   "book": 9,
+   "chapter": 13,
+   "v": 2,
+   "hash": "bc115b9710ce",
+   "tokens": 51,
+   "spans": []
+  },
+  {
+   "book": 9,
+   "chapter": 13,
+   "v": 4,
+   "hash": "dd378c817799",
+   "tokens": 32,
+   "spans": []
+  },
+  {
+   "book": 9,
+   "chapter": 13,
+   "v": 5,
+   "hash": "4576a02736bd",
+   "tokens": 41,
+   "spans": []
+  },
+  {
+   "book": 9,
+   "chapter": 13,
+   "v": 6,
+   "hash": "4720dad92a74",
+   "tokens": 37,
+   "spans": []
+  },
+  {
+   "book": 9,
+   "chapter": 13,
+   "v": 7,
+   "hash": "e289bdb984a9",
+   "tokens": 28,
+   "spans": []
+  },
+  {
+   "book": 9,
+   "chapter": 13,
+   "v": 8,
+   "hash": "f69edfe839a3",
+   "tokens": 26,
+   "spans": []
+  },
+  {
+   "book": 9,
+   "chapter": 13,
+   "v": 9,
+   "hash": "a1d4bcdff042",
+   "tokens": 19,
+   "spans": []
+  },
+  {
+   "book": 9,
+   "chapter": 13,
+   "v": 10,
+   "hash": "2ca311f62b43",
+   "tokens": 29,
+   "spans": []
+  },
+  {
+   "book": 9,
+   "chapter": 13,
+   "v": 11,
+   "hash": "933d115adbeb",
+   "tokens": 39,
+   "spans": []
+  },
+  {
+   "book": 9,
+   "chapter": 13,
+   "v": 12,
+   "hash": "cf2cfe8eb4e7",
+   "tokens": 31,
+   "spans": []
+  },
+  {
+   "book": 9,
+   "chapter": 13,
+   "v": 13,
+   "hash": "849fa573c9b8",
+   "tokens": 35,
+   "spans": []
+  },
+  {
+   "book": 9,
+   "chapter": 13,
+   "v": 14,
+   "hash": "bf898b8bde62",
+   "tokens": 39,
+   "spans": []
+  },
+  {
+   "book": 9,
+   "chapter": 13,
+   "v": 15,
+   "hash": "6d9dd4f0bd95",
+   "tokens": 26,
+   "spans": []
+  },
+  {
+   "book": 9,
+   "chapter": 13,
+   "v": 17,
+   "hash": "f31eb8366f77",
+   "tokens": 26,
+   "spans": []
+  },
+  {
+   "book": 9,
+   "chapter": 13,
+   "v": 18,
+   "hash": "a65be968c02e",
+   "tokens": 29,
+   "spans": []
+  },
+  {
+   "book": 9,
+   "chapter": 13,
+   "v": 21,
+   "hash": "d974c22394f6",
+   "tokens": 25,
+   "spans": []
+  },
+  {
+   "book": 9,
+   "chapter": 13,
+   "v": 23,
+   "hash": "312efc059b1f",
+   "tokens": 13,
+   "spans": []
+  }
+ ]
+}
