@@ -32,6 +32,8 @@ const KJV_VERSES = 31102;
 const CHAPTERS = 1189;
 // Markup a source can leave behind: USFM (\f, \v), braces, tags, the KJV's [[ ]].
 const MARKUP = /\\[a-z]|[{}<>|]|\[\[|\]\]/;
+// The LSV prints words missing from the oldest manuscripts in double brackets (Mark 16:9-20).
+const LSV_MARKUP = /\\[a-z]|[{}<>|]/;
 const BAD_CHARS = /[�\u0000-\u0009\u000B-\u001F\u007F]/;
 const SCRIPT = { MAL: /[ഀ-ൿ]/, TAM: /[஀-௿]/, HIN: /[ऀ-ॿ]/ };
 
@@ -87,7 +89,8 @@ for (const file of readdirSync(DB_DIR).filter((f) => /^bible-\w+\.db$/.test(f)).
       const at = `${t} ${r.book}:${r.chapter}:${r.verse}`;
       if (!r.omitted && !r.text.trim()) empty.push(at);
       if (BAD_CHARS.test(r.text)) bad.push(`${at} ${JSON.stringify(r.text.match(BAD_CHARS)[0])}`);
-      if (MARKUP.test(r.text)) markup.push(`${at} …${r.text.slice(Math.max(0, r.text.search(MARKUP) - 15), r.text.search(MARKUP) + 15)}…`);
+      const markupRule = t === 'LSV' ? LSV_MARKUP : MARKUP;
+      if (markupRule.test(r.text)) markup.push(`${at} …${r.text.slice(Math.max(0, r.text.search(markupRule) - 15), r.text.search(markupRule) + 15)}…`);
       if (/ {2,}/.test(r.text)) spaces.push(at);
       // What is left of a bridged verse number ("-18 அப்பொழுது"). A leading number cannot be
       // checked so: the Tamil writes numbers as digits ("40 நாட்களுக்குப்").

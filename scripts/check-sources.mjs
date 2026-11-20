@@ -15,7 +15,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = join(ROOT, 'data', 'raw');
 const RECORD = join(ROOT, 'data', 'sources.json');
 const SOURCES = [
-  'kjv', 'web', 'mal2015', 'tam2017', 'hin2017', 'bsb', 'bdbglosses', 'openbible', 'step', 'ubs',
+  'kjv', 'web', 'lsv', 'asv', 'mal2015', 'tam2017', 'hin2017', 'bsb', 'bdbglosses', 'openbible', 'step', 'ubs',
   'strongs-hebrew.js', 'strongs-greek.js', 'abbott-smith.tei.xml',
 ];
 

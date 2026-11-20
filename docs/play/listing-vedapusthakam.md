@@ -66,7 +66,7 @@ Malayalam-English Study Bible, with Hebrew and Greek root words and book intros
 ```
 A Malayalam-English Study Bible: read the Sathyavedapusthakam (1910) and the King James Version, and study the root words behind most of the Malayalam words, Hebrew in the Old Testament and Greek in the New.
 
-• The Sathyavedapusthakam, the King James Version and the Berean Standard Bible in modern English, switched with one tap.
+• The Sathyavedapusthakam, the King James Version, the Berean Standard Bible in modern English, the Literal Standard Version and the American Standard Version, switched with one tap.
 • Tap a Malayalam word for its root word, Hebrew in the Old Testament or Greek in the New: meaning, pronunciation, grammar and Strong's dictionary entry.
 • Every verse where that root word stands, and the Malayalam words the Sathyavedapusthakam uses for it.
 • Hebrew and Greek words: the Hebrew of every Old Testament verse and the Greek of every New Testament verse, word by word, with transliteration and a short meaning.
@@ -85,5 +85,5 @@ No internet needed: the whole text is inside the app. No ads, no account, and no
 
 The links between Malayalam words and the Hebrew and Greek were made with computer help and may be wrong in places.
 
-Sources: Sathyavedapusthakam 1910, revised edition in contemporary orthography, © 2015 The Free Bible Foundation, from eBible.org (CC BY-SA 4.0); King James Version 1769 (public domain outside the United Kingdom); Berean Standard Bible (public domain, CC0); Hebrew and Greek text and meanings from STEPBible.org, Tyndale House Cambridge (CC BY 4.0); Strong's dictionary from Open Scriptures (CC BY-SA); cross references from OpenBible.info (CC BY 4.0); parallel passages from the UBS Parallel Passages Database, © 2023 United Bible Societies (CC BY-SA 4.0). Details are under Sources and licences in the app.
+Sources: Sathyavedapusthakam 1910, revised edition in contemporary orthography, © 2015 The Free Bible Foundation, from eBible.org (CC BY-SA 4.0); King James Version 1769 (public domain outside the United Kingdom); Berean Standard Bible (public domain, CC0); Literal Standard Version, © 2020 Covenant Press, from eBible.org (CC BY-SA 4.0); American Standard Version 1901, from eBible.org (public domain); Hebrew and Greek text and meanings from STEPBible.org, Tyndale House Cambridge (CC BY 4.0); Strong's dictionary from Open Scriptures (CC BY-SA); cross references from OpenBible.info (CC BY 4.0); parallel passages from the UBS Parallel Passages Database, © 2023 United Bible Societies (CC BY-SA 4.0). Details are under Sources and licences in the app.
 ```

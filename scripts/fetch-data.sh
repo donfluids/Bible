@@ -21,6 +21,10 @@ fetch() {
 fetch kjv.zip https://ebible.org/Scriptures/eng-kjv2006_usfm.zip
 # World English Bible with Strong's numbers, USFM, eBible.org
 fetch web.zip https://ebible.org/Scriptures/engwebp_usfm.zip
+# Literal Standard Version, USFM, eBible.org: copyright © 2020 Covenant Press (CC BY-SA 4.0)
+fetch lsv.zip https://ebible.org/Scriptures/englsv_usfm.zip
+# American Standard Version (1901), USFM, eBible.org, public domain
+fetch asv.zip https://ebible.org/Scriptures/eng-asv_usfm.zip
 # Malayalam Sathyavedapusthakam 1910, contemporary orthography, Free Bible Foundation 2015 (CC BY-SA 4.0)
 fetch mal2015.zip https://ebible.org/Scriptures/mal2015_usfm.zip
 # Tamil Indian Revised Version 2017/2019, Bridge Connectivity Solutions (CC BY-SA 4.0)
@@ -63,11 +67,13 @@ for name in \
   fetch "step/$name" "$STEP/$encoded"
 done
 
-rm -rf kjv web mal2015 tam2017 hin2017 bsb-sword bsb bdbglosses openbible
-mkdir -p kjv web mal2015 tam2017 hin2017 bsb-sword bdbglosses openbible
+rm -rf kjv web lsv asv mal2015 tam2017 hin2017 bsb-sword bsb bdbglosses openbible
+mkdir -p kjv web lsv asv mal2015 tam2017 hin2017 bsb-sword bdbglosses openbible
 unzip -oq cross-references.zip -d openbible
 unzip -oq kjv.zip -d kjv
 unzip -oq web.zip -d web
+unzip -oq lsv.zip -d lsv
+unzip -oq asv.zip -d asv
 unzip -oq mal2015.zip -d mal2015
 unzip -oq tam2017.zip -d tam2017
 unzip -oq hin2017.zip -d hin2017
@@ -76,4 +82,4 @@ unzip -oq bdbglosses.zip -d bdbglosses
 node "$RAW/../../scripts/bsb-from-sword.mjs" "$RAW/bsb-sword" "$RAW/bsb"
 # The sources must be the ones the databases were built from (data/sources.json).
 node "$RAW/../../scripts/check-sources.mjs"
-echo "done: $(ls kjv/*.usfm | wc -l) KJV files, $(ls web/*.usfm | wc -l) WEB files, $(ls mal2015/*.usfm | wc -l) Malayalam files, $(ls tam2017/*.usfm | wc -l) Tamil files, $(ls hin2017/*.usfm | wc -l) Hindi files"
+echo "done: $(ls kjv/*.usfm | wc -l) KJV files, $(ls web/*.usfm | wc -l) WEB files, $(ls lsv/*.usfm | wc -l) LSV files, $(ls asv/*.usfm | wc -l) ASV files, $(ls mal2015/*.usfm | wc -l) Malayalam files, $(ls tam2017/*.usfm | wc -l) Tamil files, $(ls hin2017/*.usfm | wc -l) Hindi files"

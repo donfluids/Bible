@@ -16,12 +16,12 @@ export interface Edition {
 }
 
 export const EDITIONS: Record<EditionId, Edition> = {
-  en: { id: 'en', translations: ['KJV', 'BSB', 'WEB'], defaultTranslation: 'KJV', languages: ['en'] },
-  ml: { id: 'ml', translations: ['MAL', 'KJV', 'BSB'], defaultTranslation: 'MAL', languages: ['en', 'ml'] },
-  ta: { id: 'ta', translations: ['TAM', 'KJV', 'BSB'], defaultTranslation: 'TAM', languages: ['en', 'ta'] },
+  en: { id: 'en', translations: ['KJV', 'BSB', 'WEB', 'LSV', 'ASV'], defaultTranslation: 'KJV', languages: ['en'] },
+  ml: { id: 'ml', translations: ['MAL', 'KJV', 'BSB', 'LSV', 'ASV'], defaultTranslation: 'MAL', languages: ['en', 'ml'] },
+  ta: { id: 'ta', translations: ['TAM', 'KJV', 'BSB', 'LSV', 'ASV'], defaultTranslation: 'TAM', languages: ['en', 'ta'] },
   // The four-language app: every Bible the others carry, and the Hindi. Its interface is
   // English, Malayalam, Tamil or Hindi; the first opening asks which.
-  all: { id: 'all', translations: ['KJV', 'BSB', 'WEB', 'MAL', 'TAM', 'HIN'], defaultTranslation: 'KJV', languages: ['en', 'ml', 'ta', 'hi'] },
+  all: { id: 'all', translations: ['KJV', 'BSB', 'WEB', 'LSV', 'ASV', 'MAL', 'TAM', 'HIN'], defaultTranslation: 'KJV', languages: ['en', 'ml', 'ta', 'hi'] },
 };
 
 /** The edition's own-language Bible (MAL, TAM), if it has exactly one besides the English. */

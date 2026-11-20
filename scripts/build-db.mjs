@@ -4,9 +4,10 @@
 //   npm run build-db              # both editions
 //   node scripts/build-db.mjs ml  # one edition
 //
-// Editions (see src/edition.ts): "en" bundles the KJV, the Berean Standard Bible and the
-// WEB into assets/db/bible-en.db; "ml" bundles the Malayalam Sathyavedapusthakam and the
-// KJV into assets/db/bible-ml.db; "ta" the Tamil IRV and the KJV into bible-ta.db.
+// Editions (see src/edition.ts): "en" bundles the KJV, the Berean Standard Bible, the
+// WEB, the Literal Standard Version and the American Standard Version into
+// assets/db/bible-en.db; "ml" bundles the Malayalam Sathyavedapusthakam and the English
+// Bibles but the WEB into assets/db/bible-ml.db; "ta" the Tamil IRV and the same into bible-ta.db.
 //
 // Output schema (all text is UTF-8):
 //   books(id, osis, name, testament, chapters)
@@ -16,7 +17,7 @@
 //            line, 'q0' 'q1' 'q2' a poetry line at that indent level
 //     text = the verse as plain text. Poetry and paragraph breaks inside a verse are
 //            newlines; an indented poetry line starts with one em space per level.
-//            For an omitted verse (WEB only, a verse the translation leaves out) text
+//            For an omitted verse (WEB, ASV and BSB: a verse the translation leaves out) text
 //            holds the translators' footnote and omitted = 1
 //     tags = Strong's tags as "gap,length,number" triples separated by spaces, e.g.
 //            "7,9,7225 1,3,430 1,7,1254": gap is the number of characters since the
@@ -81,7 +82,12 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = join(ROOT, 'data', 'raw');
 const OUT_DIR = join(ROOT, 'assets', 'db');
 // "all" is the four-language app: the three English Bibles and the Malayalam, Tamil and Hindi.
-const EDITIONS = { en: ['KJV', 'BSB', 'WEB'], ml: ['MAL', 'KJV', 'BSB'], ta: ['TAM', 'KJV', 'BSB'], all: ['KJV', 'BSB', 'WEB', 'MAL', 'TAM', 'HIN'] };
+const EDITIONS = {
+  en: ['KJV', 'BSB', 'WEB', 'LSV', 'ASV'],
+  ml: ['MAL', 'KJV', 'BSB', 'LSV', 'ASV'],
+  ta: ['TAM', 'KJV', 'BSB', 'LSV', 'ASV'],
+  all: ['KJV', 'BSB', 'WEB', 'LSV', 'ASV', 'MAL', 'TAM', 'HIN'],
+};
 
 // USFM book code, display name, testament. Order is the Protestant canon.
 const BOOKS = [
@@ -179,12 +185,25 @@ const US = '\x1f';
 
 // The WEB source's Strong's tags are not used: many sit on the wrong words (Genesis 1:1
 // tags "In", "God" and "and" as H8064 "heavens"; no word in the WEB carries H430). The
-// app looks words up in the KJV instead, and the WEB is read as plain text.
-const UNTAGGED = new Set(['WEB']);
+// app looks words up in the KJV instead, and the WEB is read as plain text. The LSV's and
+// the ASV's tags are made the same way and are as unreliable (John 1:1 in both tags "the"
+// as G1722 "in"; the LSV's John 1:6 tags "man" as G2316 "God").
+const UNTAGGED = new Set(['WEB', 'LSV', 'ASV']);
 
 const ALL_TRANSLATIONS = [
   { id: 'KJV', name: 'King James Version', dir: 'kjv', suffix: 'eng-kjv2006.usfm' },
   { id: 'WEB', name: 'World English Bible', dir: 'web', suffix: 'engwebp.usfm' },
+  // The LSV writes a Psalm's title in capitals at the start of verse 1 (psalmTitlesInVerse),
+  // divides poetic lines with "||" in running text (barLines), and gives alternative
+  // renderings in bold double brackets, "sin [[or a sin-offering]]", which become footnotes
+  // (bracketNotes) on the word before them; other double brackets, round
+  // words the oldest manuscripts lack, stay in the text. It has no paragraphs but one
+  // per chapter. 3 John 1:15 and Revelation 12:18 are empty verses ("-"), dropped as the
+  // KJV numbering, which the LSV otherwise follows, has no such verses.
+  { id: 'LSV', name: 'Literal Standard Version', dir: 'lsv', suffix: 'englsv.usfm', psalmTitlesInVerse: true, barLines: true, bracketNotes: true },
+  // The ASV numbers its verses as the KJV does; the verses it leaves out are footnotes only
+  // (Matthew 17:21), kept as omitted verses like the WEB's.
+  { id: 'ASV', name: 'American Standard Version', dir: 'asv', suffix: 'eng-asv.usfm' },
   // Made by scripts/bsb-from-sword.mjs from CrossWire's module, whose Strong's numbers are right.
   { id: 'BSB', name: 'Berean Standard Bible', dir: 'bsb', suffix: 'bsb.usfm' },
   { id: 'MAL', name: 'സത്യവേദപുസ്തകം 1910', dir: 'mal2015', suffix: 'mal2015.usfm' },
@@ -266,8 +285,20 @@ function splitTags(tagged) {
   return { text, tags: tags.join(' '), notes };
 }
 
-function parseBook(path, nameFrom, bditAsXref = false) {
+function parseBook(path, nameFrom, { bditAsXref = false, bracketNotes = false, barLines = false } = {}) {
   let src = readFileSync(path, 'utf8').replace(/^﻿/, '');
+  // A verse holding only "-" is a place kept for a verse the translation does not have.
+  src = src.replace(/^\\v\s+\d+\s+-\s*$/gm, '');
+  // "\bd [[\bd*\it or\it* a sin-offering\bd ]]\bd*" as a footnote: "\f + \ft or a sin-offering\f*".
+  // Double brackets without "or" mark words missing from the oldest manuscripts (Mark 16:9-20)
+  // and stay in the text, as the LSV prints them.
+  if (bracketNotes) {
+    src = src
+      .replace(/[ \t]*\\bd \[\[\\bd\*(\\it or\\it\*[^\n]*?)\\bd \]\]\\bd\*/g, (_, body) => `\\f + \\ft ${body}\\f*`)
+      .replace(/\\bd (\[\[|\]\])\\bd\*/g, '$1');
+  }
+  // "||" between poetic lines: a break to an indented line, as a second line of poetry is.
+  if (barLines) src = src.replace(/[ \t]*\|\|[ \t]*/g, ` ${BREAK}1 `);
   // "\bdit (1 यूह. 4:9) \bdit*" as a cross reference: "\x + \xt 1 यूह. 4:9\x*".
   if (bditAsXref) src = src.replace(/[ \t]*\\bdit\s*\(?\s*([^\\]*?)\s*\)?\s*\\bdit\*/g, (_, refs) => (refs.trim() ? `\\x + \\xt ${refs.trim()}\\x*` : ''));
   // A verse whose only content is a footnote is one the translation omits. Keep the
@@ -819,7 +850,36 @@ function buildEdition(edition) {
     for (const book of BOOKS) {
       const file = files.find((f) => f.endsWith(book.osis + t.suffix));
       if (!file) throw new Error(`${t.id}: no file for ${book.osis}`);
-      const { chapters, headings, notes, paras, bookName } = parseBook(join(RAW, t.dir, file), t.nameFrom, t.bditAsXref);
+      const { chapters, headings, notes, paras, bookName } = parseBook(join(RAW, t.dir, file), t.nameFrom, t);
+      // A line after a chapter's last verse (the ASV's "For the Chief Musician" after
+      // Habakkuk 3:19) would be a heading before a verse that does not exist: it ends the verse.
+      for (let i = headings.length - 1; i >= 0; i--) {
+        const h = headings[i];
+        const vmap = chapters.get(h.chapter);
+        if (vmap.has(h.beforeVerse) || !vmap.has(h.beforeVerse - 1)) continue;
+        vmap.set(h.beforeVerse - 1, `${vmap.get(h.beforeVerse - 1)} ${BREAK}0 ${h.raw}`);
+        headings.splice(i, 1);
+      }
+      // A Psalm's title at the start of verse 1, in capitals and ending with a full stop,
+      // colon, question or exclamation mark (LSV: "A PSALM OF DAVID. YHWH [is] my shepherd"),
+      // becomes verse 0 as in the other Bibles. Words with a small letter end the title.
+      if (t.psalmTitlesInVerse && book.osis === 'PSA') {
+        for (const [ch, vmap] of chapters) {
+          const raw = vmap.get(1);
+          if (raw === undefined || vmap.has(0)) continue;
+          // The LSV is read untagged, so its word markup can go; the chapter's paragraph break goes too.
+          const plain = raw.replace(/\\\+?w\s+([^|\\]*?)\|[^\\]*?\\\+?w\*/g, '$1').replace(/^\s*\x07\d\s*/, '').trim();
+          const m = /^((?:[^\p{Ll}\s]+\s+)*[^\p{Ll}\s]*[.:;?!][”’]?)\s+(?=\S)/u.exec(plain);
+          if (!m || /\\|\x07|\x06/.test(m[1])) continue;
+          vmap.set(0, m[1]);
+          vmap.set(1, plain.slice(m[0].length));
+          paras.delete(`${ch}:0`);
+        }
+      }
+      // A verse of lines divided by "||" is poetry and stands on its own, as \q lines do.
+      if (t.barLines) {
+        for (const [ch, vmap] of chapters) for (const [v, raw] of vmap) if (v > 0 && raw.includes(`${BREAK}1`)) paras.set(`${ch}:${v}`, 'q0');
+      }
       // Replace chapters the source gets wrong, and strip stray text it contains.
       for (const [ch, versesById] of Object.entries(corrections[t.id]?.[book.id] ?? {})) {
         chapters.set(Number(ch), new Map(Object.entries(versesById).map(([v, text]) => [Number(v), text])));
@@ -1015,6 +1075,8 @@ function buildEdition(edition) {
   const SOURCES = {
     KJV: 'eBible.org eng-kjv2006, public domain',
     WEB: 'eBible.org engwebp, public domain',
+    LSV: 'eBible.org englsv, The Holy Bible in English, Literal Standard Version, copyright © 2020 Covenant Press, CC BY-SA 4.0',
+    ASV: 'eBible.org eng-asv, American Standard Version (1901), public domain',
     BSB: 'CrossWire BSB module 2.0, Berean Standard Bible, BSB Publishing, CC0 / public domain',
     MAL: 'eBible.org mal2015, Malayalam Sathyavedapusthakam 1910 in contemporary orthography, Free Bible Foundation 2015, CC BY-SA 4.0',
     TAM: 'eBible.org tam2017, Tamil Indian Revised Version, Bridge Connectivity Solutions 2017, 2019, CC BY-SA 4.0',

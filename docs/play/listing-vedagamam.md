@@ -65,7 +65,7 @@ Tamil-English Bible: Hebrew root words for the OT, Greek for the NT.
 ```
 A Tamil-English Bible: read the Tamil Indian Revised Version (IRV) and the King James Version, and study the root words behind them, Hebrew in the Old Testament and Greek in the New.
 
-• The Tamil IRV, the King James Version and the Berean Standard Bible in modern English, switched with one tap.
+• The Tamil IRV, the King James Version, the Berean Standard Bible in modern English, the Literal Standard Version and the American Standard Version, switched with one tap.
 • Tap a Tamil word for its root word, Hebrew in the Old Testament or Greek in the New: meaning, pronunciation, grammar and Strong's dictionary entry.
 • Every verse where that root word stands, and the Tamil words the IRV uses for it.
 • Hebrew and Greek words: the Hebrew of every Old Testament verse and the Greek of every New Testament verse, word by word, with transliteration and a short meaning.
@@ -84,5 +84,5 @@ No internet needed: the whole text is inside the app. No ads, no account, and no
 
 The links between Tamil words and the Hebrew and Greek were made with computer help and may be wrong in places.
 
-Sources: Tamil Indian Revised Version (IRV), © 2017, 2019 Bridge Connectivity Solutions, from eBible.org (CC BY-SA 4.0); King James Version 1769 (public domain outside the United Kingdom); Berean Standard Bible (public domain, CC0); Hebrew and Greek text and meanings from STEPBible.org, Tyndale House Cambridge (CC BY 4.0); Strong's dictionary from Open Scriptures (CC BY-SA); cross references from OpenBible.info (CC BY 4.0); parallel passages from the UBS Parallel Passages Database, © 2023 United Bible Societies (CC BY-SA 4.0). Details are under Sources and licences in the app.
+Sources: Tamil Indian Revised Version (IRV), © 2017, 2019 Bridge Connectivity Solutions, from eBible.org (CC BY-SA 4.0); King James Version 1769 (public domain outside the United Kingdom); Berean Standard Bible (public domain, CC0); Literal Standard Version, © 2020 Covenant Press, from eBible.org (CC BY-SA 4.0); American Standard Version 1901, from eBible.org (public domain); Hebrew and Greek text and meanings from STEPBible.org, Tyndale House Cambridge (CC BY 4.0); Strong's dictionary from Open Scriptures (CC BY-SA); cross references from OpenBible.info (CC BY 4.0); parallel passages from the UBS Parallel Passages Database, © 2023 United Bible Societies (CC BY-SA 4.0). Details are under Sources and licences in the app.
 ```

@@ -1,4 +1,4 @@
-export type TranslationId = 'KJV' | 'WEB' | 'BSB' | 'MAL' | 'TAM' | 'HIN';
+export type TranslationId = 'KJV' | 'WEB' | 'BSB' | 'LSV' | 'ASV' | 'MAL' | 'TAM' | 'HIN';
 
 export interface Translation {
   id: TranslationId;
@@ -17,6 +17,10 @@ export const TRANSLATIONS: Translation[] = [
   { id: 'WEB', name: 'World English Bible', tagged: false, lineHeight: 1.55 },
   // Tagged by its publishers (Berean word tables), via CrossWire's module.
   { id: 'BSB', name: 'Berean Standard Bible', tagged: true, lineHeight: 1.55 },
+  // eBible.org's LSV and ASV carry machine-made Strong's tags as unreliable as the WEB's, so
+  // they are read as plain text and the word sheet uses the KJV's links.
+  { id: 'LSV', name: 'Literal Standard Version', tagged: false, lineHeight: 1.55 },
+  { id: 'ASV', name: 'American Standard Version', tagged: false, lineHeight: 1.55 },
   // Tagged by scripts/align.mjs (machine alignment, confident links only).
   { id: 'MAL', name: 'സത്യവേദപുസ്തകം 1910 (Malayalam)', tagged: true, lineHeight: 1.75, script: 'ml' },
   // Tagged by scripts/align.mjs --lang ta, like the Malayalam.
@@ -32,7 +36,8 @@ export function translationInfo(id: TranslationId): Translation {
 
 /** The translation whose Strong's tags back the concordance: itself if tagged, else the KJV. */
 /** The English Bibles, whose book names are the English ones of the books table. */
-export const isEnglish = (id: TranslationId) => id === 'KJV' || id === 'WEB' || id === 'BSB';
+const ENGLISH: TranslationId[] = ['KJV', 'WEB', 'BSB', 'LSV', 'ASV'];
+export const isEnglish = (id: TranslationId) => ENGLISH.includes(id);
 
 /** The Indian Bibles (Malayalam, Tamil, Hindi): those with a script of their own. */
 export const isIndian = (id: TranslationId) => !!translationInfo(id).script;

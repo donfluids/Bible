@@ -5,22 +5,22 @@ Android. All text ships inside each app, so they work without a connection.
 
 | Edition | App name | Texts | Interface |
 | --- | --- | --- | --- |
-| `en` | Bible | King James Version, World English Bible, Hebrew and Greek interlinear | English |
-| `ml` | വേദപുസ്തകം | Malayalam Sathyavedapusthakam 1910, King James Version, Hebrew and Greek interlinear | Malayalam (English available) |
-| `ta` | வேதாகமம் | Tamil Indian Revised Version, King James Version, Hebrew and Greek interlinear | Tamil (English available) |
-| `all` | Bibles (name to be chosen) | King James Version, Berean Standard Bible, World English Bible, Malayalam Sathyavedapusthakam 1910, Tamil and Hindi Indian Revised Version, Hebrew and Greek interlinear | English, Malayalam, Tamil or Hindi, asked on first opening |
+| `en` | Bible | King James Version, Berean Standard Bible, World English Bible, Literal Standard Version, American Standard Version, Hebrew and Greek interlinear | English |
+| `ml` | വേദപുസ്തകം | Malayalam Sathyavedapusthakam 1910, King James Version, Berean Standard Bible, Literal Standard Version, American Standard Version, Hebrew and Greek interlinear | Malayalam (English available) |
+| `ta` | வேதாகமம் | Tamil Indian Revised Version, King James Version, Berean Standard Bible, Literal Standard Version, American Standard Version, Hebrew and Greek interlinear | Tamil (English available) |
+| `all` | Bibles (name to be chosen) | King James Version, Berean Standard Bible, World English Bible, Literal Standard Version, American Standard Version, Malayalam Sathyavedapusthakam 1910, Tamil and Hindi Indian Revised Version, Hebrew and Greek interlinear | English, Malayalam, Tamil or Hindi, asked on first opening |
 
 The four-language app (`all`, package `org.riversresearch.bible.india`) asks on first
 opening which language to read in: English, മലയാളം, தமிழ் or हिन्दी (the phone's own
 first, ticked), each opening its Bible, with the menus in that language (the Hindi menus
-are unchecked: docs/hindi-review.md). The Bible's name beside the chapter number opens the six Bibles under their
+are unchecked: docs/hindi-review.md). The Bible's name beside the chapter number opens the eight Bibles under their
 own names. Search has a row of the
-six Bibles under its box. Side by side pairs the English with the Indian Bible open or
+eight Bibles under its box. Side by side pairs the English with the Indian Bible open or
 read last. The Hindi words are not yet linked to the Hebrew and Greek, so the word sheet
-and occurrence lists use the KJV's links while reading the Hindi, as for the WEB; a
+and occurrence lists use the KJV's links while reading the Hindi, as for the WEB, LSV and ASV; a
 one-time card says so when the Hindi first opens. In every app, the search dictionary
 shows two entries and More, and none with the study tools off.
-Its database is 109 MB, over GitHub's 100 MB file limit, so it is not committed: build it
+Its database is 119 MB, over GitHub's 100 MB file limit, so it is not committed: build it
 with `npm run fetch-data` and `node scripts/build-db.mjs all` before building this app.
 The GitHub release workflow builds the other three only: a build there downloads today's
 sources, which have drifted from the ones the database was built from (see Rebuilding the
@@ -38,7 +38,8 @@ rendering counts all work in Malayalam.
 
 ## What it does
 
-- Read the King James Version or the World English Bible, switchable with one tap.
+- Read the King James Version, the Berean Standard Bible, the World English Bible, the
+  Literal Standard Version or the American Standard Version, switchable with one tap.
 - Tap any word to see the original Hebrew or Greek word in a sheet that
   opens at half height: the form the Hebrew or Greek has in that verse (with its
   grammar; every form, when the word is there more than once), the word you tapped
@@ -247,7 +248,7 @@ scripts/make-feature-graphic.mjs  Draws the Play feature graphics from the same 
 scripts/make-icon-font.py  Cuts the interface icons out of Material Symbols Rounded
 scripts/notices.mjs      Lists the third-party software in the app with licences and copyright lines (src/notices.json)
 scripts/review-strings.mjs        Rewrites the strings table of docs/tamil-review.md or docs/hindi-review.md (ta | hi) from src/i18n.ts
-assets/db/               bible-en.db (50 MB), bible-ml.db (52 MB), bible-ta.db (55 MB) and bible-all.db (104 MB, not committed), one per edition
+assets/db/               bible-en.db (60 MB), bible-ml.db (74 MB), bible-ta.db (78 MB) and bible-all.db (114 MB, not committed), one per edition
 assets/icons/            Icon, adaptive icon layers and splash images per edition (the same in each)
 data/overrides/          Hand corrections: Malayalam text, verse map, short meanings
 src/edition.ts           Which texts and interface languages this build carries
@@ -260,7 +261,7 @@ The database is committed so the app runs straight after `npm install`. To
 rebuild it from the sources:
 
 ```bash
-npm run fetch-data   # downloads KJV, WEB, the Strong's dictionaries and the STEPBible texts
+npm run fetch-data   # downloads KJV, WEB, LSV, ASV, the Strong's dictionaries and the STEPBible texts
 npm run build-db     # writes assets/db/bible-en.db, -ml, -ta and -all (needs Node 22+)
 npm run icons        # redraws both editions' icons (needs Chromium; see scripts/make-icons.mjs)
 ```
@@ -284,7 +285,7 @@ launch.
 | ------------- | ------------------------------------------------------------------------- |
 | `books`       | 66 books: id, USFM code, English name, testament, chapter count           |
 | `book_names`  | book names in each translation's own language (Malayalam, from the USFM headers) |
-| `verses`      | one row per verse and translation: plain `text` plus offset-encoded `tags`; `omitted` = 1 for the five verses the WEB leaves out, with the translators' note as `text` |
+| `verses`      | one row per verse and translation: plain `text` plus offset-encoded `tags`; `omitted` = 1 for the verses a translation leaves out (five in the WEB, 16 in the BSB and in the ASV), with the translators' note as `text` |
 | `headings`    | section headings that fall between verses (the acrostic labels of Psalm 119 in the WEB) |
 | `strongs`     | 14,197 dictionary entries: lemma, transliteration, pronunciation, derivation, definition, KJV usage, plus accent-free `lemma_plain` and `translit_plain` for search, a short `gloss`, and `uses` (times the word is used in the Hebrew or Greek) |
 | `concordance` | per Strong's number and translation: verse count and a packed list of verse references; translation `ORIG` lists every verse the word is in in the Hebrew or Greek itself (KJV numbering) |
@@ -369,6 +370,19 @@ npm run smoke        # every main screen of each app in a browser, at four sizes
   [eBible.org](https://ebible.org/find/details.php?id=engwebp). Public domain;
   "World English Bible" is a trademark of eBible.org. Its Strong's numbers are not
   used (see Known limitations).
+- **Literal Standard Version**, The Holy Bible in English, Literal Standard Version,
+  copyright © 2020 Covenant Press and the Covenant Christian Coalition, from
+  [eBible.org](https://ebible.org/find/details.php?id=englsv), CC BY-SA 4.0. Changes:
+  the Psalms' titles, which the LSV prints in capitals at the start of verse 1, are
+  shown as titles (verse 0); the "||" between poetic lines becomes a line break;
+  alternative renderings in double brackets ("[[or a sin-offering]]") become footnotes;
+  the empty verses 3 John 1:15 and Revelation 12:18 are left out, so the numbering is
+  the KJV's; its Strong's numbers are not used. Other double brackets, round words
+  missing from the oldest manuscripts (Mark 16:9–20), stay in the text. In all four apps.
+- **American Standard Version** (1901), from
+  [eBible.org](https://ebible.org/find/details.php?id=eng-asv). Public domain. Its
+  Strong's numbers are not used; the 16 verses it puts in footnotes only are greyed rows
+  carrying the note, as the WEB's are. In all four apps.
 - **Berean Standard Bible**, BSB Publishing, dedicated to the public domain (CC0), from
   [CrossWire's SWORD module](https://www.crosswire.org/sword/modules/ModInfo.jsp?modName=BSB)
   (version 2.0), whose Strong's numbers come from the Berean word tables. eBible.org's
@@ -478,7 +492,7 @@ build shows those instead of the Android list.
   readings shown where they differ, the Hebrew marks פ and ס removed, verse numbers
   mapped. Attribution: STEPBible.org, Tyndale House Cambridge,
   https://github.com/STEPBible/STEPBible-Data.
-- The KJV, WEB and BSB text and Abbott-Smith are public domain (the KJV outside the
+- The KJV, WEB, ASV and BSB text and Abbott-Smith are public domain (the KJV outside the
   United Kingdom). The BDB text is public domain; its digital edition by Open Scriptures
   is CC BY 4.0 (attribution: Open Scriptures Hebrew Bible Project).
 
@@ -584,7 +598,11 @@ once with its English reference.
 - The World English Bible is plain text in the app. The Strong's numbers in eBible's
   WEB file are attached to the wrong words too often (Genesis 1:1 tags "In", "God" and
   "and" as H8064 "heavens"), so `scripts/build-db.mjs` leaves them out and word lookups
-  use the KJV.
+  use the KJV. The Literal Standard Version and the American Standard Version are
+  plain text for the same reason: eBible's tags for them are made the same way
+  (John 1:1 tags "the" as G1722 "in" in both).
+- The LSV has one paragraph a chapter, so the paragraph layout shows its prose
+  chapters as one block; its poetic verses stand on their own lines.
 - The WEB omits five New Testament verses that are absent from the earliest
   manuscripts (for example Matthew 17:21). They appear as greyed rows carrying the
   translators' note.

@@ -58,6 +58,25 @@ const WEB: Source = {
   modifications: "Verse text unchanged. The translators' notes before a few books, the speaker labels in the Song of Songs and the five book headings of the Psalms omitted; the Strong's numbers of the source not used.",
 };
 
+const LSV: Source = {
+  title: 'Literal Standard Version',
+  notice: 'The Holy Bible in English, Literal Standard Version, copyright \u00a9 2020 Covenant Press and the Covenant Christian Coalition.',
+  licence: CC_BY_SA,
+  source: [
+    { label: 'eBible.org (englsv)', url: 'https://ebible.org/find/details.php?id=englsv' },
+    { label: 'lsvbible.com', url: 'https://www.lsvbible.com' },
+  ],
+  modifications:
+    "Words unchanged. The Psalms\u2019 titles, printed at the start of verse 1, shown as titles; the \u201c||\u201d between poetic lines shown as line breaks; alternative renderings in double brackets (\u201c[[or a sin-offering]]\u201d) shown as footnotes; the empty verses 3 John 1:15 and Revelation 12:18 left out; the Strong's numbers of the source not used. The modified text is distributed under CC BY-SA 4.0.",
+};
+
+const ASV: Source = {
+  title: 'American Standard Version (1901)',
+  notice: 'Public domain.',
+  source: [{ label: 'eBible.org (eng-asv)', url: 'https://ebible.org/find/details.php?id=eng-asv' }],
+  modifications: "Verse text unchanged. The preface omitted; the note \u201cFor the Chief Musician, on my stringed instruments\u201d after Habakkuk 3:19 shown at the end of that verse; the Strong's numbers of the source not used.",
+};
+
 const MALAYALAM: Source = {
   title: 'Sathyavedapusthakam 1910 (Malayalam)',
   notice: '© 2015 The Free Bible Foundation. Revised edition in contemporary orthography.',
@@ -241,13 +260,13 @@ const APP = (edition: EditionId): Source => ({
 export function sectionsFor(edition: EditionId): Section[] {
   const texts =
     edition === 'ml'
-      ? [MALAYALAM, MALAYALAM_LINKS, KJV, BSB]
+      ? [MALAYALAM, MALAYALAM_LINKS, KJV, BSB, LSV, ASV]
       : edition === 'ta'
         ? // The word links join the list once the Tamil is aligned.
-          [TAMIL, ...(translationInfo('TAM').tagged ? [TAMIL_LINKS] : []), KJV, BSB]
+          [TAMIL, ...(translationInfo('TAM').tagged ? [TAMIL_LINKS] : []), KJV, BSB, LSV, ASV]
         : edition === 'all'
-          ? [KJV, BSB, WEB, MALAYALAM, MALAYALAM_LINKS, TAMIL, ...(translationInfo('TAM').tagged ? [TAMIL_LINKS] : []), HINDI]
-          : [KJV, BSB, WEB];
+          ? [KJV, BSB, WEB, LSV, ASV, MALAYALAM, MALAYALAM_LINKS, TAMIL, ...(translationInfo('TAM').tagged ? [TAMIL_LINKS] : []), HINDI]
+          : [KJV, BSB, WEB, LSV, ASV];
   return [
     { heading: 'Scripture texts', sources: texts },
     { heading: 'Hebrew and Greek data', sources: [STEPBIBLE, STRONGS] },
