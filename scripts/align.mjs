@@ -442,7 +442,7 @@ async function alignChunk(job, stats) {
       if (verses.length === 0 || problems.length > job.verses.length || missing > job.verses.length / 4) {
         throw new Error(`unusable answer (${missing} verses missing): ${problems.slice(0, 3).join('; ')}`);
       }
-      writeFileSync(file, JSON.stringify({ model: MODEL, effort: EFFORT, created: new Date().toISOString(), cost: res.total_cost_usd, usage: res.usage && { in: res.usage.input_tokens, cacheRead: res.usage.cache_read_input_tokens, cacheCreate: res.usage.cache_creation_input_tokens, out: res.usage.output_tokens }, problems, verses }, null, 1));
+      writeFileSync(file, JSON.stringify({ effort: EFFORT, created: new Date().toISOString(), cost: res.total_cost_usd, usage: res.usage && { in: res.usage.input_tokens, cacheRead: res.usage.cache_read_input_tokens, cacheCreate: res.usage.cache_creation_input_tokens, out: res.usage.output_tokens }, problems, verses }, null, 1));
       stats.done++; stats.cost += res.total_cost_usd ?? 0; stats.out += res.usage?.output_tokens ?? 0; stats.problems += problems.length;
       console.log(`ok   ${BOOK_NAMES[job.book - 1]} ${job.chapter}:${job.verses[0].v}-${job.verses.at(-1).v}  $${(res.total_cost_usd ?? 0).toFixed(3)}  ${problems.length} problems`);
       if (++sinceSave >= COMMIT_EVERY) {
