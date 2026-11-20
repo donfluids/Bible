@@ -1,0 +1,292 @@
+{
+ "effort": "medium",
+ "created": "2026-11-20T21:09:17.034Z",
+ "cost": 0.08432859999999999,
+ "usage": {
+  "in": 6,
+  "cacheRead": 36786,
+  "cacheCreate": 17612,
+  "out": 1019
+ },
+ "problems": [],
+ "verses": [
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 1,
+   "hash": "8c04135d05bb",
+   "tokens": 42,
+   "spans": [
+    {
+     "s": 107,
+     "e": 110,
+     "n": "H1980",
+     "c": 1,
+     "t": 20,
+     "w": 18
+    },
+    {
+     "s": 119,
+     "e": 122,
+     "n": "H935",
+     "c": 1,
+     "t": 23,
+     "w": 19
+    },
+    {
+     "s": 203,
+     "e": 207,
+     "n": "H7901",
+     "c": 2,
+     "t": 41,
+     "w": 25
+    },
+    {
+     "s": 208,
+     "e": 213,
+     "n": "H8033",
+     "c": 2,
+     "t": 42,
+     "w": 26
+    }
+   ]
+  },
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 2,
+   "hash": "8d4285c6a55d",
+   "tokens": 26,
+   "spans": [
+    {
+     "s": 73,
+     "e": 77,
+     "n": "H2008",
+     "c": 2,
+     "t": 16,
+     "w": 8
+    },
+    {
+     "s": 115,
+     "e": 121,
+     "n": "H2658",
+     "c": 2,
+     "t": 24,
+     "w": 12
+    }
+   ]
+  },
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 3,
+   "hash": "b5ab29155743",
+   "tokens": 35,
+   "spans": [
+    {
+     "s": 140,
+     "e": 142,
+     "n": "H2658",
+     "c": 2,
+     "t": 29,
+     "w": 15
+    },
+    {
+     "s": 143,
+     "e": 149,
+     "n": "H2658",
+     "c": 2,
+     "t": 30,
+     "w": 15
+    },
+    {
+     "s": 154,
+     "e": 162,
+     "n": "H3605",
+     "c": 2,
+     "t": 32,
+     "w": 17
+    }
+   ]
+  },
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 4,
+   "hash": "9763e726c987",
+   "tokens": 27,
+   "spans": []
+  },
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 5,
+   "hash": "dbf8ea628199",
+   "tokens": 38,
+   "spans": []
+  },
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 6,
+   "hash": "8324327f8788",
+   "tokens": 26,
+   "spans": [
+    {
+     "s": 0,
+     "e": 3,
+     "n": "H1931",
+     "c": 1,
+     "t": 1,
+     "w": 1
+    },
+    {
+     "s": 107,
+     "e": 109,
+     "n": "H5921",
+     "c": 2,
+     "t": 24,
+     "w": 9
+    }
+   ]
+  },
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 7,
+   "hash": "cb78dcc9ca8b",
+   "tokens": 30,
+   "spans": []
+  },
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 10,
+   "hash": "bf0ad7d58a75",
+   "tokens": 49,
+   "spans": []
+  },
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 11,
+   "hash": "fbf3a74cd7a1",
+   "tokens": 36,
+   "spans": [
+    {
+     "s": 110,
+     "e": 112,
+     "n": "H1931",
+     "c": 2,
+     "t": 22,
+     "w": 13
+    }
+   ]
+  },
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 12,
+   "hash": "51ffd538c35e",
+   "tokens": 36,
+   "spans": []
+  },
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 13,
+   "hash": "251196db5369",
+   "tokens": 27,
+   "spans": []
+  },
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 14,
+   "hash": "4e4c6278d8ec",
+   "tokens": 40,
+   "spans": []
+  },
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 15,
+   "hash": "9851d3437758",
+   "tokens": 30,
+   "spans": []
+  },
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 16,
+   "hash": "46e3f1c9a58b",
+   "tokens": 37,
+   "spans": []
+  },
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 17,
+   "hash": "d7fcf987423e",
+   "tokens": 20,
+   "spans": []
+  },
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 18,
+   "hash": "eea5fc168e71",
+   "tokens": 47,
+   "spans": []
+  },
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 20,
+   "hash": "5f309589142c",
+   "tokens": 22,
+   "spans": [
+    {
+     "s": 0,
+     "e": 3,
+     "n": "H518",
+     "c": 2,
+     "t": 1,
+     "w": 1
+    },
+    {
+     "s": 36,
+     "e": 40,
+     "n": "H7621",
+     "c": 1,
+     "t": 8,
+     "w": 8
+    }
+   ]
+  },
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 21,
+   "hash": "49d974ac7c10",
+   "tokens": 27,
+   "spans": []
+  },
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 23,
+   "hash": "d4b49a25edab",
+   "tokens": 32,
+   "spans": []
+  },
+  {
+   "book": 6,
+   "chapter": 2,
+   "v": 24,
+   "hash": "df2071291eff",
+   "tokens": 28,
+   "spans": []
+  }
+ ]
+}
