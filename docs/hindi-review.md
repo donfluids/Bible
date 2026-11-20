@@ -129,7 +129,6 @@ are kept as long as the Hindi they refer to is unchanged. {placeholders} such as
 | cardBlur | Blur the photo | फ़ोटो धुँधली करें | |
 | cardBlurDetail | The words stand out more | शब्द और साफ़ दिखते हैं | |
 | cardBackground | Background | पृष्ठभूमि | |
-| cardDesignColours | Design's own colours | डिज़ाइन के अपने रंग | |
 | cardPlace | Text position | पाठ की जगह | |
 | cardTop | Top | ऊपर | |
 | cardMiddle | Middle | बीच में | |

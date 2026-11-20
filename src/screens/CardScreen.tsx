@@ -346,18 +346,10 @@ export function CardScreen({ books, at, translation, onBack }: Props) {
           <>
             <Text style={[styles.label, { color: theme.text }]}>{t('cardBackground')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-              <Pressable
-                onPress={() => change({ colour: undefined })}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: !look.colour }}
-                style={[styles.chip, { borderColor: !look.colour ? theme.accent : theme.border, backgroundColor: !look.colour ? theme.accentSoft : 'transparent' }]}
-              >
-                <Text style={[styles.chipText, { color: !look.colour ? theme.accent : theme.text }]}>{t('cardDesignColours')}</Text>
-              </Pressable>
               {CARD_COLOURS.map((c) => (
                 <Pressable
                   key={c}
-                  onPress={() => change({ colour: c })}
+                  onPress={() => change({ colour: look.colour === c ? undefined : c })}
                   accessibilityRole="radio"
                   accessibilityState={{ checked: look.colour === c }}
                   accessibilityLabel={`${t('cardBackground')} ${c}`}

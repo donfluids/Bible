@@ -229,7 +229,6 @@ Words chosen for the app's own features, used throughout:
 | cardBlur | Blur the photo | புகைப்படத்தை மங்கலாக்கு | |
 | cardBlurDetail | The words stand out more | சொற்கள் இன்னும் தெளிவாகத் தெரியும் | |
 | cardBackground | Background | பின்னணி | |
-| cardDesignColours | Design's own colours | வடிவமைப்பின் நிறங்கள் | |
 | cardPlace | Text position | உரையின் இடம் | |
 | cardTop | Top | மேலே | |
 | cardMiddle | Middle | நடுவில் | |
