@@ -69,6 +69,7 @@ import { groupForms, isTaBaseForm, mlStem, isBaseForm, taStem } from './lib/form
 import { DatabaseSync } from 'node:sqlite';
 import { deflateRawSync, inflateRawSync } from 'node:zlib';
 import { textHash } from './lib/tokens.mjs';
+import { makeProjector, isStop, normWord, glossHas } from './lib/project.mjs';
 import { abbottSmith, bdbGlosses } from './lib/lexicons.mjs';
 import { addCrossRefs } from './lib/crossrefs.mjs';
 import { addIntros } from './lib/intros.mjs';
@@ -187,8 +188,29 @@ const US = '\x1f';
 // tags "In", "God" and "and" as H8064 "heavens"; no word in the WEB carries H430). The
 // app looks words up in the KJV instead, and the WEB is read as plain text. The LSV's and
 // the ASV's tags are made the same way and are as unreliable (John 1:1 in both tags "the"
-// as G1722 "in"; the LSV's John 1:6 tags "man" as G2316 "God").
+// as G1722 "in"; the LSV's John 1:6 tags "man" as G2316 "God"), so they are not used
+// either: those two get their links from the KJV and the BSB instead (PROJECTED).
 const UNTAGGED = new Set(['WEB', 'LSV', 'ASV']);
+// English Bibles whose words are linked by carrying the KJV's and the BSB's links over
+// (scripts/lib/project.mjs), then for the words left over by scripts/align.mjs --lang lsv
+// or asv (data/align/lsv, data/align/asv: confident links only, for the verse's current
+// text, never on a word already linked). The KJV and the BSB are built first in every edition.
+const PROJECTED = { LSV: { folder: 'lsv' }, ASV: { folder: 'asv' } };
+const PROJECTION_SOURCES = ['KJV', 'BSB'];
+// The words of the glosses of an original word in a verse, written as for lining up; words
+// the gloss supplies in square brackets ("[is] saturation") are left out.
+function glossForms(key, strongs, nt) {
+  const out = new Set();
+  for (const w of originalWords().get(key) ?? []) {
+    if (w.strongs !== strongs) continue;
+    for (const g of w.gloss.replace(/\[[^\]]*\]/g, ' ').split(/[^\p{L}'’]+/u).filter(Boolean)) out.add(normWord(g, nt));
+  }
+  return out;
+}
+// English pronouns: one the model linked to a word that is not a pronoun renders a verb
+// ending or a suffix ("my" in "my shepherd"), and is dropped as the Malayalam's are.
+const EN_PRONOUNS = new Set(('i me my mine myself we us our ours ourselves you your yours yourself yourselves thou thee thy thine ' +
+  'thyself ye he him his himself she her hers herself it its itself they them their theirs themselves').split(' '));
 
 const ALL_TRANSLATIONS = [
   { id: 'KJV', name: 'King James Version', dir: 'kjv', suffix: 'eng-kjv2006.usfm' },
@@ -719,14 +741,22 @@ function misLinked(span, text, lang) {
 // rendering of its number keeps it (പൊന്മണി, "golden bell", stays with "bell" rather than
 // moving to "gold"). Hand-checked verses are left as they are.
 let shiftFixes = 0;
+// The Hebrew and Greek words of each verse (KJV numbering), in order: [{ gloss, strongs }].
+let originalCache = null;
+function originalWords() {
+  if (originalCache) return originalCache;
+  const byVerse = new Map();
+  for (const w of [...stepHebrewWords(), ...stepGreekWords().words]) {
+    const key = `${w.book}:${w.chapter}:${w.verse}`;
+    if (!byVerse.has(key)) byVerse.set(key, []);
+    byVerse.get(key).push(w);
+  }
+  originalCache = new Map([...byVerse].map(([key, list]) => [key, list.sort((a, b) => a.order - b.order).map((w) => ({ gloss: w.gloss, strongs: w.strongs }))]));
+  return originalCache;
+}
 function originalNumbers() {
   const map = new Map(); // "book:chapter:verse" (KJV numbering) -> Set of Strong's numbers
-  for (const w of [...stepHebrewWords(), ...stepGreekWords().words]) {
-    if (!w.strongs) continue;
-    const key = `${w.book}:${w.chapter}:${w.verse}`;
-    if (!map.has(key)) map.set(key, new Set());
-    map.get(key).add(w.strongs);
-  }
+  for (const [key, words] of originalWords()) map.set(key, new Set(words.map((w) => w.strongs).filter(Boolean)));
   return map;
 }
 function relinkShifted(pending, verseMap) {
@@ -835,13 +865,21 @@ function buildEdition(edition) {
     TAM: { folder: 'tam', pronouns: TA_PRONOUN_WORDS, lord: 'யெகோவா', god: 'தேவ', stem: taStem, isBase: isTaBaseForm },
   };
   const corrections = loadCorrections();
+  const projectionSources = new Map(); // "book:chapter:verse" -> [{ id, text, tags }] of the KJV and the BSB
+  let projector = null;
   for (const t of TRANSLATIONS) {
     const files = readdirSync(join(RAW, t.dir));
     const conc = new Map(); // strongs -> array of [b,c,v]
     const rend = new Map(); // strongs -> Map(lowercased word -> { forms: Map(display -> n), refs: [], lastKey })
     let verses = 0, tagCount = 0, omitted = 0, noteCount = 0, alignedVerses = 0;
     const linked = LINKED[t.id];
-    const alignments = linked ? loadAlignments(linked.folder) : new Map();
+    const projected = PROJECTED[t.id];
+    const alignments = linked || projected ? loadAlignments((linked ?? projected).folder) : new Map();
+    if (projected && !projector) {
+      for (const id of PROJECTION_SOURCES) if (!TRANSLATIONS.some((x) => x.id === id) || TRANSLATIONS.findIndex((x) => x.id === id) > TRANSLATIONS.indexOf(t)) throw new Error(`${t.id} needs the ${id} built before it`);
+      projector = makeProjector(projectionSources, originalWords());
+    }
+    let projectedLinks = 0, modelLinks = 0;
     misLinks = 0;
     lordGodFixes = 0;
     shiftFixes = 0;
@@ -929,7 +967,10 @@ function buildEdition(edition) {
             continue;
           }
           const split = splitTags(tagged);
-          const { text, notes: markers } = split;
+          let { text, notes: markers } = split;
+          // Spaces are made single before the links are made, so the text they are made for
+          // (and the aligner saw) is the text written.
+          if (projected) ({ text, markers } = collapseSpaces(text, '', markers));
           let tags = UNTAGGED.has(t.id) ? '' : split.tags;
           // Tagged words: the source's own tags, or for Malayalam and Tamil the aligned links.
           // A word with several numbers counts in the concordance of each; it is listed as a
@@ -966,6 +1007,44 @@ function buildEdition(edition) {
               tags = tagsFrom(entries);
               alignedVerses++;
             }
+          }
+          if (projected) {
+            const key = `${book.id}:${chapter}:${verse}`;
+            entries = projector.project(key, text).spans.map((sp) => ({ word: text.slice(sp.s, sp.e), id: sp.n, s: sp.s, e: sp.e }));
+            projectedLinks += entries.length;
+            const al = alignmentFor(alignments, key, text);
+            const prefix = book.id <= 39 ? 'H' : 'G';
+            // A model link may not render an original word more often than the verse has it
+            // ("may" and "continuous" both to αἰώνιον; "of" to θεοῦ beside "God"): words
+            // side by side count as one, and the projected links are counted first.
+            const inVerse = new Map();
+            for (const w of originalWords().get(key) ?? []) inVerse.set(w.strongs, (inVerse.get(w.strongs) || 0) + 1);
+            const renders = (id, s, e) => entries.filter((x) => x.id === id && !(x.e < s && /^[ -]$/.test(text.slice(x.e, s))) && !(x.s > e && /^[ -]$/.test(text.slice(e, x.s)))).length;
+            // Words of meaning are taken before little words.
+            const little = (sp) => (isStop(normWord(text.slice(sp.s, sp.e), prefix === 'G')) ? 1 : 0);
+            for (const sp of (al?.spans ?? []).slice().sort((a, b) => little(a) - little(b) || a.s - b.s)) {
+              const word = text.slice(sp.s, sp.e);
+              if (sp.c < 2 || !sp.n.startsWith(prefix) || sp.n === 'H853' || sp.e > text.length || /[[\]]/.test(word)) continue;
+              if (EN_PRONOUNS.has(word.toLowerCase()) && !HEBREW_PRONOUNS.has(sp.n) && !GREEK_PRONOUNS.has(sp.n)) continue;
+              if (entries.some((e) => e.s < sp.e && e.e > sp.s)) continue;
+              if (little(sp)) {
+                // A little word takes a number only when the word's gloss has it ("with" for
+                // עִמָּדִי "[are] with me", "of" for τοῦ "of the"; not "A" for οὐ "nothing"),
+                // and never beside a word already linked to it ("of" in "of God").
+                if (!glossHas(glossForms(key, sp.n, prefix === 'G'), normWord(word, prefix === 'G'))) continue;
+                if (entries.filter((x) => x.id === sp.n).length >= (inVerse.get(sp.n) ?? 0)) continue;
+              }
+              if (renders(sp.n, sp.s, sp.e) >= (inVerse.get(sp.n) ?? 0)) continue;
+              entries.push({ word, id: sp.n, s: sp.s, e: sp.e });
+              modelLinks++;
+            }
+            entries.sort((a, b) => a.s - b.s);
+            tags = tagsFrom(entries);
+          }
+          if (PROJECTION_SOURCES.includes(t.id)) {
+            const key = `${book.id}:${chapter}:${verse}`;
+            if (!projectionSources.has(key)) projectionSources.set(key, []);
+            projectionSources.get(key).push({ id: t.id, text, tags });
           }
           pending.push({ book: book.id, chapter, verse, text, tags, aligned, hand, entries, markers, notes, para: paras.get(`${chapter}:${verse}`) || '' });
         }
@@ -1027,7 +1106,7 @@ function buildEdition(edition) {
       }
     }
     db.exec('COMMIT');
-    stats[t.id] = { verses, omittedVerses: omitted, ...(linked ? { alignedVerses, misLinksDropped: misLinks, lordGodFixes, shiftFixes } : {}), tags: tagCount, strongsNumbers: conc.size, notes: noteCount, renderings: renderingRows };
+    stats[t.id] = { verses, omittedVerses: omitted, ...(linked ? { alignedVerses, misLinksDropped: misLinks, lordGodFixes, shiftFixes } : {}), ...(projected ? { projectedLinks, modelLinks } : {}), tags: tagCount, strongsNumbers: conc.size, notes: noteCount, renderings: renderingRows };
   }
 
   db.exec('BEGIN');

@@ -17,7 +17,7 @@ are unchecked: docs/hindi-review.md). The Bible's name beside the chapter number
 own names. Search has a row of the
 eight Bibles under its box. Side by side pairs the English with the Indian Bible open or
 read last. The Hindi words are not yet linked to the Hebrew and Greek, so the word sheet
-and occurrence lists use the KJV's links while reading the Hindi, as for the WEB, LSV and ASV; a
+and occurrence lists use the KJV's links while reading the Hindi, as for the WEB; a
 one-time card says so when the Hindi first opens. In every app, the search dictionary
 shows two entries and More, and none with the study tools off.
 Its database is 119 MB, over GitHub's 100 MB file limit, so it is not committed: build it
@@ -377,11 +377,12 @@ npm run smoke        # every main screen of each app in a browser, at four sizes
   shown as titles (verse 0); the "||" between poetic lines becomes a line break;
   alternative renderings in double brackets ("[[or a sin-offering]]") become footnotes;
   the empty verses 3 John 1:15 and Revelation 12:18 are left out, so the numbering is
-  the KJV's; its Strong's numbers are not used. Other double brackets, round words
+  the KJV's; its own Strong's numbers are not used (its words are linked as described
+  under English word links). Other double brackets, round words
   missing from the oldest manuscripts (Mark 16:9–20), stay in the text. In all four apps.
 - **American Standard Version** (1901), from
-  [eBible.org](https://ebible.org/find/details.php?id=eng-asv). Public domain. Its
-  Strong's numbers are not used; the 16 verses it puts in footnotes only are greyed rows
+  [eBible.org](https://ebible.org/find/details.php?id=eng-asv). Public domain. Its own
+  Strong's numbers are not used (see English word links); the 16 verses it puts in footnotes only are greyed rows
   carrying the note, as the WEB's are. In all four apps.
 - **Berean Standard Bible**, BSB Publishing, dedicated to the public domain (CC0), from
   [CrossWire's SWORD module](https://www.crosswire.org/sword/modules/ModInfo.jsp?modName=BSB)
@@ -481,6 +482,9 @@ build shows those instead of the Android list.
   are machine-made; only 33 well-known verses were checked by hand.
 - `assets/db/bible-ta.db` and `data/align/tam/` adapt the CC BY-SA 4.0 Tamil text, so
   they are shared under **CC BY-SA 4.0**; its word links are machine-made and not reviewed.
+- `data/align/lsv/` adapts the CC BY-SA 4.0 Literal Standard Version and is shared under
+  **CC BY-SA 4.0**; `data/align/asv/` is made from the public-domain ASV and shared under
+  the same terms as the databases. The LSV's and the ASV's word links are machine-made.
 - Each database as a whole is offered under **CC BY-SA 4.0**; each text and data set in it
   keeps its own licence given here, and the public-domain and CC BY parts may be reused
   on those terms. The databases and the scripts that build them are in this repository.
@@ -586,6 +590,76 @@ first); tapping it opens the word sheet with a chooser row for each word.
 In the "renders it as" lists, Malayalam forms of one word are grouped (ദൈവം, ദൈവമായ,
 ദൈവത്തിന്റെ … as ദൈവം).
 
+## English word links (LSV and ASV)
+
+eBible.org's LSV and ASV files carry Strong's numbers, but machine-made ones that sit on
+the wrong words too often (John 1:1 tags "the" as G1722 "in" in both), so the build
+does not use them. Their words are linked in two steps instead.
+
+**1. Carried over from the KJV and the BSB** (`scripts/lib/project.mjs`, run by
+`scripts/build-db.mjs`, no cache). Each LSV or ASV verse is lined up word by word with
+the same verse of the KJV and of the BSB, whose links are right: the heaviest common
+subsequence of word forms, after light normalisation (lowercase; "-eth", "-est", "-s",
+"-ed" endings off; thee/thou/you, hath/has, unto/to, saith/says/said, spake/spoke and a
+few dozen irregular verbs written alike; LORD, Jehovah and YHWH as one). A word takes
+the number of the word it lines up with when that number is one of the Hebrew or Greek
+words of the verse (the interlinear), and the KJV and the BSB agree, or only one of them
+links it, or only one of their numbers is in the verse (the KJV's ἦν is G2258, the
+BSB's and the interlinear's G1510). A BSB phrase tag ("is my shepherd", "the heavens")
+gives its number to the phrase's words of meaning only; a little word (the, and, of, he,
+was …) takes a number only within a run of matching words, and only when the original
+word is a function word or its gloss has it, so the BSB's "and" for God in "and He
+separated" stays unlinked. Words still unlinked then take a number from the
+interlinear's gloss (the word matches the gloss of exactly one original word of the
+verse, and the KJV or the BSB render that number with it elsewhere) or from the KJV's
+and the BSB's renderings over the whole Bible (exactly one number of the verse is
+rendered by the word three times or more, and at least a fifth of the word's uses),
+never more often than the original has the number. Words the LSV supplies in square
+brackets ("[is]") and the object marker אֵת (H853) are never linked; Psalm titles
+(verse 0) are linked like any verse; the halves of a hyphenated word ("burnt-offering",
+"Beth-el") that take one number form one link.
+
+Measured the same way in the other direction (the BSB linked from the KJV alone, the KJV
+from the BSB alone), 97.8% of the links agree with the translation's own links; most of
+the rest are places where the two translations render differently. By hand: in Genesis
+1:1–5, Psalm 23, Isaiah 9:6, Matthew 6:9–13, John 1:1–5, John 3:16 and Romans 8:28
+nothing is linked wrongly in either Bible after the fixes the checks led to (the
+BSB's "and" for God in Genesis 1:4, "art" for the article in Matthew 6:9, stemmed
+"those" taken for a word of meaning). Two links there follow the interlinear rather than
+the English: the ASV's "Everlasting" in Isaiah 9:6 is H1 with "Father" (STEPBible's
+Hebrew has אֲבִיעַד as one word) and the LSV's "dwelling" in Psalm 23:6 is H7725, the
+word the Hebrew text writes. In random samples of 70 links, one or two were doubtful.
+
+| Words linked | OT | NT | all | words of meaning |
+| --- | --- | --- | --- | --- |
+| KJV (its own tags) | 37% | 74% | 46% | 85% |
+| BSB (its own phrase tags) | 97% | 92% | 96% | 98% |
+| LSV, carried over | 39% | 57% | 43% | 85% |
+| ASV, carried over | 42% | 62% | 46% | 88% |
+| Malayalam (aligned) | 57% | 60% | 57% | |
+
+"Words of meaning" leaves out the, and, of, to, pronouns and helping verbs, which the
+KJV seldom links in the Old Testament.
+
+**2. The words left over, by a language model** (`scripts/align.mjs --lang lsv` or
+`asv`, cached in `data/align/lsv/`, `data/align/asv/`, the same schema, caching, resume
+and rate-limit handling as the Malayalam). Only verses with a word of meaning still
+unlinked are sent, with the carried-over links shown as fixed context; the model links
+only the other words. The build adds its confident links (confidence 2) to words not
+already linked, for the verse's current text, and leaves out a pronoun linked to a word
+that is not a pronoun ("my" for רֹעִי "my shepherd"), a little word whose original word's
+gloss does not have it ("A" for οὐ), and any link that would render an original word
+more often than the verse has it ("may" beside "continuous" for αἰώνιον).
+Psalm 23, John 3 and Romans 8 were aligned as a test: the share of words of meaning
+linked rose from 83–86% to 89–96% in the LSV and from 89–98% to 93–100% in the ASV.
+
+```bash
+npm run align-lsv -- --all     # about 1,650 calls
+npm run align-asv -- --all     # about 1,550 calls
+npm run align-lsv -- --report 43:3
+npm run build-db               # apply the links
+```
+
 ## Malayalam interface
 
 The Malayalam strings in `src/i18n.ts` were written for this project and have not
@@ -597,9 +671,10 @@ once with its English reference.
 - The World English Bible is plain text in the app. The Strong's numbers in eBible's
   WEB file are attached to the wrong words too often (Genesis 1:1 tags "In", "God" and
   "and" as H8064 "heavens"), so `scripts/build-db.mjs` leaves them out and word lookups
-  use the KJV. The Literal Standard Version and the American Standard Version are
-  plain text for the same reason: eBible's tags for them are made the same way
-  (John 1:1 tags "the" as G1722 "in" in both).
+  use the KJV. eBible's tags for the Literal Standard Version and the American Standard
+  Version are made the same way and not used either; those two are linked from the KJV
+  and the BSB instead (English word links), so a word the KJV and the BSB render
+  differently from them may be left unlinked.
 - The LSV has one paragraph a chapter, so the paragraph layout shows its prose
   chapters as one block; its poetic verses stand on their own lines.
 - The WEB omits five New Testament verses that are absent from the earliest

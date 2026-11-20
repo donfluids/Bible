@@ -64,7 +64,9 @@
     "start:all": "BIBLE_EDITION=all expo start",
     "icons": "node scripts/make-icons.mjs en && node scripts/make-icons.mjs ml && node scripts/make-icons.mjs ta",
     "align-ml": "node --no-warnings scripts/align.mjs --lang ml",
-    "align-ta": "node --no-warnings scripts/align.mjs --lang ta --compound"
+    "align-ta": "node --no-warnings scripts/align.mjs --lang ta --compound",
+    "align-lsv": "node --no-warnings scripts/align.mjs --lang lsv",
+    "align-asv": "node --no-warnings scripts/align.mjs --lang asv"
   },
   "private": true
 }

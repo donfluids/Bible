@@ -67,14 +67,14 @@ const LSV: Source = {
     { label: 'lsvbible.com', url: 'https://www.lsvbible.com' },
   ],
   modifications:
-    "Words unchanged. The Psalms\u2019 titles, printed at the start of verse 1, shown as titles; the \u201c||\u201d between poetic lines shown as line breaks; alternative renderings in double brackets (\u201c[[or a sin-offering]]\u201d) shown as footnotes; the empty verses 3 John 1:15 and Revelation 12:18 left out; the Strong's numbers of the source not used. The modified text is distributed under CC BY-SA 4.0.",
+    "Words unchanged. The Psalms\u2019 titles, printed at the start of verse 1, shown as titles; the \u201c||\u201d between poetic lines shown as line breaks; alternative renderings in double brackets (\u201c[[or a sin-offering]]\u201d) shown as footnotes; the empty verses 3 John 1:15 and Revelation 12:18 left out; the Strong's numbers of the source not used: its words are linked to the Hebrew and Greek by carrying over the links of the KJV and the BSB, and by machine alignment for some of the rest. The modified text is distributed under CC BY-SA 4.0.",
 };
 
 const ASV: Source = {
   title: 'American Standard Version (1901)',
   notice: 'Public domain.',
   source: [{ label: 'eBible.org (eng-asv)', url: 'https://ebible.org/find/details.php?id=eng-asv' }],
-  modifications: "Verse text unchanged. The preface omitted; the note \u201cFor the Chief Musician, on my stringed instruments\u201d after Habakkuk 3:19 shown at the end of that verse; the Strong's numbers of the source not used.",
+  modifications: "Verse text unchanged. The preface omitted; the note \u201cFor the Chief Musician, on my stringed instruments\u201d after Habakkuk 3:19 shown at the end of that verse; the Strong's numbers of the source not used: its words are linked to the Hebrew and Greek by carrying over the links of the KJV and the BSB, and by machine alignment for some of the rest.",
 };
 
 const MALAYALAM: Source = {

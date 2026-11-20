@@ -17,10 +17,11 @@ export const TRANSLATIONS: Translation[] = [
   { id: 'WEB', name: 'World English Bible', tagged: false, lineHeight: 1.55 },
   // Tagged by its publishers (Berean word tables), via CrossWire's module.
   { id: 'BSB', name: 'Berean Standard Bible', tagged: true, lineHeight: 1.55 },
-  // eBible.org's LSV and ASV carry machine-made Strong's tags as unreliable as the WEB's, so
-  // they are read as plain text and the word sheet uses the KJV's links.
-  { id: 'LSV', name: 'Literal Standard Version', tagged: false, lineHeight: 1.55 },
-  { id: 'ASV', name: 'American Standard Version', tagged: false, lineHeight: 1.55 },
+  // eBible.org's LSV and ASV carry machine-made Strong's tags as unreliable as the WEB's; those
+  // are not used. Their words are linked from the KJV's and the BSB's links instead
+  // (scripts/lib/project.mjs), and the words left over by scripts/align.mjs --lang lsv, asv.
+  { id: 'LSV', name: 'Literal Standard Version', tagged: true, lineHeight: 1.55 },
+  { id: 'ASV', name: 'American Standard Version', tagged: true, lineHeight: 1.55 },
   // Tagged by scripts/align.mjs (machine alignment, confident links only).
   { id: 'MAL', name: 'സത്യവേദപുസ്തകം 1910 (Malayalam)', tagged: true, lineHeight: 1.75, script: 'ml' },
   // Tagged by scripts/align.mjs --lang ta, like the Malayalam.

@@ -5,8 +5,10 @@
 //   node scripts/align.mjs --all                                  # every chapter
 //   node scripts/align.mjs --report 43:3                          # readable result
 //   node scripts/align.mjs --lang ta --compound --all             # the Tamil
+//   node scripts/align.mjs --lang lsv --all                       # the LSV's words left unlinked
 //
-// Options: --lang ml|ta (default ml: the Malayalam)
+// Options: --lang ml|ta|lsv|asv (default ml: the Malayalam)
+//          --db path (the database to read; default assets/db/bible-ml.db, -ta.db or -en.db)
 //          --model claude-sonnet-5-5  --effort medium  --concurrency 3
 //          --chunk 20 (verses per call)  --dry-run  --redo  --out data/align/mal (tam for Tamil)
 //          --nt-first (with --all: New Testament before Old)
@@ -25,7 +27,12 @@
 // time the CLI gives, else 5 to 30 minutes) and carries on; those waits do not count
 // as failed attempts. Re-running the same command skips chunks already cached.
 //
-// Needs assets/db/bible-ml.db or bible-ta.db (npm run build-db first). Each chunk is cached
+// English mode (--lang lsv, --lang asv): most of the LSV's and the ASV's words are linked
+// without a model, from the KJV's and the BSB's links (scripts/lib/project.mjs). Only verses
+// with words of meaning still unlinked are sent, with the linked words shown as fixed
+// context, and the model is asked to link only the others. Output: data/align/lsv, asv.
+//
+// Needs assets/db/bible-ml.db, bible-ta.db or bible-en.db (npm run build-db first). Each chunk is cached
 // as one JSON file under data/align/mal/ or tam/, so an interrupted run resumes where it stopped.
 // scripts/build-db.mjs reads those files and writes the tags into the database.
 import { DatabaseSync } from 'node:sqlite';
@@ -35,6 +42,7 @@ import { mkdirSync, existsSync, readFileSync, writeFileSync, readdirSync, copyFi
 import { join, dirname, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tokenize, wordSpan, textHash } from './lib/tokens.mjs';
+import { makeProjector, isStop, normWord } from './lib/project.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
@@ -54,9 +62,12 @@ const LANGS = {
     grammar: '- Tamil is agglutinative: case suffixes, postpositions and clitics such as the attached "and" (உம்) or emphasis (ஏ) are part of the token. Judge by the word stem. Verbs often carry the subject in their ending; link the verb to the verb.',
     compounds: 'நித்தியஜீவனை links to "eternal" and to "life"; பரலோகராஜ்யம் to "kingdom" and to "heaven"; பழமரங்களையும் to "fruit" and to "tree"',
   },
+  lsv: { translation: 'LSV', name: 'English', full: 'Literal Standard Version', db: 'bible-en.db', out: 'data/align/lsv', english: true },
+  asv: { translation: 'ASV', name: 'English', full: 'American Standard Version (1901)', db: 'bible-en.db', out: 'data/align/asv', english: true },
 };
 const LANG = LANGS[opt('lang', 'ml')];
-if (!LANG) throw new Error('--lang is ml or ta');
+if (!LANG) throw new Error('--lang is ml, ta, lsv or asv');
+const ENGLISH = !!LANG.english;
 const MODEL = opt('model', 'claude-sonnet-5-5');
 const COMPOUND = !!opt('compound', false);
 const EFFORT = opt('effort', 'medium');
@@ -64,7 +75,7 @@ const CONCURRENCY = Number(opt('concurrency', 3));
 const CHUNK = Number(opt('chunk', 20));
 const MAX_WORDS = 650; // original-language words per call, to bound the output
 const OUT = resolvePath(ROOT, opt('out', LANG.out));
-const DB_PATH = join(ROOT, 'assets', 'db', LANG.db);
+const DB_PATH = resolvePath(ROOT, opt('db', join('assets', 'db', LANG.db)));
 
 const BOOK_NAMES = ('Genesis Exodus Leviticus Numbers Deuteronomy Joshua Judges Ruth 1Samuel 2Samuel 1Kings 2Kings 1Chronicles 2Chronicles Ezra Nehemiah Esther Job Psalms Proverbs Ecclesiastes SongOfSongs Isaiah Jeremiah Lamentations Ezekiel Daniel Hosea Joel Amos Obadiah Jonah Micah Nahum Habakkuk Zephaniah Haggai Zechariah Malachi Matthew Mark Luke John Acts Romans 1Corinthians 2Corinthians Galatians Ephesians Philippians Colossians 1Thessalonians 2Thessalonians 1Timothy 2Timothy Titus Philemon Hebrews James 1Peter 2Peter 1John 2John 3John Jude Revelation').split(' ');
 
@@ -94,6 +105,24 @@ const SYSTEM_COMPOUND = SYSTEM.replace(
   '- Several tokens may point to the same original word (a phrase rendering one word).',
 );
 if (!SYSTEM_COMPOUND.includes('compound of two') || SYSTEM_COMPOUND.includes('never points to two')) throw new Error('compound prompt not applied');
+
+// English: most words are linked already; the model links the rest.
+const SYSTEM_ENGLISH = `You align an English Bible translation, the ${LANG.full ?? ''}, with the Hebrew or Greek text it translates.
+
+For each verse you get the English as numbered tokens and the original-language words as numbered words, each with transliteration, an English gloss and a Strong's number. Most tokens are already linked by a reliable method: they are marked "=wN" (linked to original word N). Those links are fixed: do not output links for those tokens, but use them to see which original words are already rendered. For every other token that renders an original word, output [token, word, confidence].
+
+Rules:
+- A token links to the ONE original word it renders. A phrase that renders one original word links each of its words of meaning ("lie down", "burnt-offering").
+- Words in square brackets, such as [is] or [the], were supplied by the translators: never link them.
+- Link a little word (the, of, to, and, is, will, shall) only when the original has a word of its own for it: the article, a preposition, a conjunction, a particle, a form of "to be".
+- A pronoun or helping verb that only renders a verb ending or a pronoun suffix ("my" in "my shepherd", "I" in "I do not lack") stays unlinked. Link a pronoun only to a pronoun the original writes as its own word.
+- An original word that a fixed token already renders is rarely rendered again: link a second token to it only when the verse really says it twice or the phrase renders that word.
+- Names link to the name's word. YHWH, Jehovah and LORD are the divine name (Yahweh).
+- Omit tokens that have no counterpart in the original: words added for sense, punctuation. Omit original words nothing renders.
+- Confidence 2 means you are sure. Confidence 1 means plausible but uncertain. If you would be guessing, leave the token out entirely (never write confidence 0). A wrong link is worse than a missing one.
+- Never link by position alone. If a verse's original words clearly do not correspond to its English (verse numbering sometimes differs), return no links for that verse.
+
+Return only the JSON requested.`;
 
 const SCHEMA = {
   type: 'object',
@@ -156,9 +185,88 @@ function loadChapter(db, book, chapter) {
         const [b, c, n] = ref.split(':').map(Number);
         return chapterWords(db, b, c).get(n) ?? [];
       });
-      return { v: v.verse, text: v.text, tokens: tokenize(v.text), words };
+      // English: a dash joins words without spaces ("staff—they"); each is a token of its own.
+      const tokens = ENGLISH ? tokenize(v.text).flatMap(splitDashes) : tokenize(v.text);
+      const out = { v: v.verse, text: v.text, tokens, words };
+      if (ENGLISH) markProjected(db, book, chapter, out);
+      return out;
     })
-    .filter((v) => v.tokens.length > 0 && v.words.length > 0);
+    .filter((v) => v.tokens.length > 0 && v.words.length > 0 && (!ENGLISH || opt('report', false) || v.open > 0));
+}
+
+function splitDashes(t) {
+  const out = [];
+  const re = /[^—–]+/g;
+  let m;
+  while ((m = re.exec(t.text))) if (/[\p{L}\p{N}]/u.test(m[0]) || out.length === 0) out.push({ start: t.start + m.index, end: t.start + m.index + m[0].length, text: m[0] });
+  return out.length ? out : [t];
+}
+
+// English mode: the links made from the KJV and the BSB, as fixed context.
+let projector = null;
+function englishProjector(db) {
+  if (projector) return projector;
+  const sources = new Map();
+  for (const id of ['KJV', 'BSB']) {
+    for (const r of db.prepare('SELECT book, chapter, verse, text, tags FROM verses WHERE translation = ? AND omitted = 0').all(id)) {
+      const key = `${r.book}:${r.chapter}:${r.verse}`;
+      if (!sources.has(key)) sources.set(key, []);
+      sources.get(key).push({ id, text: r.text, tags: r.tags });
+    }
+  }
+  const original = new Map();
+  for (const row of db.prepare('SELECT book, chapter, data FROM interlinear').all()) {
+    for (const part of inflateRawSync(Buffer.from(row.data)).toString('utf8').split(FS)) {
+      const sep = part.indexOf(GS);
+      original.set(`${row.book}:${row.chapter}:${part.slice(0, sep)}`, part.slice(sep + 1).split(RS).map((rec) => {
+        const [, , gloss = '', strongs = ''] = rec.split(US);
+        return { gloss, strongs };
+      }));
+    }
+  }
+  projector = makeProjector(sources, original);
+  return projector;
+}
+
+/**
+ * Marks each token linked by projection (fixed: the original word index it renders) or
+ * supplied (in square brackets), and counts the tokens of meaning still open.
+ */
+function markProjected(db, book, chapter, v) {
+  const { spans } = englishProjector(db).project(`${book}:${chapter}:${v.v}`, v.text);
+  v.projected = spans;
+  const taken = new Map(); // number -> original word indexes already given out
+  const spanWord = new Map(); // span index -> original word index
+  let depth = 0;
+  v.open = 0;
+  for (const t of v.tokens) {
+    const opens = (t.text.match(/(?<!\[)\[(?!\[)/g) ?? []).length;
+    const closes = (t.text.match(/(?<!\])\](?!\])/g) ?? []).length;
+    t.supplied = depth + opens > 0;
+    depth = Math.max(0, depth + opens - closes);
+    const si = spans.findIndex((x) => x.s < t.end && x.e > t.start);
+    if (si >= 0) {
+      // Each span is given the next original word with its number, in order.
+      if (!spanWord.has(si)) {
+        const n = spans[si].n;
+        const used = taken.get(n) ?? [];
+        // The original word with the number nearest the token's place in the verse.
+        const at = v.tokens.indexOf(t) / v.tokens.length;
+        const near = (free) => v.words
+          .map((x, i) => ({ i, d: Math.abs(i / v.words.length - at) }))
+          .filter(({ i }) => v.words[i].strongs === n && (!free || !used.includes(i)))
+          .sort((p, q) => p.d - q.d)[0]?.i ?? -1;
+        let w = near(true);
+        if (w < 0) w = near(false);
+        taken.set(n, [...used, w]);
+        spanWord.set(si, w);
+      }
+      t.fixed = spanWord.get(si) + 1;
+      continue;
+    }
+    const word = (t.text.match(/[\p{L}]+(?:['’]\p{L}+)*/u) ?? [''])[0];
+    if (!t.supplied && word && !isStop(normWord(word, book >= 40))) v.open++;
+  }
 }
 
 function chunkVerses(verses) {
@@ -177,7 +285,7 @@ function buildPrompt(book, chapter, verses) {
   const parts = [`${BOOK_NAMES[book - 1]} ${chapter}. Original language: ${lang}.`];
   for (const v of verses) {
     parts.push(`\n### Verse ${v.v}`);
-    parts.push(`${LANG.name} tokens: ` + v.tokens.map((t, i) => `${i + 1} ${t.text}`).join(' | '));
+    parts.push(`${LANG.name} tokens: ` + v.tokens.map((t, i) => `${i + 1} ${t.text}${t.fixed ? `=w${t.fixed}` : ''}`).join(' | '));
     parts.push(`${lang} words:\n` + v.words.map((w, i) => `${i + 1}. ${w.text} (${w.translit}) "${w.gloss}" ${w.strongs || '-'}`).join('\n'));
   }
   return parts.join('\n');
@@ -222,7 +330,7 @@ function pauseForLimit(message) {
 function runClaude(prompt) {
   return new Promise((resolve, reject) => {
     const child = spawn('claude', [
-      '-p', '--model', MODEL, '--effort', EFFORT, '--system-prompt', COMPOUND ? SYSTEM_COMPOUND : SYSTEM, '--tools', '', '--disable-slash-commands',
+      '-p', '--model', MODEL, '--effort', EFFORT, '--system-prompt', ENGLISH ? SYSTEM_ENGLISH : COMPOUND ? SYSTEM_COMPOUND : SYSTEM, '--tools', '', '--disable-slash-commands',
       '--no-session-persistence', '--strict-mcp-config', '--setting-sources', '', '--output-format', 'json', '--json-schema', JSON.stringify(SCHEMA),
     ], { cwd: '/tmp', stdio: ['pipe', 'pipe', 'pipe'] });
     let out = '', err = '';
@@ -256,6 +364,8 @@ function resolve(book, chapter, verses, structured) {
       if (c === 0) continue; // the model's way of saying "no link"
       if (!(t >= 1 && t <= v.tokens.length && w >= 1 && w <= v.words.length && (c === 1 || c === 2))) { problems.push(`verse ${v.v}: bad link [${t},${w},${c}]`); continue; }
       const strongs = v.words[w - 1].strongs;
+      // English: tokens linked by projection are fixed, and supplied words are never linked.
+      if (ENGLISH && (v.tokens[t - 1].fixed || v.tokens[t - 1].supplied)) continue;
       // One link per token, or in compound mode one per token and original word.
       const key = COMPOUND ? `${t}:${strongs}` : String(t);
       if (used.has(key)) continue;
@@ -367,8 +477,12 @@ function report(db, book, chapter) {
   for (const v of verses) {
     const a = spans.get(v.v);
     lines.push(`\n## ${v.v}\n${v.text.replace(/\s+/g, ' ')}\n`);
-    if (!a) { lines.push('(not aligned)'); continue; }
+    if (ENGLISH) {
+      lines.push(v.tokens.map((t) => (t.fixed ? `${t.text}=${v.words[t.fixed - 1]?.strongs ?? '?'}` : t.text)).join(' ') + '   (= linked from the KJV and BSB)');
+    }
+    if (!a) { lines.push(ENGLISH && !v.open ? '(nothing left to align)' : '(not aligned)'); continue; }
     const linked = new Set(a.spans.map((s) => s.t));
+    if (ENGLISH) v.tokens.forEach((t, i) => t.fixed && linked.add(i + 1));
     for (const s of a.spans) {
       const w = v.words[s.w - 1];
       lines.push(`- ${s.c === 2 ? '' : '(?) '}${v.text.slice(s.s, s.e)}  →  ${w.text} ${w.translit} "${w.gloss}" ${w.strongs}`);
