@@ -1,16 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import { shortBookName } from '../shortNames';
-import { scriptOf, scriptureFont } from '../fonts';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { BackHandler, PixelRatio, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useT } from '../i18n';
-import type { StringKey } from '../i18n';
-import { useSettings } from '../settings';
 import { bookName } from '../text';
 import { useTheme } from '../theme';
 import type { Book, TranslationId } from '../types';
+import { IconButton } from './Icon';
 import { Pressable } from './Pressable';
-import { Segmented } from './Segmented';
-import { SimpleSheet } from './SimpleSheet';
 
 interface Props {
   visible: boolean;
@@ -24,138 +20,146 @@ interface Props {
   onClose: () => void;
 }
 
-/** The books in their traditional groups, so a book is found by where it sits. */
-const GROUPS: { label: StringKey; testament: 'OT' | 'NT'; from: number; to: number }[] = [
-  { label: 'groupLaw', testament: 'OT', from: 1, to: 5 },
-  { label: 'groupHistory', testament: 'OT', from: 6, to: 17 },
-  { label: 'groupPoetry', testament: 'OT', from: 18, to: 22 },
-  { label: 'groupProphets', testament: 'OT', from: 23, to: 39 },
-  { label: 'groupGospels', testament: 'NT', from: 40, to: 43 },
-  { label: 'groupActs', testament: 'NT', from: 44, to: 44 },
-  { label: 'groupLetters', testament: 'NT', from: 45, to: 65 },
-  { label: 'groupRevelation', testament: 'NT', from: 66, to: 66 },
-];
+/** A book's row: a name on up to two lines. */
+const ROW = 46;
+/** Rows the panel shows without scrolling, about. */
+const VISIBLE_ROWS = 8;
 
 /**
- * The passage picker, from the reader's title: a sheet with the Testament, the books as a
- * grid of short names in Bible order under their groups (Law, History…; Gospels, Letters…),
- * then the book's chapter numbers. Two taps from any chapter to any other.
+ * The passage picker, from the reader's title: a panel that drops from the top with three
+ * columns side by side, the Old Testament's books, the New Testament's, and the chapters
+ * of the book chosen, as on the Books tab. A tap on a book shows its chapters beside it, a
+ * tap on a chapter goes there. The verses being read stay in view below the panel.
  */
 export function PassagePicker({ visible, books, translation, current, lastChapters, onPick, onClose }: Props) {
+  if (!visible) return null;
+  return <Panel books={books} translation={translation} current={current} lastChapters={lastChapters} onPick={onPick} onClose={onClose} />;
+}
+
+function Panel({ books, translation, current, lastChapters, onPick, onClose }: Omit<Props, 'visible'>) {
   const theme = useTheme();
   const t = useT();
-  const { settings } = useSettings();
-  const { width } = useWindowDimensions();
-  const [testament, setTestament] = useState<'OT' | 'NT'>(current.book <= 39 ? 'OT' : 'NT');
-  const [book, setBook] = useState<number | null>(null);
-  // Each opening starts at the chapter being read: its Testament, its book's chapters.
+  const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
+  const [book, setBook] = useState(current.book);
+  const old = useMemo(() => books.filter((b) => b.testament === 'OT'), [books]);
+  const fresh = useMemo(() => books.filter((b) => b.testament === 'NT'), [books]);
+  const chosen = books.find((b) => b.id === book);
+  const rowH = Math.ceil(ROW * Math.max(1, PixelRatio.getFontScale()));
+  const oldList = useRef<ScrollView>(null);
+  const newList = useRef<ScrollView>(null);
+
+  // Both columns open at the top, side by side as on the Books tab; only a book further down
+  // than the panel shows is brought into view, a couple of rows down.
   useEffect(() => {
-    if (visible) {
-      setTestament(current.book <= 39 ? 'OT' : 'NT');
-      setBook(current.book);
-    }
-  }, [visible, current.book]);
-  const chosen = book ? books.find((b) => b.id === book) : undefined;
-  const name = chosen ? bookName(books, chosen.id, translation) : '';
-  const nameFont = scriptureFont(scriptOf(name), settings.serif, true);
-  const shortFont = scriptureFont(scriptOf(shortBookName(1, translation)), settings.serif, true);
-  // Columns of short names: 4 on a phone, more on a tablet; chapter cells at least 48 points.
-  const inner = Math.min(width, 720) - 40;
-  const bookColumns = Math.max(4, Math.min(6, Math.floor(inner / 84)));
-  const chapterColumns = Math.max(5, Math.floor((inner + 8) / 56));
-  const groups = useMemo(() => GROUPS.filter((g) => g.testament === testament), [testament]);
+    const list = current.book <= old.length ? oldList : newList;
+    const index = (current.book <= old.length ? old : fresh).findIndex((b) => b.id === current.book);
+    if (index < VISIBLE_ROWS) return;
+    const timer = setTimeout(() => list.current?.scrollTo({ y: (index - 2) * rowH, animated: false }), 0);
+    return () => clearTimeout(timer);
+  }, [current.book, old, fresh, rowH]);
+
+  // Android's back button closes the panel.
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      onClose();
+      return true;
+    });
+    return () => sub.remove();
+  }, [onClose]);
+
+  const column = (list: Book[], ref: React.RefObject<ScrollView | null>, last: boolean) => (
+    <ScrollView ref={ref} style={[styles.column, !last && { borderRightWidth: StyleSheet.hairlineWidth, borderRightColor: theme.border }]}>
+      {list.map((b) => {
+        const on = b.id === book;
+        const name = bookName(books, b.id, translation);
+        return (
+          <Pressable
+            key={b.id}
+            onPress={() => setBook(b.id)}
+            android_ripple={{ color: theme.accentSoft }}
+            accessibilityRole="button"
+            accessibilityState={{ selected: on }}
+            style={[styles.book, { height: rowH, borderBottomColor: theme.border, backgroundColor: on ? theme.accentSoft : 'transparent' }]}
+          >
+            <Text numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.75} style={[styles.bookText, { color: theme.text, fontWeight: on ? '700' : '400' }]}>
+              {name}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </ScrollView>
+  );
+
   return (
-    <SimpleSheet visible={visible} title={chosen ? name : t('choosePassageTitle')} onClose={onClose}>
-      <View style={styles.body}>
-        {chosen ? (
-          <>
-            <Pressable onPress={() => setBook(null)} accessibilityRole="button" style={styles.backRow} hitSlop={6}>
-              <Text style={[styles.backText, { color: theme.accent }]}>{t('allBooks')}</Text>
-            </Pressable>
-            <View style={styles.grid}>
-              {Array.from({ length: chosen.chapters }, (_, i) => i + 1).map((c) => {
-                const active = chosen.id === current.book && c === current.chapter;
-                const last = !active && lastChapters[chosen.id] === c;
-                return (
-                  <Pressable
-                    key={c}
-                    onPress={() => onPick(chosen.id, c)}
-                    android_ripple={{ color: theme.accentSoft }}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${name} ${c}`}
-                    accessibilityState={{ selected: active }}
-                    style={({ pressed }) => [
-                      styles.cell,
-                      { width: `${100 / chapterColumns}%` as `${number}%` },
-                    ]}
-                  >
-                    <View style={[styles.cellInner, { borderColor: active ? theme.accent : last ? theme.accent : theme.border, backgroundColor: active ? theme.accent : last ? theme.accentSoft : theme.bg }]}>
-                      <Text style={[styles.cellText, { color: active ? theme.onAccent : theme.text }]}>{c}</Text>
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </>
-        ) : (
-          <>
-            <Segmented
-              options={[
-                ['OT', t('oldTestament')],
-                ['NT', t('newTestament')],
-              ]}
-              value={testament}
-              onChange={setTestament}
-            />
-            {groups.map((g) => (
-              <View key={g.label} style={styles.group}>
-                <Text style={[styles.groupLabel, { color: theme.muted }]}>{t(g.label)}</Text>
-                <View style={styles.grid}>
-                  {books
-                    .filter((b) => b.id >= g.from && b.id <= g.to)
-                    .map((b) => {
-                      const active = b.id === current.book;
-                      const full = bookName(books, b.id, translation);
-                      return (
-                        <Pressable
-                          key={b.id}
-                          onPress={() => setBook(b.id)}
-                          android_ripple={{ color: theme.accentSoft }}
-                          accessibilityRole="button"
-                          accessibilityLabel={full}
-                          accessibilityState={{ selected: active }}
-                          style={[styles.cell, { width: `${100 / bookColumns}%` as `${number}%` }]}
-                        >
-                          <View style={[styles.cellInner, { borderColor: active ? theme.accent : theme.border, backgroundColor: active ? theme.accent : theme.bg }]}>
-                            <Text
-                              numberOfLines={1}
-                              style={[styles.bookText, { color: active ? theme.onAccent : theme.text }, shortFont ? { fontFamily: shortFont, fontWeight: 'normal' } : null]}
-                            >
-                              {shortBookName(b.id, translation) || full}
-                            </Text>
-                          </View>
-                        </Pressable>
-                      );
-                    })}
-                </View>
-              </View>
-            ))}
-          </>
-        )}
+    <View style={StyleSheet.absoluteFill}>
+      <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel={t('close')} style={[StyleSheet.absoluteFill, styles.backdrop]} />
+      <View
+        accessibilityViewIsModal
+        style={[styles.panel, { paddingTop: insets.top + 4, height: insets.top + Math.max(320, height * 0.58), backgroundColor: theme.bg, shadowColor: '#000' }]}
+      >
+        <View style={styles.head}>
+          <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>
+            {chosen ? bookName(books, chosen.id, translation) : t('choosePassageTitle')}
+          </Text>
+          <IconButton name="close" onPress={onClose} accessibilityLabel={t('close')} color={theme.text} />
+        </View>
+        <View style={[styles.columns, { borderTopColor: theme.border }]}>
+          {column(old, oldList, false)}
+          {column(fresh, newList, false)}
+          <ScrollView style={styles.chapters} contentContainerStyle={styles.grid}>
+            {chosen
+              ? Array.from({ length: chosen.chapters }, (_, i) => i + 1).map((c) => {
+                  const active = chosen.id === current.book && c === current.chapter;
+                  const last = !active && lastChapters[chosen.id] === c;
+                  return (
+                    <Pressable
+                      key={c}
+                      onPress={() => onPick(chosen.id, c)}
+                      android_ripple={{ color: theme.accentSoft }}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${bookName(books, chosen.id, translation)} ${c}`}
+                      accessibilityState={{ selected: active }}
+                      style={styles.cell}
+                    >
+                      <View style={[styles.cellInner, { borderColor: active || last ? theme.accent : theme.border, backgroundColor: active ? theme.accent : last ? theme.accentSoft : theme.bg }]}>
+                        <Text style={[styles.cellText, { color: active ? theme.onAccent : theme.text }]}>{c}</Text>
+                      </View>
+                    </Pressable>
+                  );
+                })
+              : null}
+          </ScrollView>
+        </View>
       </View>
-    </SimpleSheet>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  body: { paddingHorizontal: 16, paddingBottom: 8, gap: 10 },
-  backRow: { minHeight: 44, justifyContent: 'center' },
-  backText: { fontSize: 15, fontWeight: '600' },
-  group: { gap: 6 },
-  groupLabel: { fontSize: 13, fontWeight: '600', marginTop: 4 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap' },
-  cell: { padding: 4 },
-  cellInner: { minHeight: 44, borderRadius: 10, borderWidth: StyleSheet.hairlineWidth, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
-  cellText: { fontSize: 17, fontWeight: '600', fontVariant: ['tabular-nums'] },
-  bookText: { fontSize: 15, fontWeight: '600' },
+  backdrop: { backgroundColor: 'rgba(0,0,0,0.3)' },
+  panel: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
+    overflow: 'hidden',
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 12,
+  },
+  head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 16, paddingRight: 4, minHeight: 48 },
+  title: { fontSize: 18, fontWeight: '600', flex: 1 },
+  columns: { flex: 1, flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth },
+  column: { flex: 1.1 },
+  book: { justifyContent: 'center', paddingHorizontal: 10, borderBottomWidth: StyleSheet.hairlineWidth },
+  bookText: { fontSize: 14, lineHeight: 18 },
+  chapters: { flex: 1 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', padding: 4, paddingBottom: 16 },
+  cell: { width: '33.333%', padding: 3 },
+  cellInner: { minHeight: 40, borderRadius: 9, borderWidth: StyleSheet.hairlineWidth, alignItems: 'center', justifyContent: 'center' },
+  cellText: { fontSize: 15, fontWeight: '600', fontVariant: ['tabular-nums'] },
 });
