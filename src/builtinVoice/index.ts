@@ -1,11 +1,11 @@
 // The voice the Malayalam app carries (Indic Tiny TTS): reads a verse of the Malayalam
-// Bible in a measured way, on the phone, with no internet. The model and the verses' speech sounds
+// Bible on the phone, with no internet. The model and the verses' speech sounds
 // are in the app (assets/speech); modules/bible-voice runs the model and plays the sound.
 import { Asset } from 'expo-asset';
 import { requireOptionalNativeModule } from 'expo';
 import { CONFIGURED_EDITION } from '../edition';
 import type { TranslationId } from '../types';
-import { NOISE, READER, joinPhrases, levelled, modelInput, openSpeech, paceFor, trim, wavFile } from './core';
+import { NOISE, READER, joinPhrases, modelInput, openSpeech, paceFor, wavFile } from './core';
 import type { SpeechFile } from './core';
 
 interface Native {
@@ -86,15 +86,15 @@ function make(ref: VerseRef, speed: number): Promise<Uint8Array> {
     const speech = await prepare();
     const phrases = speech.chapter(ref.book, ref.chapter)?.get(ref.verse);
     if (!phrases || phrases.length === 0) throw new Error('no speech sounds for the verse');
-    const parts = [];
+    const parts: Float32Array[] = [];
     for (const phrase of phrases) {
       if (!job.wanted) throw new Error('not wanted');
       const bytes = await native!.synthesize(modelInput(phrase.sounds), NOISE, paceFor(speed), READER);
       // The floats are read where they lie; copied first only if they do not start on a boundary of four bytes.
       const aligned = bytes.byteOffset % 4 === 0 ? bytes : bytes.slice();
-      parts.push({ samples: trim(new Float32Array(aligned.buffer, aligned.byteOffset, Math.floor(aligned.byteLength / 4))), rest: phrase.rest });
+      parts.push(new Float32Array(aligned.buffer, aligned.byteOffset, Math.floor(aligned.byteLength / 4)));
     }
-    return wavFile(levelled(joinPhrases(parts)));
+    return wavFile(joinPhrases(parts));
   };
   job.wav = line.then(run, run);
   line = job.wav.catch(() => undefined);
