@@ -22,7 +22,8 @@ Pod::Spec.new do |s|
   # Only the apps with the Malayalam Bible carry the voice (BIBLE_EDITION ml or all, as
   # for the databases); the others get a module of the same name with nothing in it, and
   # are not made larger by the library that runs the model.
-  if ['ml', 'all'].include?(ENV['BIBLE_EDITION'])
+  # BIBLE_NO_VOICE=1 leaves it out of those too (a TestFlight build made without it).
+  if ['ml', 'all'].include?(ENV['BIBLE_EDITION']) && ENV['BIBLE_NO_VOICE'] != '1'
     # ONNX Runtime (MIT), which runs the voice's model. The same version as on Android,
     # from before the library gained telemetry code.
     s.dependency 'onnxruntime-objc', '1.22.0'

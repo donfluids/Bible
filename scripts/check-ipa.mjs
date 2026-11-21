@@ -99,7 +99,8 @@ for (const program of programs) {
 // 5. The voice's model only where there is a voice.
 // The voice's model: the one file in the app's speech folder larger than a placeholder.
 const hasModel = files.some((f) => /\/assets\/speech\/[^/]+\.onnx$/.test(f) && statSync(f).size > 1024);
-if (hasModel !== (edition === 'ml' || edition === 'all')) fail(hasModel ? 'the voice model is in an app without the voice' : 'the voice model is missing');
+// BIBLE_NO_VOICE=1: a build made without the voice (see .github/testflight.txt).
+if (hasModel !== ((edition === 'ml' || edition === 'all') && process.env.BIBLE_NO_VOICE !== '1')) fail(hasModel ? 'the voice model is in an app without the voice' : 'the voice model is missing');
 
 // 6. This repository's own code never calls the network. The one fetch reads a file the
 // reader picked, in the web preview only (src/notebookFiles.ts).

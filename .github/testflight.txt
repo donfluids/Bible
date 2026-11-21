@@ -1,6 +1,7 @@
-ml
+ml novoice
 # The first word names the app the TestFlight workflow uploads when this file changes
-# in a push (ml, en or ta); the lines after it are notes. Edit it (the note below will
+# in a push (ml, en or ta); "novoice" after it leaves out the app's own voice and
+# ONNX Runtime. The lines after it are notes. Edit it (the note below will
 # do) and push to start an upload.
 #
 # 2026-11-19: first upload of the Malayalam app (after the key fix).
@@ -11,3 +12,4 @@ ml
 # 2026-11-19: build with the card share fix (wait for the picture to be moved).
 # 2026-11-20: watercolour cards, LSV and ASV, no "Design's own colours" button.
 # 2026-11-21: 0.4.37: LSV/ASV word links, natural Malayalam voice, Books tab, three-column picker, fixed tab bar, Saved tabs.
+# 2026-11-21: 0.4.37 without the app's own voice: the ONNX Runtime download is down.

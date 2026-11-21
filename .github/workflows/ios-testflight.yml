@@ -63,6 +63,12 @@ jobs:
           case "$e" in ml|en|ta) ;; *) echo "::error::.github/testflight.txt must start with ml, en or ta (found '$e')"; exit 1 ;; esac
           echo "BIBLE_EDITION=$e" >> "$GITHUB_ENV"
           echo "app: $e"
+          # "novoice" after the app's name leaves out the app's own voice and the library
+          # that runs it (ONNX Runtime), so a build can go up while its download is down.
+          if [ -z "$CHOSEN" ] && awk 'NF { exit !($2 == "novoice") }' .github/testflight.txt; then
+            echo "BIBLE_NO_VOICE=1" >> "$GITHUB_ENV"
+            echo "without the app's own voice"
+          fi
 
       - name: Check the secrets are there
         env:

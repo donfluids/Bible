@@ -29,7 +29,7 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   // Only the apps with the Malayalam Bible carry the Malayalam voice (about 50 MB); the others
   // get a one-byte file in its place. Each pair has two different names: Android cannot hold
   // two resources that differ only in their ending (hence ml-tiny.onnx and ml-letters.bin).
-  const voice = edition === 'ml' || edition === 'all';
+  const voice = (edition === 'ml' || edition === 'all') && process.env.BIBLE_NO_VOICE !== '1';
   // The welcome's pictures show the app in its own language; the four-language app uses the English ones.
   target = target.replace('/assets/welcome/edition/', `/assets/welcome/${edition === 'all' ? 'en' : edition}/`);
   if (target.endsWith('/assets/speech/voice.onnx')) target = target.replace(/voice\.onnx$/, voice ? 'ml-tiny.onnx' : 'no-model.onnx');
