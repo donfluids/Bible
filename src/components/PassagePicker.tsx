@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { BackHandler, PixelRatio, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useT } from '../i18n';
+import { shortBookName } from '../shortNames';
 import { bookName } from '../text';
 import { useTheme } from '../theme';
 import type { Book, TranslationId } from '../types';
@@ -20,15 +21,15 @@ interface Props {
   onClose: () => void;
 }
 
-/** A book's row: a name on up to two lines. */
-const ROW = 46;
+/** A book's row: its short name on one line. */
+const ROW = 42;
 /** Rows the panel shows without scrolling, about. */
-const VISIBLE_ROWS = 8;
+const VISIBLE_ROWS = 9;
 
 /**
  * The passage picker, from the reader's title: a panel that drops from the top with three
- * columns side by side, the Old Testament's books, the New Testament's, and the chapters
- * of the book chosen, as on the Books tab. A tap on a book shows its chapters beside it, a
+ * columns side by side, the Old Testament's books, the New Testament's (by their short
+ * names, as in the reader's title), and the chapters of the book chosen. A tap on a book shows its chapters beside it, a
  * tap on a chapter goes there. The verses being read stay in view below the panel.
  */
 export function PassagePicker({ visible, books, translation, current, lastChapters, onPick, onClose }: Props) {
@@ -78,12 +79,13 @@ function Panel({ books, translation, current, lastChapters, onPick, onClose }: O
             key={b.id}
             onPress={() => setBook(b.id)}
             android_ripple={{ color: theme.accentSoft }}
+            accessibilityLabel={name}
             accessibilityRole="button"
             accessibilityState={{ selected: on }}
             style={[styles.book, { height: rowH, borderBottomColor: theme.border, backgroundColor: on ? theme.accentSoft : 'transparent' }]}
           >
-            <Text numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.75} style={[styles.bookText, { color: theme.text, fontWeight: on ? '700' : '400' }]}>
-              {name}
+            <Text numberOfLines={1} style={[styles.bookText, { color: theme.text, fontWeight: on ? '700' : '400' }]}>
+              {shortBookName(b.id, translation) || name}
             </Text>
           </Pressable>
         );
@@ -154,12 +156,12 @@ const styles = StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 16, paddingRight: 4, minHeight: 48 },
   title: { fontSize: 18, fontWeight: '600', flex: 1 },
   columns: { flex: 1, flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth },
-  column: { flex: 1.1 },
-  book: { justifyContent: 'center', paddingHorizontal: 10, borderBottomWidth: StyleSheet.hairlineWidth },
-  bookText: { fontSize: 14, lineHeight: 18 },
+  column: { flexGrow: 0, flexShrink: 0, width: '29%' },
+  book: { justifyContent: 'center', paddingHorizontal: 14, borderBottomWidth: StyleSheet.hairlineWidth },
+  bookText: { fontSize: 15 },
   chapters: { flex: 1 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', padding: 4, paddingBottom: 16 },
-  cell: { width: '33.333%', padding: 3 },
+  cell: { width: '25%', padding: 3 },
   cellInner: { minHeight: 40, borderRadius: 9, borderWidth: StyleSheet.hairlineWidth, alignItems: 'center', justifyContent: 'center' },
   cellText: { fontSize: 15, fontWeight: '600', fontVariant: ['tabular-nums'] },
 });
