@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { SectionList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
 import { TabBar } from '../components/TabBar';
 import { IconButton, Icon } from '../components/Icon';
-import { SectionLabel } from '../components/SectionLabel';
+import { Segmented } from '../components/Segmented';
 import { scriptureFont } from '../fonts';
 import { useT } from '../i18n';
 import { VerseText } from '../components/VerseText';
@@ -14,7 +14,7 @@ import { useSettings } from '../settings';
 import { MAX_CONTENT_WIDTH, formatRef } from '../text';
 import { useTheme } from '../theme';
 import { translationInfo } from '../types';
-import type { Book, Ref, TextMark, TranslationId, VerseRow, WordPick } from '../types';
+import type { Book, HighlightColor, Ref, TextMark, TranslationId, VerseRow, WordPick } from '../types';
 
 interface Props {
   books: Book[];
@@ -43,7 +43,14 @@ function markedWords(mark: TextMark, verses: Map<string, VerseRow>): string | nu
   return parts.join(' ').replace(/\s+/g, ' ').trim();
 }
 
-/** Bookmarks, highlighted verses, marked text and notes, each in its own section, newest or latest first. */
+type Tab = 'bookmark' | 'highlight' | 'note';
+const COLOURS: HighlightColor[] = ['yellow', 'green', 'blue', 'pink'];
+const COLOUR_NAME = { yellow: 'colourYellow', green: 'colourGreen', blue: 'colourBlue', pink: 'colourPink' } as const;
+
+/**
+ * Bookmarks, highlights and notes, each in its own tab. Highlights holds the highlighted
+ * verses and the marked text together, in Bible order, and can show one colour only.
+ */
 export function SavedScreen({ books, onOpenRef, onWord }: Props) {
   const db = useSQLiteContext();
   const theme = useTheme();
@@ -67,19 +74,19 @@ export function SavedScreen({ books, onOpenRef, onWord }: Props) {
     const notes: Saved[] = Object.entries(settings.notes)
       .map(([key, note]) => ({ kind: 'note' as const, ref: parseKey(key), key, note, order: 0 }))
       .sort((a, b) => canon(a.ref) - canon(b.ref));
-    return [
-      { title: t('bookmarks'), data: bookmarks },
-      { title: t('highlights'), data: highlights },
-      { title: t('markedText'), data: marks },
-      { title: t('notes'), data: notes },
-    ].filter((s) => s.data.length > 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.bookmarks, settings.highlights, settings.marks, settings.notes, settings.language]);
+    const coloured = [...highlights, ...marks].sort((a, b) => canon(a.ref) - canon(b.ref) || a.order - b.order);
+    return { bookmark: bookmarks, highlight: coloured, note: notes };
+  }, [settings.bookmarks, settings.highlights, settings.marks, settings.notes]);
+  const firstFull = (['bookmark', 'highlight', 'note'] as Tab[]).find((k) => sections[k].length > 0) ?? 'bookmark';
+  const [tab, setTab] = useState<Tab>(firstFull);
+  const [colour, setColour] = useState<HighlightColor | null>(null);
+  const shownColours = COLOURS.filter((c) => sections.highlight.some((i) => i.color === c));
+  const shown = tab === 'highlight' && colour ? sections.highlight.filter((i) => i.color === colour) : sections[tab];
 
   useEffect(() => {
     let cancelled = false;
     const refs = new Map<string, Ref>();
-    for (const s of sections) for (const item of s.data) if (item.kind !== 'mark') refs.set(item.key, item.ref);
+    for (const list of Object.values(sections)) for (const item of list) if (item.kind !== 'mark') refs.set(item.key, item.ref);
     getVerses(db, settings.translation, [...refs.values()])
       .then((rows) => {
         if (!cancelled) setVerses(new Map(rows.map((r) => [keyOf(r), r])));
@@ -147,7 +154,7 @@ export function SavedScreen({ books, onOpenRef, onWord }: Props) {
       </View>
     );
   };
-  const empty = sections.length === 0;
+  const empty = Object.values(sections).every((list) => list.length === 0);
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
@@ -161,42 +168,76 @@ export function SavedScreen({ books, onOpenRef, onWord }: Props) {
           <Text style={[styles.empty, { color: theme.muted }]}>{t('nothingSaved')}</Text>
         </View>
       ) : (
-        <SectionList
-          sections={sections}
-          keyExtractor={(item) => `${item.kind}:${item.key}`}
-          contentContainerStyle={[styles.list, { paddingBottom: 24 }]}
-          stickySectionHeadersEnabled
-          renderSectionHeader={({ section }) => (
-            <SectionLabel text={section.title} style={[styles.section, { backgroundColor: theme.bg }]} />
-          )}
-          renderItem={({ item }) => {
-            const verse = verses.get(item.key);
-            const color = item.color ? theme.marks[item.color as keyof typeof theme.marks] : undefined;
-            return (
+        <View style={styles.list}>
+          <View style={styles.tabs}>
+            <Segmented
+              options={[
+                ['bookmark', `${t('bookmarks')} ${sections.bookmark.length}`],
+                ['highlight', `${t('highlights')} ${sections.highlight.length}`],
+                ['note', `${t('notes')} ${sections.note.length}`],
+              ]}
+              value={tab}
+              onChange={setTab}
+            />
+          </View>
+          {tab === 'highlight' && shownColours.length > 1 ? (
+            // One colour at a time, or all.
+            <View style={styles.colours} accessibilityRole="radiogroup">
               <Pressable
-                onPress={() => onOpenRef(item.ref)}
-                android_ripple={{ color: theme.accentSoft }}
-                style={({ pressed }) => [styles.row, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
+                onPress={() => setColour(null)}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: !colour }}
+                style={[styles.allChip, { borderColor: theme.accent, backgroundColor: !colour ? theme.accent : 'transparent' }]}
               >
-                <View style={styles.refRow}>
-                  <Text style={[styles.ref, { color: theme.accent }]}>
-                    {color ? <Text style={{ backgroundColor: color }}>  </Text> : null}
-                    {color ? ' ' : ''}
-                    {item.mark ? markRef(item.mark) : formatRef(books, item.ref, settings.translation)}
-                  </Text>
-                  <IconButton name="delete" onPress={() => remove(item)} accessibilityLabel={t('remove')} size={22} style={styles.remove} />
-                </View>
-                {item.note ? <Text style={[styles.note, { color: theme.text }]}>{item.note}</Text> : null}
-                {item.mark ? (
-                  markText(item.mark, color)
-                ) : verse ? (
-                  <VerseText verse={verse} fontSize={listFont} onWord={onWord} underline={false} showNumber={false} numberOfLines={3} />
-                ) : null}
+                <Text style={[styles.allText, { color: !colour ? theme.onAccent : theme.accent }]}>{t('all')}</Text>
               </Pressable>
-            );
-          }}
-          ListFooterComponent={<View style={{ height: 40 }} />}
-        />
+              {shownColours.map((c) => (
+                <Pressable
+                  key={c}
+                  onPress={() => setColour(colour === c ? null : c)}
+                  accessibilityRole="radio"
+                  accessibilityLabel={t(COLOUR_NAME[c])}
+                  accessibilityState={{ checked: colour === c }}
+                  hitSlop={6}
+                  style={[styles.swatch, { backgroundColor: theme.marks[c], borderColor: colour === c ? theme.accent : theme.border, borderWidth: colour === c ? 3 : 1 }]}
+                />
+              ))}
+            </View>
+          ) : null}
+          <FlatList
+            data={shown}
+            keyExtractor={(item) => `${item.kind}:${item.key}`}
+            contentContainerStyle={{ paddingBottom: 24 }}
+            ListEmptyComponent={<Text style={[styles.emptyTab, { color: theme.muted }]}>{t('nothingHere')}</Text>}
+          renderItem={({ item }) => {
+              const verse = verses.get(item.key);
+              const color = item.color ? theme.marks[item.color as keyof typeof theme.marks] : undefined;
+              return (
+                <Pressable
+                  onPress={() => onOpenRef(item.ref)}
+                  android_ripple={{ color: theme.accentSoft }}
+                  style={({ pressed }) => [styles.row, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
+                >
+                  <View style={styles.refRow}>
+                    <Text style={[styles.ref, { color: theme.accent }]}>
+                      {color ? <Text style={{ backgroundColor: color }}>  </Text> : null}
+                      {color ? ' ' : ''}
+                      {item.mark ? markRef(item.mark) : formatRef(books, item.ref, settings.translation)}
+                    </Text>
+                    <IconButton name="delete" onPress={() => remove(item)} accessibilityLabel={t('remove')} size={22} style={styles.remove} />
+                  </View>
+                  {item.note ? <Text style={[styles.note, { color: theme.text }]}>{item.note}</Text> : null}
+                  {item.mark ? (
+                    markText(item.mark, color)
+                  ) : verse ? (
+                    <VerseText verse={verse} fontSize={listFont} onWord={onWord} underline={false} showNumber={false} numberOfLines={3} />
+                  ) : null}
+                </Pressable>
+              );
+            }}
+            ListFooterComponent={<View style={{ height: 40 }} />}
+          />
+        </View>
       )}
       <TabBar current="Bookmarks" />
     </View>
@@ -206,12 +247,17 @@ export function SavedScreen({ books, onOpenRef, onWord }: Props) {
 const styles = StyleSheet.create({
   markBlock: { alignSelf: 'flex-start', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4, marginTop: 2 },
   screen: { flex: 1 },
-  list: { alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
+  list: { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
+  tabs: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 6 },
+  colours: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 6 },
+  allChip: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 12, minHeight: 32, justifyContent: 'center' },
+  allText: { fontSize: 14, fontWeight: '600' },
+  swatch: { width: 30, height: 30, borderRadius: 15 },
+  emptyTab: { fontSize: 15, textAlign: 'center', padding: 32 },
   emptyBox: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, paddingBottom: 96 },
   emptyIcon: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
   emptyTitle: { fontSize: 20, fontWeight: '500', marginBottom: 8, textAlign: 'center' },
   empty: { fontSize: 15, lineHeight: 22, textAlign: 'center', maxWidth: 320 },
-  section: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 },
   row: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
   refRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', minHeight: 36 },
   ref: { fontSize: 14, fontWeight: '700' },
