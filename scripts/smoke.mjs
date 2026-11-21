@@ -305,7 +305,8 @@ for (const edition of EDITIONS) {
     });
     await step('books', async (snap) => {
       await tab('books');
-      await shows(t.newTestament);
+      // Both Testaments at once: Genesis on the left, Matthew on the right.
+      await vis(page.getByText(/^(Genesis|ഉല്പത്തി|ആദിയാകമം|ஆதியாகமம்)$/)).waitFor({ timeout: 8000 });
       // Genesis 3, read in the picker step, is behind the clock in the title bar.
       await vis(page.getByLabel(t.recent)).click();
       await wait(800);

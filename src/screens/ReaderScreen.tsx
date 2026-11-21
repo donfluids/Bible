@@ -201,8 +201,6 @@ let lastMarkColor: HighlightColor = 'yellow';
 
 // Height of the band at the top and bottom of the text where a marking finger scrolls it.
 const SCROLL_BAND = 56;
-/** How far the text scrolls one way before the tab bar folds away or comes back. */
-const BAR_SCROLL = 32;
 
 function KeepAwake() {
   useKeepAwake();
@@ -773,24 +771,12 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   const contentHeight = useRef(0);
   const listHeight = useRef(0);
 
-  // The tab bar folds away while the text is scrolled down, and comes back on scrolling
-  // up a little, near the top or end of the chapter, and on a new chapter.
-  const [barHidden, setBarHidden] = useState(false);
-  const scrollRun = useRef(0);
-  const onListScroll = useCallback(
-    (y: number) => {
-      const dy = y - scrollY.current;
-      scrollY.current = y;
-      if (!tabs || dy === 0) return;
-      if (Math.sign(dy) !== Math.sign(scrollRun.current)) scrollRun.current = 0;
-      scrollRun.current += dy;
-      const nearEnd = y + listHeight.current >= contentHeight.current - 48;
-      if (y < 48 || nearEnd || scrollRun.current < -BAR_SCROLL) setBarHidden(false);
-      else if (scrollRun.current > BAR_SCROLL) setBarHidden(true);
-    },
-    [tabs],
-  );
-  useEffect(() => setBarHidden(false), [position.book, position.chapter]);
+  // The tab bar stays in place while reading (it used to fold away on scrolling down, and
+  // sometimes did not come back).
+  const barHidden = false;
+  const onListScroll = useCallback((y: number) => {
+    scrollY.current = y;
+  }, []);
   type DragState = {
     boxes: WordBox[] | null;
     body: { x: number; y: number; height: number } | null;
