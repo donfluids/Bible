@@ -1,0 +1,54 @@
+{
+ "effort": "medium",
+ "created": "2026-11-21T01:10:12.483Z",
+ "cost": 0.0051879000000000005,
+ "usage": {
+  "in": 2,
+  "cacheRead": 4619,
+  "cacheCreate": 863,
+  "out": 127
+ },
+ "problems": [],
+ "verses": [
+  {
+   "book": 2,
+   "chapter": 22,
+   "v": 25,
+   "hash": "ca19b6c33ae3",
+   "tokens": 30,
+   "spans": []
+  },
+  {
+   "book": 2,
+   "chapter": 22,
+   "v": 26,
+   "hash": "c54e67962487",
+   "tokens": 21,
+   "spans": []
+  },
+  {
+   "book": 2,
+   "chapter": 22,
+   "v": 27,
+   "hash": "c31b1f9dfee4",
+   "tokens": 36,
+   "spans": []
+  },
+  {
+   "book": 2,
+   "chapter": 22,
+   "v": 29,
+   "hash": "f3dc7ce387bf",
+   "tokens": 26,
+   "spans": []
+  },
+  {
+   "book": 2,
+   "chapter": 22,
+   "v": 31,
+   "hash": "7cdd1fd8769c",
+   "tokens": 30,
+   "spans": []
+  }
+ ]
+}
