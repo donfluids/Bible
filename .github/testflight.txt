@@ -10,3 +10,4 @@ ml
 # 2026-11-19: build that shows the reason when the card picture fails.
 # 2026-11-19: build with the card share fix (wait for the picture to be moved).
 # 2026-11-20: watercolour cards, LSV and ASV, no "Design's own colours" button.
+# 2026-11-21: 0.4.37: LSV/ASV word links, natural Malayalam voice, Books tab, three-column picker, fixed tab bar, Saved tabs.
