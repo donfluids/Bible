@@ -201,6 +201,8 @@ let lastMarkColor: HighlightColor = 'yellow';
 
 // Height of the band at the top and bottom of the text where a marking finger scrolls it.
 const SCROLL_BAND = 56;
+/** An Indian Bible's language, in English, under its name in the four-language app's list. */
+const LANGUAGE_IN_ENGLISH: Partial<Record<TranslationId, string>> = { MAL: 'Malayalam', TAM: 'Tamil', HIN: 'Hindi' };
 
 function KeepAwake() {
   useKeepAwake();
@@ -1594,12 +1596,20 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
       </SimpleSheet>
 
       <SimpleSheet visible={choosingBible} title={t('chooseBible')} onClose={() => setChoosingBible(false)}>
-        {/* The English Bibles, then the Indian ones, each under its own name with the English under it. */}
+        {/* The Malayalam and Tamil apps put their own Bible first, under its language's name; the
+            four-language app puts the English ones first. Each Bible under its own name, with no
+            word repeated below it: the English ones by their abbreviation, an Indian one by its
+            English name (and, in the four-language app, its language in English). */}
         {(
-          [
-            [t('englishBibles'), edition.translations.filter(isEnglish)],
-            [t('indianBibles'), edition.translations.filter((id) => !isEnglish(id))],
-          ] as [string, TranslationId[]][]
+          (edition.id === 'ml' || edition.id === 'ta'
+            ? [
+                [LANGUAGE_WORD[edition.translations.find((id) => !isEnglish(id)) ?? ''] ?? t('indianBibles'), edition.translations.filter((id) => !isEnglish(id))],
+                [t('englishBibles'), edition.translations.filter(isEnglish)],
+              ]
+            : [
+                [t('englishBibles'), edition.translations.filter(isEnglish)],
+                [t('indianBibles'), edition.translations.filter((id) => !isEnglish(id))],
+              ]) as [string, TranslationId[]][]
         )
           .filter(([, ids]) => ids.length)
           .map(([heading, ids]) => (
@@ -1616,7 +1626,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
                   selected={id === translation}
                   label={NATIVE_BIBLE_NAME[id] ?? translationName(settings.language, id)}
                   labelFont={pillFont(id) ? scriptureFont(translationInfo(id).script ?? null, false) : undefined}
-                  detail={isEnglish(id) ? `${settings.language === 'en' ? 'English' : t('bibleEnglish')} · ${id}` : `${LANGUAGE_WORD[id]} · ${englishName(id)}`}
+                  detail={isEnglish(id) ? id : edition.id === 'all' ? `${LANGUAGE_IN_ENGLISH[id]} · ${englishName(id)}` : englishName(id)}
                   onPress={() => {
                     setChoosingBible(false);
                     switchTranslation(id);
