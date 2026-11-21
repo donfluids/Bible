@@ -24,9 +24,10 @@ Pod::Spec.new do |s|
   # are not made larger by the library that runs the model.
   # BIBLE_NO_VOICE=1 leaves it out of those too (a TestFlight build made without it).
   if ['ml', 'all'].include?(ENV['BIBLE_EDITION']) && ENV['BIBLE_NO_VOICE'] != '1'
-    # ONNX Runtime (MIT), which runs the voice's model. The same version as on Android,
-    # from before the library gained telemetry code.
-    s.dependency 'onnxruntime-objc', '1.22.0'
+    # ONNX Runtime (MIT), which runs the voice's model, through its C interface
+    # (voice/BVVoiceModel.m). The same version as on Android, from before the library
+    # gained telemetry code. scripts/ios-onnxruntime.sh provides it for the builds.
+    s.dependency 'onnxruntime-c', '1.22.0'
     s.source_files = "voice/**/*.{h,m,swift}"
   else
     s.source_files = "none/**/*.{h,m,swift}"

@@ -15,3 +15,4 @@ ml
 # 2026-11-21: 0.4.37 without the app's own voice: the ONNX Runtime download is down.
 # 2026-11-21: 0.4.37 with the voice again: ONNX Runtime from Microsoft's NuGet package.
 # 2026-11-21: again, with the Objective-C source taken as plain downloads.
+# 2026-11-21: again; the voice calls ONNX Runtime's C interface itself (Microsoft's GitHub source is unreachable).

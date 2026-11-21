@@ -1,7 +1,6 @@
 import AVFoundation
 import ExpoModulesCore
 import UIKit
-import onnxruntime_objc
 
 // The voice the app carries: runs its model (ONNX Runtime) on speech sounds handed over
 // by the app, and plays the sound the app has shaped from the result. Nothing leaves the
@@ -53,8 +52,7 @@ private final class PlayerDelegate: NSObject, AVAudioPlayerDelegate {
 }
 
 public final class BibleVoiceModule: Module {
-  private var env: ORTEnv?
-  private var session: ORTSession?
+  private var model: BVVoiceModel?
   private var player: AVAudioPlayer?
   private var playerDelegate: PlayerDelegate?
   private var pending: Promise?
@@ -99,42 +97,22 @@ public final class BibleVoiceModule: Module {
     }.runOnQueue(work)
 
     AsyncFunction("load") { (path: String) in
-      if self.session != nil {
+      if self.model != nil {
         return
       }
-      let model = try ownFile(path, ending: "onnx").path
-      let env = try ORTEnv(loggingLevel: ORTLoggingLevel.warning)
-      let options = try ORTSessionOptions()
-      try options.setIntraOpNumThreads(2)
-      self.session = try ORTSession(env: env, modelPath: model, sessionOptions: options)
-      self.env = env
+      self.model = try BVVoiceModel(modelPath: ownFile(path, ending: "onnx").path, threads: 2)
     }.runOnQueue(work)
 
     // The sound of one phrase: 32-bit floats at the model's rate, as bytes.
     AsyncFunction("synthesize") { (ids: [Int], noise: Double, pace: Double, noiseW: Double) -> Data in
-      guard let session = self.session else {
+      guard let model = self.model else {
         throw VoiceNotLoadedException()
       }
       let input = ids.map { Int64($0) }
-      let length = [Int64(ids.count)]
       let scales = [Float(noise), Float(pace), Float(noiseW)]
-      let inputData = input.withUnsafeBufferPointer { NSMutableData(bytes: $0.baseAddress, length: $0.count * MemoryLayout<Int64>.stride) }
-      let lengthData = length.withUnsafeBufferPointer { NSMutableData(bytes: $0.baseAddress, length: $0.count * MemoryLayout<Int64>.stride) }
-      let scalesData = scales.withUnsafeBufferPointer { NSMutableData(bytes: $0.baseAddress, length: $0.count * MemoryLayout<Float>.stride) }
-      let inputValue = try ORTValue(tensorData: inputData, elementType: ORTTensorElementDataType.int64, shape: [1, NSNumber(value: ids.count)])
-      let lengthValue = try ORTValue(tensorData: lengthData, elementType: ORTTensorElementDataType.int64, shape: [1])
-      let scalesValue = try ORTValue(tensorData: scalesData, elementType: ORTTensorElementDataType.float, shape: [3])
-      let outputs = try session.run(
-        withInputs: ["input": inputValue, "input_lengths": lengthValue, "scales": scalesValue],
-        outputNames: ["output"],
-        runOptions: nil
-      )
-      guard let output = outputs["output"] else {
-        throw VoiceOutputException()
-      }
-      // A copy of its own: the model's buffer goes when its value does.
-      let samples = try output.tensorData()
-      return Data(bytes: samples.bytes, count: samples.length)
+      let inputData = input.withUnsafeBufferPointer { Data(buffer: $0) }
+      let scalesData = scales.withUnsafeBufferPointer { Data(buffer: $0) }
+      return try model.synthesize(withIds: inputData, scales: scalesData)
     }.runOnQueue(work)
 
     // Plays a WAV; resolves true when it has played to its end, false when stopped.
