@@ -227,7 +227,9 @@ export const VerseText = memo(function VerseText({
             onLongPress={onLongPress}
             // Android exposes a tappable span inside text to TalkBack and keyboards only as a link.
             accessibilityRole={onWord ? 'link' : undefined}
-            suppressHighlighting={false}
+            // No pressed shading (iPhone): a long press opens the verse's menu before the finger
+            // lifts, and the shading then stays on the word. A tap opens the word's sheet anyway.
+            suppressHighlighting
             style={[
               underline && { textDecorationLine: 'underline', textDecorationColor: theme.linked },
               strong && [bold, { color: theme.accent, backgroundColor: theme.highlight }],

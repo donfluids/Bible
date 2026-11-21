@@ -6,7 +6,7 @@
 //
 //   npx tsx scripts/test-logic.mts
 import { readFileSync as readVoiceFile } from 'node:fs';
-import { MODEL_RATE, PLAY_RATE, joinPhrases, levelled, modelInput, openSpeech, paceFor, wavFile } from '../src/builtinVoice/core';
+import { MODEL_RATE, PLAY_RATE, joinPhrases, modelInput, openSpeech, paceFor, wavFile } from '../src/builtinVoice/core';
 import { plainMorph } from '../src/morph';
 import assert from 'node:assert/strict';
 import { describeVoice, groupVoices, voicesFor, voicesOrIndian } from '../src/voiceLabels';
@@ -457,10 +457,10 @@ test('the app\'s voice: the speech file gives each verse its phrases, laid out f
   assert.equal(speech.chapter(66, 22)!.size, 21);
   const ids = modelInput(Uint8Array.from([14, 15]));
   assert.deepEqual(ids, [0, 14, 0, 15, 0]);
-  const level = levelled(Float32Array.from([0, 0.2, -0.4]));
-  assert.ok(Math.abs(level[2] + 0.92) < 1e-6 && Math.abs(level[1] - 0.46) < 1e-6);
-  const verse = joinPhrases([{ samples: new Float32Array(1000), rest: 1 }, { samples: new Float32Array(500), rest: 2 }]);
-  assert.equal(verse.length, 1500 + Math.round(MODEL_RATE * 0.32) + Math.round(MODEL_RATE * 0.55) + Math.round(MODEL_RATE * 0.6));
+  // The phrases as the model made them, one after the other, then a quarter second before the next verse.
+  const verse = joinPhrases([Float32Array.from([0.1, 0.2]), Float32Array.from([0.3])]);
+  assert.equal(verse.length, 3 + Math.round(MODEL_RATE * 0.25));
+  assert.ok(Math.abs(verse[2] - 0.3) < 1e-6 && verse[3] === 0);
   const wav = wavFile(Float32Array.from([0, 1, -1]));
   assert.equal(wav.length, 44 + 6);
   assert.equal(new DataView(wav.buffer).getUint32(24, true), PLAY_RATE);
