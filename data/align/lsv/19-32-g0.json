@@ -1,0 +1,31 @@
+{
+ "effort": "medium",
+ "created": "2026-11-21T00:36:12.467Z",
+ "cost": 0.0069904,
+ "usage": {
+  "in": 2,
+  "cacheRead": 1224,
+  "cacheCreate": 1536,
+  "out": 72
+ },
+ "problems": [],
+ "verses": [
+  {
+   "book": 19,
+   "chapter": 32,
+   "v": 0,
+   "hash": "e0c4a5e6fa70",
+   "tokens": 4,
+   "spans": [
+    {
+     "s": 3,
+     "e": 14,
+     "n": "H4905",
+     "c": 2,
+     "t": 2,
+     "w": 2
+    }
+   ]
+  }
+ ]
+}
