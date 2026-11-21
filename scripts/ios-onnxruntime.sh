@@ -39,16 +39,19 @@ unzip -q "$WORK/pkg/runtimes/ios/native/onnxruntime.xcframework.zip" -d "$VENDOR
 cp "$VENDOR/onnxruntime-c/onnxruntime.xcframework/ios-arm64/onnxruntime.framework/Headers/"*.h "$VENDOR/onnxruntime-c/Headers/"
 cp "$WORK/pkg/LICENSE" "$VENDOR/onnxruntime-c/LICENSE"
 
-# 2. The Objective-C layer's source, only its folder, at that commit.
-git -C "$WORK" init -q src
-git -C "$WORK/src" remote add origin https://github.com/microsoft/onnxruntime.git
-git -C "$WORK/src" sparse-checkout set --no-cone /objectivec/ /LICENSE
-git -C "$WORK/src" fetch -q --depth 1 --filter=blob:none origin "$COMMIT"
-git -C "$WORK/src" checkout -q FETCH_HEAD
-[ "$(git -C "$WORK/src" rev-parse HEAD)" = "$COMMIT" ] || { echo "::error::wrong source commit"; exit 1; }
-cp -R "$WORK/src/objectivec" "$VENDOR/onnxruntime-objc/objectivec"
-rm -rf "$VENDOR/onnxruntime-objc/objectivec/test"
-cp "$WORK/src/LICENSE" "$VENDOR/onnxruntime-objc/LICENSE"
+# 2. The Objective-C layer's source, the published pod's files only, at that commit
+#    (a git fetch of a single commit asks the runner for a login; plain downloads do not).
+OBJC_FILES="ort_coreml_execution_provider.mm error_utils.h ort_env_internal.h assert_arc_enabled.mm cxx_api.h
+  ort_env.mm ort_session.mm ort_session_internal.h error_utils.mm cxx_utils.h ort_enums_internal.h ort_value.mm
+  cxx_utils.mm ort_value_internal.h ort_enums.mm ort_xnnpack_execution_provider.mm
+  include/ort_xnnpack_execution_provider.h include/ort_session.h include/ort_coreml_execution_provider.h
+  include/ort_custom_op_registration.h include/ort_env.h include/ort_value.h include/ort_enums.h include/onnxruntime.h"
+RAW="https://raw.githubusercontent.com/microsoft/onnxruntime/$COMMIT"
+mkdir -p "$VENDOR/onnxruntime-objc/objectivec/include"
+for f in $OBJC_FILES; do
+  curl -fsSL --retry 3 -o "$VENDOR/onnxruntime-objc/objectivec/$f" "$RAW/objectivec/$f"
+done
+curl -fsSL --retry 3 -o "$VENDOR/onnxruntime-objc/LICENSE" "$RAW/LICENSE"
 
 # 3. The two pods, as published (onnxruntime-c and onnxruntime-objc 1.22.0 on CocoaPods),
 #    with a local source.

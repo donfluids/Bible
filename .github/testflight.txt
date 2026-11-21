@@ -14,3 +14,4 @@ ml
 # 2026-11-21: 0.4.37: LSV/ASV word links, natural Malayalam voice, Books tab, three-column picker, fixed tab bar, Saved tabs.
 # 2026-11-21: 0.4.37 without the app's own voice: the ONNX Runtime download is down.
 # 2026-11-21: 0.4.37 with the voice again: ONNX Runtime from Microsoft's NuGet package.
+# 2026-11-21: again, with the Objective-C source taken as plain downloads.
