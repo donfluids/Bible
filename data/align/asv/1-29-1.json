@@ -1,0 +1,257 @@
+{
+ "effort": "medium",
+ "created": "2026-11-21T00:51:57.357Z",
+ "cost": 0.0583765,
+ "usage": {
+  "in": 2,
+  "cacheRead": 1225,
+  "cacheCreate": 13620,
+  "out": 377
+ },
+ "problems": [],
+ "verses": [
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 1,
+   "hash": "a572763e1a09",
+   "tokens": 17,
+   "spans": [
+    {
+     "s": 0,
+     "e": 4,
+     "n": "H5375",
+     "c": 1,
+     "t": 1,
+     "w": 1
+    },
+    {
+     "s": 11,
+     "e": 15,
+     "n": "H5375",
+     "c": 1,
+     "t": 3,
+     "w": 1
+    },
+    {
+     "s": 19,
+     "e": 22,
+     "n": "H7272",
+     "c": 1,
+     "t": 5,
+     "w": 3
+    },
+    {
+     "s": 32,
+     "e": 35,
+     "n": "H1980",
+     "c": 1,
+     "t": 7,
+     "w": 4
+    }
+   ]
+  },
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 3,
+   "hash": "6a82d6e913b9",
+   "tokens": 32,
+   "spans": [
+    {
+     "s": 0,
+     "e": 3,
+     "n": "H622",
+     "c": 1,
+     "t": 1,
+     "w": 1
+    },
+    {
+     "s": 21,
+     "e": 24,
+     "n": "H853",
+     "c": 1,
+     "t": 5,
+     "w": 6
+    },
+    {
+     "s": 42,
+     "e": 45,
+     "n": "H5921",
+     "c": 1,
+     "t": 8,
+     "w": 17
+    }
+   ]
+  },
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 7,
+   "hash": "391aeab9eeab",
+   "tokens": 29,
+   "spans": []
+  },
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 9,
+   "hash": "cbcc7bcb45b1",
+   "tokens": 17,
+   "spans": [
+    {
+     "s": 9,
+     "e": 12,
+     "n": "H5973",
+     "c": 1,
+     "t": 3,
+     "w": 3
+    },
+    {
+     "s": 26,
+     "e": 30,
+     "n": "H5973",
+     "c": 2,
+     "t": 6,
+     "w": 3
+    },
+    {
+     "s": 82,
+     "e": 86,
+     "n": "H7462",
+     "c": 2,
+     "t": 16,
+     "w": 11
+    }
+   ]
+  },
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 10,
+   "hash": "9a45c528c884",
+   "tokens": 45,
+   "spans": []
+  },
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 11,
+   "hash": "0b987cd6554d",
+   "tokens": 11,
+   "spans": []
+  },
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 13,
+   "hash": "bc4025566153",
+   "tokens": 40,
+   "spans": []
+  },
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 15,
+   "hash": "4d377223e939",
+   "tokens": 24,
+   "spans": []
+  },
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 17,
+   "hash": "9a6539f7e54f",
+   "tokens": 12,
+   "spans": []
+  },
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 21,
+   "hash": "e3e0f594d7e5",
+   "tokens": 21,
+   "spans": []
+  },
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 22,
+   "hash": "9574dd7c1858",
+   "tokens": 14,
+   "spans": []
+  },
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 23,
+   "hash": "d33e179c8db3",
+   "tokens": 25,
+   "spans": []
+  },
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 25,
+   "hash": "84c0ff6af341",
+   "tokens": 40,
+   "spans": []
+  },
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 26,
+   "hash": "7a4c832fa9d4",
+   "tokens": 18,
+   "spans": []
+  },
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 27,
+   "hash": "fe97c3ab8e91",
+   "tokens": 27,
+   "spans": []
+  },
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 28,
+   "hash": "600051c6beac",
+   "tokens": 17,
+   "spans": []
+  },
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 30,
+   "hash": "83eaec026fc4",
+   "tokens": 23,
+   "spans": []
+  },
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 33,
+   "hash": "0585342c430a",
+   "tokens": 32,
+   "spans": []
+  },
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 34,
+   "hash": "b66ef1dec247",
+   "tokens": 33,
+   "spans": []
+  },
+  {
+   "book": 1,
+   "chapter": 29,
+   "v": 35,
+   "hash": "b39cccfe1f7d",
+   "tokens": 28,
+   "spans": []
+  }
+ ]
+}
