@@ -65,6 +65,11 @@ jobs:
       - name: Generate the iOS project
         run: npx expo prebuild --platform ios --no-install
 
+      - name: ONNX Runtime from nuget.org
+        # The voice's library, from Microsoft's NuGet package instead of
+        # download.onnxruntime.ai (see the script). Only the apps with the voice.
+        run: bash scripts/ios-onnxruntime.sh
+
       - name: Install pods
         run: |
           cd ios

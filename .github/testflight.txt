@@ -1,4 +1,4 @@
-ml novoice
+ml
 # The first word names the app the TestFlight workflow uploads when this file changes
 # in a push (ml, en or ta); "novoice" after it leaves out the app's own voice and
 # ONNX Runtime. The lines after it are notes. Edit it (the note below will
@@ -13,3 +13,4 @@ ml novoice
 # 2026-11-20: watercolour cards, LSV and ASV, no "Design's own colours" button.
 # 2026-11-21: 0.4.37: LSV/ASV word links, natural Malayalam voice, Books tab, three-column picker, fixed tab bar, Saved tabs.
 # 2026-11-21: 0.4.37 without the app's own voice: the ONNX Runtime download is down.
+# 2026-11-21: 0.4.37 with the voice again: ONNX Runtime from Microsoft's NuGet package.
