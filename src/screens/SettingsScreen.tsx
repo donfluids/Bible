@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -293,7 +293,7 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
             </Pressable>
           ))}
         </View>
-        <Text style={[styles.rowSub, styles.hint, { color: theme.muted }]}>{t('voiceMore')}</Text>
+        <Text style={[styles.rowSub, styles.hint, { color: theme.muted }]}>{t(Platform.OS === 'ios' ? 'voiceMoreIos' : 'voiceMore')}</Text>
 
         <Label text={t('backupRestore')} />
         <Pressable

@@ -13,6 +13,7 @@ import notices from '../notices.json';
 import { NATIVE_NOTICES } from '../nativeNotices';
 import { MAX_CONTENT_WIDTH } from '../text';
 import { useTheme } from '../theme';
+import { useT } from '../i18n';
 
 interface Notice {
   name: string;
@@ -50,6 +51,7 @@ const reflow = (text: string) =>
  */
 export function LicencesScreen({ onBack }: { onBack: () => void }) {
   const theme = useTheme();
+  const t = useT();
   // Lists run under the system navigation bar; the last row must clear it.
   const insets = useSafeAreaInsets();
   const edition = useEdition();
@@ -103,7 +105,7 @@ export function LicencesScreen({ onBack }: { onBack: () => void }) {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
-      <Header title="Sources and licences" onBack={onBack} />
+      <Header title={t('sourcesLicences')} onBack={onBack} backLabel={t('back')} />
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}>
         {sections.map((section) => (
           <View key={section.heading} style={styles.section}>

@@ -41,7 +41,10 @@ function Panel({ books, translation, current, lastChapters, onPick, onClose }: O
   const theme = useTheme();
   const t = useT();
   const insets = useSafeAreaInsets();
-  const { height } = useWindowDimensions();
+  const { height, width } = useWindowDimensions();
+  // The chapters take what the two book columns leave (42%): four to a row where that is
+  // wide enough for a finger, three on a narrow phone.
+  const perRow = width * 0.42 >= 4 * 48 ? 4 : 3;
   const [book, setBook] = useState(current.book);
   const old = useMemo(() => books.filter((b) => b.testament === 'OT'), [books]);
   const fresh = useMemo(() => books.filter((b) => b.testament === 'NT'), [books]);
@@ -122,7 +125,7 @@ function Panel({ books, translation, current, lastChapters, onPick, onClose }: O
                       accessibilityRole="button"
                       accessibilityLabel={`${bookName(books, chosen.id, translation)} ${c}`}
                       accessibilityState={{ selected: active }}
-                      style={styles.cell}
+                      style={[styles.cell, { width: perRow === 4 ? '25%' : '33.33%' }]}
                     >
                       <View style={[styles.cellInner, { borderColor: active || last ? theme.accent : theme.border, backgroundColor: active ? theme.accent : last ? theme.accentSoft : theme.bg }]}>
                         <Text style={[styles.cellText, { color: active ? theme.onAccent : theme.text }]}>{c}</Text>
@@ -161,7 +164,7 @@ const styles = StyleSheet.create({
   bookText: { fontSize: 15 },
   chapters: { flex: 1 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', padding: 4, paddingBottom: 16 },
-  cell: { width: '25%', padding: 3 },
-  cellInner: { minHeight: 40, borderRadius: 9, borderWidth: StyleSheet.hairlineWidth, alignItems: 'center', justifyContent: 'center' },
+  cell: { padding: 3 },
+  cellInner: { minHeight: 44, borderRadius: 9, borderWidth: StyleSheet.hairlineWidth, alignItems: 'center', justifyContent: 'center' },
   cellText: { fontSize: 15, fontWeight: '600', fontVariant: ['tabular-nums'] },
 });

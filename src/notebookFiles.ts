@@ -167,7 +167,7 @@ export async function restoreBackup(pages: NotePage[], edition: string, otherEdi
   }
   let text: string;
   try {
-    text = copy ? await copy.text() : await (await fetch(asset.uri)).text();
+    text = copy ? await copy.text() : await (await fetch(asset.uri)).text(); // network-ok: web preview only, the picked file's blob: address
   } catch {
     return { kind: 'notBackup' };
   } finally {

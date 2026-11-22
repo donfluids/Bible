@@ -150,7 +150,9 @@ export function useReadAloud({ chapterKey, verses, translation, rate, voice, nex
               withPhone();
             },
           },
-          i + 1 < list.length ? ref(list[i + 1]) : undefined,
+          // At a chapter's last verse, the next chapter's first verse is made ahead: with the
+          // phone locked, a second of silence while it is made could let iPhone suspend the app.
+          i + 1 < list.length ? ref(list[i + 1]) : { book: list[i].book, chapter: list[i].chapter + 1, verse: 1 },
         );
       } else withPhone();
     },

@@ -380,7 +380,8 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     borderWidth: StyleSheet.hairlineWidth,
   },
-  input: { flex: 1, fontSize: 17, paddingVertical: 12 },
+  // minWidth 0: a text field's own least width would push the clear button off a narrow screen.
+  input: { flex: 1, minWidth: 0, fontSize: 17, paddingVertical: 12 },
   clear: { width: 44, height: 44 },
   examples: { paddingHorizontal: 18, paddingTop: 4 },
   examplesLabel: { fontSize: 13, marginBottom: 8 },

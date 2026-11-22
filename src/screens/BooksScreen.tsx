@@ -73,6 +73,8 @@ export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
           { backgroundColor: pressed || active ? theme.accentSoft : 'transparent' },
         ]}
         accessibilityRole="button"
+        // A screen reader goes across the rows (Genesis, Matthew...): each book says its Testament.
+        accessibilityLabel={`${name(b)}, ${t(side === 'left' ? 'oldTestament' : 'newTestament')}`}
         accessibilityState={{ selected: active }}
       >
         <Text style={[styles.cellName, { lineHeight: cellLine, color: theme.text, fontWeight: active ? '700' : '400' }]} numberOfLines={2}>
@@ -104,6 +106,11 @@ export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
       </SimpleSheet>
       {/* On a tablet the list keeps to the reading width. */}
       <View style={styles.column}>
+        {/* Which Testament each column holds. */}
+        <View style={[styles.heads, { borderBottomColor: theme.border }]} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+          <Text style={[styles.head, { color: theme.muted, borderRightColor: theme.border }]} numberOfLines={1}>{t('oldTestament')}</Text>
+          <Text style={[styles.head, styles.headRight, { color: theme.muted }]} numberOfLines={1}>{t('newTestament')}</Text>
+        </View>
         <FlatList
           data={pairs}
           keyExtractor={(p) => String(p.left.id)}
@@ -129,5 +136,8 @@ const styles = StyleSheet.create({
   cell: { flex: 1, justifyContent: 'center', paddingHorizontal: 16 },
   cellName: { fontSize: CELL_SIZE },
   listEnd: { paddingBottom: 24 },
+  heads: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
+  head: { flex: 1, paddingHorizontal: 16, paddingVertical: 6, fontSize: 13, fontWeight: '600', borderRightWidth: StyleSheet.hairlineWidth },
+  headRight: { borderRightWidth: 0 },
   column: { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
 });

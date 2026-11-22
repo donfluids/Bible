@@ -78,7 +78,7 @@ function SheetBody({ title, onClose, children, openedAtEnd }: Omit<Props, 'visib
       <Pressable style={styles.backdrop} onPress={onClose} importantForAccessibility="no" accessibilityElementsHidden />
       {/* Lifted above the keyboard while a note is typed: the app draws edge to edge, so Android does not resize it. */}
       <KeyboardAvoidingView behavior="padding" style={styles.lift} pointerEvents="box-none">
-        <Animated.View onAccessibilityEscape={onClose} style={[styles.sheet, short && styles.sheetShort, { backgroundColor: theme.card, borderColor: theme.border, paddingBottom: insets.bottom + 12, transform: [{ translateY }] }]}>
+        <Animated.View onAccessibilityEscape={onClose} style={[styles.sheet, short && styles.sheetShort, { backgroundColor: theme.card, borderColor: theme.dark ? theme.muted : theme.border, paddingBottom: insets.bottom + 12, transform: [{ translateY }] }]}>
           <View {...pan.panHandlers}>
             <View style={styles.gripHit}>
               <View style={[styles.grip, { backgroundColor: theme.border }]} />

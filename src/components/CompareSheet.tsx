@@ -78,7 +78,8 @@ export function CompareSheet({ target, translation, books, onClose, onWord }: Pr
 
   const size = Math.min(settings.fontSize, 19);
   return (
-    <SimpleSheet visible={!!target} title={target ? `${t('compare')} · ${formatRef(books, target, settings.translation)}` : ''} onClose={onClose}>
+    // The reference keeps together (no break between Genesis and 1:2).
+    <SimpleSheet visible={!!target} title={target ? `${t('compare')} · ${formatRef(books, target, settings.translation).replace(/ /g, '\u00A0')}` : ''} onClose={onClose}>
       {failed ? (
         <Text style={[styles.missing, { color: theme.muted }]}>{t('loadFailed')}</Text>
       ) : !rows ? (

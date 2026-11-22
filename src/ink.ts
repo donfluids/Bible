@@ -131,10 +131,13 @@ const isNum = (n: unknown): n is number => typeof n === 'number' && Number.isFin
  * first one ({ c, w, d: steps as numbers }, 0.4.16): anything not a stroke as written is
  * left out; colours, widths and points out of range are left out.
  */
-export function decodeInk(raw: unknown): Ink {
+export function decodeInk(raw: unknown, budget?: { points: number }): Ink {
   const list = raw && typeof raw === 'object' && Array.isArray((raw as { s?: unknown }).s) ? (raw as { s: unknown[] }).s : [];
   const strokes: Stroke[] = [];
   for (const item of list.slice(0, MAX_STROKES)) {
+    // A backup file shares one allowance of points among its pages, so a file made to be
+    // huge cannot fill the phone's memory while it is read; what is past it is left out.
+    if (budget && budget.points <= 0) break;
     if (!item || typeof item !== 'object') continue;
     let c: unknown, w: unknown, d: unknown;
     if (Array.isArray(item)) [c, w, d] = item;
@@ -153,6 +156,7 @@ export function decodeInk(raw: unknown): Ink {
     }
     if (p.some((v, i) => (i % 2 === 0 ? v < -50 || v > PAGE_WIDTH + 50 : v < -50 || v > PAGE_MAX_Y))) continue;
     const stroke = { c, w, p };
+    if (budget) budget.points -= p.length / 2;
     strokes.push(stroke);
   }
   return { strokes };

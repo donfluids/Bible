@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 import { ActivityIndicator, Alert, Animated, BackHandler, PanResponder, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { Pressable } from './Pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -549,6 +550,11 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
               { backgroundColor: theme.card, borderTopColor: theme.border, paddingBottom: insets.bottom + 12, transform: [{ translateY: footerOffset }] },
             ]}
           >
+            {/* The words above fade into the footer, so a heading it covers reads as more to
+                scroll to, not as cut in half. */}
+            {!panel ? (
+              <LinearGradient pointerEvents="none" colors={[`${theme.card}00`, theme.card]} style={styles.fade} />
+            ) : null}
             {/* A panel already shows everything; the bar is for the half-open sheet. */}
             {!expanded && !panel ? (
               <Pressable onPress={() => snap('full')} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.more}>
@@ -888,6 +894,7 @@ const styles = StyleSheet.create({
     paddingTop: 6,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
+  fade: { position: 'absolute', left: 0, right: 0, top: -32, height: 32 },
   more: { minHeight: 48, flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'center' },
   moreText: { fontSize: 15, fontWeight: '600' },
   cta: { minHeight: 56, paddingVertical: 8, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginTop: 4 },

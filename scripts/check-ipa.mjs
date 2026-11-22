@@ -102,10 +102,11 @@ const hasModel = files.some((f) => /\/assets\/speech\/[^/]+\.onnx$/.test(f) && s
 // BIBLE_NO_VOICE=1: a build made without the voice (see .github/testflight.txt).
 if (hasModel !== ((edition === 'ml' || edition === 'all') && process.env.BIBLE_NO_VOICE !== '1')) fail(hasModel ? 'the voice model is in an app without the voice' : 'the voice model is missing');
 
-// 6. This repository's own code never calls the network. The one fetch reads a file the
-// reader picked, in the web preview only (src/notebookFiles.ts).
+// 6. This repository's own code never calls the network. A line may be let through only by
+// saying why on the line itself ("network-ok: ..."): the one fetch reads a file the reader
+// picked, in the web preview only (src/notebookFiles.ts).
 const NETWORK = /\bfetch\(|XMLHttpRequest|WebSocket|EventSource|sendBeacon|URLSession|NSURLConnection|CFNetwork|HttpURLConnection|okhttp|java\.net\./;
-const ALLOWED = new Set(['src/notebookFiles.ts']);
+const ALLOWED = new Set();
 const sources = [join(ROOT, 'App.tsx'), ...everyFile(join(ROOT, 'src')), ...everyFile(join(ROOT, 'modules')).filter((f) => !f.includes('/build/'))].filter((f) => /\.(ts|tsx|kt|swift|m|mm|java)$/.test(f));
 for (const source of sources) {
   const name = source.slice(ROOT.length + 1);
@@ -113,7 +114,7 @@ for (const source of sources) {
   readFileSync(source, 'utf8')
     .split('\n')
     .forEach((line, i) => {
-      if (NETWORK.test(line) && !/^\s*(\/\/|\*)/.test(line)) fail(`${name}:${i + 1} calls the network: ${line.trim().slice(0, 100)}`);
+      if (NETWORK.test(line) && !/^\s*(\/\/|\*)/.test(line) && !/network-ok: \S/.test(line)) fail(`${name}:${i + 1} calls the network: ${line.trim().slice(0, 100)}`);
     });
 }
 

@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, ActivityIndicator, Alert, AppState, FlatList, Share, StyleSheet, Text, TextInput, useWindowDimensions, View, Platform } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, Alert, AppState, BackHandler, FlatList, Share, StyleSheet, Text, TextInput, useWindowDimensions, View, Platform } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, ViewStyle, ViewToken } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -960,6 +960,17 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
     }
     setMarkTool(null);
   };
+  // Android's back button while marking ends the marking, as Done does, instead of leaving the app.
+  const stopMarkingRef = useRef(stopMarking);
+  stopMarkingRef.current = stopMarking;
+  useEffect(() => {
+    if (!marking || !focused) return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      stopMarkingRef.current();
+      return true;
+    });
+    return () => sub.remove();
+  }, [marking, focused]);
 
   // Cycle through the translations bundled in this edition, staying on the verse at the
   // top of the screen (which can have another number, or chapter, in the other translation).
@@ -982,7 +993,8 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
     }
     scrollTarget.current = target ? { verse: target.verse, flash: false } : null;
     if (target && (target.book !== position.book || target.chapter !== position.chapter)) {
-      shownKey.current = `${target.book}:${target.chapter}`;
+      // The chapter counts as shown once it has loaded (as any new chapter does), so the old
+      // chapter's rows are not taken for it meanwhile, and Recent and the notes are updated.
       moveTo(target, { translation: next });
     } else {
       update({ translation: next });
@@ -1941,7 +1953,8 @@ function ChapterArrow({ icon, onPress, disabled, accessibilityLabel, style }: { 
       hitSlop={10}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      style={({ pressed }) => [styles.arrow, style, { backgroundColor: pressed ? theme.accentSoft : 'transparent', opacity: pressed ? 1 : 0.45 }]}
+      // A disc of the page's colour, so the arrow does not sit on top of the words under it.
+      style={({ pressed }) => [styles.arrow, style, { backgroundColor: pressed ? theme.accentSoft : theme.bg, opacity: pressed ? 1 : 0.85 }]}
     >
       <Icon name={icon} size={24} color={theme.muted} />
     </Pressable>

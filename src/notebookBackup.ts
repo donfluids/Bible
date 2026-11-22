@@ -15,6 +15,7 @@ export const BACKUP_VERSION = 1;
 /** Larger files are refused before they are read into memory. */
 export const MAX_BACKUP_BYTES = 25 * 1024 * 1024;
 const MAX_PAGES = 5000;
+const MAX_BACKUP_POINTS = 3_000_000;
 const MAX_TITLE = 500;
 const MAX_BODY = 500_000;
 const ID = /^[a-z0-9]{1,24}$/;
@@ -77,6 +78,9 @@ export function readBackup(text: string): Backup {
   const pages: NotePage[] = [];
   const ink = new Map<string, Ink>();
   const seen = new Set<string>();
+  // The points all pages' handwriting may hold together (a full page of 20,000 strokes is
+  // far less; the app's own backups never reach it).
+  const budget = { points: MAX_BACKUP_POINTS };
   for (const item of list.slice(0, MAX_PAGES)) {
     if (!item || typeof item !== 'object') continue;
     const p = item as Record<string, unknown>;
@@ -90,7 +94,7 @@ export function readBackup(text: string): Backup {
     const updated = isTime(p.updated) ? Math.min(p.updated, now) : created;
     const page: NotePage = { id: p.id, title, body, created, updated };
     if (p.ink && typeof p.ink === 'object') {
-      const strokes = decodeInk(p.inkData);
+      const strokes = decodeInk(p.inkData, budget);
       page.ink = { paper: (p.ink as { paper?: unknown }).paper === 'lined' ? 'lined' : 'plain', strokes: strokes.strokes.length };
       ink.set(p.id, strokes);
     }

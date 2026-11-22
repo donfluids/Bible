@@ -101,7 +101,8 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
             importantForAccessibility={i === index ? 'auto' : 'no-hide-descendants'}
           >
             <View style={[styles.phone, { width: pictureWidth + 12, height: pictureHeight + 12, borderColor: theme.dark ? '#4A4239' : '#2A241C' }]}>
-              <Image source={page.picture} style={{ width: pictureWidth, height: pictureHeight }} resizeMode="cover" accessibilityIgnoresInvertColors />
+              {/* The pictures are of the light theme: a little dimmer on a dark page. */}
+              <Image source={page.picture} style={{ width: pictureWidth, height: pictureHeight, opacity: theme.dark ? 0.82 : 1 }} resizeMode="cover" accessibilityIgnoresInvertColors />
               {page.ring ? (
                 <View
                   pointerEvents="none"

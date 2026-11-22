@@ -53,7 +53,7 @@ export function Hint({ spot, area, title, text, onDone }: Props) {
       )}
       {/* A tap anywhere closes the hint, as its button does. */}
       <Pressable onPress={onDone} accessibilityLabel={t('gotIt')} style={StyleSheet.absoluteFill} />
-      <View style={[styles.bubble, { top, left, width: Math.min(BUBBLE_WIDTH, area.width - 24), backgroundColor: theme.card }]} accessibilityLiveRegion="polite">
+      <View style={[styles.bubble, { top, left, width: Math.min(BUBBLE_WIDTH, area.width - 24), backgroundColor: theme.card }, theme.dark && { borderWidth: 1, borderColor: theme.muted }]} accessibilityLiveRegion="polite">
         <Text style={[styles.title, { color: theme.text }]} accessibilityRole="header">
           {title}
         </Text>
