@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
-import { TabBar } from '../components/TabBar';
+import { TAB_BAR_HEIGHT, TabBar } from '../components/TabBar';
+import { Toast, useToast } from '../components/Toast';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconButton, Icon } from '../components/Icon';
 import { Segmented } from '../components/Segmented';
 import { scriptureFont } from '../fonts';
@@ -81,7 +83,10 @@ export function SavedScreen({ books, onOpenRef, onWord }: Props) {
   const [tab, setTab] = useState<Tab>(firstFull);
   const [colour, setColour] = useState<HighlightColor | null>(null);
   const shownColours = COLOURS.filter((c) => sections.highlight.some((i) => i.color === c));
-  const shown = tab === 'highlight' && colour ? sections.highlight.filter((i) => i.color === colour) : sections[tab];
+  // A colour filter holds only while its colour is there and the chips are shown: deleting
+  // the last highlight of a colour must not leave an empty list with no way out.
+  const chosen = colour && shownColours.length > 1 && shownColours.includes(colour) ? colour : null;
+  const shown = tab === 'highlight' && chosen ? sections.highlight.filter((i) => i.color === chosen) : sections[tab];
 
   useEffect(() => {
     let cancelled = false;
@@ -115,17 +120,39 @@ export function SavedScreen({ books, onOpenRef, onWord }: Props) {
     };
   }, [db, settings.marks]);
 
+  // Taking an item out says so, with an undo that puts it back into the settings as they
+  // are then (other changes made meanwhile stay).
+  const latest = useRef(settings);
+  latest.current = settings;
+  const { toast, show } = useToast();
+  const insets = useSafeAreaInsets();
   const remove = (item: Saved) => {
-    if (item.kind === 'mark') update({ marks: settings.marks.filter((m) => m.id !== item.key) });
-    else if (item.kind === 'bookmark') update({ bookmarks: settings.bookmarks.filter((b) => keyOf(b) !== item.key) });
-    else if (item.kind === 'highlight') {
+    if (item.kind === 'mark') {
+      const mark = settings.marks.find((m) => m.id === item.key);
+      update({ marks: settings.marks.filter((m) => m.id !== item.key) });
+      if (mark) show(t('highlightRemoved'), () => {
+        const now = latest.current.marks;
+        if (!now.some((m) => m.id === mark.id)) update({ marks: [...now, mark] });
+      });
+    } else if (item.kind === 'bookmark') {
+      const bookmark = settings.bookmarks.find((b) => keyOf(b) === item.key);
+      update({ bookmarks: settings.bookmarks.filter((b) => keyOf(b) !== item.key) });
+      if (bookmark) show(t('bookmarkRemoved'), () => {
+        const now = latest.current.bookmarks;
+        if (!now.some((b) => keyOf(b) === item.key)) update({ bookmarks: [...now, bookmark] });
+      });
+    } else if (item.kind === 'highlight') {
+      const colour = settings.highlights[item.key];
       const next = { ...settings.highlights };
       delete next[item.key];
       update({ highlights: next });
+      if (colour) show(t('highlightRemoved'), () => update({ highlights: { ...latest.current.highlights, [item.key]: colour } }));
     } else {
+      const text = settings.notes[item.key];
       const next = { ...settings.notes };
       delete next[item.key];
       update({ notes: next });
+      if (text) show(t('noteRemoved'), () => update({ notes: { ...latest.current.notes, [item.key]: text } }));
     }
   };
 
@@ -186,20 +213,20 @@ export function SavedScreen({ books, onOpenRef, onWord }: Props) {
               <Pressable
                 onPress={() => setColour(null)}
                 accessibilityRole="radio"
-                accessibilityState={{ checked: !colour }}
-                style={[styles.allChip, { borderColor: theme.accent, backgroundColor: !colour ? theme.accent : 'transparent' }]}
+                accessibilityState={{ checked: !chosen }}
+                style={[styles.allChip, { borderColor: theme.accent, backgroundColor: !chosen ? theme.accent : 'transparent' }]}
               >
-                <Text style={[styles.allText, { color: !colour ? theme.onAccent : theme.accent }]}>{t('all')}</Text>
+                <Text style={[styles.allText, { color: !chosen ? theme.onAccent : theme.accent }]}>{t('all')}</Text>
               </Pressable>
               {shownColours.map((c) => (
                 <Pressable
                   key={c}
-                  onPress={() => setColour(colour === c ? null : c)}
+                  onPress={() => setColour(chosen === c ? null : c)}
                   accessibilityRole="radio"
                   accessibilityLabel={t(COLOUR_NAME[c])}
-                  accessibilityState={{ checked: colour === c }}
+                  accessibilityState={{ checked: chosen === c }}
                   hitSlop={6}
-                  style={[styles.swatch, { backgroundColor: theme.marks[c], borderColor: colour === c ? theme.accent : theme.border, borderWidth: colour === c ? 3 : 1 }]}
+                  style={[styles.swatch, { backgroundColor: theme.marks[c], borderColor: chosen === c ? theme.accent : theme.border, borderWidth: chosen === c ? 3 : 1 }]}
                 />
               ))}
             </View>
@@ -224,7 +251,13 @@ export function SavedScreen({ books, onOpenRef, onWord }: Props) {
                       {color ? ' ' : ''}
                       {item.mark ? markRef(item.mark) : formatRef(books, item.ref, settings.translation)}
                     </Text>
-                    <IconButton name="delete" onPress={() => remove(item)} accessibilityLabel={t('remove')} size={22} style={styles.remove} />
+                    <IconButton
+                      name="delete"
+                      onPress={() => remove(item)}
+                      accessibilityLabel={`${t('remove')}, ${item.mark ? markRef(item.mark) : formatRef(books, item.ref, settings.translation)}`}
+                      size={22}
+                      style={styles.remove}
+                    />
                   </View>
                   {item.note ? <Text style={[styles.note, { color: theme.text }]}>{item.note}</Text> : null}
                   {item.mark ? (
@@ -239,6 +272,7 @@ export function SavedScreen({ books, onOpenRef, onWord }: Props) {
           />
         </View>
       )}
+      <Toast toast={toast} bottom={insets.bottom + TAB_BAR_HEIGHT + 16} onDone={() => show(null)} />
       <TabBar current="Bookmarks" />
     </View>
   );

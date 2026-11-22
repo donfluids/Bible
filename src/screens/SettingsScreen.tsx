@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 import { useSQLiteContext } from 'expo-sqlite';
 import { AppSwitch } from '../components/AppSwitch';
+import { BackupSheet } from '../components/BackupSheet';
 import { Header } from '../components/Header';
 import { Icon, IconButton } from '../components/Icon';
 import { SectionLabel } from '../components/SectionLabel';
@@ -73,6 +75,7 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
   // The voice for each language read aloud: the phone's own list, with a sample of each.
   const spoken = SPOKEN.filter(([, id]) => EDITION.translations.includes(id));
   const [choosingVoice, setChoosingVoice] = useState<SpokenLanguage | null>(null);
+  const [backupOpen, setBackupOpen] = useState(false);
   const [voiceList, setVoiceList] = useState<VoiceOption[] | null>(null);
   const [sampling, setSampling] = useState<string | null>(null);
   const [report, setReport] = useState<string | null>(null);
@@ -153,13 +156,9 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}>
         <Label text={t('studyTools')} />
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <View style={styles.row}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.rowTitle, { color: theme.text }]}>{t('studyTools')}</Text>
-              <Text style={[styles.rowSub, { color: theme.muted }]}>{t('studyToolsDetail')}</Text>
-            </View>
-            <AppSwitch value={settings.study} onValueChange={(v) => update({ study: v })} />
-          </View>
+          <SwitchRow style={styles.row} title={t('studyTools')} value={settings.study} onChange={(v) => update({ study: v })}>
+            <Text style={[styles.rowSub, { color: theme.muted }]}>{t('studyToolsDetail')}</Text>
+          </SwitchRow>
         </View>
 
         <Label text={t('appearance')} />
@@ -210,30 +209,18 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
               onChange={(layout) => update({ layout })}
             />
           </View>
-          <View style={[styles.row, divider]}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.rowTitle, { color: theme.text }]}>{t('serif')}</Text>
-              <Text style={[styles.rowSub, { color: theme.muted }]}>{t('serifDetail')}</Text>
-            </View>
-            <AppSwitch value={settings.serif} onValueChange={(v) => update({ serif: v })} />
-          </View>
-          <View style={[styles.row, divider]}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.rowTitle, { color: theme.text }]}>{t('keepAwake')}</Text>
-              <Text style={[styles.rowSub, { color: theme.muted }]}>{t('keepAwakeDetail')}</Text>
-            </View>
-            <AppSwitch value={settings.keepAwake} onValueChange={(v) => update({ keepAwake: v })} />
-          </View>
+          <SwitchRow style={[styles.row, divider]} title={t('serif')} value={settings.serif} onChange={(v) => update({ serif: v })}>
+            <Text style={[styles.rowSub, { color: theme.muted }]}>{t('serifDetail')}</Text>
+          </SwitchRow>
+          <SwitchRow style={[styles.row, divider]} title={t('keepAwake')} value={settings.keepAwake} onChange={(v) => update({ keepAwake: v })}>
+            <Text style={[styles.rowSub, { color: theme.muted }]}>{t('keepAwakeDetail')}</Text>
+          </SwitchRow>
           {nativeTranslation(EDITION) || isMultilingual(EDITION) ? (
-            <View style={[styles.row, divider]}>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.rowTitle, { color: theme.text }]}>{t('sideBySide')}</Text>
-                <Text style={[styles.rowSub, { color: theme.muted }]}>
+            <SwitchRow style={[styles.row, divider]} title={t('sideBySide')} value={settings.sideBySide} onChange={(v) => update({ sideBySide: v })}>
+              <Text style={[styles.rowSub, { color: theme.muted }]}>
                   {isMultilingual(EDITION) ? t('sideBySideDetailAll') : t('sideBySideDetail', { native: nativeTranslation(EDITION) === 'TAM' ? 'Tamil' : 'Malayalam' })}
                 </Text>
-              </View>
-              <AppSwitch value={settings.sideBySide} onValueChange={(v) => update({ sideBySide: v })} />
-            </View>
+            </SwitchRow>
           ) : null}
         </View>
 
@@ -264,13 +251,9 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
 
         <Label text={t('interlinear')} />
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <View style={styles.row}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.rowTitle, { color: theme.text }]}>{t('showInterlinear')}</Text>
-              <Text style={[styles.rowSub, { color: theme.muted }]}>{t('showInterlinearDetail')}</Text>
-            </View>
-            <AppSwitch value={settings.interlinear} onValueChange={(v) => update({ interlinear: v })} />
-          </View>
+          <SwitchRow style={styles.row} title={t('showInterlinear')} value={settings.interlinear} onChange={(v) => update({ interlinear: v })}>
+            <Text style={[styles.rowSub, { color: theme.muted }]}>{t('showInterlinearDetail')}</Text>
+          </SwitchRow>
           {(
             [
               ['all', t('everyVerse'), t('everyVerseDetail')],
@@ -285,30 +268,18 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
               <View style={styles.check}>{settings.interlinearMode === mode ? <Icon name="check" color={theme.accent} /> : null}</View>
             </Pressable>
           ))}
-          <View style={[styles.row, divider]}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.rowTitle, { color: theme.text }]}>{t('transliteration')}</Text>
-              <Text style={[styles.rowSub, { color: theme.muted }]}>{t('transliterationDetail')}</Text>
-            </View>
-            <AppSwitch value={settings.showTranslit} onValueChange={(v) => update({ showTranslit: v })} />
-          </View>
-          <View style={[styles.row, divider]}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.rowTitle, { color: theme.text }]}>{t('hideCantillation')}</Text>
-              <Text style={[styles.rowSub, { color: theme.muted }]}>{t('hideCantillationDetail')}</Text>
-            </View>
-            <AppSwitch value={settings.hideCantillation} onValueChange={(v) => update({ hideCantillation: v })} />
-          </View>
+          <SwitchRow style={[styles.row, divider]} title={t('transliteration')} value={settings.showTranslit} onChange={(v) => update({ showTranslit: v })}>
+            <Text style={[styles.rowSub, { color: theme.muted }]}>{t('transliterationDetail')}</Text>
+          </SwitchRow>
+          <SwitchRow style={[styles.row, divider]} title={t('hideCantillation')} value={settings.hideCantillation} onChange={(v) => update({ hideCantillation: v })}>
+            <Text style={[styles.rowSub, { color: theme.muted }]}>{t('hideCantillationDetail')}</Text>
+          </SwitchRow>
         </View>
 
         <Label text={t('reading')} />
-        <View style={[styles.card, styles.row, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.rowTitle, { color: theme.text }]}>{t('underline')}</Text>
-            <Text style={[styles.rowSub, { color: theme.muted }]}>{t('underlineDetail')}</Text>
-          </View>
-          <AppSwitch value={settings.underlineWords} onValueChange={(v) => update({ underlineWords: v })} />
-        </View>
+        <SwitchRow style={[styles.card, styles.row, { backgroundColor: theme.card, borderColor: theme.border }]} title={t('underline')} value={settings.underlineWords} onChange={(v) => update({ underlineWords: v })}>
+          <Text style={[styles.rowSub, { color: theme.muted }]}>{t('underlineDetail')}</Text>
+        </SwitchRow>
 
         <Label text={t('readAloudSection')} />
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
@@ -323,6 +294,20 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
           ))}
         </View>
         <Text style={[styles.rowSub, styles.hint, { color: theme.muted }]}>{t('voiceMore')}</Text>
+
+        <Label text={t('backupRestore')} />
+        <Pressable
+          onPress={() => setBackupOpen(true)}
+          accessibilityRole="button"
+          android_ripple={{ color: theme.accentSoft }}
+          style={[styles.card, styles.row, { backgroundColor: theme.card, borderColor: theme.border }]}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.rowTitle, { color: theme.text }]}>{t('backupRestore')}</Text>
+            <Text style={[styles.rowSub, { color: theme.muted }]}>{t('saveBackupDetail')}</Text>
+          </View>
+          <Icon name="chevron_right" color={theme.muted} />
+        </Pressable>
 
         <Label text={t('aboutTexts')} />
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border, padding: 14 }]}>
@@ -368,6 +353,7 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
           </Pressable>
         </View>
       </ScrollView>
+      <BackupSheet visible={backupOpen} onClose={() => setBackupOpen(false)} />
 
       <SimpleSheet visible={!!choosingVoice} title={t('voiceChoose')} onClose={() => setChoosingVoice(null)}>
         {choosingVoice ? (
@@ -447,7 +433,7 @@ const styles = StyleSheet.create({
   label: { marginTop: 22, marginBottom: 8, marginHorizontal: 4 },
   block: { paddingHorizontal: 14, paddingVertical: 12 },
   card: { borderRadius: 16, borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
-  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12 },
   rowTitle: { fontSize: 16, lineHeight: 24 },
   rowSub: { fontSize: 13, lineHeight: 19, marginTop: 2 },
   check: { width: 24, alignItems: 'flex-end' },
@@ -456,3 +442,29 @@ const styles = StyleSheet.create({
   preview: { flex: 1, textAlign: 'center' },
   about: { fontSize: 14, lineHeight: 21 },
 });
+
+/**
+ * A row that is one switch: a tap anywhere on it turns it on or off, and a screen reader
+ * hears its title, its state and its explanation as one control.
+ */
+function SwitchRow({ title, value, onChange, style, children }: { title: string; value: boolean; onChange: (v: boolean) => void; style?: StyleProp<ViewStyle>; children?: React.ReactNode }) {
+  const theme = useTheme();
+  return (
+    <Pressable
+      onPress={() => onChange(!value)}
+      android_ripple={{ color: theme.accentSoft }}
+      accessibilityRole="switch"
+      accessibilityLabel={title}
+      accessibilityState={{ checked: value }}
+      style={style}
+    >
+      <View style={{ flex: 1 }}>
+        <Text style={[styles.rowTitle, { color: theme.text }]}>{title}</Text>
+        {children}
+      </View>
+      <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        <AppSwitch value={value} onValueChange={onChange} />
+      </View>
+    </Pressable>
+  );
+}

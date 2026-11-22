@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Svg, { Path } from 'react-native-svg';
-import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import { Header, HeaderIconButton } from '../components/Header';
 import { Icon } from '../components/Icon';
@@ -9,8 +9,7 @@ import type { Paper, Stroke } from '../ink';
 import { PAGE_WIDTH, emptyInk, inkKey, parseInk, pathOf } from '../ink';
 import { loadEntry } from '../persist';
 import { useEdition } from '../edition';
-import { InkUnreadable, restoreBackup, saveBackup } from '../notebookFiles';
-import { afterSheet } from '../platform';
+import { BackupSheet } from '../components/BackupSheet';
 import { TabBar } from '../components/TabBar';
 import { scriptOf, scriptureFont } from '../fonts';
 import { useT } from '../i18n';
@@ -24,14 +23,12 @@ interface Props {
 }
 
 /** The notebook's pages, the most recently edited first. A new page is typed or handwritten. */
-// The apps' names on the phone (app.config.js); the four-language app's name is not final.
-const APP_NAMES: Record<string, string> = { en: 'Bible', ml: 'വേദപുസ്തകം', ta: 'வேதாகமம்', all: 'Bibles' };
 
 export function NotebookScreen({ onOpenPage }: Props) {
   const theme = useTheme();
   const t = useT();
   const { settings } = useSettings();
-  const { pages, create, replaceAll } = useNotebook();
+  const { pages, create } = useNotebook();
   const edition = useEdition();
   const [backupSheet, setBackupSheet] = useState(false);
   // A search over titles and writing (a handwritten page by its title only).
@@ -41,47 +38,6 @@ export function NotebookScreen({ onOpenPage }: Props) {
   const [busy, setBusy] = useState(false);
   const [choosing, setChoosing] = useState(false);
   const newPage = () => setChoosing(true);
-  // The sheet is closed at once; the share sheet or file picker opens after it has gone (afterSheet).
-  const backUp = async () => {
-    if (pages.length === 0) {
-      Alert.alert(t('backupEmpty'));
-      return;
-    }
-    setBusy(true);
-    try {
-      await saveBackup(pages, edition.id, t('saveBackup'));
-    } catch (e) {
-      if (e instanceof InkUnreadable) Alert.alert(t('backupInkUnreadable', { page: pageName(e.page, t('untitled')) }));
-      else Alert.alert(t('backupFailed'));
-    } finally {
-      setBusy(false);
-    }
-  };
-  // A backup made in another of the apps (named as each app is named): restored only when the reader says so.
-  const askOtherEdition = (from: string) =>
-    new Promise<boolean>((resolve) =>
-      Alert.alert(t('restoreOtherEdition', { app: APP_NAMES[from] ?? from }), undefined, [
-        { text: t('cancel'), style: 'cancel', onPress: () => resolve(false) },
-        { text: t('restoreBackup'), onPress: () => resolve(true) },
-      ], { cancelable: true, onDismiss: () => resolve(false) }),
-    );
-  const restore = async () => {
-    setBusy(true);
-    try {
-      const outcome = await restoreBackup(pages, edition.id, (from) => askOtherEdition(from));
-      if (outcome.kind === 'tooLarge') Alert.alert(t('restoreTooLarge'));
-      else if (outcome.kind === 'notBackup') Alert.alert(t('restoreNotBackup'));
-      else if (outcome.kind === 'failed') Alert.alert(t('restoreFailed'));
-      else if (outcome.kind === 'done') {
-        replaceAll(outcome.pages);
-        Alert.alert(t('restoreDone', { added: outcome.added, updated: outcome.updated, kept: outcome.kept }));
-      }
-    } catch {
-      Alert.alert(t('restoreNotBackup'));
-    } finally {
-      setBusy(false);
-    }
-  };
   const start = (paper?: Paper) => {
     setChoosing(false);
     onOpenPage(create('', paper), true, !!paper);
@@ -176,16 +132,7 @@ export function NotebookScreen({ onOpenPage }: Props) {
         <SheetAction icon="draw" label={t('pageHandLined')} detail={t('pageHandDetail')} onPress={() => start('lined')} detailLines={0} />
         <SheetAction icon="gesture" label={t('pageHandPlain')} detail={t('pageHandDetail')} onPress={() => start('plain')} detailLines={0} />
       </SimpleSheet>
-      <SimpleSheet visible={backupSheet} title={t('backupRestore')} onClose={() => setBackupSheet(false)}>
-        <SheetAction icon="backup" label={t('saveBackup')} detail={t('saveBackupDetail')} onPress={() => {
-            setBackupSheet(false);
-            afterSheet(backUp);
-          }} detailLines={0} />
-        <SheetAction icon="history" label={t('restoreBackup')} detail={t('restoreBackupDetail')} onPress={() => {
-            setBackupSheet(false);
-            afterSheet(restore);
-          }} detailLines={0} />
-      </SimpleSheet>
+      <BackupSheet visible={backupSheet} onClose={() => setBackupSheet(false)} onBusy={setBusy} />
       <TabBar current="Notebook" />
     </View>
   );

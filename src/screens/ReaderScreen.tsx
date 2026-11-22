@@ -221,6 +221,9 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   // A phone on its side: the bars take less height, so more of the text shows.
   const { settings, update, commit } = useSettings();
+  // The settings as they are now, for an undo that comes after other changes.
+  const latestSettings = useRef(settings);
+  latestSettings.current = settings;
   const {
     translation,
     fontSize,
@@ -1047,8 +1050,12 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
     setActions(null);
     const key = bookmarkKey(v);
     if (bookmarked.has(key)) {
+      const removed = bookmarks.filter((b) => `${b.book}:${b.chapter}:${b.verse}` === key);
       update({ bookmarks: bookmarks.filter((b) => `${b.book}:${b.chapter}:${b.verse}` !== key) });
-      setToast(t('bookmarkRemoved'));
+      setToast(t('bookmarkRemoved'), () => {
+        const now = latestSettings.current.bookmarks;
+        if (!now.some((b) => `${b.book}:${b.chapter}:${b.verse}` === key)) update({ bookmarks: [...now, ...removed] });
+      });
     } else {
       update({ bookmarks: [...bookmarks, { book: v.book, chapter: v.chapter, verse: v.verse, translation, added: Date.now() }] });
       confirmHaptic();
@@ -1066,12 +1073,15 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
 
   const setHighlight = (v: VerseRow, color: HighlightColor | null) => {
     setActions(null);
+    const key = bookmarkKey(v);
+    const before = highlights[key];
     const next = { ...highlights };
-    if (color) next[bookmarkKey(v)] = color;
-    else delete next[bookmarkKey(v)];
+    if (color) next[key] = color;
+    else delete next[key];
     update({ highlights: next });
     confirmHaptic();
-    setToast(color ? t('highlighted') : t('highlightRemoved'));
+    if (color || !before) setToast(t('highlighted'));
+    else setToast(t('highlightRemoved'), () => update({ highlights: { ...latestSettings.current.highlights, [key]: before } }));
   };
 
   const openNote = (v: VerseRow) => {
@@ -1087,13 +1097,22 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
     return next;
   };
   const noteChanged = (editor: { verse: VerseRow; text: string }) => editor.text.trim() !== (userNotes[bookmarkKey(editor.verse)] ?? '');
-  const saveNote = () => {
-    if (!noteEditor) return;
-    const text = noteEditor.text.trim();
-    update({ notes: notesWith(noteEditor) });
+  // Saving says so with an undo that puts the note back as it was (or takes a new one out),
+  // so an edit or a delete can be taken back.
+  const saveNote = (editor = noteEditor) => {
+    if (!editor) return;
+    const text = editor.text.trim();
+    const key = bookmarkKey(editor.verse);
+    const before = userNotes[key];
+    update({ notes: notesWith(editor) });
     setNoteEditor(null);
     confirmHaptic();
-    setToast(text ? t('noteSaved') : t('noteRemoved'));
+    setToast(text ? t('noteSaved') : t('noteRemoved'), () => {
+      const notes = { ...latestSettings.current.notes };
+      if (before) notes[key] = before;
+      else delete notes[key];
+      update({ notes });
+    });
   };
   // Closing the note any other way (outside, back, a swipe down) keeps what was typed, as
   // Save does; a note left as it was just closes.
@@ -1580,7 +1599,12 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
         >
           <Text style={[styles.toastText, { color: theme.bg }]}>{toastState.text}</Text>
           {toastState.undo ? (
-            <Pressable onPress={toastState.undo} accessibilityRole="button" hitSlop={8} style={styles.toastAction}>
+            <Pressable
+              onPress={() => {
+                toastState.undo?.();
+                setToast(null);
+              }}
+              accessibilityRole="button" hitSlop={8} style={styles.toastAction}>
               <Text style={[styles.toastText, styles.toastActionText, { color: theme.bg }]}>{t('undo')}</Text>
             </Pressable>
           ) : null}
@@ -1856,13 +1880,13 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             />
             <View style={styles.noteButtons}>
               {userNotes[bookmarkKey(noteEditor.verse)] ? (
-                <Pressable onPress={() => setNoteEditor({ ...noteEditor, text: '' })} hitSlop={8} accessibilityRole="button">
+                <Pressable onPress={() => saveNote({ ...noteEditor, text: '' })} hitSlop={8} accessibilityRole="button">
                   <Text style={[styles.noteDelete, { color: theme.muted }]}>{t('delete')}</Text>
                 </Pressable>
               ) : (
                 <View />
               )}
-              <Pressable onPress={saveNote} style={[styles.noteSave, { backgroundColor: theme.accent }]} accessibilityRole="button">
+              <Pressable onPress={() => saveNote()} style={[styles.noteSave, { backgroundColor: theme.accent }]} accessibilityRole="button">
                 <Text style={[styles.noteSaveText, { color: theme.onAccent }]}>{t('save')}</Text>
               </Pressable>
             </View>

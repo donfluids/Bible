@@ -8,7 +8,7 @@ import { emptyInk, encodeInk, inkKey, parseInk } from './ink';
 import type { Ink } from './ink';
 import type { NotePage } from './notebook';
 import { MAX_BACKUP_BYTES, makeBackup, mergePages, readBackup } from './notebookBackup';
-import type { MergeResult } from './notebookBackup';
+import type { MergeResult, SavedItems } from './notebookBackup';
 
 /**
  * The notebook to and from files: a backup of every page, a restore that merges one in,
@@ -122,11 +122,11 @@ async function sendFile(name: string, content: string, mimeType: string, dialogT
 }
 
 /** Writes every page to one backup file and offers it to the share sheet. */
-export async function saveBackup(pages: NotePage[], edition: string, dialogTitle: string): Promise<void> {
+export async function saveBackup(pages: NotePage[], edition: string, dialogTitle: string, saved: SavedItems): Promise<void> {
   const ink = new Map<string, Ink>();
   for (const p of pages) if (p.ink) ink.set(p.id, await inkForBackup(edition, p));
-  const content = makeBackup(pages, (id) => ink.get(id) ?? null, edition);
-  await sendFile(`notebook-backup-${today()}.json`, content, 'application/json', dialogTitle);
+  const content = makeBackup(pages, (id) => ink.get(id) ?? null, edition, saved);
+  await sendFile(`bible-backup-${today()}.json`, content, 'application/json', dialogTitle);
 }
 
 export type RestoreOutcome =
@@ -134,7 +134,7 @@ export type RestoreOutcome =
   | { kind: 'tooLarge' }
   | { kind: 'notBackup' }
   | { kind: 'failed' }
-  | ({ kind: 'done' } & MergeResult);
+  | ({ kind: 'done'; saved: SavedItems | null } & MergeResult);
 
 /**
  * Lets the reader pick a backup file and merges it into `pages`: the result's pages are the
@@ -206,7 +206,7 @@ export async function restoreBackup(pages: NotePage[], edition: string, otherEdi
     }
     return { kind: 'failed' };
   }
-  return { kind: 'done', ...merged };
+  return { kind: 'done', saved: backup.saved, ...merged };
 }
 
 /** Prints HTML to a PDF and offers it to the share sheet (on the web, opens the print dialog). */

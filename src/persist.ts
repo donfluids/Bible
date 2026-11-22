@@ -63,9 +63,14 @@ export function loadEntry<T>(key: string, parse: (raw: string) => T, fallback: T
  * leaving bookmarks and notes without a backup. The notebook's own backup file keeps them.
  */
 const MAX_DAILY_COPY = 256 * 1024;
+/**
+ * The settings hold every bookmark, highlight, mark and verse note: their copy is kept up
+ * to a much larger size, since losing them to a bad write would lose a reader's study.
+ */
+const MAX_SETTINGS_COPY = 8 * 1024 * 1024;
 
 function keepBackup(key: string, raw: string): void {
-  if (raw.length > MAX_DAILY_COPY) {
+  if (raw.length > (key.startsWith('settings.') ? MAX_SETTINGS_COPY : MAX_DAILY_COPY)) {
     Storage.removeItem(`${key}.bak`).catch(() => undefined);
     return;
   }

@@ -14,7 +14,7 @@ import { groupForms, isTaBaseForm, taStem } from './lib/forms.mjs';
 import { addPoint, decodeInk, encodeInk, packSteps, pageHeight, parseInk, pathOf, strokePath, touchesStroke, unpackSteps } from '../src/ink';
 import { FEEDBACK_NEVER, deviceLine, feedbackCardDue, feedbackDueFrom, feedbackLater, mailtoUrl } from '../src/feedback';
 import { cleanLook, ownPhotoIn, savedCopyIn } from '../src/lookClean';
-import { makeBackup, mergePages, readBackup } from '../src/notebookBackup';
+import { makeBackup, mergePages, mergeSaved, readBackup } from '../src/notebookBackup';
 import { inkPageHtml, typedPageHtml } from '../src/pagePdf';
 import { hindiPattern } from '../src/hindiSearch';
 import { matchRanges } from '../src/searchMatch';
@@ -235,7 +235,7 @@ for (const [ed, native] of [['ml', 'MAL'], ['ta', 'TAM']] as const) {
 const typedPage = { id: 'abc1', title: 'Sunday', body: 'John 3:16', created: 1000, updated: 2000 };
 const handPage = { id: 'abc2', title: '', body: '', created: 1000, updated: 3000, ink: { paper: 'lined' as const, strokes: 1 } };
 const handInk = { strokes: [{ c: 2, w: 3, p: [10, 80, 40, 90] }] };
-const backupText = makeBackup([typedPage, handPage], (id) => (id === 'abc2' ? handInk : null), 'ml', new Date(0));
+const backupText = makeBackup([typedPage, handPage], (id) => (id === 'abc2' ? handInk : null), 'ml', null, new Date(0));
 test('a backup is read back, typed and handwritten pages with their strokes', () => {
   const b = readBackup(backupText);
   assert.deepEqual(b.pages, [typedPage, handPage]);
@@ -243,7 +243,7 @@ test('a backup is read back, typed and handwritten pages with their strokes', ()
 });
 test('a backup says which app made it, the four-language app too', () => {
   assert.equal(readBackup(backupText).edition, 'ml');
-  assert.equal(readBackup(makeBackup([typedPage], () => null, 'all', new Date(0))).edition, 'all');
+  assert.equal(readBackup(makeBackup([typedPage], () => null, 'all', null, new Date(0))).edition, 'all');
   assert.equal(readBackup(JSON.stringify({ kind: 'riversresearch-notebook', edition: 'xx', pages: [] })).edition, null);
 });
 test('a file that is not a backup is refused', () => {
@@ -466,6 +466,36 @@ test('the app\'s voice: the speech file gives each verse its phrases, laid out f
   assert.equal(new DataView(wav.buffer).getUint32(24, true), PLAY_RATE);
   assert.equal(new DataView(wav.buffer).getInt16(46, true), 32767);
   assert.ok(paceFor(1.25) < paceFor(1) && paceFor(0.75) > paceFor(1));
+});
+
+test('backup: bookmarks, highlights, marks and notes go in the file, are checked, and are added on restore without replacing', () => {
+  const saved = {
+    bookmarks: [{ book: 43, chapter: 3, verse: 16, translation: 'KJV' as const, added: 5 }],
+    highlights: { '1:1:1': 'yellow' as const, '1:1:2': 'pink' as const },
+    marks: [{ id: '17000', translation: 'KJV' as const, book: 19, chapter: 23, from: { verse: 1, offset: 0 }, to: { verse: 1, offset: 9 }, color: 'green' as const, added: 6 }],
+    notes: { '43:3:16': 'God so loved' },
+  };
+  const b = readBackup(makeBackup([], () => null, 'en', saved, new Date(0)));
+  assert.deepEqual(b.saved, saved);
+  assert.equal(readBackup(makeBackup([], () => null, 'en', null, new Date(0))).saved, null);
+  // Malformed items are left out: a book outside 1-66, an unknown colour, a bad key, an empty note, a mark ending before it starts.
+  const bad = readBackup(JSON.stringify({ kind: 'riversresearch-notebook', pages: [], saved: {
+    bookmarks: [{ book: 67, chapter: 1, verse: 1, translation: 'KJV' }, { book: 1, chapter: 1, verse: 1, translation: 'kjv' }],
+    highlights: { '1:1:1': 'red', 'x': 'yellow', '70:1:1': 'blue' },
+    notes: { '1:1:1': '  ', '1:1:2': 5 },
+    marks: [{ id: '1', translation: 'KJV', book: 1, chapter: 1, from: { verse: 2, offset: 0 }, to: { verse: 1, offset: 3 }, color: 'blue' }],
+  } }));
+  assert.deepEqual(bad.saved, { bookmarks: [], highlights: {}, marks: [], notes: {} });
+  // Restore adds what is missing and keeps what is here.
+  const here = { bookmarks: [], highlights: { '1:1:1': 'blue' as const }, marks: [], notes: { '43:3:16': 'mine' } };
+  const merged = mergeSaved(here, saved);
+  assert.equal(merged.saved.highlights['1:1:1'], 'blue');
+  assert.equal(merged.saved.highlights['1:1:2'], 'pink');
+  assert.equal(merged.saved.notes['43:3:16'], 'mine');
+  assert.equal(merged.saved.bookmarks.length, 1);
+  assert.equal(merged.saved.marks.length, 1);
+  assert.equal(merged.added, 3);
+  assert.equal(mergeSaved(merged.saved, saved).added, 0);
 });
 
 if (failures.length) {
