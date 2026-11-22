@@ -7,7 +7,8 @@
 //   node scripts/align.mjs --lang ta --compound --all             # the Tamil
 //   node scripts/align.mjs --lang lsv --all                       # the LSV's words left unlinked
 //
-// Options: --lang ml|ta|lsv|asv (default ml: the Malayalam)
+// Options: --lang ml|irv|omcv|ta|lsv|asv (default ml: the 1910 Malayalam; irv, omcv: the
+//          Malayalam app's IRV and Open Malayalam Contemporary Version)
 //          --db path (the database to read; default assets/db/bible-ml.db, -ta.db or -en.db)
 //          --model claude-sonnet-5-5  --effort medium  --concurrency 3
 //          --chunk 20 (verses per call)  --dry-run  --redo  --out data/align/mal (tam for Tamil)
@@ -62,11 +63,23 @@ const LANGS = {
     grammar: '- Tamil is agglutinative: case suffixes, postpositions and clitics such as the attached "and" (உம்) or emphasis (ஏ) are part of the token. Judge by the word stem. Verbs often carry the subject in their ending; link the verb to the verb.',
     compounds: 'நித்தியஜீவனை links to "eternal" and to "life"; பரலோகராஜ்யம் to "kingdom" and to "heaven"; பழமரங்களையும் to "fruit" and to "tree"',
   },
+  // The Malayalam app's other two Malayalam Bibles (the IRV's verses the 1910's links did not
+  // carry over to, scripts/carry-links.mjs; and the OMCV, a freer translation).
+  irv: {
+    translation: 'IRV', name: 'Malayalam', db: 'bible-ml.db', out: 'data/align/irv',
+    grammar: '- Malayalam is agglutinative: case endings, postpositions and the attached "and" (ഉം) are part of the token. Judge by the word stem.',
+    compounds: 'നിത്യജീവൻ links to "eternal" and to "life"; സകലവൃക്ഷങ്ങളുടെയും to "tree" and to "all"; പച്ചസസ്യം to "green" and to "plant"',
+  },
+  omcv: {
+    translation: 'OMCV', name: 'Malayalam', db: 'bible-ml.db', out: 'data/align/omcv',
+    grammar: '- Malayalam is agglutinative: case endings, postpositions and the attached "and" (ഉം) are part of the token. Judge by the word stem. This is a meaning-based translation: link a token only to the word it renders; words the translator added to make the sense plain have no counterpart.',
+    compounds: 'നിത്യജീവൻ links to "eternal" and to "life"; സകലവൃക്ഷങ്ങളുടെയും to "tree" and to "all"; പച്ചസസ്യം to "green" and to "plant"',
+  },
   lsv: { translation: 'LSV', name: 'English', full: 'Literal Standard Version', db: 'bible-en.db', out: 'data/align/lsv', english: true },
   asv: { translation: 'ASV', name: 'English', full: 'American Standard Version (1901)', db: 'bible-en.db', out: 'data/align/asv', english: true },
 };
 const LANG = LANGS[opt('lang', 'ml')];
-if (!LANG) throw new Error('--lang is ml, ta, lsv or asv');
+if (!LANG) throw new Error('--lang is ml, irv, omcv, ta, lsv or asv');
 const ENGLISH = !!LANG.english;
 const MODEL = opt('model', 'claude-sonnet-5-5');
 const COMPOUND = !!opt('compound', false);

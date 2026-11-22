@@ -27,6 +27,11 @@ fetch lsv.zip https://ebible.org/Scriptures/englsv_usfm.zip
 fetch asv.zip https://ebible.org/Scriptures/eng-asv_usfm.zip
 # Malayalam Sathyavedapusthakam 1910, contemporary orthography, Free Bible Foundation 2015 (CC BY-SA 4.0)
 fetch mal2015.zip https://ebible.org/Scriptures/mal2015_usfm.zip
+# Malayalam Indian Revised Version 2017/2019, Bridge Connectivity Solutions (CC BY-SA 4.0)
+fetch malirv.zip https://ebible.org/Scriptures/mal_usfm.zip
+# Biblica® Open Malayalam Contemporary Version 2020, Biblica, Inc. (CC BY-SA 4.0; the
+# Biblica® trademark stays on the unchanged text)
+fetch malomcv.zip https://ebible.org/Scriptures/malc_usfm.zip
 # Tamil Indian Revised Version 2017/2019, Bridge Connectivity Solutions (CC BY-SA 4.0)
 fetch tam2017.zip https://ebible.org/Scriptures/tam2017_usfm.zip
 # Hindi Indian Revised Version 2017/2019, Bridge Connectivity Solutions (CC BY-SA 4.0)
@@ -67,14 +72,16 @@ for name in \
   fetch "step/$name" "$STEP/$encoded"
 done
 
-rm -rf kjv web lsv asv mal2015 tam2017 hin2017 bsb-sword bsb bdbglosses openbible
-mkdir -p kjv web lsv asv mal2015 tam2017 hin2017 bsb-sword bdbglosses openbible
+rm -rf kjv web lsv asv mal2015 malirv malomcv tam2017 hin2017 bsb-sword bsb bdbglosses openbible
+mkdir -p kjv web lsv asv mal2015 malirv malomcv tam2017 hin2017 bsb-sword bdbglosses openbible
 unzip -oq cross-references.zip -d openbible
 unzip -oq kjv.zip -d kjv
 unzip -oq web.zip -d web
 unzip -oq lsv.zip -d lsv
 unzip -oq asv.zip -d asv
 unzip -oq mal2015.zip -d mal2015
+unzip -oq malirv.zip -d malirv
+unzip -oq malomcv.zip -d malomcv
 unzip -oq tam2017.zip -d tam2017
 unzip -oq hin2017.zip -d hin2017
 unzip -oq bsb-sword.zip -d bsb-sword
