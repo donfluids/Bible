@@ -24,7 +24,8 @@ const run = (tool, args) => execFileSync(bin(tool), args, { encoding: 'utf8', ma
 
 const permissions = run('aapt2', ['dump', 'permissions', apk]);
 const pkg = /^package: (\S+)/m.exec(permissions)?.[1] ?? '';
-const asked = [...permissions.matchAll(/^uses-permission: name='([^']+)'/gm)].map((m) => m[1]).sort();
+// Both forms: a library can ask through <uses-permission-sdk-23> as well.
+const asked = [...permissions.matchAll(/^uses-permission(?:-sdk-23)?: name='([^']+)'/gm)].map((m) => m[1]).sort();
 // Vibration; reading aloud in the background (a foreground service of the media-playback
 // kind, modules/bible-media); and the permission Android's own library defines to keep
 // the app's broadcasts to itself.
@@ -35,9 +36,13 @@ const allowed = [
   `${pkg}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`,
 ].sort();
 
-// The providers, services and receivers the apps are known to carry (file sharing, the
-// photo picker, start-up, Android's profile installer); anything else is new.
+// The activities, providers, services and receivers the apps are known to carry (the app
+// itself, the photo cropper, file sharing, the photo picker, start-up, Android's profile
+// installer); anything else is new.
 const COMPONENTS = [
+  `${pkg}.MainActivity`,
+  'com.canhub.cropper.CropImageActivity',
+  'expo.modules.imagepicker.ExpoCropImageActivity',
   'androidx.profileinstaller.ProfileInstallReceiver',
   'androidx.startup.InitializationProvider',
   'com.canhub.cropper.CropFileProvider',
@@ -52,7 +57,7 @@ const COMPONENTS = [
 const tree = run('aapt2', ['dump', 'xmltree', '--file', 'AndroidManifest.xml', apk]).split('\n');
 const components = [];
 for (let i = 0; i < tree.length; i++) {
-  if (!/E: (provider|service|receiver) /.test(tree[i])) continue;
+  if (!/E: (activity|activity-alias|provider|service|receiver) /.test(tree[i])) continue;
   const depth = tree[i].search(/\S/);
   for (let j = i + 1; j < tree.length && tree[j].search(/\S/) > depth; j++) {
     const name = /A: .*android:name\([^)]*\)="([^"]+)"/.exec(tree[j]);
@@ -63,7 +68,21 @@ for (let i = 0; i < tree.length; i++) {
   }
 }
 
+// No link opens the app: an intent filter with a scheme (a web address or app link)
+// would let a web page or another app hand it something. (The <queries> list, which only
+// lets the app find a browser for the licence links, uses <intent>, not a filter.)
+const linkFilters = [];
+for (let i = 0; i < tree.length; i++) {
+  if (!/E: intent-filter /.test(tree[i])) continue;
+  const depth = tree[i].search(/\S/);
+  for (let j = i + 1; j < tree.length && tree[j].search(/\S/) > depth; j++) {
+    const scheme = /android:scheme\([^)]*\)="([^"]+)"/.exec(tree[j]);
+    if (scheme) linkFilters.push(scheme[1]);
+  }
+}
+
 const problems = [];
+if (linkFilters.length) problems.push(`intent filters that open links: ${[...new Set(linkFilters)].join(', ')}`);
 const extra = asked.filter((p) => !allowed.includes(p));
 if (extra.length) problems.push(`permissions the apps do not have: ${extra.join(', ')}`);
 if (!asked.includes('android.permission.VIBRATE')) problems.push('the vibration permission is missing');

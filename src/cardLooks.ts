@@ -9,7 +9,7 @@ import { Directory, File, Paths } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { CARD_PIXELS, DESIGNS } from './cards';
-import { cleanLook, ownPhotoIn, savedCopyIn } from './lookClean';
+import { cleanLook, ownPhotoIn, rebasePhoto, savedCopyIn } from './lookClean';
 import type { CardLook, CardSize } from './cards';
 import { loadEntry, useAutosave } from './persist';
 
@@ -92,7 +92,9 @@ function parse(raw: string): SavedLook[] {
   const out: SavedLook[] = [];
   for (const s of parsed.slice(0, MAX_LOOKS)) {
     if (!s || typeof s.id !== 'string' || !/^[a-z0-9]{1,24}$/.test(s.id) || !s.look || typeof s.look !== 'object') continue;
-    const look = cleanLook(s.look, (id) => DESIGNS.some((d) => d.id === id), isOwnPhoto);
+    // A copy saved before an update is found in the photo folder as it is now (iPhone renames the app's folder).
+    const raw = typeof s.look.photo === 'string' ? { ...s.look, photo: rebasePhoto(s.look.photo, photoDir().uri) } : s.look;
+    const look = cleanLook(raw, (id) => DESIGNS.some((d) => d.id === id), isOwnPhoto);
     if (look) out.push({ id: s.id, look });
   }
   return out;

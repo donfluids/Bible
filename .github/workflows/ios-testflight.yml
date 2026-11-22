@@ -125,9 +125,37 @@ jobs:
           cd ios
           pod install
 
+      - name: Archive
+        # Unsigned here: automatic signing at this step would make a development
+        # profile, which needs a registered device. The upload step signs the app for
+        # the App Store instead (its distribution profile needs no device).
+        env:
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -o pipefail
+          workspace=$(ls -d ios/*.xcworkspace | head -1)
+          scheme=$(basename "$workspace" .xcworkspace)
+          xcodebuild -workspace "$workspace" -scheme "$scheme" -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/app.xcarchive" \
+            DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= \
+            archive > xcodebuild-archive.log 2>&1 || {
+              echo "::group::errors"; grep -E -A 6 "error:|fatal error" xcodebuild-archive.log | head -80; echo "::endgroup::"
+              tail -60 xcodebuild-archive.log
+              exit 1
+            }
+          grep -E "ARCHIVE SUCCEEDED|ARCHIVE FAILED" xcodebuild-archive.log
+          echo "APP_PATH=$(ls -d "$RUNNER_TEMP"/app.xcarchive/Products/Applications/*.app)" >> "$GITHUB_ENV"
+
+      - name: Check the app keeps its promises
+        run: node scripts/check-ipa.mjs "$APP_PATH" "$BIBLE_EDITION"
+
       - name: The API key, for this run only
-        # Written to the runner's temporary folder, readable by this user only, and
-        # removed at the end of the job (last step). The secret may hold the .p8 file as
+        # Written only now, after the archive and its check: the build runs the scripts
+        # of every dependency, and none of them should find the key on disk. Written to
+        # the runner's temporary folder, readable by this user only, and removed at the
+        # end of the job (last step). The secret may hold the .p8 file as
         # it is, the same with its line breaks lost or written as \n, only the part
         # between the BEGIN and END lines, or the whole file in base64: each is put back
         # into the form Xcode reads, and checked before anything is built. Nothing of the
@@ -162,32 +190,6 @@ jobs:
           fi
           echo "the key reads as a private key"
           echo "ASC_KEY_PATH=$out" >> "$GITHUB_ENV"
-
-      - name: Archive
-        # Unsigned here: automatic signing at this step would make a development
-        # profile, which needs a registered device. The upload step signs the app for
-        # the App Store instead (its distribution profile needs no device).
-        env:
-          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          set -o pipefail
-          workspace=$(ls -d ios/*.xcworkspace | head -1)
-          scheme=$(basename "$workspace" .xcworkspace)
-          xcodebuild -workspace "$workspace" -scheme "$scheme" -configuration Release \
-            -sdk iphoneos -destination 'generic/platform=iOS' \
-            -archivePath "$RUNNER_TEMP/app.xcarchive" \
-            DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= \
-            archive > xcodebuild-archive.log 2>&1 || {
-              echo "::group::errors"; grep -E -A 6 "error:|fatal error" xcodebuild-archive.log | head -80; echo "::endgroup::"
-              tail -60 xcodebuild-archive.log
-              exit 1
-            }
-          grep -E "ARCHIVE SUCCEEDED|ARCHIVE FAILED" xcodebuild-archive.log
-          echo "APP_PATH=$(ls -d "$RUNNER_TEMP"/app.xcarchive/Products/Applications/*.app)" >> "$GITHUB_ENV"
-
-      - name: Check the app keeps its promises
-        run: node scripts/check-ipa.mjs "$APP_PATH" "$BIBLE_EDITION"
 
       - name: Sign for the App Store and upload
         # Xcode makes (or reuses) the Apple Distribution certificate and the App Store

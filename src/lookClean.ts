@@ -36,3 +36,15 @@ export function savedCopyIn(uri: string, photoDir: string): boolean {
 export function ownPhotoIn(uri: string, photoDir: string, cacheDir: string): boolean {
   return !uri.includes('..') && (savedCopyIn(uri, photoDir) || uri.startsWith(cacheDir) || uri.startsWith('blob:'));
 }
+
+/**
+ * A saved copy's address moved to the photo folder as it is now. On iPhone the app's own
+ * folder changes its name with each update or restore, so an address stored before then
+ * points nowhere; the copy is still in the folder under its own name. Any other address is
+ * returned unchanged.
+ */
+export function rebasePhoto(uri: string, photoDir: string): string {
+  const m = /\/card-photos\/([a-z0-9]{1,24}\.jpg)$/.exec(uri);
+  if (!m || !uri.startsWith('file:') || uri.includes('..')) return uri;
+  return `${photoDir.replace(/\/?$/, '/')}${m[1]}`;
+}

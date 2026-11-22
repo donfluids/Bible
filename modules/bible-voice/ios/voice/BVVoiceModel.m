@@ -16,8 +16,9 @@ static const OrtApi *Ort(void) {
   return api;
 }
 
-static NSError *VoiceError(NSString *message) {
-  return [NSError errorWithDomain:@"BibleVoice" code:1 userInfo:@{NSLocalizedDescriptionKey: message}];
+static NSError *VoiceError(NSString *_Nullable message) {
+  // A message that is not valid UTF-8 comes through as nil; a dictionary cannot hold nil.
+  return [NSError errorWithDomain:@"BibleVoice" code:1 userInfo:@{NSLocalizedDescriptionKey: message ?: @"ONNX Runtime error"}];
 }
 
 // YES when the call went well; otherwise the error is passed on and the status freed.
@@ -27,7 +28,7 @@ static BOOL Ok(OrtStatus *status, NSError **error) {
   }
   if (error) {
     const char *message = Ort()->GetErrorMessage(status);
-    *error = VoiceError(message ? [NSString stringWithUTF8String:message] : @"ONNX Runtime error");
+    *error = VoiceError(message ? [NSString stringWithUTF8String:message] : nil);
   }
   Ort()->ReleaseStatus(status);
   return NO;

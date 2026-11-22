@@ -11,6 +11,9 @@ import { useTheme } from '../theme';
 import { translationInfo } from '../types';
 import type { HighlightColor, Note, Segment, TranslationId, VerseRow, WordPick } from '../types';
 
+/** White space at a verse's start (U+2003 is the em space BSB and the Malayalam Bible use). */
+const LEADING_SPACE = /^[\s\u2003]+/;
+
 interface Props {
   verse: VerseRow;
   fontSize: number;
@@ -119,8 +122,14 @@ export const VerseText = memo(function VerseText({
   // and the marked parts (their colour; a later mark shows over an earlier one).
   const highlighted = (text: string, start: number): React.ReactNode => {
     const marked = marks ?? [];
-    // The ¶ is dropped only from what is drawn, so marks and matches keep their offsets.
-    if (ranges.length === 0 && marked.length === 0) return text.replace(PILCROW, '');
+    // The ¶ is dropped only from what is drawn, so marks and matches keep their offsets; so
+    // is the space or em space some Bibles start a verse with (a paragraph indent in the
+    // source), which would leave a wide gap after the verse number.
+    const drawn = (piece: string, from: number) => {
+      const plain = piece.replace(PILCROW, '');
+      return from === 0 ? plain.replace(LEADING_SPACE, '') : plain;
+    };
+    if (ranges.length === 0 && marked.length === 0) return drawn(text, start);
     const end = start + text.length;
     const cuts = new Set([start, end]);
     for (const [a, b] of [...ranges, ...marked]) {
@@ -131,7 +140,7 @@ export const VerseText = memo(function VerseText({
     const out: React.ReactNode[] = [];
     for (let i = 0; i + 1 < points.length; i++) {
       const [from, to] = [points[i], points[i + 1]];
-      const piece = text.slice(from - start, to - start).replace(PILCROW, '');
+      const piece = drawn(text.slice(from - start, to - start), from);
       const match = ranges.some(([a, b]) => a <= from && b >= to);
       const mark = [...marked].reverse().find(([a, b]) => a <= from && b >= to);
       if (!match && !mark) {
@@ -157,7 +166,8 @@ export const VerseText = memo(function VerseText({
     >
       {' '}
       {noteLetter(note.n)}
-      {'\u202F'}
+      {/* Before the verse's first word a full space, or the letter reads as part of the word. */}
+      {note.pos === 0 ? ' ' : '\u202F'}
     </Text>
   );
 

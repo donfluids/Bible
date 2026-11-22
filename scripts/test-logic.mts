@@ -13,7 +13,7 @@ import { describeVoice, groupVoices, voicesFor, voicesOrIndian } from '../src/vo
 import { groupForms, isTaBaseForm, taStem } from './lib/forms.mjs';
 import { addPoint, decodeInk, encodeInk, packSteps, pageHeight, parseInk, pathOf, strokePath, touchesStroke, unpackSteps } from '../src/ink';
 import { FEEDBACK_NEVER, deviceLine, feedbackCardDue, feedbackDueFrom, feedbackLater, mailtoUrl } from '../src/feedback';
-import { cleanLook, ownPhotoIn, savedCopyIn } from '../src/lookClean';
+import { cleanLook, ownPhotoIn, rebasePhoto, savedCopyIn } from '../src/lookClean';
 import { makeBackup, mergePages, mergeSaved, readBackup } from '../src/notebookBackup';
 import { inkPageHtml, typedPageHtml } from '../src/pagePdf';
 import { hindiPattern } from '../src/hindiSearch';
@@ -496,6 +496,14 @@ test('backup: bookmarks, highlights, marks and notes go in the file, are checked
   assert.equal(merged.saved.marks.length, 1);
   assert.equal(merged.added, 3);
   assert.equal(mergeSaved(merged.saved, saved).added, 0);
+});
+
+test('card looks: a saved photo is found again after iPhone renames the app folder', () => {
+  const dir = 'file:///var/mobile/Containers/Data/Application/NEW/Documents/card-photos/';
+  assert.equal(rebasePhoto('file:///var/mobile/Containers/Data/Application/OLD/Documents/card-photos/abc1.jpg', dir), `${dir}abc1.jpg`);
+  assert.equal(rebasePhoto('file:///var/mobile/Containers/Data/Application/NEW/Library/Caches/pick.jpg', dir), 'file:///var/mobile/Containers/Data/Application/NEW/Library/Caches/pick.jpg');
+  assert.equal(rebasePhoto('file:///x/../card-photos/abc1.jpg', dir), 'file:///x/../card-photos/abc1.jpg');
+  assert.equal(rebasePhoto('blob:abc', dir), 'blob:abc');
 });
 
 if (failures.length) {

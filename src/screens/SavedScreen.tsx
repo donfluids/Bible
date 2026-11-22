@@ -205,6 +205,7 @@ export function SavedScreen({ books, onOpenRef, onWord }: Props) {
               ]}
               value={tab}
               onChange={setTab}
+              tick={false}
             />
           </View>
           {tab === 'highlight' && shownColours.length > 1 ? (

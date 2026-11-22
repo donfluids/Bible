@@ -2234,7 +2234,14 @@ function ActionButton({ icon, label, onPress, accessibilityLabel }: { icon: Icon
       <View style={[styles.actionIcon, { backgroundColor: theme.accentSoft }]}>
         <Icon name={icon} color={theme.accent} />
       </View>
-      <Text style={[styles.actionLabel, { color: theme.text }, !!script && { fontFamily: scriptureFont(script, false), fontWeight: 'normal' }]} numberOfLines={2}>
+      {/* A one-word label (പങ്കുവയ്ക്കുക) shrinks to fit rather than break inside the word;
+          a label of several words may take two lines. */}
+      <Text
+        style={[styles.actionLabel, { color: theme.text }, !!script && { fontFamily: scriptureFont(script, false), fontWeight: 'normal' }]}
+        numberOfLines={/\s/.test(label.trim()) ? 2 : 1}
+        adjustsFontSizeToFit={!/\s/.test(label.trim())}
+        minimumFontScale={0.75}
+      >
         {label}
       </Text>
     </Pressable>

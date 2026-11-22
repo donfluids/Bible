@@ -8,8 +8,10 @@ import { Icon } from './Icon';
  * Connected buttons for picking one of a few options. The selected one is filled, and
  * ticked when there is room (three options or fewer; four Malayalam words leave none).
  * Four options on a narrow phone stand two by two, so a long word (ഫോണിലേതുപോലെ) fits.
+ * `tick={false}` leaves the tick out, for labels that need all the room (Saved's counts):
+ * the fill alone shows the choice, and the labels do not move when it changes.
  */
-export function Segmented<T extends string>({ options, value, onChange }: { options: [T, string][]; value: T; onChange: (value: T) => void }) {
+export function Segmented<T extends string>({ options, value, onChange, tick = true }: { options: [T, string][]; value: T; onChange: (value: T) => void; tick?: boolean }) {
   const theme = useTheme();
   const narrow = useWindowDimensions().width < 420;
   const grid = options.length === 4 && narrow;
@@ -32,7 +34,7 @@ export function Segmented<T extends string>({ options, value, onChange }: { opti
               active && { backgroundColor: theme.accentSoft },
             ]}
           >
-            {active && options.length <= 3 ? <Icon name="check" size={18} color={theme.accent} /> : null}
+            {tick && active && options.length <= 3 ? <Icon name="check" size={18} color={theme.accent} /> : null}
             {/* A long label (ഫോണിലേതുപോലെ) takes a second line rather than being cut. */}
             <Text numberOfLines={2} style={[styles.segmentText, { color: active ? theme.accent : theme.text }]}>
               {label}

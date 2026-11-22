@@ -87,6 +87,14 @@ export function useReadAloud({ chapterKey, verses, translation, rate, voice, nex
       halt();
       const { verses: list, translation: tr, rate: r, voice: v, nextChapter: next, chapterKey: key } = live.current;
       if (!list) return;
+      // Only the chapter shown is read: verses still left from another chapter end the reading.
+      if (list.length > 0 && `${list[0].book}:${list[0].chapter}` !== key) {
+        halt(true);
+        setIndex(null);
+        setPlaying(false);
+        setActive(false);
+        return;
+      }
       if (i >= list.length) {
         // The end of the chapter: on to the next, or stop at the end of the Bible.
         if (next()) {
@@ -169,7 +177,8 @@ export function useReadAloud({ chapterKey, verses, translation, rate, voice, nex
     shown.current = { chapterKey, translation };
     if (before.chapterKey === chapterKey && before.translation === translation) return;
     if (continuing.current !== null && before.translation === translation) return;
-    if (live.current.index !== null || continuing.current !== null) {
+    // Also in the short pause before a new chapter's first verse: the reader went elsewhere.
+    if (live.current.index !== null || continuing.current !== null || pauseTimer.current !== null) {
       halt(true);
       setIndex(null);
       setPlaying(false);
@@ -207,7 +216,8 @@ export function useReadAloud({ chapterKey, verses, translation, rate, voice, nex
       const i = live.current.index;
       const list = live.current.verses;
       if (i === null || !list) return;
-      const next = Math.max(0, Math.min(list.length - 1, i + delta));
+      // While reading, a step past the last verse goes on to the next chapter.
+      const next = Math.max(0, Math.min(list.length - (playingRef.current ? 0 : 1), i + delta));
       if (playingRef.current) speakAt(next);
       else setIndex(next);
     },

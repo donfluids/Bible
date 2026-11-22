@@ -34,6 +34,9 @@ class VoiceNotLoadedException : CodedException("The voice has not been loaded")
 
 class VoiceFileException : CodedException("Not one of the voice's own files")
 
+/** How loud the reading stays while a notification plays over it. */
+private const val DUCKED_VOLUME = 0.2f
+
 class BibleVoiceModule : Module() {
   private var session: OrtSession? = null
   private var track: AudioTrack? = null
@@ -51,13 +54,26 @@ class BibleVoiceModule : Module() {
   private var hasFocus = false
   private var focusRequest: AudioFocusRequest? = null
 
+  // Lowered while another sound plays over the reading (a notification, a navigation prompt).
+  private var ducked = false
+
   // Another app taking the phone's sound (a call, music started elsewhere) stops the verse;
-  // reading shows as paused and goes on from that verse when the reader asks.
+  // reading shows as paused and goes on from that verse when the reader asks. A short sound
+  // that only asks the reading to be quieter (a notification) lowers it, and the reading goes on.
   private val focusListener = AudioManager.OnAudioFocusChangeListener { change ->
-    if (change == AudioManager.AUDIOFOCUS_LOSS || change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT || change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
-      main.post {
+    when (change) {
+      AudioManager.AUDIOFOCUS_LOSS, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> main.post {
         hasFocus = false
+        ducked = false
         finish(false)
+      }
+      AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> main.post {
+        ducked = true
+        track?.setVolume(DUCKED_VOLUME)
+      }
+      AudioManager.AUDIOFOCUS_GAIN -> main.post {
+        ducked = false
+        track?.setVolume(1f)
       }
     }
   }
@@ -92,6 +108,7 @@ class BibleVoiceModule : Module() {
       manager?.abandonAudioFocus(focusListener)
     }
     hasFocus = false
+    ducked = false
   }
 
   // Only the voice's two files, inside the app's own storage, are read: the model (.onnx)
@@ -160,6 +177,7 @@ class BibleVoiceModule : Module() {
             .setTransferMode(AudioTrack.MODE_STATIC)
             .build()
           player.write(wav, 44, length)
+          if (ducked) player.setVolume(DUCKED_VOLUME)
           track = player
           pending = promise
           // Some phones do not report the last frame; the clock ends the verse there too.
