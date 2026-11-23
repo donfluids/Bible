@@ -19,6 +19,9 @@ const RELEASE_MANIFEST = `<manifest xmlns:android="http://schemas.android.com/ap
 `;
 
 const GRADLE_PROPERTIES = {
+  // A 4 GB heap: with the Malayalam app's three Bibles, R8 ran out of the template's
+  // 2 GB on GitHub's runners (16 GB) and the release build failed.
+  'org.gradle.jvmargs': '-Xmx4096m -XX:MaxMetaspaceSize=1024m',
   // Code shrinking (R8) and resource shrinking for release builds.
   'android.enableMinifyInReleaseBuilds': 'true',
   'android.enableShrinkResourcesInReleaseBuilds': 'true',
