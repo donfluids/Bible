@@ -120,6 +120,7 @@ export const VerseText = memo(function VerseText({
         style={[styles.text, styles.omitted, { fontSize: fontSize - 2, lineHeight, color: theme.muted, fontFamily: font }]}
         numberOfLines={numberOfLines}
         onLongPress={onLongPress}
+        suppressHighlighting
       >
         {showNumber ? <Text allowFontScaling={scales} style={[styles.number, { fontSize: small }]}>{verse.verse} </Text> : null}
         {/* omitted 2: joined to an earlier verse (\v 17-18), whose number is its text. */}
@@ -211,6 +212,10 @@ export const VerseText = memo(function VerseText({
       numberOfLines={numberOfLines}
       selectable={false}
       onLongPress={onLongPress}
+      // No pressed shading on the verse either (iPhone): holding it opens the menu before
+      // the finger lifts and the shading stayed on its words that have no link of their own,
+      // every other word, the linked ones having none (see the word spans below).
+      suppressHighlighting
       accessibilityHint={onLongPress ? t('verseHint') : undefined}
     >
       {bookmarked ? <Text allowFontScaling={scales} style={{ color: accent }}>▎</Text> : null}
@@ -223,6 +228,7 @@ export const VerseText = memo(function VerseText({
         <Text allowFontScaling={scales}
           onPress={onNumberPress}
           onLongPress={onLongPress}
+          suppressHighlighting
           accessibilityRole={onNumberPress ? 'button' : undefined}
           accessibilityLabel={onNumberPress ? numberLabel : undefined}
           style={[styles.number, fontSize >= 24 && styles.numberBig, { color: onMark ? accent : theme.muted, fontSize: small }]}
