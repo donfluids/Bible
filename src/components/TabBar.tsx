@@ -5,7 +5,9 @@ import { CommonActions, StackActions } from '@react-navigation/native';
 import { HEADER_MAX_FONT_SCALE, SHORT_SCREEN } from './Header';
 import { Icon } from './Icon';
 import type { IconName } from './Icon';
+import { languageScript } from '../fonts';
 import { useT } from '../i18n';
+import { useDisplaySettings } from '../settings';
 import type { StringKey } from '../i18n';
 import { navigationRef } from '../navigation';
 import { MAX_CONTENT_WIDTH } from '../text';
@@ -50,6 +52,8 @@ export function switchTab(to: TabName): void {
 export function TabBar({ current, hidden = false }: { current: TabName; hidden?: boolean }) {
   const theme = useTheme();
   const t = useT();
+  // Malayalam, Tamil and Hindi letters read small at 12: their labels are a point larger.
+  const labelSize = languageScript(useDisplaySettings()?.language ?? 'en') ? 13 : 12;
   const insets = useSafeAreaInsets();
   const short = useWindowDimensions().height < SHORT_SCREEN;
   const shown = useRef(new Animated.Value(hidden ? 0 : 1)).current;
@@ -86,7 +90,7 @@ export function TabBar({ current, hidden = false }: { current: TabName; hidden?:
                 <Text
                   numberOfLines={1}
                   maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE}
-                  style={[styles.label, { color: selected ? theme.accent : theme.muted, fontWeight: selected ? '700' : '500' }]}
+                  style={[styles.label, { fontSize: labelSize, color: selected ? theme.accent : theme.muted, fontWeight: selected ? '700' : '500' }]}
                 >
                   {label}
                 </Text>

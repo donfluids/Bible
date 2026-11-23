@@ -11,6 +11,8 @@ interface Props {
   words: OriginalWord[];
   hebrew: boolean;
   fontSize: number;
+  /** The reader's own size, not multiplied by the phone's text size (see VerseText). */
+  appSized?: boolean;
   onWord: (pick: WordPick) => void;
   showTranslit?: boolean;
   hideCantillation?: boolean;
@@ -29,7 +31,7 @@ function objectMarkerGloss(gloss: string): string {
 }
 
 /** The Hebrew or Greek words of one verse as a wrapping row of cells. */
-export const InterlinearVerse = memo(function InterlinearVerse({ words, hebrew, fontSize, onWord, showTranslit = true, hideCantillation = false, highlighted = false }: Props) {
+export const InterlinearVerse = memo(function InterlinearVerse({ words, hebrew, fontSize, appSized = false, onWord, showTranslit = true, hideCantillation = false, highlighted = false }: Props) {
   const theme = useTheme();
   const text = highlighted ? theme.markText : theme.text;
   const muted = highlighted ? theme.markMuted : theme.muted;
@@ -53,11 +55,11 @@ export const InterlinearVerse = memo(function InterlinearVerse({ words, hebrew, 
             accessibilityRole="button"
             accessibilityLabel={faded ? w.text : `${w.text}, ${gloss}`}
           >
-            <Text style={[styles.original, { color: faded ? muted : text, fontSize: fontSize + (hebrew ? 5 : 3), writingDirection: hebrew ? 'rtl' : 'ltr', fontFamily: hebrew ? HEBREW_FONT : undefined }]}>
+            <Text allowFontScaling={!appSized} style={[styles.original, { color: faded ? muted : text, fontSize: fontSize + (hebrew ? 5 : 3), writingDirection: hebrew ? 'rtl' : 'ltr', fontFamily: hebrew ? HEBREW_FONT : undefined }]}>
               {hebrew && hideCantillation ? stripCantillation(w.text) : w.text}
             </Text>
-            {showTranslit ? <Text style={[styles.sub, { color: muted, fontSize: small }]}>{w.translit}</Text> : null}
-            {gloss ? <Text style={[styles.sub, { color: text, fontSize: small }]}>{gloss}</Text> : null}
+            {showTranslit ? <Text allowFontScaling={!appSized} style={[styles.sub, { color: muted, fontSize: small }]}>{w.translit}</Text> : null}
+            {gloss ? <Text allowFontScaling={!appSized} style={[styles.sub, { color: text, fontSize: small }]}>{gloss}</Text> : null}
           </Pressable>
         );
       })}

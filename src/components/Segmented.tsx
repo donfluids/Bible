@@ -35,8 +35,14 @@ export function Segmented<T extends string>({ options, value, onChange, tick = t
             ]}
           >
             {tick && active && options.length <= 3 ? <Icon name="check" size={18} color={theme.accent} /> : null}
-            {/* A long label (ഫോണിലേതുപോലെ) takes a second line rather than being cut. */}
-            <Text numberOfLines={2} style={[styles.segmentText, { color: active ? theme.accent : theme.text }]}>
+            {/* A one-word label shrinks to stay on one line rather than break inside the word
+                (ഫോണിലേതുപോലെ at large text); a label of several words may take two lines. */}
+            <Text
+              numberOfLines={/\s/.test(label.trim()) ? 2 : 1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.6}
+              style={[styles.segmentText, { color: active ? theme.accent : theme.text }]}
+            >
               {label}
             </Text>
           </Pressable>

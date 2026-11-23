@@ -1244,6 +1244,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
         return (
           <Text
             accessibilityRole="header"
+            allowFontScaling={false}
             style={[styles.heading, { color: theme.muted, fontSize: fontSize - 3, fontFamily: scriptFont }, !!translationInfo(translation).script && styles.headingMalayalam]}
           >
             {item.text}
@@ -1252,7 +1253,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
       }
       if (item.kind === 'para') {
         return (
-          <Text style={[styles.para, { fontSize, lineHeight: textLineHeight(fontSize, translationInfo(translation).lineHeight), color: theme.text, fontFamily: scriptFont }]}>
+          <Text allowFontScaling={false} style={[styles.para, { fontSize, lineHeight: textLineHeight(fontSize, translationInfo(translation).lineHeight), color: theme.text, fontFamily: scriptFont }]}>
             {item.verses.map((v, i) => {
               const color = highlights[bookmarkKey(v)];
               return (
@@ -1347,6 +1348,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             <View style={[styles.pairColumn, styles.pairRight, mark ? { backgroundColor: theme.marks[mark] } : null, flashing && { backgroundColor: theme.highlight }]}>
               {english.map((e) => (
                 <VerseText
+                  appSized
                   key={`${e.book}:${e.chapter}:${e.verse}`}
                   verse={e}
                   fontSize={fontSize}
@@ -1361,7 +1363,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             </View>
           </View>
           {words && words.length > 0 ? (
-            <InterlinearVerse words={words} hebrew={v.book <= 39} fontSize={fontSize} onWord={onRowWord} showTranslit={showTranslit} hideCantillation={hideCantillation} />
+            <InterlinearVerse appSized words={words} hebrew={v.book <= 39} fontSize={fontSize} onWord={onRowWord} showTranslit={showTranslit} hideCantillation={hideCantillation} />
           ) : null}
         </View>
       );
@@ -1458,7 +1460,8 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             hitSlop={6}
             style={({ pressed }) => [styles.aboutRow, { opacity: pressed ? 0.6 : 1 }]}
           >
-            <Text style={[styles.aboutText, { color: theme.muted, fontFamily: scriptureFont(scriptOf(bookName(books, position.book, translation)), settings.serif) ?? theme.font }]}>
+            {/* One line, a little smaller if need be, with its arrow beside it. */}
+            <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={[styles.aboutText, { color: theme.muted, fontFamily: scriptureFont(scriptOf(bookName(books, position.book, translation)), settings.serif) ?? theme.font }]}>
               {t('aboutBookNamed', { book: bookName(books, position.book, translation) })}
             </Text>
             <Icon name="chevron_right" size={16} color={theme.muted} />
@@ -1924,9 +1927,9 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
                   accessibilityRole="link"
                   style={({ pressed }) => [styles.crossRow, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
                 >
-                  <Text style={[styles.crossRef, { color: theme.accent, fontSize: Math.max(15, fontSize - 3) }, !!scriptOf(label) && { fontFamily: scriptureFont(scriptOf(label), settings.serif, true), fontWeight: 'normal' }]}>{label}</Text>
+                  <Text allowFontScaling={false} style={[styles.crossRef, { color: theme.accent, fontSize: Math.max(15, fontSize - 3) }, !!scriptOf(label) && { fontFamily: scriptureFont(scriptOf(label), settings.serif, true), fontWeight: 'normal' }]}>{label}</Text>
                   {c.verses.length ? (
-                    <Text style={{ color: theme.text, fontSize: Math.max(15, fontSize - 3), lineHeight: textLineHeight(Math.max(15, fontSize - 3), translationInfo(translation).lineHeight), fontFamily: scriptFont }} numberOfLines={4}>
+                    <Text allowFontScaling={false} style={{ color: theme.text, fontSize: Math.max(15, fontSize - 3), lineHeight: textLineHeight(Math.max(15, fontSize - 3), translationInfo(translation).lineHeight), fontFamily: scriptFont }} numberOfLines={4}>
                       {c.verses.map((v) => flattenVerse(v.text)).join(' ')}
                     </Text>
                   ) : null}
@@ -2189,6 +2192,7 @@ const ParaVerse = memo(function ParaVerse({
   const cb = useVerseCallbacks(v, actions);
   return (
     <VerseText
+                  appSized
       verse={v}
       fontSize={fontSize}
       onWord={onWord}
@@ -2291,12 +2295,13 @@ const ReaderVerse = memo(function ReaderVerse({
             style={[styles.tapColumn, { width: Math.max(40, Math.round(fontSize * 2)) }]}
           >
             {v.verse > 0 ? (
-              <Text style={[styles.tapNumber, { color: onMark ? theme.markAccent : theme.accent, fontSize: Math.max(14, fontSize - 4), lineHeight }]}>{v.verse}</Text>
+              <Text allowFontScaling={false} style={[styles.tapNumber, { color: onMark ? theme.markAccent : theme.accent, fontSize: Math.max(14, fontSize - 4), lineHeight }]}>{v.verse}</Text>
             ) : null}
             <Icon name={expanded ? 'expand_less' : 'expand_more'} size={Math.max(12, Math.round(fontSize * 0.6))} color={onMark ? theme.markMuted : theme.muted} />
           </Pressable>
           <View style={styles.tapText}>
             <VerseText
+                  appSized
               verse={v}
               fontSize={fontSize}
               onWord={showingWords ? undefined : onWord}
@@ -2315,6 +2320,7 @@ const ReaderVerse = memo(function ReaderVerse({
         </View>
       ) : (
         <VerseText
+                  appSized
           verse={v}
           fontSize={fontSize}
           onWord={showingWords ? undefined : onWord}
@@ -2333,7 +2339,7 @@ const ReaderVerse = memo(function ReaderVerse({
         />
       )}
       {words && words.length > 0 && onWord ? (
-        <InterlinearVerse words={words} hebrew={v.book <= 39} fontSize={fontSize} onWord={onWord} showTranslit={showTranslit} hideCantillation={hideCantillation} highlighted={onMark} />
+        <InterlinearVerse appSized words={words} hebrew={v.book <= 39} fontSize={fontSize} onWord={onWord} showTranslit={showTranslit} hideCantillation={hideCantillation} highlighted={onMark} />
       ) : null}
     </View>
   );
@@ -2402,8 +2408,8 @@ const styles = StyleSheet.create({
   tipMain: { borderRadius: 24, paddingHorizontal: 18 },
   tipDismiss: { fontSize: 15, fontWeight: '700' },
   modeHint: { fontSize: 12, marginBottom: 6 },
-  aboutRow: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 2, minHeight: 36 },
-  aboutText: { fontSize: 14, fontWeight: '500' },
+  aboutRow: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', maxWidth: '100%', gap: 2, minHeight: 36 },
+  aboutText: { fontSize: 14, fontWeight: '500', flexShrink: 1 },
   sheetGroup: { fontSize: 13, fontWeight: '600', marginTop: 10, marginBottom: 2 },
   heading: { fontWeight: '700', letterSpacing: 1, marginTop: 14, marginBottom: 2 },
   // Letter spacing breaks up Malayalam conjuncts on some phones.

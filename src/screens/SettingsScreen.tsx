@@ -169,7 +169,8 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <View style={styles.row}>
             <IconButton name="text_decrease" onPress={() => setSize(-1)} disabled={sizeIndex <= 0} accessibilityLabel={t('smallerText')} color={theme.accent} />
-            <Text style={[styles.preview, { color: theme.text, fontSize: settings.fontSize, fontFamily: theme.font }]}>{t('previewText')}</Text>
+            {/* At the size the reader shows, whatever the phone's text size (VerseText appSized). */}
+            <Text allowFontScaling={false} style={[styles.preview, { color: theme.text, fontSize: settings.fontSize, fontFamily: theme.font }]}>{t('previewText')}</Text>
             <IconButton name="text_increase" onPress={() => setSize(1)} disabled={sizeIndex >= FONT_SIZES.length - 1} accessibilityLabel={t('largerText')} color={theme.accent} />
           </View>
           <Text style={[styles.rowSub, styles.sizeHint, { color: theme.muted }]}>{t('textSizeHint')}</Text>

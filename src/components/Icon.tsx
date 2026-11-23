@@ -14,12 +14,18 @@ import { useTheme } from '../theme';
 export type IconName = keyof typeof ICON_CODES;
 
 const ICON_FONT = 'BibleIcons';
+/**
+ * An icon is a letter, so it grows with the phone's text size; it stops where the labels
+ * of the tab and title bars stop (HEADER_MAX_FONT_SCALE), or it outgrows its button.
+ */
+const ICON_MAX_FONT_SCALE = 1.2;
 
 export function Icon({ name, size = 24, color, style }: { name: IconName; size?: number; color?: string; style?: StyleProp<TextStyle> }) {
   const theme = useTheme();
   return (
     <Text
       style={[{ fontFamily: ICON_FONT, fontSize: size, lineHeight: size, color: color ?? theme.text, includeFontPadding: false }, style]}
+      maxFontSizeMultiplier={ICON_MAX_FONT_SCALE}
       accessibilityElementsHidden
       importantForAccessibility="no"
     >

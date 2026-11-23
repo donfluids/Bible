@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Dimensions, useColorScheme } from 'react-native';
+import { Alert, Dimensions, PixelRatio, useColorScheme } from 'react-native';
 import { translate } from './i18n';
 import { feedbackDueFrom } from './feedback';
 import { cleanSettings } from './settingsClean';
@@ -66,6 +66,11 @@ export interface Settings {
   languageChosen: boolean;
   /** The note that Hindi words are not linked yet has been dismissed. */
   hindiNoteSeen: boolean;
+  /**
+   * fontSize is the size shown, whatever the phone's own text size. Before, the phone's
+   * setting multiplied it; a size stored then is turned once into the size it looked.
+   */
+  sizeOwn: boolean;
   // The reading place (position, recent and last chapters) is kept in src/place.ts.
 }
 
@@ -100,6 +105,7 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
   previousTranslation: '',
   languageChosen: false,
   hindiNoteSeen: false,
+  sizeOwn: true,
 };
 
 // The Aa buttons in Settings and pinching the reader step through these: one point at a
@@ -108,11 +114,18 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
 // words break in the middle. A size chosen before above 30 is read back as 30.
 export const FONT_SIZES = [14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 26, 28, 30];
 
+/** The listed size nearest a size the phone's text setting gave, at most the largest. */
+export function nearestSize(size: number): number {
+  return FONT_SIZES.reduce((best, s) => (Math.abs(s - size) < Math.abs(best - size) ? s : best));
+}
+
 function defaultsFor(edition: Edition): Settings {
   // A tablet (shorter side 600 points or more) starts a size up, read from further away;
   // a size once chosen is kept, so this only sets where a new install begins.
   const { width, height } = Dimensions.get('window');
-  const fontSize = Math.min(width, height) >= 600 ? 21 : BASE_DEFAULTS.fontSize;
+  // The Bible text no longer grows with the phone's text size, so a new install starts at
+  // the size that setting would have given.
+  const fontSize = nearestSize((Math.min(width, height) >= 600 ? 21 : BASE_DEFAULTS.fontSize) * PixelRatio.getFontScale());
   // The English app reads in a serif, like a printed Bible; the Indian-language faces stay sans.
   return { ...BASE_DEFAULTS, fontSize, serif: edition.id === 'en', translation: edition.defaultTranslation, language: edition.languages[0] };
 }
@@ -137,6 +150,10 @@ function loadStored(edition: Edition): Loaded<Settings> {
       const parsed = JSON.parse(raw) as Partial<Settings>;
       if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('not settings');
       const merged = cleanSettings(parsed, defaults, FONT_SIZES);
+      if (parsed.sizeOwn !== true) {
+        merged.fontSize = nearestSize(merged.fontSize * PixelRatio.getFontScale());
+        merged.sizeOwn = true;
+      }
       // Fields of older versions that moved to src/place.ts.
       for (const old of ['position', 'recent', 'lastChapters']) delete (merged as unknown as Record<string, unknown>)[old];
       if (!edition.translations.includes(merged.translation)) merged.translation = edition.defaultTranslation;

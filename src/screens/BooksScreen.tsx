@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { FlatList, PixelRatio, StyleSheet, Text, View } from 'react-native';
 import { Pressable } from '../components/Pressable';
-import { Header } from '../components/Header';
+import { HEADER_MAX_FONT_SCALE, Header } from '../components/Header';
 import { IconButton } from '../components/Icon';
 import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
 import { TabBar } from '../components/TabBar';
@@ -27,6 +27,8 @@ const PAIR_ROW_H = 56;
 const CELL_SIZE = 15;
 /** Recently read chapters in the clock's sheet (the reader keeps eight, the open one among them). */
 const MAX_RECENT = 7;
+/** Above this phone text size the list is one column (see oneColumn). */
+const ONE_COLUMN_SCALE = 1.15;
 
 /**
  * The book list: all 66 at once, the Old Testament down the left and the New down the
@@ -43,6 +45,21 @@ export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
   const fresh = useMemo(() => books.filter((b) => b.testament === 'NT'), [books]);
   // In the two-column view, row i holds the i-th book of each Testament.
   const pairs = useMemo(() => old.map((left, i) => ({ left, right: fresh[i] as Book | undefined })), [old, fresh]);
+  // With the phone's text larger than about 115%, a long one-word name (ആവർത്തനപുസ്തകം)
+  // no longer fits half the width and would break inside the word: one column then, the
+  // Old Testament under its heading, then the New.
+  const scale = Math.max(1, PixelRatio.getFontScale());
+  const oneColumn = scale > ONE_COLUMN_SCALE;
+  type Row = { key: string; heading: string } | { key: string; book: Book };
+  const rows = useMemo<Row[]>(
+    () => [
+      { key: 'ot', heading: t('oldTestament') },
+      ...old.map((book) => ({ key: String(book.id), book })),
+      { key: 'nt', heading: t('newTestament') },
+      ...fresh.map((book) => ({ key: String(book.id), book })),
+    ],
+    [old, fresh, t],
+  );
 
   // Recently read chapters other than the one open now.
   const allRecent = usePlace(selectRecent);
@@ -51,13 +68,15 @@ export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
 
   // The list opens a few rows above the book being read.
   const currentRow = (currentTestament === 'OT' ? old : fresh).findIndex((b) => b.id === current);
-  const initialIndex = Math.max(0, currentRow - 3);
+  const oneColumnRow = currentTestament === 'OT' ? currentRow + 1 : old.length + 2 + currentRow;
+  const initialIndex = Math.max(0, (oneColumn ? oneColumnRow : currentRow) - 3);
   // Rows have a fixed height (the list jumps to the open book), so they grow with the
   // phone's text size: a name of two lines must fit at Large text too.
-  const scale = Math.max(1, PixelRatio.getFontScale());
   const cellLine = Math.round(CELL_SIZE * (translationInfo(settings.translation).script ? 1.5 : 1.27));
   const pairRowH = Math.max(PAIR_ROW_H, Math.ceil(2 * cellLine * scale + 12));
-  const rowHeight = pairRowH;
+  // One column: a name on one line.
+  const singleRowH = Math.max(PAIR_ROW_H, Math.ceil(cellLine * scale + 20));
+  const rowHeight = oneColumn ? singleRowH : pairRowH;
 
   const name = (b: Book) => bookName(books, b.id, settings.translation);
   const cell = (b: Book | undefined, side: 'left' | 'right') => {
@@ -78,6 +97,38 @@ export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
         accessibilityState={{ selected: active }}
       >
         <Text style={[styles.cellName, { lineHeight: cellLine, color: theme.text, fontWeight: active ? '700' : '400' }]} numberOfLines={2}>
+          {name(b)}
+        </Text>
+      </Pressable>
+    );
+  };
+
+  const single = ({ item }: { item: Row }) => {
+    if ('heading' in item) {
+      return (
+        <View style={[styles.singleHeading, { height: singleRowH, borderBottomColor: theme.border }]}>
+          <Text accessibilityRole="header" maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={[styles.head, styles.headRight, { color: theme.muted }]} numberOfLines={1}>
+            {item.heading}
+          </Text>
+        </View>
+      );
+    }
+    const b = item.book;
+    const active = b.id === current;
+    return (
+      <Pressable
+        onPress={() => onPick(b)}
+        android_ripple={{ color: theme.accentSoft }}
+        style={({ pressed }) => [styles.single, { height: singleRowH, borderBottomColor: theme.border, backgroundColor: pressed || active ? theme.accentSoft : 'transparent' }]}
+        accessibilityRole="button"
+        accessibilityState={{ selected: active }}
+      >
+        <Text
+          style={[styles.cellName, { lineHeight: cellLine, color: theme.text, fontWeight: active ? '700' : '400' }]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.7}
+        >
           {name(b)}
         </Text>
       </Pressable>
@@ -106,24 +157,37 @@ export function BooksScreen({ books, current, onPick, onOpenRecent }: Props) {
       </SimpleSheet>
       {/* On a tablet the list keeps to the reading width. */}
       <View style={styles.column}>
-        {/* Which Testament each column holds. */}
-        <View style={[styles.heads, { borderBottomColor: theme.border }]} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
-          <Text style={[styles.head, { color: theme.muted, borderRightColor: theme.border }]} numberOfLines={1}>{t('oldTestament')}</Text>
-          <Text style={[styles.head, styles.headRight, { color: theme.muted }]} numberOfLines={1}>{t('newTestament')}</Text>
-        </View>
-        <FlatList
-          data={pairs}
-          keyExtractor={(p) => String(p.left.id)}
-          initialScrollIndex={initialIndex}
-          getItemLayout={(_, index) => ({ length: rowHeight, offset: rowHeight * index, index })}
-          renderItem={({ item }) => (
-            <View style={[styles.pairRow, { height: pairRowH, borderBottomColor: theme.border }]}>
-              {cell(item.left, 'left')}
-              {cell(item.right, 'right')}
-            </View>
-          )}
-          contentContainerStyle={styles.listEnd}
-        />
+        {oneColumn ? (
+          <FlatList
+            data={rows}
+            keyExtractor={(r) => r.key}
+            initialScrollIndex={initialIndex}
+            getItemLayout={(_, index) => ({ length: rowHeight, offset: rowHeight * index, index })}
+            renderItem={single}
+            contentContainerStyle={styles.listEnd}
+          />
+        ) : (
+        <>
+          {/* Which Testament each column holds; they grow no more than the title above. */}
+          <View style={[styles.heads, { borderBottomColor: theme.border }]} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+            <Text maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={[styles.head, { color: theme.muted, borderRightColor: theme.border }]} numberOfLines={1}>{t('oldTestament')}</Text>
+            <Text maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={[styles.head, styles.headRight, { color: theme.muted }]} numberOfLines={1}>{t('newTestament')}</Text>
+          </View>
+          <FlatList
+            data={pairs}
+            keyExtractor={(p) => String(p.left.id)}
+            initialScrollIndex={initialIndex}
+            getItemLayout={(_, index) => ({ length: rowHeight, offset: rowHeight * index, index })}
+            renderItem={({ item }) => (
+              <View style={[styles.pairRow, { height: pairRowH, borderBottomColor: theme.border }]}>
+                {cell(item.left, 'left')}
+                {cell(item.right, 'right')}
+              </View>
+            )}
+            contentContainerStyle={styles.listEnd}
+          />
+        </>
+        )}
       </View>
       <TabBar current="Books" />
     </View>
@@ -139,5 +203,7 @@ const styles = StyleSheet.create({
   heads: { flexDirection: 'row', borderBottomWidth: StyleSheet.hairlineWidth },
   head: { flex: 1, paddingHorizontal: 16, paddingVertical: 6, fontSize: 13, fontWeight: '600', borderRightWidth: StyleSheet.hairlineWidth },
   headRight: { borderRightWidth: 0 },
+  single: { justifyContent: 'center', paddingHorizontal: 18, borderBottomWidth: StyleSheet.hairlineWidth },
+  singleHeading: { justifyContent: 'flex-end', borderBottomWidth: StyleSheet.hairlineWidth },
   column: { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
 });

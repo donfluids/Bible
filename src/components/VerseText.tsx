@@ -17,6 +17,11 @@ const LEADING_SPACE = /^[\s\u2003]+/;
 interface Props {
   verse: VerseRow;
   fontSize: number;
+  /**
+   * The size is the reader's own (A− / A+), shown as it is whatever the phone's text size:
+   * the two would otherwise multiply (30 at the phone's 200% is 60, words split).
+   */
+  appSized?: boolean;
   onWord?: (pick: WordPick) => void;
   /** Long press anywhere on the verse, for the actions sheet. */
   onLongPress?: () => void;
@@ -63,6 +68,7 @@ export function noteLetter(n: number): string {
 export const VerseText = memo(function VerseText({
   verse,
   fontSize,
+  appSized = false,
   onWord,
   onLongPress,
   onNumberPress,
@@ -84,6 +90,7 @@ export const VerseText = memo(function VerseText({
   selectionTranslation,
   withChapter = false,
 }: Props) {
+  const scales = !appSized;
   const theme = useTheme();
   const t = useT();
   const serif = useDisplaySettings()?.serif ?? false;
@@ -109,12 +116,12 @@ export const VerseText = memo(function VerseText({
 
   if (verse.omitted) {
     return (
-      <Text
+      <Text allowFontScaling={scales}
         style={[styles.text, styles.omitted, { fontSize: fontSize - 2, lineHeight, color: theme.muted, fontFamily: font }]}
         numberOfLines={numberOfLines}
         onLongPress={onLongPress}
       >
-        {showNumber ? <Text style={[styles.number, { fontSize: small }]}>{verse.verse} </Text> : null}
+        {showNumber ? <Text allowFontScaling={scales} style={[styles.number, { fontSize: small }]}>{verse.verse} </Text> : null}
         {/* omitted 2: joined to an earlier verse (\v 17-18), whose number is its text. */}
         {verse.omitted === 2 ? t('joinedVerse', { verse: verse.text }) : `${t('omitted')} ${verse.text}`}
       </Text>
@@ -151,7 +158,7 @@ export const VerseText = memo(function VerseText({
         continue;
       }
       out.push(
-        <Text key={from} style={[match && bold, mark ? { backgroundColor: theme.marks[mark[2]], color: theme.markText } : { backgroundColor: theme.highlight }]}>
+        <Text allowFontScaling={scales} key={from} style={[match && bold, mark ? { backgroundColor: theme.marks[mark[2]], color: theme.markText } : { backgroundColor: theme.highlight }]}>
           {piece}
         </Text>,
       );
@@ -160,7 +167,7 @@ export const VerseText = memo(function VerseText({
   };
 
   const marker = (note: Note) => (
-    <Text
+    <Text allowFontScaling={scales}
       key={`n${note.n}`}
       onPress={onNote ? () => onNote(note) : undefined}
       style={{ fontSize: Math.max(10, small - 3), color: accent, fontWeight: '700' }}
@@ -183,17 +190,17 @@ export const VerseText = memo(function VerseText({
     let pos = start;
     for (const note of here) {
       const cut = Math.max(pos, Math.min(note.pos, end));
-      if (cut > pos) out.push(<Text key={`t${pos}`}>{highlighted(text.slice(pos - start, cut - start), pos)}</Text>);
+      if (cut > pos) out.push(<Text allowFontScaling={scales} key={`t${pos}`}>{highlighted(text.slice(pos - start, cut - start), pos)}</Text>);
       out.push(marker(note));
       pos = cut;
     }
-    if (pos < end) out.push(<Text key={`t${pos}`}>{highlighted(text.slice(pos - start), pos)}</Text>);
+    if (pos < end) out.push(<Text allowFontScaling={scales} key={`t${pos}`}>{highlighted(text.slice(pos - start), pos)}</Text>);
     return out;
   };
 
   let offset = 0;
   return (
-    <Text
+    <Text allowFontScaling={scales}
       style={[
         styles.text,
         { fontSize: size, lineHeight, color: textColor, fontFamily: font },
@@ -206,14 +213,14 @@ export const VerseText = memo(function VerseText({
       onLongPress={onLongPress}
       accessibilityHint={onLongPress ? t('verseHint') : undefined}
     >
-      {bookmarked ? <Text style={{ color: accent }}>▎</Text> : null}
+      {bookmarked ? <Text allowFontScaling={scales} style={{ color: accent }}>▎</Text> : null}
       {hasNote ? (
-        <Text onPress={onNotePress} style={{ color: accent, fontSize: small + 2 }} accessibilityRole="button" accessibilityLabel={t('editNote')}>
-          <Text style={{ fontFamily: ICON_FONT_FAMILY }}>{iconChar('edit_note')}</Text>{' '}
+        <Text allowFontScaling={scales} onPress={onNotePress} style={{ color: accent, fontSize: small + 2 }} accessibilityRole="button" accessibilityLabel={t('editNote')}>
+          <Text allowFontScaling={scales} style={{ fontFamily: ICON_FONT_FAMILY }}>{iconChar('edit_note')}</Text>{' '}
         </Text>
       ) : null}
       {showNumber && !isTitle ? (
-        <Text
+        <Text allowFontScaling={scales}
           onPress={onNumberPress}
           onLongPress={onLongPress}
           accessibilityRole={onNumberPress ? 'button' : undefined}
@@ -233,7 +240,7 @@ export const VerseText = memo(function VerseText({
         if (!seg.strongs) return <React.Fragment key={i}>{pieces(seg.text, start, i === 0)}</React.Fragment>;
         const strong = !!emphasize && (emphasize === seg.strongs || !!seg.choices?.includes(emphasize));
         return (
-          <Text
+          <Text allowFontScaling={scales}
             key={i}
             onPress={
               onWord

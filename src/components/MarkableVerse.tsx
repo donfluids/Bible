@@ -49,7 +49,7 @@ export const MarkableVerse = memo(function MarkableVerse({ verse, fontSize, line
   return (
     <View style={styles.row}>
       {verse.verse > 0 ? (
-        <Text style={[styles.number, { color: highlighted ? theme.markAccent : theme.muted, fontSize: Math.max(11, fontSize - 6), lineHeight, marginRight: gap }]}>{verse.verse}</Text>
+        <Text allowFontScaling={false} style={[styles.number, { color: highlighted ? theme.markAccent : theme.muted, fontSize: Math.max(11, fontSize - 6), lineHeight, marginRight: gap }]}>{verse.verse}</Text>
       ) : null}
       {words.map((w, i) => {
         const fill = fills[i];
@@ -73,7 +73,7 @@ export const MarkableVerse = memo(function MarkableVerse({ verse, fontSize, line
               fill ? { backgroundColor: fill } : null,
             ]}
           >
-            <Text style={[{ fontSize, lineHeight, color: textColor, fontFamily: font }, verse.verse === 0 && styles.title]}>{w.text}</Text>
+            <Text allowFontScaling={false} style={[{ fontSize, lineHeight, color: textColor, fontFamily: font }, verse.verse === 0 && styles.title]}>{w.text}</Text>
           </View>
         );
       })}
