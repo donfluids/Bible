@@ -5,6 +5,7 @@ import { malayalamPattern } from './malayalamSearch';
 import type { MalayalamPattern } from './malayalamSearch';
 import { plainText } from './text';
 import { translationInfo } from './types';
+import MALAYALAM_SMALL_WORDS from './data/interlinear-ml.json';
 import type { Book, Heading, LexiconHit, Note, OriginalWord, Ref, RelatedWord, Rendering, StrongsEntry, TranslationId, VerseRow } from './types';
 
 export async function getBooks(db: SQLiteDatabase): Promise<Book[]> {
@@ -340,8 +341,19 @@ const LOCAL_WORD_SCRIPTS = new Set(['ml']);
 /** Each word's id without a letter after the number (H1121a reads as H1121). */
 const baseId = (strongs: string) => /^[HG]\d+/.exec(strongs)?.[0] ?? '';
 
-// The usual word for each id, per Bible: '' for an id the Bible never links.
+// The usual word for each id, per Bible: '' for an id the Bible never links, or too seldom.
 const usualCache = new Map<TranslationId, Map<string, string>>();
+
+/**
+ * A usual word is trusted only when the Bible links the Hebrew or Greek word in at least
+ * this share of the places it stands. Below it the links are a few odd verses: אֲשֶׁר
+ * ("which", 5,499 times) is linked 99 times, mostly to ചെയ്തതുപോലെ, since Malayalam says
+ * "which" with an ending rather than a word.
+ */
+const MIN_LINKED_SHARE = 0.2;
+
+/** Meanings of the common small words Malayalam says with an ending or leaves out ('' shows nothing). */
+const SMALL_WORDS: Record<string, string> = MALAYALAM_SMALL_WORDS.words;
 
 /**
  * The word a Bible most often uses for each Hebrew or Greek word (scripts/align.mjs links
@@ -358,12 +370,20 @@ export async function usualWords(db: SQLiteDatabase, translation: TranslationId,
       translation,
       ...part,
     );
+    const uses = new Map(
+      (await db.getAllAsync<{ id: string; uses: number }>(`SELECT id, uses FROM strongs WHERE id IN (${part.map(() => '?').join(', ')})`, ...part)).map((r) => [r.id, r.uses]),
+    );
     const best = new Map<string, { word: string; count: number }>();
+    const linked = new Map<string, number>();
     for (const r of rows) {
+      linked.set(r.strongs, (linked.get(r.strongs) ?? 0) + r.count);
       const had = best.get(r.strongs);
       if (!had || r.count > had.count) best.set(r.strongs, r);
     }
-    for (const id of part) known.set(id, best.get(id)?.word ?? '');
+    for (const id of part) {
+      const trusted = (linked.get(id) ?? 0) >= MIN_LINKED_SHARE * (uses.get(id) ?? 0);
+      known.set(id, trusted ? (best.get(id)?.word ?? '') : '');
+    }
   }
   return known;
 }
@@ -376,8 +396,10 @@ async function withUsualWords(db: SQLiteDatabase, words: Map<number, OriginalWor
     [...words].map(([verse, list]) => [
       verse,
       list.map((w) => {
-        const local = usual.get(baseId(w.strongs));
-        return local ? { ...w, local } : w;
+        const id = baseId(w.strongs);
+        // A listed small word first (even an empty meaning), then the Bible's usual word.
+        const local = id in SMALL_WORDS ? SMALL_WORDS[id] : usual.get(id) || undefined;
+        return local === undefined ? w : { ...w, local };
       }),
     ]),
   );

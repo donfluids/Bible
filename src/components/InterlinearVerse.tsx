@@ -43,7 +43,8 @@ export const InterlinearVerse = memo(function InterlinearVerse({ words, hebrew, 
         const gloss = w.strongs === OBJECT_MARKER ? objectMarkerGloss(w.gloss) : w.gloss;
         const faded = w.strongs === OBJECT_MARKER && !gloss;
         // In a Malayalam Bible, the word it usually uses here in place of the English gloss.
-        const meaning = w.strongs !== OBJECT_MARKER && w.local ? w.local : gloss;
+        // An empty one is a word Malayalam leaves out ("the"): no meaning line.
+        const meaning = w.strongs !== OBJECT_MARKER && w.local !== undefined ? w.local : gloss;
         const script = scriptOf(meaning);
         const meaningStyle = script ? { fontFamily: scriptureFont(script, false), fontSize: small + 1, lineHeight: Math.round((small + 1) * 1.6) } : { fontSize: small };
         return (
