@@ -6,10 +6,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import { bibleOfLanguage, isMultilingual, pairedBible, useEdition } from '../edition';
 import { HEBREW_FONT, languageScript, scriptOf, scriptureFont } from '../fonts';
-import { renderingsLabel, translationName, useT } from '../i18n';
+import { renderingsLabel, translate, translationName, useT } from '../i18n';
 import type { StringKey } from '../i18n';
 import { describeMorph, plainMorph } from '../morph';
-import { getConcordance, getConcordanceCount, getInterlinear, getLexicon, getOriginalCount, getRelated, getRenderings, getStrongs, getVerses } from '../queries';
+import { getConcordance, getConcordanceCount, getInterlinear, getLexicon, getOriginalCount, getRelated, getRenderingRefs, getRenderings, getStrongs, getVerses, usualWords } from '../queries';
 import { useSettings } from '../settings';
 import { hasVoice, sayWord, stopSaying } from '../speech';
 import { formatCount, formatRef, isHebrew, plainKjvUsage } from '../text';
@@ -20,7 +20,7 @@ import { FLAG_LXX, FLAG_NOT_IN_BYZ, FLAG_NOT_IN_NA, FLAG_NOT_IN_TR, FLAG_REPLACE
 import type { Book, OriginalWord, Ref, RelatedWord, Rendering, StrongsEntry, TranslationId, VerseRow, WordPick } from '../types';
 import { Icon, IconButton } from './Icon';
 import { VerseText } from './VerseText';
-import { headlineWords, sameSpelling, topRenderings, wordsInVerse } from '../wordChoice';
+import { headlineWords, topRenderings, wordsInVerse } from '../wordChoice';
 
 /** A window at least this wide shows the word sheet as a panel beside the text. */
 export const PANEL_MIN_WIDTH = 1000;
@@ -65,10 +65,12 @@ interface Loaded {
   kjv: Rendering[];
   examples: VerseRow[];
   related: RelatedWord[];
+  /** In the Malayalam or Tamil interface, each related word's usual word in that Bible. */
+  relatedNative: Map<string, string>;
   failed?: boolean;
 }
 
-const EMPTY: Omit<Loaded, 'entry'> = { count: 0, original: 0, parts: [], inVerse: [], kjvCount: 0, nativeCount: 0, renderings: [], nativeWords: [], kjv: [], examples: [], related: [] };
+const EMPTY: Omit<Loaded, 'entry'> = { count: 0, original: 0, parts: [], inVerse: [], kjvCount: 0, nativeCount: 0, renderings: [], nativeWords: [], kjv: [], examples: [], related: [], relatedNative: new Map() };
 
 /**
  * Which printed texts have an original word, when that is worth saying: a Hebrew word
@@ -88,6 +90,16 @@ function textNote(w: OriginalWord, t: (key: StringKey, params?: Record<string, s
   else if (!inByz) note = t('noteNotInByz');
   if (w.flags & FLAG_REPLACES_NA && w.alt) note += ' ' + t('noteNaReads', { word: w.alt });
   return note;
+}
+
+/**
+ * The same word in the same form: its letters alike once accents, vowel points and
+ * punctuation are set aside (אֱלֹהִ֑ים and אֱלֹהִים, λόγος, and λόγος). The verse card then
+ * leaves out its spelling, which the dictionary form's pronunciation below already gives.
+ */
+function sameLetters(a: string, b: string): boolean {
+  const letters = (s: string) => s.normalize('NFD').replace(/[\p{M}\u05be\u05c3\u05c0]/gu, '').replace(/[^\p{L}]/gu, '').toLowerCase().replace(/ς/g, 'σ');
+  return letters(a) === letters(b);
 }
 
 /** Strong's "el-o-heem'" as syllables, the stressed one (marked ') in capitals. */
@@ -155,12 +167,22 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
   const landscape = panel || winW > winH * 1.2;
   // A short phone (an iPhone SE, a small Android) opens it taller, so the meaning shows too.
   const short = winH < 760;
-  const halfH = landscape ? fullH : Math.min(fullH, Math.max(380, Math.round(winH * (short ? 0.8 : 0.56))));
+  const [expanded, setExpanded] = useState(false);
+  const [footerH, setFooterH] = useState(120);
+  // Half height ends where the word's heading ends (the form in this verse, the dictionary
+  // form, its meaning and count), measured once drawn, so the meaning is never cut in half;
+  // until then, a share of the screen.
+  const [dragH, setDragH] = useState(69);
+  const [headEnd, setHeadEnd] = useState(0);
+  const measuredH = headEnd > 0 ? Math.max(300, Math.min(Math.round(winH * 0.85), dragH + headEnd + footerH + 12)) : 0;
+  const halfH = landscape ? fullH : Math.min(fullH, measuredH || Math.max(380, Math.round(winH * (short ? 0.8 : 0.56))));
   const halfY = fullH - halfH;
   const offset = useRef(new Animated.Value(halfY)).current;
   const restY = useRef(halfY);
-  const [expanded, setExpanded] = useState(false);
-  const [footerH, setFooterH] = useState(120);
+  const halfYRef = useRef(halfY);
+  halfYRef.current = halfY;
+  const fullHRef = useRef(fullH);
+  fullHRef.current = fullH;
   const snap = useCallback(
     (to: 'half' | 'full' | 'closed') => {
       const target = to === 'full' ? 0 : to === 'half' ? halfY : fullH;
@@ -184,16 +206,25 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
     }
     const isNew = shownRoot.current !== rootPick;
     shownRoot.current = rootPick;
-    restY.current = halfY;
+    const half = halfYRef.current;
+    restY.current = half;
     setExpanded(false);
     setShowLegend(false);
     if (panel || !isNew) {
-      offset.setValue(halfY);
+      offset.setValue(half);
       return;
     }
-    offset.setValue(fullH);
+    offset.setValue(fullHRef.current);
+    Animated.spring(offset, { toValue: half, useNativeDriver: true, bounciness: 0, speed: 18 }).start();
+  }, [rootPick, panel, offset]);
+  // The half height moved (the heading measured, a turned phone): a sheet resting at half
+  // height follows it; one opened to full height stays.
+  useEffect(() => {
+    if (restY.current === 0 && !panel) return;
+    if (restY.current >= fullH) return;
+    restY.current = halfY;
     Animated.spring(offset, { toValue: halfY, useNativeDriver: true, bounciness: 0, speed: 18 }).start();
-  }, [rootPick, halfY, fullH, panel, offset]);
+  }, [halfY, fullH, panel, offset]);
   const startY = useRef(0);
   const drag = useMemo(() => {
     const settle = (dy: number, vy: number) => {
@@ -227,6 +258,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
     if (!pick) return;
     let cancelled = false;
     setData(null);
+    setHeadEnd(0);
     if (!pick.strongs) {
       setData({ entry: null, ...EMPTY });
       return;
@@ -255,7 +287,13 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
           : Promise.resolve([] as OriginalWord[]),
         Promise.all(choices.map((id) => (id === strongs ? Promise.resolve(null) : getStrongs(db, id)))),
       ]);
-      const [examples, related] = await Promise.all([getVerses(db, tagged, refs.slice(0, 2)), entry ? getRelated(db, entry) : Promise.resolve([])]);
+      // The examples show the word's usual meaning: verses where the Bible gives it its
+      // commonest rendering ("word" for λόγος, not "for the cause"), else the first verses.
+      const usual = topRenderings(renderings, 1, count)[0]?.word;
+      const usualRefs = usual ? await getRenderingRefs(db, strongs, tagged, usual) : [];
+      const [examples, related] = await Promise.all([getVerses(db, tagged, (usualRefs.length > 0 ? usualRefs : refs).slice(0, 2)), entry ? getRelated(db, entry) : Promise.resolve([])]);
+      // Related words in the reader's language where that Bible has a usual word for them.
+      const relatedNative = nativeFirst && related.length > 0 ? await usualWords(db, nativeFirst, related.map((r) => r.id)) : new Map<string, string>();
       const nativeWords = !nativeFirst ? [] : tagged === nativeFirst ? renderings : nativeOther;
       const nativeCount = tagged === nativeFirst ? count : nativeOtherCount;
       // A word tapped in a translation: the form the Hebrew or Greek has in that verse.
@@ -266,7 +304,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
         const e = id === strongs ? entry : partEntries[i];
         return { id, lemma: e?.lemma ?? null, gloss: e?.gloss ?? null };
       });
-      return { entry, count, original, parts, inVerse, kjvCount, nativeCount, renderings, nativeWords, kjv, examples, related };
+      return { entry, count, original, parts, inVerse, kjvCount, nativeCount, renderings, nativeWords, kjv, examples, related, relatedNative };
     })()
       .then((loaded) => {
         if (!cancelled) setData(loaded);
@@ -296,15 +334,21 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
   // The Hebrew or Greek as it stands in the verse: the word tapped in the Hebrew or Greek
   // view, or for a translation word, every form with its number in that verse.
   const inVerse = original ? [original] : (data?.inVerse ?? []);
-  // The dictionary spelling is left out when the word in the verse above already reads the same.
-  const sameTranslit = !!data?.entry?.translit && inVerse.some((w) => !!w.translit && sameSpelling(w.translit, data.entry!.translit!));
-  const tappedScript = pick.word ? scriptOf(pick.word) : null;
-  const tappedFont = tappedScript ? scriptureFont(tappedScript, settings.serif, true) : undefined;
   const pron = syllables(entry?.pron ?? null);
   // A translation's renderings mislead when it tags the word in under half the verses
   // the word is in (the KJV gives ὁ, "the", as "which, that"), so they are left out then.
   const covers = (n: number) => !data || data.original === 0 || n >= data.original / 2;
   const headline = data && covers(data.nativeCount) ? headlineWords(data.nativeWords) : [];
+  // The word's meaning in this verse, in the reader's language: the Malayalam (or Tamil)
+  // word tapped, or for a Hebrew or Greek word tapped, its usual word in that Bible; else
+  // the English gloss for this verse.
+  const nativeScript = nativeFirst ? translationInfo(nativeFirst).script ?? null : null;
+  const verseMeaning = (w: OriginalWord): string | undefined => {
+    if (!nativeScript) return undefined;
+    if (pick.word && scriptOf(pick.word) === nativeScript) return pick.word;
+    if (w.local && scriptOf(w.local) === nativeScript) return w.local;
+    return headline[0];
+  };
   const kjvChips = withKjv && covers(data?.kjvCount ?? 0) ? <Renderings label={renderingsLabel(settings.language, 'KJV')} list={topRenderings(data?.kjv ?? [], 5)} theme={theme} /> : null;
   const listCount = data ? data.original || data.count : 0;
   const name = translationName(settings.language, tagged);
@@ -340,7 +384,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
       <Animated.View
         style={[styles.sheet, panel && styles.panelSheet, { height: fullH, backgroundColor: theme.card, borderColor: theme.border, transform: [{ translateY: offset }] }]}
       >
-        <View {...drag.panHandlers} style={styles.dragArea}>
+        <View {...drag.panHandlers} style={styles.dragArea} onLayout={(e) => setDragH(e.nativeEvent.layout.height)}>
           <Pressable
             onPress={() => snap(expanded ? 'half' : 'full')}
             accessibilityRole="button"
@@ -363,6 +407,8 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
           <ActivityIndicator style={styles.spinner} color={theme.accent} accessibilityLabel={t('loading')} />
         ) : (
           <ScrollView style={styles.scroll} contentContainerStyle={[styles.scrollContent, { paddingBottom: (entry ? footerH : 0) + 16 }]}>
+            {/* Everything down to the count is the heading the half-open sheet shows whole. */}
+            <View onLayout={(e) => setHeadEnd(e.nativeEvent.layout.y + e.nativeEvent.layout.height)}>
             {data.parts.length > 1 ? (
               <View style={styles.compound}>
                 <Text style={[styles.inTextLabel, { color: theme.muted }]}>{t('compoundWord', { n: data.parts.length })}</Text>
@@ -391,7 +437,20 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
               <View style={[styles.inText, (short || landscape) && styles.inTextCompact, { backgroundColor: theme.accentSoft }]}>
                 <Text style={[styles.inTextLabel, { color: theme.muted }]}>{t('inThisVerse')}</Text>
                 {inVerse.map((w, i) => (
-                  <InVerseWord key={`${w.text}|${w.morph}`} word={w} hebrew={hebrew} font={originalFont} theme={theme} t={t} language={settings.language} first={i === 0} compact={short || landscape} />
+                  <InVerseWord
+                    key={`${w.text}|${w.morph}`}
+                    word={w}
+                    hebrew={hebrew}
+                    font={originalFont}
+                    theme={theme}
+                    t={t}
+                    language={settings.language}
+                    first={i === 0}
+                    compact={short || landscape}
+                    // Its spelling only when it differs from the dictionary form's below.
+                    showTranslit={!entry?.lemma || !sameLetters(w.text, entry.lemma)}
+                    meaning={verseMeaning(w)}
+                  />
                 ))}
               </View>
             ) : null}
@@ -404,14 +463,6 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
               <>
                 {inVerse.length > 0 ? <Text style={[styles.inTextLabel, styles.dictionaryLabel, { color: theme.muted }]}>{t('dictionaryForm')}</Text> : null}
                 <View style={styles.wordRow}>
-                  {pick.word ? (
-                    <>
-                      <Text numberOfLines={1} style={[styles.tapped, { color: theme.muted, fontFamily: tappedFont, fontWeight: tappedFont ? undefined : '600' }]}>
-                        {pick.word}
-                      </Text>
-                      <Icon name="arrow_forward" size={20} color={theme.muted} />
-                    </>
-                  ) : null}
                   <Text style={[styles.lemma, { color: theme.text, fontFamily: originalFont }]}>{entry.lemma}</Text>
                   <IconButton
                     name={speaking ? 'stop_circle' : 'volume_up'}
@@ -421,6 +472,19 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                     size={28}
                   />
                 </View>
+                {/* One way to say it: Strong's syllables, else its spelling. */}
+                {pron.length > 0 || entry.translit ? (
+                  <Text style={styles.pronRow}>
+                    {pron.length > 0
+                      ? pron.map((p, i) => (
+                          <Text key={i} style={[styles.pron, { color: theme.text, fontWeight: p.stressed ? '700' : '500' }]}>
+                            {i > 0 ? '-' : ''}
+                            {p.text}
+                          </Text>
+                        ))
+                      : <Text style={[styles.pron, { color: theme.text }]}>{entry.translit}</Text>}
+                  </Text>
+                ) : null}
                 {headline.length > 0 ? (
                   <>
                     <Text style={[styles.meaning, styles.meaningNative, { color: theme.text, fontFamily: scriptureFont(scriptOf(headline[0]), settings.serif, true) }]}>
@@ -435,27 +499,23 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                     <Text style={[styles.meaning, { color: theme.text }]}>{entry.gloss}</Text>
                   </>
                 ) : null}
-                {pron.length > 0 || (entry.translit && !sameTranslit) ? (
-                  <Text style={styles.pronRow}>
-                    {pron.map((s, i) => (
-                      <Text key={i} style={[styles.pron, { color: theme.text, fontWeight: s.stressed ? '700' : '500' }]}>
-                        {i > 0 ? '-' : ''}
-                        {s.text}
-                      </Text>
-                    ))}
-                    {entry.translit && !sameTranslit ? <Text style={[styles.translit, { color: theme.muted }]}>{pron.length ? '   ' : ''}{entry.translit}</Text> : null}
-                  </Text>
-                ) : null}
 
-                {entry.uses ? (
+                {/* One count, in verses, the same as the button's. */}
+                {data.original > 0 ? (
                   <Text style={[styles.uses, { color: theme.muted }]}>
-                    {entry.uses === 1
-                      ? t(hebrew ? 'usedOnceHebrew' : 'usedOnceGreek')
-                      : t(hebrew ? 'usedHebrew' : 'usedGreek', { n: formatCount(entry.uses) })}
-                    {/* The button below counts verses of the translation: fewer when a verse has the word twice. */}
-                    {listCount > 0 && listCount < entry.uses ? ` ${t('usesInVerses')}` : ''}
+                    {data.original === 1 ? t(hebrew ? 'inOneVerseHebrew' : 'inOneVerseGreek') : t(hebrew ? 'inVersesHebrew' : 'inVersesGreek', { n: formatCount(data.original) })}
+                  </Text>
+                ) : entry.uses ? (
+                  <Text style={[styles.uses, { color: theme.muted }]}>
+                    {entry.uses === 1 ? t(hebrew ? 'usedOnceHebrew' : 'usedOnceGreek') : t(hebrew ? 'usedHebrew' : 'usedGreek', { n: formatCount(entry.uses) })}
                   </Text>
                 ) : null}
+              </>
+            )}
+            </View>
+
+            {entry ? (
+              <>
 
                 {covers(data.count) ? (
                   <Renderings
@@ -469,13 +529,14 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
 
                 {data.examples.length > 0 ? (
                   <Section label={t('examples')} theme={theme}>
-                    {data.examples.map((v) => (
+                    {data.examples.map((v, i) => (
                       <Pressable
                         android_ripple={{ color: theme.accentSoft }}
                         key={`${v.book}:${v.chapter}:${v.verse}`}
                         onPress={() => onOpenRef(v)}
                         accessibilityRole="button"
-                        style={({ pressed }) => [styles.example, { borderBottomColor: theme.border, opacity: pressed ? 0.6 : 1 }]}
+                        // The last one leaves its line to the next section's.
+                        style={({ pressed }) => [styles.example, i === data.examples.length - 1 && styles.exampleLast, { borderBottomColor: theme.border, opacity: pressed ? 0.6 : 1 }]}
                       >
                         <Text style={[styles.exampleRef, { color: theme.accent }]}>{formatRef(books, v, tagged)}</Text>
                         <VerseText verse={v} fontSize={16} emphasize={entry.id} showNumber={false} underline={false} numberOfLines={3} />
@@ -489,35 +550,13 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
 
                 {data.related.length > 0 ? (
                   <Section label={t('relatedWords')} theme={theme}>
-                    <View style={styles.chips}>
-                      {data.related.map((r) => (
-                        <Pressable
-                          android_ripple={{ color: theme.accentSoft }}
-                          key={r.id}
-                          onPress={() => onPick({ strongs: r.id })}
-                          accessibilityRole="button"
-                          style={({ pressed }) => [styles.relatedChip, { borderColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
-                        >
-                          <Text style={[styles.relatedLemma, { color: theme.text, fontFamily: isHebrew(r.id) ? HEBREW_FONT : theme.font }]}>{r.lemma}</Text>
-                          {r.gloss ? <Text style={[styles.chipText, { color: theme.text }]}>{r.gloss}</Text> : null}
-                        </Pressable>
-                      ))}
-                    </View>
+                    <RelatedWords list={data.related} native={data.relatedNative} theme={theme} t={t} onPick={onPick} />
                   </Section>
                 ) : null}
 
+                {/* Strong's short definition first, then the fuller dictionary; both open a few lines. */}
+                <StrongsEntryView entry={entry} theme={theme} t={t} language={settings.language} onPick={onPick} />
                 <LexiconEntry id={entry.id} theme={theme} t={t} onOpenRef={onOpenRef} />
-
-                <Section label={t('strongsDictionary')} theme={theme}>
-                  {entry.definition ? <Text style={[styles.body, { color: theme.text }]}>{entry.definition}</Text> : null}
-                  {entry.kjv_usage ? (
-                    <Text style={[styles.usage, { color: theme.text }]}>
-                      {t('kjvUsage', { list: plainKjvUsage(entry.kjv_usage, { idiom: t('usageIdiom'), phrase: t('usagePhrase'), with: t('usageWith') }) })}
-                    </Text>
-                  ) : null}
-                  {entry.derivation ? <LinkedText text={entry.derivation} color={theme.muted} accent={theme.accent} hebrewFont={HEBREW_FONT} onPick={onPick} /> : null}
-                  <Text style={[styles.numberLine, { color: theme.muted }]}>{t('strongsNumberLine', { id: entry.id })}</Text>
-                </Section>
 
                 {inVerse.length > 0 ? (
                   <>
@@ -536,7 +575,7 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
                   </>
                 ) : null}
               </>
-            )}
+            ) : null}
           </ScrollView>
         )}
 
@@ -557,9 +596,9 @@ export function WordSheet({ pick, rootPick, translation, books, onClose, onBack,
             ) : null}
             {/* A panel already shows everything; the bar is for the half-open sheet. */}
             {!expanded && !panel ? (
-              <Pressable onPress={() => snap('full')} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.more}>
+              <Pressable onPress={() => snap('full')} accessibilityRole="button" accessibilityLabel={t('moreAboutWord')} android_ripple={{ color: theme.accentSoft }} style={styles.more}>
                 <Icon name="expand_less" size={22} color={theme.accent} />
-                <Text style={[styles.moreText, { color: theme.accent }]}>{t('moreAboutWord')}</Text>
+                <Text style={[styles.moreText, { color: theme.accent }]} numberOfLines={1}>{t('moreShort')}</Text>
               </Pressable>
             ) : null}
             <Pressable
@@ -623,7 +662,30 @@ function PanelFrame({ theme, children }: FrameProps) {
 
 
 /** One Hebrew or Greek word as it stands in the verse: form, transliteration, gloss, grammar. */
-function InVerseWord({ word, hebrew, font, theme, t, language, first, compact }: { word: OriginalWord; hebrew: boolean; font: string | undefined; theme: Theme; t: ReturnType<typeof useT>; language: string; first: boolean; compact: boolean }) {
+function InVerseWord({
+  word,
+  hebrew,
+  font,
+  theme,
+  t,
+  language,
+  first,
+  compact,
+  showTranslit = true,
+  meaning,
+}: {
+  word: OriginalWord;
+  hebrew: boolean;
+  font: string | undefined;
+  theme: Theme;
+  t: ReturnType<typeof useT>;
+  language: string;
+  first: boolean;
+  compact: boolean;
+  showTranslit?: boolean;
+  /** The meaning in the reader's language (Malayalam, Tamil), in place of the English gloss. */
+  meaning?: string;
+}) {
   // Plain grammar in the reader's language ("noun, singular"); a tap shows the full
   // description and its code, for those who study it.
   const [full, setFull] = useState(false);
@@ -631,15 +693,18 @@ function InVerseWord({ word, hebrew, font, theme, t, language, first, compact }:
   const detailed = word.morph ? describeMorph(word.morph, hebrew) : '';
   const grammar = full || !plain ? detailed : plain;
   // The gloss as the source gives it can carry the verse's punctuation ("Word,").
-  const gloss = word.gloss?.replace(/[\s,.;:·]+$/, '');
+  const gloss = meaning ?? word.gloss?.replace(/[\s,.;:·]+$/, '');
+  const glossFont = meaning ? scriptureFont(scriptOf(meaning), false) : undefined;
   const note = textNote(word, t);
   return (
     <View style={first ? null : styles.inTextMore}>
       <Text style={[styles.inTextWord, compact && styles.inTextWordCompact, { color: theme.text, fontFamily: font, textAlign: hebrew ? 'right' : 'left' }]}>{word.text}</Text>
-      <Text style={[styles.inTextLine, { color: theme.text }]}>
-        {word.translit}
-        {gloss ? <Text style={{ color: theme.muted }}>  ·  {gloss}</Text> : null}
-      </Text>
+      {(showTranslit && word.translit) || gloss ? (
+        <Text style={[styles.inTextLine, { color: theme.text }]}>
+          {showTranslit ? word.translit : ''}
+          {gloss ? <Text style={{ color: showTranslit && word.translit ? theme.muted : theme.text, fontFamily: glossFont }}>{showTranslit && word.translit ? '  ·  ' : ''}{gloss}</Text> : null}
+        </Text>
+      ) : null}
       {grammar ? (
         <Text
           style={[styles.inTextLine, { color: theme.muted }]}
@@ -660,7 +725,7 @@ function InVerseWord({ word, hebrew, font, theme, t, language, first, compact }:
 
 function Section({ label, theme, children }: { label: string; theme: Theme; children: React.ReactNode }) {
   return (
-    <View style={styles.section}>
+    <View style={[styles.section, { borderTopColor: theme.border }]}>
       <Text style={[styles.label, { color: theme.text }]} accessibilityRole="header">
         {label}
       </Text>
@@ -707,8 +772,14 @@ function Renderings({ label, list, theme, onPress }: { label: string; list: Rend
  * Derivation text such as "plural of H433 (אֱלוֹהַּ);" with each named entry as a link.
  * The link shows the word itself rather than its number when the text gives it.
  */
-/** How much of a long entry shows before "Show the whole entry". */
-const LEXICON_PREVIEW = 600;
+/** How much of a long entry shows before "Show the whole entry": about four lines. */
+const LEXICON_PREVIEW = 220;
+
+/** Misspellings in the dictionaries' own text, put right where shown. */
+const LEXICON_FIXES: [RegExp, string][] = [
+  [/\basdivine\b/g, 'as divine'],
+  [/\bbelongng\b/g, 'belonging'],
+];
 
 /**
  * The fuller dictionary entry: Abbott-Smith for a Greek word, the BDB outline for a
@@ -731,7 +802,7 @@ function LexiconEntry({ id, theme, t, onOpenRef }: { id: string; theme: Theme; t
     };
   }, [db, id]);
   if (!entry) return null;
-  const lines = entry.body.split('\n');
+  const lines = LEXICON_FIXES.reduce((body, [from, to]) => body.replace(from, to), entry.body).split('\n');
   // The preview: lines until about LEXICON_PREVIEW characters, the last one cut to four
   // lines, so it always reaches the first meaning.
   let shown = lines.length;
@@ -749,7 +820,7 @@ function LexiconEntry({ id, theme, t, onOpenRef }: { id: string; theme: Theme; t
         const label = tab > 0 ? line.slice(0, tab) : '';
         const text = tab > 0 ? line.slice(tab + 1) : line;
         return (
-          <Text key={i} numberOfLines={cut && i === shown - 1 ? 4 : undefined} style={[styles.lexLine, { color: theme.text }]}>
+          <Text key={i} numberOfLines={cut && i === shown - 1 ? 3 : undefined} style={[styles.lexLine, { color: theme.text }]}>
             {/* A left-to-right mark: a line that opens with a Hebrew word still reads left to right. */}
             {'\u200e'}
             {label ? <Text style={[styles.lexLabel, { color: theme.muted }]}>{label}  </Text> : null}
@@ -787,10 +858,120 @@ function LexiconEntry({ id, theme, t, onOpenRef }: { id: string; theme: Theme; t
   );
 }
 
-function LinkedText({ text, color, accent, hebrewFont, onPick }: { text: string; color: string; accent: string; hebrewFont: string; onPick: (p: WordPick) => void }) {
+/** Related words shown before "more": the closest ones, which getRelated lists first. */
+const RELATED_SHOWN = 4;
+
+/** Related words as small cards two to a line, each with its meaning in the reader's language where there is one. */
+function RelatedWords({ list, native, theme, t, onPick }: { list: RelatedWord[]; native: Map<string, string>; theme: Theme; t: ReturnType<typeof useT>; onPick: (pick: WordPick) => void }) {
+  const [all, setAll] = useState(false);
+  const shown = all ? list : list.slice(0, RELATED_SHOWN);
+  return (
+    <View style={styles.chips}>
+      {shown.map((r) => {
+        const meaning = native.get(r.id) || r.gloss;
+        return (
+          <Pressable
+            android_ripple={{ color: theme.accentSoft }}
+            key={r.id}
+            onPress={() => onPick({ strongs: r.id })}
+            accessibilityRole="button"
+            accessibilityLabel={meaning ? `${r.lemma}, ${meaning}` : r.lemma ?? r.id}
+            style={({ pressed }) => [styles.relatedChip, { borderColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
+          >
+            <Text numberOfLines={1} style={[styles.relatedLemma, { color: theme.text, fontFamily: isHebrew(r.id) ? HEBREW_FONT : theme.font }]}>{r.lemma}</Text>
+            {meaning ? (
+              <Text numberOfLines={2} style={[styles.relatedGloss, { color: theme.muted, fontFamily: scriptureFont(scriptOf(meaning), false) }]}>
+                {meaning}
+              </Text>
+            ) : null}
+          </Pressable>
+        );
+      })}
+      {list.length > RELATED_SHOWN ? (
+        <Pressable onPress={() => setAll((v) => !v)} accessibilityRole="button" hitSlop={6} style={styles.relatedMore}>
+          <Text style={[styles.legendToggleText, { color: theme.accent }]}>{all ? t('showLess') : t('moreRelated', { n: list.length - RELATED_SHOWN })}</Text>
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
+/** Strong's notes on a word's origin, in forms common enough to say in the reader's language. */
+const DERIVATIONS: [RegExp, StringKey][] = [
+  [/^a primitive root$/i, 'derivRoot'],
+  [/^(?:probably|perhaps) from §(?: and §)*$/i, 'derivMaybeFrom'],
+  [/^from the same as §$/i, 'derivSameRoot'],
+  [/^from a compound of §(?: and §)+$/i, 'derivCompound'],
+  [/^from §(?: and §)*$/i, 'derivFrom'],
+  [/^the same as §$/i, 'derivSameAs'],
+  [/^feminine of §$/i, 'derivFeminine'],
+  [/^plural of §$/i, 'derivPlural'],
+  [/^\(Aramaic\) corresponding to §$/i, 'derivAramaic'],
+  [/^of Hebrew origin \(§\)$/i, 'derivHebrewOrigin'],
+  [/^a form of §$/i, 'derivFormOf'],
+];
+const LINK = /[HG]\d{1,4}(?:\s*\([^)]*\))?/g;
+
+/**
+ * Strong's origin note for a reader not reading English: "from λέγω;" becomes
+ * "ഉത്ഭവം: λέγω". A note of another form stays as Strong's wrote it (in English, in the
+ * English dictionary's section), so a label is never set inside an English sentence.
+ */
+function localDerivation(text: string, t: ReturnType<typeof useT>): { label: string; links: string[] } | null {
+  const links = text.match(LINK) ?? [];
+  const shape = text.replace(LINK, '§').replace(/[\s;.,]+$/, '').trim();
+  const found = DERIVATIONS.find(([pattern]) => pattern.test(shape));
+  return found ? { label: t(found[1]), links } : null;
+}
+
+/** Strong's entry: its definition a few lines long, the KJV's words and the origin when opened. */
+const STRONGS_PREVIEW = 200;
+function StrongsEntryView({ entry, theme, t, language, onPick }: { entry: StrongsEntry; theme: Theme; t: ReturnType<typeof useT>; language: string; onPick: (pick: WordPick) => void }) {
+  const [all, setAll] = useState(false);
+  useEffect(() => setAll(false), [entry.id]);
+  const long = (entry.definition?.length ?? 0) > STRONGS_PREVIEW || !!entry.kjv_usage;
+  const local = language !== 'en' && entry.derivation ? localDerivation(entry.derivation, t) : null;
+  return (
+    <Section label={t('strongsDictionary')} theme={theme}>
+      {entry.definition ? (
+        <Text numberOfLines={all ? undefined : 4} style={[styles.body, { color: theme.text }]}>
+          {entry.definition}
+        </Text>
+      ) : null}
+      {all && entry.kjv_usage ? (
+        <Text style={[styles.usage, { color: theme.text }]}>
+          {/* The list is English: its notes stay English too ("(idiom)"), whatever the menus. */}
+          {t('kjvUsage', { list: plainKjvUsage(entry.kjv_usage, { idiom: translate('en', 'usageIdiom'), phrase: translate('en', 'usagePhrase'), with: translate('en', 'usageWith') }) })}
+        </Text>
+      ) : null}
+      {local ? (
+        <Text style={[styles.derivation, { color: theme.muted }]}>
+          {local.label}
+          {local.links.length > 0 ? ': ' : ''}
+          {local.links.map((link, i) => (
+            <React.Fragment key={i}>
+              {i > 0 ? ', ' : ''}
+              <LinkedText text={link} color={theme.muted} accent={theme.accent} hebrewFont={HEBREW_FONT} onPick={onPick} inline />
+            </React.Fragment>
+          ))}
+        </Text>
+      ) : entry.derivation ? (
+        <LinkedText text={entry.derivation} color={theme.muted} accent={theme.accent} hebrewFont={HEBREW_FONT} onPick={onPick} />
+      ) : null}
+      {long ? (
+        <Pressable onPress={() => setAll((v) => !v)} hitSlop={8} accessibilityRole="button" style={styles.lexMore}>
+          <Text style={[styles.legendToggleText, { color: theme.accent }]}>{all ? t('showLess') : t('showWholeEntry')}</Text>
+        </Pressable>
+      ) : null}
+      <Text style={[styles.numberLine, { color: theme.muted }]}>{t('strongsNumberLine', { id: entry.id })}</Text>
+    </Section>
+  );
+}
+
+function LinkedText({ text, color, accent, hebrewFont, onPick, inline = false }: { text: string; color: string; accent: string; hebrewFont: string; onPick: (p: WordPick) => void; inline?: boolean }) {
   const parts = text.split(/([HG]\d{1,4}(?:\s*\([^)]*\))?)(?![\d\w])/);
   return (
-    <Text style={[styles.derivation, { color }]}>
+    <Text style={inline ? null : [styles.derivation, { color }]}>
       {parts.map((part, i) => {
         const m = /^([HG]\d{1,4})(?:\s*\(([^)]*)\))?$/.exec(part);
         if (!m) return <Text key={i}>{part}</Text>;
@@ -864,14 +1045,18 @@ const styles = StyleSheet.create({
   pronRow: { marginTop: 4 },
   pron: { fontSize: 17 },
   translit: { fontSize: 14 },
-  section: { marginTop: 20 },
-  label: { fontSize: 15, fontWeight: '600', marginBottom: 8 },
+  // A thin line above each section, so the long sheet reads in parts.
+  section: { marginTop: 18, paddingTop: 14, borderTopWidth: StyleSheet.hairlineWidth },
+  label: { fontSize: 16, fontWeight: '700', marginBottom: 8 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { minHeight: 36, paddingHorizontal: 12, borderRadius: 999, borderWidth: 1, justifyContent: 'center' },
   chipText: { fontSize: 15 },
-  relatedChip: { minHeight: 44, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  relatedLemma: { fontSize: 20 },
+  relatedChip: { minHeight: 48, maxWidth: '48%', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14, borderWidth: 1, justifyContent: 'center' },
+  relatedLemma: { fontSize: 18 },
+  relatedGloss: { fontSize: 13, marginTop: 1 },
+  relatedMore: { minHeight: 48, paddingHorizontal: 14, borderRadius: 14, justifyContent: 'center' },
   example: { paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
+  exampleLast: { borderBottomWidth: 0, paddingBottom: 0 },
   exampleRef: { fontSize: 13, fontWeight: '600', marginBottom: 2 },
   body: { fontSize: 15, lineHeight: 22 },
   derivation: { fontSize: 15, lineHeight: 22, marginTop: 6 },
