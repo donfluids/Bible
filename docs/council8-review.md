@@ -79,6 +79,7 @@ the web smoke test); none of it has been tried on a phone yet.
 | 49 | Saved shows every item whichever Bible it was made in. | yours |
 | 50 | Largest text in Malayalam breaks long words on narrow phones; cap at 32 there? | yours |
 | 51 | Search "All" lists the New Testament first; the dictionary ranks H7453 (friend) above H157 (love) for "love". | yours |
+| 52 | Check the 129 Malayalam meanings shown under common Hebrew and Greek words in the interlinear (docs/interlinear-ml-review.md; the list is src/data/interlinear-ml.json, now drafted and in the app). | yours: to review later |
 
 ## From council 7
 
