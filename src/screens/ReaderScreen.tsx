@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, ActivityIndicator, Alert, AppState, BackHandler, FlatList, Share, StyleSheet, Text, TextInput, useWindowDimensions, View, Platform } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, Alert, Animated, AppState, BackHandler, FlatList, Share, StyleSheet, Text, TextInput, useWindowDimensions, View, Platform } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, ViewStyle, ViewToken } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -694,17 +694,53 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   // Swipe left for the next chapter, right for the previous. Vertical movement fails the
   // gesture quickly so scrolling is unaffected, and a swipe starting at either edge is
   // left to Android's back gesture.
+  // Swiping left or right turns the chapter. The page follows the finger (a little slower),
+  // the chapter it leads to is named at the edge, and a long swipe or a quick flick turns it;
+  // a slightly slanted swipe still counts, a mostly upright one is a scroll.
+  const swipeX = useRef(new Animated.Value(0)).current;
+  const [swipeTo, setSwipeTo] = useState<1 | -1 | null>(null);
+  const swipeDir = useRef<1 | -1 | null>(null);
+  const swipeEnds = useRef({ atStart: false, atEnd: false });
+  const showSwipe = (dir: 1 | -1 | null) => {
+    if (swipeDir.current === dir) return;
+    swipeDir.current = dir;
+    setSwipeTo(dir);
+  };
   const swipe = useMemo(
     () =>
       Gesture.Pan()
         .hitSlop({ left: -EDGE, right: -EDGE })
         .maxPointers(1)
-        .activeOffsetX([-30, 30])
-        .failOffsetY([-15, 15])
+        .activeOffsetX([-20, 20])
+        .failOffsetY([-35, 35])
         .runOnJS(true)
+        .onUpdate((e) => {
+          const dir: 1 | -1 = e.translationX < 0 ? 1 : -1;
+          const blocked = dir === 1 ? swipeEnds.current.atEnd : swipeEnds.current.atStart;
+          // Past the first or last chapter the page only gives a little.
+          swipeX.setValue(e.translationX * (blocked ? 0.15 : 0.6));
+          showSwipe(blocked || Math.abs(e.translationX) < 24 ? null : dir);
+        })
         .onEnd((e) => {
-          if (e.translationX < -80) goRef.current(1);
-          else if (e.translationX > 80) goRef.current(-1);
+          const dir: 1 | -1 = e.translationX < 0 ? 1 : -1;
+          const blocked = dir === 1 ? swipeEnds.current.atEnd : swipeEnds.current.atStart;
+          const far = Math.abs(e.translationX) > 70;
+          const flick = Math.abs(e.velocityX) > 500 && Math.abs(e.translationX) > 25 && Math.sign(e.velocityX) === Math.sign(e.translationX);
+          if (!blocked && (far || flick)) {
+            Animated.timing(swipeX, { toValue: -dir * 140, duration: 120, useNativeDriver: true }).start(() => {
+              goRef.current(dir);
+              swipeX.setValue(0);
+              showSwipe(null);
+            });
+          } else {
+            Animated.spring(swipeX, { toValue: 0, useNativeDriver: true, bounciness: 0, speed: 20 }).start();
+            showSwipe(null);
+          }
+        })
+        .onFinalize((_e, success) => {
+          if (success) return;
+          Animated.spring(swipeX, { toValue: 0, useNativeDriver: true, bounciness: 0, speed: 20 }).start();
+          showSwipe(null);
         }),
     [],
   );
@@ -1425,6 +1461,10 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   const titleBookName = fullBookName === 'Psalms' ? 'Psalm' : fullBookName;
   const atStart = position.book === books[0]?.id && position.chapter === 1;
   const atEnd = position.book === books[books.length - 1]?.id && position.chapter === book?.chapters;
+  swipeEnds.current = { atStart, atEnd };
+  // The chapter a swipe leads to, named at the edge it comes in from.
+  const swipeTarget = swipeTo ? neighbour(books, position.book, position.chapter, swipeTo) : null;
+  const swipeLabel = swipeTarget ? `${shortBookName(swipeTarget.book, translation) || bookName(books, swipeTarget.book, translation)} ${swipeTarget.chapter}` : '';
 
   // The verse the second hint points at is wrapped, so its place on screen can be found.
   const renderItem = useCallback(
@@ -1483,6 +1523,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
       {keepAwake || (reading.active && reading.playing) ? <KeepAwake /> : null}
       <GestureDetector gesture={gestures}>
         <View style={styles.body} ref={bodyRef} collapsable={false}>
+        <Animated.View style={[styles.body, { transform: [{ translateX: swipeX }] }]}>
       {loadFailed ? (
         <View style={styles.failed}>
           <Text style={[styles.failedText, { color: theme.muted }]}>{t('loadFailed')}</Text>
@@ -1513,6 +1554,17 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
           ListFooterComponent={LIST_FOOTER}
         />
       )}
+        </Animated.View>
+        {swipeTo && swipeTarget ? (
+          <View
+            pointerEvents="none"
+            style={[styles.swipeLabel, swipeTo === 1 ? { right: 12 } : { left: 12 }, { backgroundColor: theme.accent }]}
+          >
+            {swipeTo === -1 ? <Icon name="chevron_left" size={18} color={theme.onAccent} /> : null}
+            <Text style={[styles.swipeLabelText, { color: theme.onAccent, fontFamily: scriptureFont(scriptOf(swipeLabel), false) ?? theme.font }]}>{swipeLabel}</Text>
+            {swipeTo === 1 ? <Icon name="chevron_right" size={18} color={theme.onAccent} /> : null}
+          </View>
+        ) : null}
         </View>
       </GestureDetector>
       {marking ? (
@@ -1955,10 +2007,11 @@ function ChapterArrow({ icon, onPress, disabled, accessibilityLabel, style }: { 
       hitSlop={10}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      // A disc of the page's colour, so the arrow does not sit on top of the words under it.
-      style={({ pressed }) => [styles.arrow, style, { backgroundColor: pressed ? theme.accentSoft : theme.bg, opacity: pressed ? 1 : 0.85 }]}
+      // A round button of the card colour with a thin edge, the arrow in the accent colour:
+      // easy to find in light and dark, and the words under it stay hidden, not overprinted.
+      style={({ pressed }) => [styles.arrow, style, { backgroundColor: pressed ? theme.accentSoft : theme.card, borderColor: theme.dark ? theme.muted : theme.border }]}
     >
-      <Icon name={icon} size={24} color={theme.muted} />
+      <Icon name={icon} size={26} color={theme.accent} />
     </Pressable>
   );
 }
@@ -2308,7 +2361,9 @@ const styles = StyleSheet.create({
   // Letter spacing breaks up Malayalam conjuncts on some phones.
   headingMalayalam: { letterSpacing: 0 },
   nav: { fontSize: 16, fontWeight: '600' },
-  arrow: { position: 'absolute', width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  arrow: { position: 'absolute', width: 44, height: 44, borderRadius: 22, borderWidth: 1, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 4, shadowOffset: { width: 0, height: 1 }, elevation: 2 },
+  swipeLabel: { position: 'absolute', top: '45%', flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 },
+  swipeLabelText: { fontSize: 15, fontWeight: '600' },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   fade: { position: 'absolute', left: 0, right: 0, height: 40 },
   bibleButton: { flexDirection: 'row', alignItems: 'center', minHeight: 48, paddingLeft: 4 },
