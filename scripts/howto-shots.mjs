@@ -69,15 +69,37 @@ for (const arg of process.argv.slice(2)) {
   mkdirSync(out, { recursive: true });
   rings[language] = rings[language] ?? {};
 
-  /** A picture of the clip, its ring around the boxes of the given locators (union), padded. */
+  /**
+   * A picture of the clip, its ring around the targets' boxes (their union), padded. A
+   * target is a locator, or { l, row } for the button or row a label is in: the label's
+   * nearest container at least `row` points wide, so the ring goes round the whole thing
+   * and never across its text; or { box } for a box found otherwise.
+   */
+  async function boxOf(target) {
+    if (target.box) return target.box;
+    if (!target.row && !target.withIcon) return vis(target).boundingBox();
+    const handle = await vis(target.l).elementHandle();
+    return handle.evaluate((e, { min, withIcon }) => {
+      // `withIcon`: a menu row's label, already full width; its row starts further left,
+      // at the icon before it.
+      const left = e.getBoundingClientRect().left;
+      let el = e;
+      while (el.parentElement && (withIcon ? el.getBoundingClientRect().left > left - 16 : el.getBoundingClientRect().width < min)) el = el.parentElement;
+      const r = el.getBoundingClientRect();
+      return { x: r.x, y: r.y, width: r.width, height: r.height };
+    }, { min: target.row ?? 0, withIcon: !!target.withIcon });
+  }
   async function picture(n, clip, ...targets) {
     await wait(700);
     let box = null;
-    for (const l of targets) {
-      const b = await vis(l).boundingBox();
+    for (const target of targets) {
+      const b = await boxOf(target);
       if (!b) continue;
       box = box ? { x1: Math.min(box.x1, b.x), y1: Math.min(box.y1, b.y), x2: Math.max(box.x2, b.x + b.width), y2: Math.max(box.y2, b.y + b.height) } : { x1: b.x, y1: b.y, x2: b.x + b.width, y2: b.y + b.height };
     }
+    // No typing focus: the browser outlines a focused box, which a phone does not.
+    await page.evaluate(() => document.activeElement?.blur?.());
+    await wait(200);
     await page.screenshot({ path: join(out, `${n}.jpg`), type: 'jpeg', quality: 82, clip });
     if (box) {
       const pad = 6;
@@ -154,9 +176,9 @@ for (const arg of process.argv.slice(2)) {
   // 3 A verse's menu: its four buttons. 11 Listening: Read from here. 13 Picture cards:
   // Share as card. All from verse 2's menu.
   await menu(2);
-  await picture(3, bottom(560), page.getByText(t.actCopy, { exact: true }), page.getByText(t.actNote, { exact: true }));
-  await picture(11, bottom(480), page.getByText(t.readFromHere, { exact: true }));
-  await picture(13, bottom(560), page.getByText(t.shareAsCard, { exact: true }));
+  await picture(3, bottom(560), { l: page.getByText(t.actCopy, { exact: true }), row: 300 });
+  await picture(11, bottom(480), { l: page.getByText(t.readFromHere, { exact: true }), withIcon: true });
+  await picture(13, bottom(560), { l: page.getByText(t.shareAsCard, { exact: true }), withIcon: true });
   // A bookmark and a highlight for Saved: verse 2 bookmarked here, verse 3 highlighted.
   await vis(page.getByText(t.actBookmark, { exact: true })).click();
   await wait(1200);
@@ -168,7 +190,7 @@ for (const arg of process.argv.slice(2)) {
   await menu(1);
   await vis(page.getByText(t.markText, { exact: true })).click();
   await wait(1500);
-  await picture(5, bottom(330), page.getByRole('button', { name: t.markDone }));
+  await picture(5, bottom(330), { l: page.getByRole('button', { name: t.markDone }), row: 300 });
   await vis(page.getByRole('button', { name: t.markDone })).click();
   await wait(1200);
 
@@ -185,12 +207,12 @@ for (const arg of process.argv.slice(2)) {
   await wait(1200);
   await page.keyboard.type(QUERY[language]);
   await wait(4000);
-  await picture(7, top(440), page.getByRole('textbox'));
+  await picture(7, top(440), { l: page.getByRole('textbox'), row: 300 });
   await back();
 
   // 6 Saved: the list, its buttons ringed.
   await tab('saved');
-  await picture(6, top(440), page.getByText(t.bookmarks).first(), page.getByText(t.highlights).first());
+  await picture(6, top(440), { l: page.getByText(t.bookmarks).first(), row: 300 });
 
   // 8 Notebook: a typed page with its verses, the first reference ringed.
   await tab('notebook');
@@ -202,7 +224,13 @@ for (const arg of process.argv.slice(2)) {
   await wait(600);
   await vis(page.locator(`[aria-label="${t.donePage}"]`)).click();
   await wait(2500);
-  await picture(8, top(520), page.getByRole('link').first());
+  // The first verse box under its reference (the quotes have a 3-point line at their left).
+  const quote = await page.evaluate(() => {
+    const e = [...document.querySelectorAll('div')].find((d) => getComputedStyle(d).borderLeftWidth === '3px' && d.getBoundingClientRect().width > 200);
+    const r = e.getBoundingClientRect();
+    return { x: r.x, y: r.y, width: r.width, height: r.height };
+  });
+  await picture(8, top(520), { box: quote });
   await back();
 
   // 9 Handwritten pages: a few strokes, the tools ringed.
@@ -240,7 +268,7 @@ for (const arg of process.argv.slice(2)) {
   // 10 Backing up: the sheet, Save a backup ringed.
   await vis(page.getByLabel(t.backupRestore)).click();
   await wait(1200);
-  await picture(10, bottom(440), page.getByText(t.saveBackup, { exact: true }));
+  await picture(10, bottom(440), { l: page.getByText(t.saveBackup, { exact: true }), withIcon: true });
   await closeSheet();
 
   await page.close();
