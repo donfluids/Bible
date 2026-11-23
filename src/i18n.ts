@@ -2131,6 +2131,19 @@ export function shortName(id: string): string {
 // as its licence asks of a changed copy, without the Biblica® trademark (src/licences.ts).
 export const NATIVE_BIBLE_NAME: Partial<Record<string, string>> = { MAL: 'സത്യവേദപുസ്തകം 1910', IRV: 'ഇന്ത്യൻ റിവൈസ്ഡ് വേർഷൻ', OMCV: 'സ്വതന്ത്രം സമകാലിക മലയാളവിവർത്തനം', TAM: 'இண்டியன் ரிவைஸ்டு வெர்ஸன்', HIN: 'इंडियन रिवाइज्ड वर्जन' };
 export const LANGUAGE_WORD: Partial<Record<string, string>> = { MAL: 'മലയാളം', TAM: 'தமிழ்', HIN: 'हिन्दी' };
+/** A short name for an Indian Bible beside others in its language, as KJV or IRV are short names. */
+const SHORT_BIBLE_NAME: Partial<Record<string, string>> = { MAL: 'SV 1910' };
+
+/**
+ * The label on the Bible button and the search chips: an English Bible's or the IRV's
+ * letters, and for an Indian Bible its language (മലയാളം) when it is the only Bible in that
+ * language here, else its short name (SV 1910 beside IRV and OMCV in the Malayalam app).
+ * `sameLanguage` is how many of the app's Bibles are in that Bible's language.
+ */
+export function bibleLabel(id: string, sameLanguage: number): string {
+  if (sameLanguage > 1 && SHORT_BIBLE_NAME[id]) return SHORT_BIBLE_NAME[id]!;
+  return LANGUAGE_WORD[id] ?? id;
+}
 
 /** A Bible's name where its text is read: an Indian Bible in its own script, the English ones by their English names. */
 export function bibleName(language: Language, id: string): string {

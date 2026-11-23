@@ -6,9 +6,9 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
 import { Icon, IconButton } from '../components/Icon';
 import { SectionLabel } from '../components/SectionLabel';
-import { LANGUAGE_WORD, bibleName, renderingsLabel, shortName, useT } from '../i18n';
+import { bibleLabel, bibleName, renderingsLabel, shortName, useT } from '../i18n';
 import { isMultilingual, useEdition } from '../edition';
-import { scriptureFont } from '../fonts';
+import { scriptOf, scriptureFont } from '../fonts';
 import { VerseListItem } from '../components/VerseListItem';
 import { getVerses, searchLexicon, searchText } from '../queries';
 import { parseReference } from '../refs';
@@ -308,7 +308,8 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
         <View accessibilityRole="radiogroup" style={[styles.biblesRow, styles.bibles, styles.biblesWrap, { paddingHorizontal: Math.max(14, (windowWidth - (MAX_CONTENT_WIDTH - 28)) / 2) }]}>
           {edition.translations.map((id) => {
             const active = id === translation;
-            const font = scriptureFont(translationInfo(id).script ?? null, false, true);
+            const label = bibleLabel(id, edition.translations.filter((other) => translationInfo(other).script === translationInfo(id).script).length);
+            const font = scriptureFont(scriptOf(label), false, true);
             return (
               <Pressable
                 key={id}
@@ -320,7 +321,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
                 android_ripple={{ color: theme.accentSoft }}
                 style={[styles.chip, { borderColor: active ? theme.accent : theme.border, backgroundColor: active ? theme.accentSoft : 'transparent' }]}
               >
-                <Text style={[styles.chipText, { color: active ? theme.accent : theme.text }, font ? { fontFamily: font, fontWeight: 'normal' } : null]}>{LANGUAGE_WORD[id] ?? id}</Text>
+                <Text style={[styles.chipText, { color: active ? theme.accent : theme.text }, font ? { fontFamily: font, fontWeight: 'normal' } : null]}>{label}</Text>
               </Pressable>
             );
           })}

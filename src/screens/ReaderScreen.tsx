@@ -29,7 +29,7 @@ import { languageScript, scriptOf, scriptureFont } from '../fonts';
 import type { Script } from '../fonts';
 import { shortBookName } from '../shortNames';
 import { PassagePicker } from '../components/PassagePicker';
-import { LANGUAGE_WORD, NATIVE_BIBLE_NAME, bibleName, englishName, translationName, useT } from '../i18n';
+import { LANGUAGE_WORD, NATIVE_BIBLE_NAME, bibleLabel, bibleName, englishName, translate, translationName, useT } from '../i18n';
 import { InterlinearVerse } from '../components/InterlinearVerse';
 import { MarkableVerse } from '../components/MarkableVerse';
 import type { WordSlot } from '../components/MarkableVerse';
@@ -1046,13 +1046,14 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   const native = nativeBible;
   // The four-language app has six Bibles: its pill opens a list instead of stepping through them.
   const [choosingBible, setChoosingBible] = useState(false);
-  // A Bible's short name on the pill: the English ones by their initials, the Indian ones by
-  // their language in the interface language (MAL, or മലയാളം with the Malayalam interface).
-  const bibleLabel = (id: TranslationId) =>
-    id === 'MAL' ? t('bibleMalayalam') : id === 'TAM' ? t('bibleTamil') : id === 'HIN' ? t('bibleHindi') : id;
-  // In the four-language app the pill names an Indian Bible's language in its own script (മലയാളം).
-  const pillLabel = (id: TranslationId) => LANGUAGE_WORD[id] ?? id;
-  const pillFont = (id: TranslationId) => scriptureFont(translationInfo(id).script ?? null, false, true);
+  // The pill names a Bible by its short name (KJV, IRV, SV 1910), or an Indian Bible that is
+  // its language's only one here by its language, in its own script (മലയാളം).
+  const sameScript = (id: TranslationId) => edition.translations.filter((other) => translationInfo(other).script === translationInfo(id).script).length;
+  const pillLabel = (id: TranslationId) => bibleLabel(id, sameScript(id));
+  // The label's own letters decide its face: SV 1910 is in Latin letters, മലയാളം is not.
+  const pillFont = (id: TranslationId) => scriptureFont(scriptOf(pillLabel(id)), false, true);
+  // A Bible's full name (side by side, the list of Bibles) is in its own script.
+  const nameFont = (id: TranslationId) => scriptureFont(translationInfo(id).script ?? null, false, true);
   const switchTranslation = async (next: TranslationId) => {
     if (next === translation) return;
     const seen = firstVisible.current;
@@ -1394,7 +1395,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             {[translation, besideTranslation].map((id, i) => (
               <Text
                 key={id}
-                style={[styles.pairColumn, styles.pairHead, i === 1 && styles.pairRight, { color: theme.accent }, pillFont(id) ? { fontFamily: pillFont(id), fontWeight: 'normal' } : null]}
+                style={[styles.pairColumn, styles.pairHead, i === 1 && styles.pairRight, { color: theme.accent }, nameFont(id) ? { fontFamily: nameFont(id), fontWeight: 'normal' } : null]}
                 accessibilityRole="header"
               >
                 {bibleName(settings.language, id)}
@@ -1456,13 +1457,14 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             onPress={() => onOpenIntro(position.book)}
             android_ripple={{ color: theme.accentSoft }}
             accessibilityRole="link"
-            accessibilityLabel={t('aboutBook')}
+            accessibilityLabel={translate(translationInfo(translation).script ?? 'en', 'aboutBook')}
             hitSlop={6}
             style={({ pressed }) => [styles.aboutRow, { opacity: pressed ? 0.6 : 1 }]}
           >
             {/* One line, a little smaller if need be, with its arrow beside it. */}
             <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={[styles.aboutText, { color: theme.muted, fontFamily: scriptureFont(scriptOf(bookName(books, position.book, translation)), settings.serif) ?? theme.font }]}>
-              {t('aboutBookNamed', { book: bookName(books, position.book, translation) })}
+              {/* In the language of the Bible read, as the introduction it opens. */}
+              {translate(translationInfo(translation).script ?? 'en', 'aboutBookNamed', { book: bookName(books, position.book, translation) })}
             </Text>
             <Icon name="chevron_right" size={16} color={theme.muted} />
           </Pressable>
@@ -1753,7 +1755,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
                   icon={id === translation ? 'check' : 'menu_book'}
                   selected={id === translation}
                   label={NATIVE_BIBLE_NAME[id] ?? translationName(settings.language, id)}
-                  labelFont={pillFont(id) ? scriptureFont(translationInfo(id).script ?? null, false) : undefined}
+                  labelFont={nameFont(id) ? scriptureFont(translationInfo(id).script ?? null, false) : undefined}
                   detail={isEnglish(id) ? id : edition.id === 'all' ? `${LANGUAGE_IN_ENGLISH[id]} · ${englishName(id)}` : englishName(id)}
                   onPress={() => {
                     setChoosingBible(false);

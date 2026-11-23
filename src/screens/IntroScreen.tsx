@@ -5,12 +5,14 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
 import { SectionLabel } from '../components/SectionLabel';
 import { languageScript, scriptOf, scriptureFont } from '../fonts';
-import { useT } from '../i18n';
+import { translate } from '../i18n';
+import type { StringKey } from '../i18n';
 import { getIntro, getVerses, mapRef, mapRefs } from '../queries';
 import type { BookIntro } from '../queries';
 import { useSettings } from '../settings';
 import { MAX_CONTENT_WIDTH, bookName, flattenVerse } from '../text';
 import { useTheme } from '../theme';
+import { translationInfo } from '../types';
 import type { Book, Ref, VerseRow } from '../types';
 
 interface Props {
@@ -53,19 +55,22 @@ function rangeLabel(from: string, to: string): string {
 }
 
 /**
- * A book's introduction, in the interface language: who wrote it, when and for whom, what
+ * A book's introduction, in the language of the Bible being read: who wrote it, when and for whom, what
  * it is about, its themes, an outline whose sections open in the reader, and key verses
  * quoted from the Bible being read. References are in KJV numbering and are mapped to the
  * Bible being read before they open.
  */
 export function IntroScreen({ book, books, onBack, onOpenRef }: Props) {
   const theme = useTheme();
-  const t = useT();
   const db = useSQLiteContext();
   const insets = useSafeAreaInsets();
   const { settings } = useSettings();
   const translation = settings.translation;
-  const language = settings.language;
+  // The introduction is in the language of the Bible being read, whatever the menus: the
+  // Malayalam one beside a Malayalam Bible, the English one beside an English Bible. The
+  // page's own words (headings, labels) go with it.
+  const language = translationInfo(translation).script ?? 'en';
+  const t = (key: StringKey, params?: Record<string, string | number>) => translate(language, key, params);
   const [intro, setIntro] = useState<BookIntro | null | undefined>(undefined);
   const [keyVerses, setKeyVerses] = useState<{ label: string; ref: Ref; verses: VerseRow[] }[]>([]);
   // The KJV verses the introduction names ("29:1"), as the Bible being read numbers them
