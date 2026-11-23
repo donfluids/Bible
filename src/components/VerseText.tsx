@@ -98,9 +98,9 @@ export const VerseText = memo(function VerseText({
   // Devanagari reads smaller than Latin at the same size: Hindi gets half a step more.
   const size = script === 'hi' ? fontSize + 1 : fontSize;
   const lineHeight = textLineHeight(size, translationInfo(script === 'ta' ? 'TAM' : script === 'ml' ? 'MAL' : script === 'hi' ? 'HIN' : 'KJV').lineHeight);
-  // Verse numbers and note letters grow more slowly than the text: at the largest size a
-  // number the size of the words crowds them (19 -> 13 as before, 30 -> 17).
-  const small = Math.max(11, Math.round(Math.min(fontSize - 6, 11 + (fontSize - 15) * 0.4)));
+  // Verse numbers and note letters grow more slowly than the text, but enough to be found
+  // at large sizes (14 -> 11, 21 -> 14, 30 -> 19).
+  const small = Math.max(11, Math.round(Math.min(fontSize - 6, 11 + (fontSize - 15) * 0.55)));
   // On a highlight colour the text, number and note letters take the colours made for it.
   // A flash covers the highlight colour, so the text keeps the page's colours under it.
   const onMark = (onHighlight || !!highlightColor) && !flash;
@@ -218,11 +218,14 @@ export const VerseText = memo(function VerseText({
           onLongPress={onLongPress}
           accessibilityRole={onNumberPress ? 'button' : undefined}
           accessibilityLabel={onNumberPress ? numberLabel : undefined}
-          style={[styles.number, { color: onMark ? accent : theme.muted, fontSize: small }]}
+          style={[styles.number, fontSize >= 24 && styles.numberBig, { color: onMark ? accent : theme.muted, fontSize: small }]}
         >
-          {withChapter ? `${verse.chapter}:${verse.verse}` : verse.verse}{' '}
+          {withChapter ? `${verse.chapter}:${verse.verse}` : verse.verse}
         </Text>
       ) : null}
+      {/* The space after the number at the text's size: at the number's size it is so narrow
+          that the number touches the first word ("1In"). */}
+      {showNumber && !isTitle ? ' ' : null}
       {segments.map((seg, i) => {
         const start = offset;
         offset += seg.text.length;
@@ -262,6 +265,7 @@ const styles = StyleSheet.create({
   title: { fontStyle: 'italic' },
   omitted: { fontStyle: 'italic' },
   number: { fontWeight: '600' },
+  numberBig: { fontWeight: '700' },
 });
 
 /** Which of the verse's words with each of this segment's numbers it is, and how many there are. */

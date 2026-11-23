@@ -817,9 +817,40 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   // The tab bar stays in place while reading (it used to fold away on scrolling down, and
   // sometimes did not come back).
   const barHidden = false;
-  const onListScroll = useCallback((y: number) => {
-    scrollY.current = y;
+  // The chapter arrows float over the text, so they fade out while the text moves and come
+  // back once it has stood still a moment, or at the chapter's end.
+  const arrowFade = useRef(new Animated.Value(1)).current;
+  const [arrowsAway, setArrowsAway] = useState(false);
+  const arrowsAwayRef = useRef(false);
+  const arrowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showArrows = useCallback(
+    (show: boolean) => {
+      if (arrowsAwayRef.current === !show) return;
+      arrowsAwayRef.current = !show;
+      setArrowsAway(!show);
+      Animated.timing(arrowFade, { toValue: show ? 1 : 0, duration: show ? 200 : 120, useNativeDriver: true }).start();
+    },
+    [arrowFade],
+  );
+  useEffect(() => () => {
+    if (arrowTimer.current) clearTimeout(arrowTimer.current);
   }, []);
+  const onListScroll = useCallback(
+    (y: number) => {
+      const moved = Math.abs(y - scrollY.current);
+      scrollY.current = y;
+      if (moved < 2) return;
+      if (arrowTimer.current) clearTimeout(arrowTimer.current);
+      const atBottom = contentHeight.current - listHeight.current - y < 48;
+      if (atBottom) {
+        showArrows(true);
+        return;
+      }
+      showArrows(false);
+      arrowTimer.current = setTimeout(() => showArrows(true), 700);
+    },
+    [showArrows],
+  );
   type DragState = {
     boxes: WordBox[] | null;
     body: { x: number; y: number; height: number } | null;
@@ -1259,7 +1290,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             ? ([v.verse === selection.from.verse ? selection.from.offset : 0, v.verse === selection.to.verse ? selection.to.offset : v.text.length] as [number, number])
             : null;
         return (
-          <View style={[styles.verse, marked && [styles.verseBookmarked, { borderLeftColor: theme.accent }], mark ? { backgroundColor: theme.marks[mark] } : null]}>
+          <View style={[styles.verse, verseGap(fontSize), marked && [styles.verseBookmarked, { borderLeftColor: theme.accent }], mark ? { backgroundColor: theme.marks[mark] } : null]}>
             <MarkableVerse
               verse={v}
               fontSize={fontSize}
@@ -1424,6 +1455,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             android_ripple={{ color: theme.accentSoft }}
             accessibilityRole="link"
             accessibilityLabel={t('aboutBook')}
+            hitSlop={6}
             style={({ pressed }) => [styles.aboutRow, { opacity: pressed ? 0.6 : 1 }]}
           >
             <Text style={[styles.aboutText, { color: theme.muted, fontFamily: scriptureFont(scriptOf(bookName(books, position.book, translation)), settings.serif) ?? theme.font }]}>
@@ -1647,12 +1679,15 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
           </View>
         </View>
       ) : (
-        // Chapters turn by swipe; two faint chevrons at the corners of the text for people who
-        // don't swipe. They float over the text, above the tab bar.
+        // Chapters turn by swipe; two round arrows at the corners of the text for people who
+        // don't swipe. They float over the text, above the tab bar, and step aside while it
+        // scrolls (onListScroll).
         <>
           <LinearGradient colors={[`${theme.bg}00`, theme.bg]} pointerEvents="none" style={[styles.fade, { bottom: arrowBottom - 6 }]} />
-          <ChapterArrow icon="chevron_left" onPress={() => go(-1)} disabled={atStart} accessibilityLabel={t('previousChapter')} style={{ left: 2 + barSide, bottom: arrowBottom }} />
-          <ChapterArrow icon="chevron_right" onPress={() => go(1)} disabled={atEnd} accessibilityLabel={t('nextChapter')} style={{ right: 2 + barSide, bottom: arrowBottom }} />
+          <Animated.View pointerEvents={arrowsAway ? 'none' : 'box-none'} style={[StyleSheet.absoluteFill, { opacity: arrowFade }]}>
+            <ChapterArrow icon="chevron_left" onPress={() => go(-1)} disabled={atStart} accessibilityLabel={t('previousChapter')} style={{ left: 2 + barSide, bottom: arrowBottom }} />
+            <ChapterArrow icon="chevron_right" onPress={() => go(1)} disabled={atEnd} accessibilityLabel={t('nextChapter')} style={{ right: 2 + barSide, bottom: arrowBottom }} />
+          </Animated.View>
         </>
       )}
 
@@ -2084,6 +2119,16 @@ const NO_MARKS: [number, number, HighlightColor][] = [];
 const itemKey = (it: Item) => it.key;
 const LIST_FOOTER = <View style={{ height: 56 }} />;
 
+/**
+ * Room under a verse beyond its own padding. From size 17 up the lines open out, so the gap
+ * between verses grows with the text, to stay clearly larger than the gap between lines
+ * (21 -> 5, 30 -> 16).
+ */
+function verseGap(fontSize: number): { marginBottom: number } | null {
+  const gap = Math.round(Math.max(0, fontSize - 17) * 1.2);
+  return gap > 0 ? { marginBottom: gap } : null;
+}
+
 function sameRanges(a: [number, number, HighlightColor][], b: [number, number, HighlightColor][]): boolean {
   return a.length === b.length && a.every((r, i) => r[0] === b[i][0] && r[1] === b[i][1] && r[2] === b[i][2]);
 }
@@ -2225,6 +2270,7 @@ const ReaderVerse = memo(function ReaderVerse({
     <View
       style={[
         styles.verse,
+        verseGap(fontSize),
         interlinear && [styles.verseInterlinear, { borderBottomColor: theme.border }],
         marked && [styles.verseBookmarked, { borderLeftColor: theme.accent }],
         markColor ? { backgroundColor: markColor } : null,
@@ -2331,7 +2377,7 @@ const styles = StyleSheet.create({
   body: { flex: 1 },
   loading: { flex: 1 },
   para: { marginBottom: 12 },
-  list: { paddingHorizontal: 18, paddingTop: 12, alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
+  list: { paddingHorizontal: 18, paddingTop: 2, alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
   listWide: { maxWidth: SIDE_BY_SIDE_MAX_WIDTH },
   // Big text keeps a little more of the line for its words.
   listBig: { paddingHorizontal: 14 },
@@ -2356,7 +2402,7 @@ const styles = StyleSheet.create({
   tipMain: { borderRadius: 24, paddingHorizontal: 18 },
   tipDismiss: { fontSize: 15, fontWeight: '700' },
   modeHint: { fontSize: 12, marginBottom: 6 },
-  aboutRow: { flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 40, marginBottom: 2 },
+  aboutRow: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 2, minHeight: 36 },
   aboutText: { fontSize: 14, fontWeight: '500' },
   sheetGroup: { fontSize: 13, fontWeight: '600', marginTop: 10, marginBottom: 2 },
   heading: { fontWeight: '700', letterSpacing: 1, marginTop: 14, marginBottom: 2 },
