@@ -17,3 +17,4 @@ ml
 # 2026-11-21: again, with the Objective-C source taken as plain downloads.
 # 2026-11-21: again; the voice calls ONNX Runtime's C interface itself (Microsoft's GitHub source is unreachable).
 # 2026-11-22: 0.4.38: council 8 fixes (undo, fuller backup, Settings switches, voice, Books headings and more), shorter Why this Bible.
+# 2026-11-23: 0.4.39: the Malayalam IRV and the Open Malayalam Contemporary Version, with word links.
