@@ -10,7 +10,7 @@ import { afterSheet } from '../platform';
 import { typedPageHtml } from '../pagePdf';
 import type { TypedLine } from '../pagePdf';
 import { languageScript, scriptOf, scriptureFont } from '../fonts';
-import { bibleName, useT } from '../i18n';
+import { LANGUAGE_WORD, bibleName, useT } from '../i18n';
 import { useNotebook } from '../notebook';
 import { getVerseCounts, getVerses } from '../queries';
 import { findReferences } from '../refs';
@@ -312,7 +312,7 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
     if (!text.trim()) return <View key={i} style={{ height: lineHeight / 2 }} />;
     // A verse the writer put in under its reference (a line in quotation marks) is not quoted again.
     const nextLine = lines[i + 1]?.map((p) => p.text).join('') ?? '';
-    const refs = nextLine.trimStart().startsWith('“') ? [] : pieces.filter((p) => p.ref).map((p) => p.ref!);
+    const refs = nextLine.trimStart().startsWith('“') ? [] : pieces.filter((p) => p.ref);
     return (
       <View key={i} style={styles.line}>
         <Text selectable style={{ fontSize, lineHeight, color: theme.text, fontFamily: textFont(text) }}>
@@ -331,9 +331,12 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
             ),
           )}
         </Text>
-        {refs.map((ref, j) => {
-          const { rows: shown, more } = quoted(ref);
+        {refs.map((piece, j) => {
+          const { rows: shown, more } = quoted(piece.ref!);
           if (shown.length === 0) return null;
+          // Which verse this is and from which Bible, as the reader's title bar names it: two
+          // boxes one under the other can otherwise not be told apart.
+          const label = `${piece.text.trim()} · ${LANGUAGE_WORD[translation] ?? translation}`;
           return (
             <View key={j} style={[styles.quote, { borderLeftColor: theme.accent, backgroundColor: theme.accentSoft }]}>
               <Text style={{ fontSize: verseSize, lineHeight: textLineHeight(verseSize, translationInfo(translation).lineHeight), color: theme.text, fontFamily: scriptFont }}>
@@ -346,6 +349,7 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
                 ))}
               </Text>
               {more > 0 ? <Text style={[styles.more, { color: theme.muted }]}>{t('moreVerses', { n: more })}</Text> : null}
+              <Text style={[styles.quoteLabel, { color: theme.muted, fontFamily: scriptureFont(scriptOf(label), settings.serif) }]}>{label}</Text>
             </View>
           );
         })}
@@ -456,6 +460,7 @@ const styles = StyleSheet.create({
   line: { marginBottom: 6 },
   quote: { borderLeftWidth: 3, borderRadius: 6, paddingVertical: 8, paddingHorizontal: 12, marginTop: 6, marginBottom: 4 },
   more: { fontSize: 13, marginTop: 4 },
+  quoteLabel: { fontSize: 13, marginTop: 4, textAlign: 'right' },
   titleInput: { fontSize: 22, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, marginBottom: 8 },
   bodyInput: { minHeight: 320, paddingVertical: 8 },
   strip: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth },

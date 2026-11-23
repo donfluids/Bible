@@ -732,11 +732,12 @@ export function InkPageScreen({ id, onBack }: Props) {
           <TextInput
             value={title}
             onChangeText={setTitle}
-            placeholder={t('pageTitle')}
+            // An empty title reads as a box to fill in, not as the page's name.
+            placeholder={t('addTitle')}
             placeholderTextColor={theme.muted}
             accessibilityLabel={t('pageTitle')}
             maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE}
-            style={[styles.titleInput, { color: theme.text, fontFamily: titleFont, fontWeight: scriptOf(title) || uiScript ? 'normal' : '600' }]}
+            style={[styles.titleInput, { color: theme.text, fontFamily: titleFont, fontWeight: !title || scriptOf(title) || uiScript ? 'normal' : '600' }, !title && styles.titleEmpty]}
             returnKeyType="done"
             onFocus={closeMenus}
           />
@@ -927,6 +928,7 @@ const styles = StyleSheet.create({
   dot: { width: 22, height: 22, borderRadius: 11, borderWidth: StyleSheet.hairlineWidth },
   area: { flex: 1 },
   titleInput: { fontSize: 20, paddingVertical: 8, paddingRight: 4 },
+  titleEmpty: { fontSize: 17 },
   more: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', gap: 3.5 },
   moreDot: { width: 4.5, height: 4.5, borderRadius: 3 },
   sharedTitle: { height: SHARED_TITLE, justifyContent: 'center', paddingHorizontal: 18 },

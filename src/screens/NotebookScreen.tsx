@@ -43,6 +43,21 @@ export function NotebookScreen({ onOpenPage }: Props) {
     onOpenPage(create('', paper), true, !!paper);
   };
   const font = (text: string, bold = false) => scriptureFont(scriptOf(text), false, bold);
+  // When a page was last changed: the time today, "yesterday", else the date (the year only
+  // when it is not this year).
+  const locale = settings.language === 'ml' ? 'ml-IN' : settings.language === 'ta' ? 'ta-IN' : settings.language === 'hi' ? 'hi-IN' : 'en-GB';
+  const edited = (updated: number) => {
+    const when = new Date(updated);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const day = new Date(when);
+    day.setHours(0, 0, 0, 0);
+    const daysAgo = Math.round((today.getTime() - day.getTime()) / 86400000);
+    if (daysAgo === 0) return t('editedToday', { time: when.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' }) });
+    if (daysAgo === 1) return t('editedYesterday');
+    const sameYear = when.getFullYear() === today.getFullYear();
+    return t('pageEdited', { date: when.toLocaleDateString(locale, sameYear ? { day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short', year: 'numeric' }) });
+  };
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
@@ -55,7 +70,7 @@ export function NotebookScreen({ onOpenPage }: Props) {
                 <ActivityIndicator color={theme.accent} />
               </View>
             ) : (
-              <HeaderIconButton icon="settings_backup_restore" onPress={() => setBackupSheet(true)} accessibilityLabel={t('backupRestore')} />
+              <HeaderIconButton icon="backup" onPress={() => setBackupSheet(true)} accessibilityLabel={t('backupRestore')} />
             )}
             <HeaderIconButton icon="note_add" onPress={newPage} accessibilityLabel={t('newPage')} />
           </>
@@ -74,58 +89,78 @@ export function NotebookScreen({ onOpenPage }: Props) {
           </Pressable>
         </View>
       ) : (
-        <FlatList
-          data={found}
-          keyExtractor={(p) => p.id}
-          contentContainerStyle={[styles.list, { paddingBottom: 24 }]}
-          keyboardShouldPersistTaps="handled"
-          ListHeaderComponent={
-            pages.length > 2 ? (
-              <TextInput
-                value={query}
-                onChangeText={setQuery}
-                placeholder={t('searchPages')}
-                placeholderTextColor={theme.muted}
-                accessibilityLabel={t('searchPages')}
-                clearButtonMode="while-editing"
-                returnKeyType="search"
-                style={[styles.search, { color: theme.text, borderColor: theme.border, backgroundColor: theme.card }]}
-              />
-            ) : null
-          }
-          ListEmptyComponent={<Text style={[styles.noMatch, { color: theme.muted }]}>{t('noPagesFound')}</Text>}
-          renderItem={({ item }) => {
-            const name = pageName(item, item.ink ? t('handwritten') : t('untitled'));
-            // The first lines after the one used as the name; for a handwritten page, that it is one.
-            const rest = item.title.trim() ? item.body : item.body.split('\n').slice(1).join('\n');
-            const preview = item.ink ? (item.title.trim() ? t('handwritten') : '') : rest.replace(/\s+/g, ' ').trim();
-            const date = new Date(item.updated).toLocaleDateString(settings.language === 'ml' ? 'ml-IN' : settings.language === 'ta' ? 'ta-IN' : settings.language === 'hi' ? 'hi-IN' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-            return (
-              <Pressable
-                onPress={() => onOpenPage(item.id)}
-                android_ripple={{ color: theme.accentSoft }}
-                accessibilityRole="button"
-                style={({ pressed }) => [styles.row, item.ink && styles.inkRow, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
-              >
-                {item.ink ? <InkThumb edition={edition.id} pageId={item.id} updated={item.updated} count={item.ink.strokes} ink={theme.text} border={theme.border} paper={theme.card} /> : null}
-                <View style={{ flex: 1, gap: 3 }}>
-                <View style={styles.nameRow}>
-                  {item.ink ? <Icon name="draw" size={18} color={theme.muted} /> : null}
-                  <Text style={[styles.name, { color: theme.text, fontFamily: font(name, true), fontWeight: scriptOf(name) ? 'normal' : '600' }]} numberOfLines={1}>
-                    {name}
-                  </Text>
-                </View>
-                {preview ? (
-                  <Text style={[styles.preview, { color: theme.muted, fontFamily: font(preview) }]} numberOfLines={2}>
-                    {preview}
-                  </Text>
-                ) : null}
-                <Text style={[styles.date, { color: theme.muted }]}>{t('pageEdited', { date })}</Text>
-                </View>
-              </Pressable>
-            );
-          }}
-        />
+        <View style={styles.listBox}>
+          <FlatList
+            data={found}
+            keyExtractor={(p) => p.id}
+            // Room under the last page for the round New page button.
+            contentContainerStyle={[styles.list, { paddingBottom: 96 }]}
+            keyboardShouldPersistTaps="handled"
+            ListHeaderComponent={
+              pages.length > 2 ? (
+                <TextInput
+                  value={query}
+                  onChangeText={setQuery}
+                  placeholder={t('searchPages')}
+                  placeholderTextColor={theme.muted}
+                  accessibilityLabel={t('searchPages')}
+                  clearButtonMode="while-editing"
+                  returnKeyType="search"
+                  style={[styles.search, { color: theme.text, borderColor: theme.border, backgroundColor: theme.card }]}
+                />
+              ) : null
+            }
+            ListEmptyComponent={<Text style={[styles.noMatch, { color: theme.muted }]}>{t('noPagesFound')}</Text>}
+            renderItem={({ item }) => {
+              const name = pageName(item, item.ink ? t('handwritten') : t('untitled'));
+              // The first lines after the one used as the name; for a handwritten page, that it is one.
+              const rest = item.title.trim() ? item.body : item.body.split('\n').slice(1).join('\n');
+              // Lines kept apart by a dot, so a list reads as one ("Family · Church · Neighbours").
+              const preview = item.ink
+                ? item.title.trim()
+                  ? t('handwritten')
+                  : ''
+                : rest
+                    .split('\n')
+                    .map((line) => line.replace(/\s+/g, ' ').trim())
+                    .filter(Boolean)
+                    .join(' · ');
+              return (
+                <Pressable
+                  onPress={() => onOpenPage(item.id)}
+                  android_ripple={{ color: theme.accentSoft }}
+                  accessibilityRole="button"
+                  style={({ pressed }) => [styles.row, item.ink && styles.inkRow, { borderBottomColor: theme.border, backgroundColor: pressed ? theme.accentSoft : 'transparent' }]}
+                >
+                  {item.ink ? <InkThumb edition={edition.id} pageId={item.id} updated={item.updated} count={item.ink.strokes} ink={theme.text} border={theme.border} paper={theme.card} /> : null}
+                  <View style={{ flex: 1, gap: 3 }}>
+                  <View style={styles.nameRow}>
+                    {item.ink ? <Icon name="draw" size={18} color={theme.muted} /> : null}
+                    <Text style={[styles.name, { color: theme.text, fontFamily: font(name, true), fontWeight: scriptOf(name) ? 'normal' : '600' }]} numberOfLines={1}>
+                      {name}
+                    </Text>
+                  </View>
+                  {preview ? (
+                    <Text style={[styles.preview, { color: theme.muted, fontFamily: font(preview) }]} numberOfLines={2}>
+                      {preview}
+                    </Text>
+                  ) : null}
+                  <Text style={[styles.date, { color: theme.muted }]}>{edited(item.updated)}</Text>
+                  </View>
+                </Pressable>
+              );
+            }}
+          />
+          {/* New page, where a thumb reaches it. */}
+          <Pressable
+            onPress={newPage}
+            accessibilityRole="button"
+            accessibilityLabel={t('newPage')}
+            style={({ pressed }) => [styles.fab, { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 }]}
+          >
+            <Icon name="add" size={30} color={theme.onAccent} />
+          </Pressable>
+        </View>
       )}
       <SimpleSheet visible={choosing} title={t('newPage')} onClose={() => setChoosing(false)}>
         <SheetAction icon="edit_note" label={t('pageTyped')} detail={t('pageTypedDetail')} onPress={() => start()} detailLines={0} />
@@ -139,7 +174,9 @@ export function NotebookScreen({ onOpenPage }: Props) {
 }
 
 const styles = StyleSheet.create({
-  search: { minHeight: 44, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, fontSize: 16, marginBottom: 8 },
+  search: { minHeight: 44, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, fontSize: 16, marginHorizontal: 18, marginTop: 4, marginBottom: 8 },
+  listBox: { flex: 1 },
+  fab: { position: 'absolute', right: 18, bottom: 18, width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 4 },
   noMatch: { fontSize: 15, textAlign: 'center', marginTop: 24 },
   busy: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center' },
   screen: { flex: 1 },
