@@ -1,4 +1,4 @@
-import { isEnglish } from './types';
+import { isEnglish, translationInfo } from './types';
 import type { Book, Ref, Segment, TranslationId, VerseRow } from './types';
 
 /** Strong's numbers are Hebrew in the Old Testament and Greek in the New. */
@@ -50,14 +50,15 @@ export function formatRef(books: Book[], ref: Ref, translation?: TranslationId):
   // One psalm is "Psalm 23:1", though the book is Psalms.
   const name = full === 'Psalms' ? 'Psalm' : full;
   // A Psalm's title is verse 0; it is named in the language of the book name.
-  const title = translation === 'MAL' ? '(ശീർഷകം)' : translation === 'TAM' ? '(தலைப்பு)' : translation === 'HIN' ? '(शीर्षक)' : '(title)';
+  const script = translation ? translationInfo(translation).script : undefined;
+  const title = script === 'ml' ? '(ശീർഷകം)' : script === 'ta' ? '(தலைப்பு)' : script === 'hi' ? '(शीर्षक)' : '(title)';
   return ref.verse === 0 ? `${name} ${ref.chapter} ${title}` : `${name} ${ref.chapter}:${ref.verse}`;
 }
 
 /**
  * A verse as copied or shared: the text, then the reference and the Bible on a line of
- * their own. English Bibles go by their usual short names; the Malayalam by its name, the Tamil and
- * Hindi by their initials.
+ * their own. English Bibles go by their usual short names; the Malayalam 1910 by its name, the
+ * other Indian Bibles by their initials (IRV, OMCV).
  */
 export function shareText(books: Book[], verse: VerseRow, translation: TranslationId, text: string): string {
   const bible = translation === 'MAL' ? 'സത്യവേദപുസ്തകം' : translation === 'TAM' || translation === 'HIN' ? 'IRV' : translation;

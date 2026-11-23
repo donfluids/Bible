@@ -90,6 +90,8 @@ function groupParagraphs(verses: VerseRow[], headings: { before_verse: number; t
   const out: Item[] = [];
   let current: VerseRow[] | null = null;
   for (const v of verses) {
+    // A verse joined to the one before (\v 17-18) is already read there: running text leaves it out.
+    if (v.omitted === 2) continue;
     let broke = false;
     for (const h of headings) {
       if (h.before_verse === v.verse) {

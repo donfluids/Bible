@@ -1,4 +1,4 @@
-export type TranslationId = 'KJV' | 'WEB' | 'BSB' | 'LSV' | 'ASV' | 'MAL' | 'TAM' | 'HIN';
+export type TranslationId = 'KJV' | 'WEB' | 'BSB' | 'LSV' | 'ASV' | 'MAL' | 'IRV' | 'OMCV' | 'TAM' | 'HIN';
 
 export interface Translation {
   id: TranslationId;
@@ -24,6 +24,10 @@ export const TRANSLATIONS: Translation[] = [
   { id: 'ASV', name: 'American Standard Version', tagged: true, lineHeight: 1.55 },
   // Tagged by scripts/align.mjs (machine alignment, confident links only).
   { id: 'MAL', name: 'സത്യവേദപുസ്തകം 1910 (Malayalam)', tagged: true, lineHeight: 1.75, script: 'ml' },
+  // The Malayalam IRV (a revision of the 1910) and Biblica's Open Malayalam Contemporary
+  // Version, in the Malayalam app: linked as the 1910 is (scripts/align.mjs --lang irv, omcv).
+  { id: 'IRV', name: 'ഇന്ത്യൻ റിവൈസ്ഡ് വേർഷൻ (Malayalam IRV)', tagged: true, lineHeight: 1.75, script: 'ml' },
+  { id: 'OMCV', name: 'Open Malayalam Contemporary Version', tagged: true, lineHeight: 1.75, script: 'ml' },
   // Tagged by scripts/align.mjs --lang ta, like the Malayalam.
   { id: 'TAM', name: 'இண்டியன் ரிவைஸ்டு வெர்ஸன் (Tamil IRV)', tagged: true, lineHeight: 1.75, script: 'ta' },
   // In the four-language app. Its words are not linked to the Hebrew and Greek yet; the
@@ -68,7 +72,8 @@ export interface VerseRow extends Ref {
   text: string;
   /** Offset encoded Strong's tags, see scripts/build-db.mjs. */
   tags: string;
-  /** 1 when the translation omits this verse; `text` then holds the translators' note. */
+  /** 1 when the translation omits this verse (`text` then holds the translators' note); 2 when
+   * it joins the verse to an earlier one, "\v 17-18" (`text` then holds that verse's number). */
   omitted: number;
   /** Break before the verse: '' none, 'p' paragraph, 'b' blank line, 'q0'..'q2' poetry line. */
   para: string;

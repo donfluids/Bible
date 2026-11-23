@@ -89,6 +89,30 @@ const MALAYALAM: Source = {
     'Titus 2–3, duplicated from Titus 1 in the source, restored from the 1910 text (Malayalam Wikisource, public domain); 19 spelling errors corrected; extraneous text at Titus 1:1, five illustration captions and two section headings removed; the five book headings of the Psalms omitted. The modified text is distributed under CC BY-SA 4.0.',
 };
 
+const MALAYALAM_IRV: Source = {
+  title: 'Indian Revised Version (Malayalam)',
+  notice: '\u00a9 2017, 2019 Bridge Connectivity Solutions.',
+  licence: CC_BY_SA,
+  source: [{ label: 'eBible.org (mal)', url: 'https://ebible.org/find/details.php?id=mal' }],
+  modifications:
+    "The translators' introduction and outline before each book, and section headings, omitted; book names taken from each book's running head; two verses printed as one (\u201c\\v 30-31\u201d) kept under the first, the second marked as joined to it. The modified text is distributed under CC BY-SA 4.0.",
+};
+
+// Biblica's terms for a changed copy: the Biblica\u00ae trademark removed from it, the changes
+// named, the original credited in the words given, and the copyright notice shown.
+const MALAYALAM_OMCV: Source = {
+  title: 'Open Malayalam Contemporary Version',
+  notice:
+    'Biblica\u00ae Open Malayalam Contemporary Version\u2122, Copyright \u00a9 1997, 2005, 2017, 2020 by Biblica, Inc. \u201cBiblica\u201d is a trademark registered in the United States Patent and Trademark Office by Biblica, Inc. The original work by Biblica, Inc. is available for free at www.biblica.com and open.bible.',
+  licence: CC_BY_SA,
+  source: [
+    { label: 'eBible.org (malc)', url: 'https://ebible.org/find/details.php?id=malc' },
+    { label: 'open.bible', url: 'https://open.bible' },
+  ],
+  modifications:
+    'Section headings omitted; verses printed together (\u201c\\v 17-18\u201d) kept under the first, the others marked as joined to it; links from the words to the Hebrew and Greek added. As a changed copy it is shown without the Biblica\u00ae trademark. The modified text is distributed under CC BY-SA 4.0.',
+};
+
 const MALAYALAM_LINKS: Source = {
   title: 'Malayalam word alignment',
   notice:
@@ -254,7 +278,7 @@ const APP = (edition: EditionId): Source => ({
 export function sectionsFor(edition: EditionId): Section[] {
   const texts =
     edition === 'ml'
-      ? [MALAYALAM, MALAYALAM_LINKS, KJV, BSB, LSV, ASV]
+      ? [MALAYALAM, MALAYALAM_IRV, MALAYALAM_OMCV, MALAYALAM_LINKS, KJV, BSB, LSV, ASV]
       : edition === 'ta'
         ? // The word links join the list once the Tamil is aligned.
           [TAMIL, ...(translationInfo('TAM').tagged ? [TAMIL_LINKS] : []), KJV, BSB, LSV, ASV]

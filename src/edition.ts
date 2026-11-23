@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import { createContext, useContext } from 'react';
-import { isEnglish, isIndian } from './types';
+import { isEnglish, isIndian, translationInfo } from './types';
 import type { TranslationId } from './types';
 
 export type EditionId = 'en' | 'ml' | 'ta' | 'all';
@@ -17,7 +17,7 @@ export interface Edition {
 
 export const EDITIONS: Record<EditionId, Edition> = {
   en: { id: 'en', translations: ['KJV', 'BSB', 'WEB', 'LSV', 'ASV'], defaultTranslation: 'KJV', languages: ['en'] },
-  ml: { id: 'ml', translations: ['MAL', 'KJV', 'BSB', 'LSV', 'ASV'], defaultTranslation: 'MAL', languages: ['en', 'ml'] },
+  ml: { id: 'ml', translations: ['MAL', 'IRV', 'OMCV', 'KJV', 'BSB', 'LSV', 'ASV'], defaultTranslation: 'MAL', languages: ['en', 'ml'] },
   ta: { id: 'ta', translations: ['TAM', 'KJV', 'BSB', 'LSV', 'ASV'], defaultTranslation: 'TAM', languages: ['en', 'ta'] },
   // The four-language app: every Bible the others carry, and the Hindi. Its interface is
   // English, Malayalam, Tamil or Hindi; the first opening asks which.
@@ -30,8 +30,8 @@ export function nativeTranslation(edition: Edition): TranslationId | null {
   return isEnglish(first) ? null : first;
 }
 
-/** True for an edition with more than one Indian Bible (the four-language app). */
-export const isMultilingual = (edition: Edition) => edition.translations.filter(isIndian).length > 1;
+/** True for an edition with Bibles in more than one Indian language (the four-language app). */
+export const isMultilingual = (edition: Edition) => new Set(edition.translations.filter(isIndian).map((id) => translationInfo(id).script)).size > 1;
 
 /** The Indian Bible of an interface language, in an edition that has it. */
 export function bibleOfLanguage(edition: Edition, language: string): TranslationId | null {
@@ -46,9 +46,10 @@ export function bibleOfLanguage(edition: Edition, language: string): Translation
  * open now, else the one read last, else the one of the interface language.
  */
 export function pairedBible(edition: Edition, translation: TranslationId, lastIndian: string, language: string): TranslationId | null {
-  if (!isMultilingual(edition)) return nativeTranslation(edition);
+  // The Malayalam app has three Malayalam Bibles: the one open, else the one read last.
   if (isIndian(translation)) return translation;
   const last = edition.translations.find((id) => id === lastIndian);
+  if (!isMultilingual(edition)) return last ?? nativeTranslation(edition);
   return last ?? bibleOfLanguage(edition, language);
 }
 

@@ -48,6 +48,8 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
+    "postinstall": "node scripts/lib/unpack-db.cjs",
+    "unpack-db": "node scripts/lib/unpack-db.cjs",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",

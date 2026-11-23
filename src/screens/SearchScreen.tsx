@@ -175,7 +175,7 @@ export function SearchScreen({ books, onOpenRef, onWord, onBack }: Props) {
         <View style={styles.examples}>
           <Text style={[styles.examplesLabel, { color: theme.muted }]}>{t('searchExamples')}</Text>
           <View style={styles.exampleRow}>
-            {(translation === 'MAL' ? MALAYALAM_EXAMPLES : translation === 'TAM' ? TAMIL_EXAMPLES : translation === 'HIN' ? HINDI_EXAMPLES : ENGLISH_EXAMPLES).map((example) => (
+            {(translationInfo(translation).script === 'ml' ? MALAYALAM_EXAMPLES : translationInfo(translation).script === 'ta' ? TAMIL_EXAMPLES : translationInfo(translation).script === 'hi' ? HINDI_EXAMPLES : ENGLISH_EXAMPLES).map((example) => (
               <Pressable
                 key={example}
                 onPress={() => setQuery(example)}

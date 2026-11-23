@@ -209,6 +209,7 @@ const en = {
   introKeyVerses: 'Key verses',
   introNone: 'There is no introduction to this book yet.',
   omitted: 'Omitted in this translation.',
+  joinedVerse: 'Joined with verse {verse} in this translation.',
   nothingSavedTitle: 'Nothing saved yet',
   nothingSaved: 'Press and hold a verse in the reader to bookmark it, highlight it or add a note. They will be listed here.',
   nothingHere: 'Nothing here yet.',
@@ -704,6 +705,7 @@ const ml: Record<StringKey, string> = {
   introKeyVerses: 'പ്രധാന വാക്യങ്ങൾ',
   introNone: 'ഈ പുസ്തകത്തിന് ഇതുവരെ ആമുഖമില്ല.',
   omitted: 'ഈ പരിഭാഷയിൽ ഈ വാക്യം ഇല്ല.',
+  joinedVerse: 'ഈ പരിഭാഷയിൽ {verse}-ാം വാക്യത്തോടു ചേർത്തിരിക്കുന്നു.',
   nothingSavedTitle: 'ഇതുവരെ ഒന്നും സൂക്ഷിച്ചിട്ടില്ല',
   nothingSaved: 'വായനയിൽ ഒരു വാക്യത്തിൽ അമർത്തിപ്പിടിച്ച് അടയാളപ്പെടുത്തുകയോ ഹൈലൈറ്റ് ചെയ്യുകയോ വാക്യക്കുറിപ്പ് ചേർക്കുകയോ ചെയ്യാം. അവ ഇവിടെ കാണാം.',
   nothingHere: 'ഇവിടെ ഇതുവരെ ഒന്നുമില്ല.',
@@ -1197,6 +1199,7 @@ const ta: Record<StringKey, string> = {
   introKeyVerses: 'முக்கிய வசனங்கள்',
   introNone: 'இந்தப் புத்தகத்திற்கு இன்னும் முன்னுரை இல்லை.',
   omitted: 'இந்த மொழிபெயர்ப்பில் இல்லை.',
+  joinedVerse: 'இந்த மொழிபெயர்ப்பில் {verse}-ஆம் வசனத்தோடு சேர்க்கப்பட்டுள்ளது.',
   nothingSavedTitle: 'இன்னும் எதுவும் சேமிக்கப்படவில்லை',
   nothingSaved: 'வாசிக்கும்போது ஒரு வசனத்தை அழுத்திப் பிடித்து அடையாளக்குறி இடலாம், ஹைலைட் செய்யலாம், வசனக் குறிப்பு சேர்க்கலாம். அவை இங்கே தெரியும்.',
   nothingHere: 'இங்கே இன்னும் எதுவும் இல்லை.',
@@ -1692,6 +1695,7 @@ const hi: Record<StringKey, string> = {
   introKeyVerses: 'मुख्य पद',
   introNone: 'इस पुस्तक का परिचय अभी नहीं है।',
   omitted: 'इस अनुवाद में नहीं है।',
+  joinedVerse: 'इस अनुवाद में पद {verse} के साथ जोड़ा गया है।',
   nothingSavedTitle: 'अभी कुछ सहेजा नहीं',
   nothingSaved: 'पढ़ते समय किसी पद को दबाकर रखें: बुकमार्क करने, हाइलाइट करने या टिप्पणी जोड़ने के लिए। वे यहाँ सूचीबद्ध होंगे।',
   nothingHere: 'यहाँ अभी कुछ नहीं है।',
@@ -2015,7 +2019,9 @@ export function shortName(id: string): string {
 
 /** Display name of a translation in the interface language. */
 /** An Indian Bible's name in its own script, and its language's name in that script. */
-export const NATIVE_BIBLE_NAME: Partial<Record<string, string>> = { MAL: 'സത്യവേദപുസ്തകം 1910', TAM: 'இண்டியன் ரிவைஸ்டு வெர்ஸன்', HIN: 'इंडियन रिवाइज्ड वर्जन' };
+// Biblica's open Malayalam text is shown changed (section headings left out, words linked), so,
+// as its licence asks of a changed copy, without the Biblica® trademark (src/licences.ts).
+export const NATIVE_BIBLE_NAME: Partial<Record<string, string>> = { MAL: 'സത്യവേദപുസ്തകം 1910', IRV: 'ഇന്ത്യൻ റിവൈസ്ഡ് വേർഷൻ', OMCV: 'സ്വതന്ത്രം സമകാലിക മലയാളവിവർത്തനം', TAM: 'இண்டியன் ரிவைஸ்டு வெர்ஸன்', HIN: 'इंडियन रिवाइज्ड वर्जन' };
 export const LANGUAGE_WORD: Partial<Record<string, string>> = { MAL: 'മലയാളം', TAM: 'தமிழ்', HIN: 'हिन्दी' };
 
 /** A Bible's name where its text is read: an Indian Bible in its own script, the English ones by their English names. */
@@ -2026,6 +2032,8 @@ export function bibleName(language: Language, id: string): string {
 /** A Bible's name in English, for a detail line under its own name. */
 export function englishName(id: string): string {
   if (id === 'MAL') return 'Sathyavedapusthakam 1910';
+  if (id === 'IRV') return 'Indian Revised Version';
+  if (id === 'OMCV') return 'Open Malayalam Contemporary Version';
   if (id === 'TAM') return 'Indian Revised Version';
   if (id === 'HIN') return 'Indian Revised Version';
   return translationName('en', id);
@@ -2033,6 +2041,8 @@ export function englishName(id: string): string {
 
 export function translationName(language: Language, id: string): string {
   if (id === 'MAL') return language === 'ml' ? 'സത്യവേദപുസ്തകം 1910' : 'Sathyavedapusthakam 1910 (Malayalam)';
+  if (id === 'IRV') return language === 'ml' ? 'ഇന്ത്യൻ റിവൈസ്ഡ് വേർഷൻ' : 'Indian Revised Version (Malayalam)';
+  if (id === 'OMCV') return language === 'ml' ? 'സ്വതന്ത്രം സമകാലിക മലയാളവിവർത്തനം' : 'Open Malayalam Contemporary Version';
   if (id === 'TAM') return language === 'ta' ? 'இண்டியன் ரிவைஸ்டு வெர்ஸன்' : 'Indian Revised Version (Tamil)';
   if (id === 'HIN') return language === 'hi' ? 'इंडियन रिवाइज्ड वर्जन' : 'इंडियन रिवाइज्ड वर्जन (Hindi IRV)';
   if (id === 'KJV') return language === 'ml' ? 'കിംഗ് ജെയിംസ് വേർഷൻ' : language === 'ta' ? 'கிங் ஜேம்ஸ் வெர்ஸன்' : language === 'hi' ? 'किंग जेम्स वर्जन' : 'King James Version';

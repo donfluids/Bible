@@ -18,7 +18,8 @@
 //     text = the verse as plain text. Poetry and paragraph breaks inside a verse are
 //            newlines; an indented poetry line starts with one em space per level.
 //            For an omitted verse (WEB, ASV and BSB: a verse the translation leaves out) text
-//            holds the translators' footnote and omitted = 1
+//            holds the translators' footnote and omitted = 1; for a verse a translation joins
+//            to the one before it (OMCV "\v 17-18"), omitted = 2 and text is that verse's number
 //     tags = Strong's tags as "gap,length,number" triples separated by spaces, e.g.
 //            "7,9,7225 1,3,430 1,7,1254": gap is the number of characters since the
 //            end of the previous tag (or the start of the verse), length is the tagged
@@ -67,7 +68,7 @@
 import { contentNumbers } from './lib/function-words.mjs';
 import { groupForms, isTaBaseForm, mlStem, isBaseForm, taStem } from './lib/forms.mjs';
 import { DatabaseSync } from 'node:sqlite';
-import { deflateRawSync, inflateRawSync } from 'node:zlib';
+import { deflateRawSync, gzipSync, inflateRawSync } from 'node:zlib';
 import { textHash } from './lib/tokens.mjs';
 import { makeProjector, isStop, normWord, glossHas } from './lib/project.mjs';
 import { abbottSmith, bdbGlosses } from './lib/lexicons.mjs';
@@ -75,7 +76,7 @@ import { addCrossRefs } from './lib/crossrefs.mjs';
 import { addIntros } from './lib/intros.mjs';
 import { addParallels } from './lib/parallels.mjs';
 import { keepBuildDate, previousBuild, recordDatabase } from './lib/dbfiles.mjs';
-import { readFileSync, readdirSync, mkdirSync, rmSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, mkdirSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -85,10 +86,14 @@ const OUT_DIR = join(ROOT, 'assets', 'db');
 // "all" is the four-language app: the three English Bibles and the Malayalam, Tamil and Hindi.
 const EDITIONS = {
   en: ['KJV', 'BSB', 'WEB', 'LSV', 'ASV'],
-  ml: ['MAL', 'KJV', 'BSB', 'LSV', 'ASV'],
+  ml: ['MAL', 'IRV', 'OMCV', 'KJV', 'BSB', 'LSV', 'ASV'],
   ta: ['TAM', 'KJV', 'BSB', 'LSV', 'ASV'],
   all: ['KJV', 'BSB', 'WEB', 'LSV', 'ASV', 'MAL', 'TAM', 'HIN'],
 };
+
+// Editions whose database is over GitHub's 100 MB file limit: the repository keeps it gzipped
+// (assets/db/bible-<edition>.db.gz), unpacked on install and before builds (scripts/lib/unpack-db.cjs).
+const PACKED = new Set(['ml']);
 
 // USFM book code, display name, testament. Order is the Protestant canon.
 const BOOKS = [
@@ -229,6 +234,12 @@ const ALL_TRANSLATIONS = [
   // Made by scripts/bsb-from-sword.mjs from CrossWire's module, whose Strong's numbers are right.
   { id: 'BSB', name: 'Berean Standard Bible', dir: 'bsb', suffix: 'bsb.usfm' },
   { id: 'MAL', name: 'സത്യവേദപുസ്തകം 1910', dir: 'mal2015', suffix: 'mal2015.usfm' },
+  // The Malayalam Indian Revised Version (2017, 2019): a revision of the 1910 text. Its \toc2 is
+  // an abbreviation (ഉല്പ.); its \h is the book's name.
+  { id: 'IRV', name: 'ഇന്ത്യൻ റിവൈസ്ഡ് വേർഷൻ (IRV)', dir: 'malirv', suffix: 'mal.usfm', nameFrom: 'h' },
+  // Biblica's Open Malayalam Contemporary Version (2020), a translation in today's Malayalam. Shown
+  // changed (headings left out, words linked), so without the Biblica® trademark, as its licence asks.
+  { id: 'OMCV', name: 'സ്വതന്ത്രം സമകാലിക മലയാളവിവർത്തനം', dir: 'malomcv', suffix: 'malc.usfm' },
   // The IRV's \toc2 is an abbreviation (ஆதி); its \h is the book's name (ஆதியாகமம்).
   // Tamil needs no zero-width non-joiner; the IRV has eight stray ones, one inside a word (1 John 5:3).
   { id: 'TAM', name: 'இண்டியன் ரிவைஸ்டு வெர்ஸன் (IRV)', dir: 'tam2017', suffix: 'tam2017.usfm', nameFrom: 'h', dropZwnj: true },
@@ -348,6 +359,7 @@ function parseBook(path, nameFrom, { bditAsXref = false, bracketNotes = false, b
   let pendingBreak = null; // poetry or paragraph break waiting for the next text
   let pendingKind = ''; // 'p', 'b' or 'q' for that break
   const paras = new Map(); // "chapter:verse" -> break kind before the verse
+  const joins = new Map(); // "chapter:verse" -> the verse its text is joined to (\v 17-18)
   const append = (text) => {
     if (verse === null || !text || !text.trim()) return;
     const ch = chapters.get(chapter);
@@ -376,15 +388,19 @@ function parseBook(path, nameFrom, { bditAsXref = false, bracketNotes = false, b
       pendingBreak = /^(q2|pi1|li1|mi|pm|pmo)$/.test(p[1]) ? 1 : /^(q3|pi2|li2)$/.test(p[1]) ? 2 : 0;
       pendingKind = /^q/.test(p[1]) ? 'q' : p[1] === 'b' ? 'b' : 'p';
     }
-    // A line may hold several verses: split on \v markers.
-    const parts = rest.split(/\\v\s+(\d+)[a-z]?\s*/);
+    // A line may hold several verses: split on \v markers. A verse may stand for several
+    // ("\v 17-18", where a translation joins them into one sentence): its text is kept under
+    // the first, and the others are noted as joined to it.
+    const parts = rest.split(/\\v\s+(\d+)(?:-(\d+))?[a-z]?\s*/);
     append(parts[0]);
-    for (let i = 1; i < parts.length; i += 2) {
+    for (let i = 1; i < parts.length; i += 3) {
       verse = Number(parts[i]);
-      append(parts[i + 1]);
+      const last = parts[i + 1] ? Number(parts[i + 1]) : verse;
+      for (let k = verse + 1; k <= last; k++) joins.set(`${chapter}:${k}`, verse);
+      append(parts[i + 2]);
     }
   }
-  return { chapters, headings, notes, paras, bookName };
+  return { chapters, headings, notes, paras, bookName, joins };
 }
 
 // Parse "Mat.17.14[17.15]#03=NKO" style references. Returns null for non-data lines.
@@ -800,7 +816,7 @@ function relinkShifted(pending, verseMap) {
 function loadVerseMap() {
   try {
     const doc = JSON.parse(readFileSync(join(ROOT, 'data', 'overrides', 'versification.json'), 'utf8'));
-    return Object.fromEntries(Object.entries(doc).filter(([k]) => /^[A-Z]{3}$/.test(k)));
+    return Object.fromEntries(Object.entries(doc).filter(([k]) => /^[A-Z]{3,5}$/.test(k)));
   } catch {
     return {};
   }
@@ -862,6 +878,8 @@ function buildEdition(edition) {
   // are checked and grouped.
   const LINKED = {
     MAL: { folder: 'mal', pronouns: ML_PRONOUN_WORDS, lord: 'യഹോവ', god: 'ദൈവ', stem: mlStem, isBase: isBaseForm },
+    IRV: { folder: 'irv', pronouns: ML_PRONOUN_WORDS, lord: 'യഹോവ', god: 'ദൈവ', stem: mlStem, isBase: isBaseForm },
+    OMCV: { folder: 'omcv', pronouns: ML_PRONOUN_WORDS, lord: 'യഹോവ', god: 'ദൈവ', stem: mlStem, isBase: isBaseForm },
     TAM: { folder: 'tam', pronouns: TA_PRONOUN_WORDS, lord: 'யெகோவா', god: 'தேவ', stem: taStem, isBase: isTaBaseForm },
   };
   const corrections = loadCorrections();
@@ -888,7 +906,7 @@ function buildEdition(edition) {
     for (const book of BOOKS) {
       const file = files.find((f) => f.endsWith(book.osis + t.suffix));
       if (!file) throw new Error(`${t.id}: no file for ${book.osis}`);
-      const { chapters, headings, notes, paras, bookName } = parseBook(join(RAW, t.dir, file), t.nameFrom, t);
+      const { chapters, headings, notes, paras, bookName, joins } = parseBook(join(RAW, t.dir, file), t.nameFrom, t);
       // A line after a chapter's last verse (the ASV's "For the Chief Musician" after
       // Habakkuk 3:19) would be a heading before a verse that does not exist: it ends the verse.
       for (let i = headings.length - 1; i >= 0; i--) {
@@ -954,6 +972,14 @@ function buildEdition(edition) {
       for (const h of headings) {
         const text = splitTags(cleanVerse(h.raw)).text;
         if (text) insHeading.run(t.id, book.id, h.chapter, h.beforeVerse, text);
+      }
+      // A verse joined to the one before it ("\v 17-18") is written as such: omitted = 2,
+      // its text the number of the verse that holds it.
+      for (const [key, into] of joins) {
+        const [chapter, verse] = key.split(':').map(Number);
+        if (chapters.get(chapter)?.has(verse)) continue;
+        insVerse.run(t.id, book.id, chapter, verse, String(into), '', 2, '');
+        omitted++;
       }
       const nChapters = Math.max(...chapters.keys());
       chapterCounts.set(book.id, Math.max(chapterCounts.get(book.id) || 0, nChapters));
@@ -1158,6 +1184,8 @@ function buildEdition(edition) {
     ASV: 'eBible.org eng-asv, American Standard Version (1901), public domain',
     BSB: 'CrossWire BSB module 2.0, Berean Standard Bible, BSB Publishing, CC0 / public domain',
     MAL: 'eBible.org mal2015, Malayalam Sathyavedapusthakam 1910 in contemporary orthography, Free Bible Foundation 2015, CC BY-SA 4.0',
+    IRV: 'eBible.org mal, Malayalam Indian Revised Version, Bridge Connectivity Solutions 2017, 2019, CC BY-SA 4.0',
+    OMCV: 'eBible.org malc, Open Malayalam Contemporary Version, Biblica, Inc. 1997, 2005, 2017, 2020, CC BY-SA 4.0',
     TAM: 'eBible.org tam2017, Tamil Indian Revised Version, Bridge Connectivity Solutions 2017, 2019, CC BY-SA 4.0',
     HIN: 'eBible.org hin2017, Hindi Indian Revised Version, Bridge Connectivity Solutions 2017, 2018, 2019, CC BY-SA 4.0',
   };
@@ -1209,6 +1237,13 @@ function buildEdition(edition) {
   db.close();
 
   recordDatabase(ROOT, edition, OUT);
+  // Too large for one file in the repository: kept compressed beside it (scripts/lib/unpack-db.cjs).
+  if (PACKED.has(edition)) {
+    writeFileSync(`${OUT}.gz`, gzipSync(readFileSync(OUT), { level: 9 }));
+    const { atime, mtime } = statSync(`${OUT}.gz`);
+    utimesSync(OUT, atime, mtime);
+    stats.packedBytes = statSync(`${OUT}.gz`).size;
+  }
   console.log(JSON.stringify({ edition, ...stats, strongsEntries: nStrongs, bytes: statSync(OUT).size }, null, 2));
 }
 

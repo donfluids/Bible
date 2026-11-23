@@ -3,6 +3,9 @@ const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
 
+// The Malayalam database is kept compressed in the repository; unpacked here if needed.
+require('./scripts/lib/unpack-db.cjs').unpackDatabases();
+
 // Ship the prebuilt SQLite database as an app asset.
 config.resolver.assetExts.push('db');
 // The voice an app carries (assets/speech): its model and the verses' speech sounds.

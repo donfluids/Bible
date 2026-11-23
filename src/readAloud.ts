@@ -9,12 +9,15 @@ import { PHONE_VOICE, sayVerse, stopBuiltinVoice, usesBuiltinVoice } from './bui
 import { LANGUAGE, usableVoice } from './speech';
 import type { SpokenLanguage } from './speech';
 import { flattenVerse } from './text';
+import { translationInfo } from './types';
 import type { TranslationId, VerseRow } from './types';
 
 export const READ_SPEEDS = [0.75, 1, 1.25];
 
 export function voiceFor(translation: TranslationId): SpokenLanguage {
-  return translation === 'MAL' ? 'malayalam' : translation === 'TAM' ? 'tamil' : translation === 'HIN' ? 'hindi' : 'english';
+  // By the Bible's script: the Malayalam app has three Malayalam Bibles.
+  const script = translationInfo(translation).script;
+  return script === 'ml' ? 'malayalam' : script === 'ta' ? 'tamil' : script === 'hi' ? 'hindi' : 'english';
 }
 
 /** What is said for a verse: its text only, without the KJV's paragraph marks. */

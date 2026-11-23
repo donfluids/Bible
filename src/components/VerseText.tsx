@@ -113,7 +113,8 @@ export const VerseText = memo(function VerseText({
         onLongPress={onLongPress}
       >
         {showNumber ? <Text style={[styles.number, { fontSize: small }]}>{verse.verse} </Text> : null}
-        {t('omitted')} {verse.text}
+        {/* omitted 2: joined to an earlier verse (\v 17-18), whose number is its text. */}
+        {verse.omitted === 2 ? t('joinedVerse', { verse: verse.text }) : `${t('omitted')} ${verse.text}`}
       </Text>
     );
   }

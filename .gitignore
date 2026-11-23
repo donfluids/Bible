@@ -49,11 +49,15 @@ data/raw
 # Release signing key and passwords, never committed
 credentials/
 
-# Edition databases are bible-en.db, bible-ml.db and bible-ta.db; bible.db is only a name Metro redirects
+# Edition databases are bible-en.db, bible-ml.db and bible-ta.db (bible-ml.db kept as bible-ml.db.gz);
+# bible.db is only a name Metro redirects
 assets/db/bible.db
 # The four-language database is over GitHub's 100 MB limit; it is built, not kept:
 #   npm run fetch-data && node scripts/build-db.mjs all
 assets/db/bible-all.db
+# The Malayalam database is over the limit too since it has three Malayalam Bibles: kept
+# compressed (bible-ml.db.gz) and unpacked by npm install and Metro (scripts/lib/unpack-db.cjs).
+assets/db/bible-ml.db
 
 # Screen check output (scripts/smoke.mjs)
 smoke-out/
