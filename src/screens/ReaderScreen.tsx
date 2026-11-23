@@ -1693,7 +1693,14 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
         // don't swipe. They float over the text, above the tab bar, and step aside while it
         // scrolls (onListScroll).
         <>
-          <LinearGradient colors={[`${theme.bg}00`, theme.bg]} pointerEvents="none" style={[styles.fade, { bottom: arrowBottom - 6 }]} />
+          {/* The text fades into the edge it stops at: the tab bar, or with no bar (a reader
+              opened from a list) the very bottom of the screen, home indicator strip and all. */}
+          <LinearGradient
+            colors={[`${theme.bg}00`, theme.bg, theme.bg]}
+            locations={[0, tabs && !barHidden ? 1 : 40 / (40 + bottomInset), 1]}
+            pointerEvents="none"
+            style={[styles.fade, tabs && !barHidden ? { bottom: arrowBottom - 6 } : { bottom: 0, height: 40 + bottomInset }]}
+          />
           <Animated.View pointerEvents={arrowsAway ? 'none' : 'box-none'} style={[StyleSheet.absoluteFill, { opacity: arrowFade }]}>
             <ChapterArrow icon="chevron_left" onPress={() => go(-1)} disabled={atStart} accessibilityLabel={t('previousChapter')} style={{ left: 2 + barSide, bottom: arrowBottom }} />
             <ChapterArrow icon="chevron_right" onPress={() => go(1)} disabled={atEnd} accessibilityLabel={t('nextChapter')} style={{ right: 2 + barSide, bottom: arrowBottom }} />
