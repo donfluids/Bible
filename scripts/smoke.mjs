@@ -201,8 +201,9 @@ for (const edition of EDITIONS) {
         await vis(page.getByRole('button', { name: new RegExp(`^${t.chooseBible}:`) })).click();
         await wait(800);
         await page.screenshot({ path: join(shots, `${String(n).padStart(2, '0')}-bible-list.png`) });
-        // The row in the list (a sideways screen also shows the Bible's name as a heading).
-        await vis(page.getByRole('button', { name: /^इंडियन रिवाइज्ड वर्जन/ })).click();
+        // The row in the list, by its name and the line under it: in the browser a row's name
+        // starts with its icon's glyph, and a sideways screen also shows the Bible's name as a heading.
+        await vis(page.getByRole('button', { name: /इंडियन रिवाइज्ड वर्जन.*Hindi/ })).click();
         await wait(2000);
         // A footnote letter sits inside John 1:1's first words, so the pill tells which Bible is open.
         await vis(page.getByRole('button', { name: new RegExp(`^${t.chooseBible}: इंडियन रिवाइज्ड वर्जन`) })).waitFor({ timeout: 8000 });
@@ -210,8 +211,7 @@ for (const edition of EDITIONS) {
         await snap();
         await vis(page.getByRole('button', { name: new RegExp(`^${t.chooseBible}:`) })).click();
         await wait(800);
-        // The row's text: in the browser its name also carries the icon's glyph.
-        await vis(page.getByRole('button', { name: /^King James Version/ })).click();
+        await vis(page.getByRole('button', { name: /King James Version.*KJV/ })).click();
         await wait(2000);
         // The KJV's words are links each, so its pill tells which Bible is open.
         await vis(page.getByRole('button', { name: `${t.chooseBible}: King James Version` })).waitFor({ timeout: 8000 });

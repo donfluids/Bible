@@ -7,7 +7,8 @@
 //   node scripts/howto-shots.mjs en:en ml:ml ta:ta all:hi
 //
 // Each argument is an app and the interface language to photograph it in: English from
-// the English app (an English Bible), Malayalam from the Malayalam app, and so on.
+// the English app (an English Bible), Malayalam from the Malayalam app, and so on. With no
+// arguments it only writes src/howtoPictures.ts again from the pictures there are.
 import { createReadStream, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import http from 'node:http';
 import { dirname, extname, join } from 'node:path';
@@ -287,12 +288,32 @@ const lines = [
   "import RINGS from '../assets/howto/rings.json';",
   '',
   'export type Ring = { left: number; top: number; width: number; height: number };',
-  'export const HOWTO_PICTURES: Partial<Record<string, Partial<Record<number, ImageSourcePropType>>>> = {',
+  '// Each picture\'s width over its height (the browser version cannot measure an image).',
+  'export const HOWTO_SHAPES: Partial<Record<string, Partial<Record<number, number>>>> = {',
 ];
+// A JPEG's size, from its first frame header.
+const jpegShape = (file) => {
+  const b = readFileSync(file);
+  for (let i = 2; i < b.length; ) {
+    const marker = b[i + 1];
+    if (marker >= 0xc0 && marker <= 0xc3) return b.readUInt16BE(i + 7) / b.readUInt16BE(i + 5);
+    i += 2 + b.readUInt16BE(i + 2);
+  }
+  throw new Error(`no size in ${file}`);
+};
+const numbered = (language) => readdirSync(join(OUT, language)).filter((f) => /^\d+\.jpg$/.test(f)).sort((a, b) => parseInt(a) - parseInt(b));
 for (const language of languages) {
-  const files = readdirSync(join(OUT, language)).filter((f) => /^\d+\.jpg$/.test(f)).sort((a, b) => parseInt(a) - parseInt(b));
   lines.push(`  ${language}: {`);
-  for (const f of files) lines.push(`    ${parseInt(f)}: require('../assets/howto/${language}/${f}'),`);
+  for (const f of numbered(language)) lines.push(`    ${parseInt(f)}: ${jpegShape(join(OUT, language, f)).toFixed(4)},`);
+  lines.push('  },');
+}
+lines.push(
+  '};',
+  'export const HOWTO_PICTURES: Partial<Record<string, Partial<Record<number, ImageSourcePropType>>>> = {',
+);
+for (const language of languages) {
+  lines.push(`  ${language}: {`);
+  for (const f of numbered(language)) lines.push(`    ${parseInt(f)}: require('../assets/howto/${language}/${f}'),`);
   lines.push('  },');
 }
 lines.push('};', 'export const HOWTO_RINGS: Partial<Record<string, Partial<Record<number, Ring>>>> = RINGS;', '');

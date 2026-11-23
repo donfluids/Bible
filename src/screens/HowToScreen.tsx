@@ -8,7 +8,7 @@ import type { IconName } from '../components/Icon';
 import { Pressable } from '../components/Pressable';
 import { isMultilingual, useEdition } from '../edition';
 import { languageScript, scriptureFont } from '../fonts';
-import { HOWTO_PICTURES, HOWTO_RINGS } from '../howtoPictures';
+import { HOWTO_PICTURES, HOWTO_RINGS, HOWTO_SHAPES } from '../howtoPictures';
 import { useT } from '../i18n';
 import type { StringKey } from '../i18n';
 import { useSettings } from '../settings';
@@ -98,6 +98,7 @@ export function HowToScreen({ onBack, onShowMe }: { onBack: () => void; onShowMe
   const lineHeight = Math.round(size * (script ? 1.6 : 1.45));
   const pictures: Partial<Record<number, ImageSourcePropType>> = HOWTO_PICTURES[settings.language] ?? {};
   const rings = HOWTO_RINGS[settings.language] ?? {};
+  const shapes = HOWTO_SHAPES[settings.language] ?? {};
   const [open, setOpen] = useState<number | null>(null);
   const toggle = (n: number) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -175,7 +176,7 @@ export function HowToScreen({ onBack, onShowMe }: { onBack: () => void; onShowMe
               const steps = topic.n === 7 && multilingual ? [...topic.steps, SEARCH_ALL_STEP] : topic.steps;
               const picture = pictures[topic.n];
               const ring = rings[topic.n];
-              const source = picture ? Image.resolveAssetSource(picture) : null;
+              const shape = shapes[topic.n];
               return (
                 <View key={topic.n} style={[styles.topic, shown && [styles.topicOpen, { backgroundColor: theme.card, borderColor: theme.border }], !shown && { borderBottomColor: theme.border }]}>
                   <Pressable
@@ -194,8 +195,8 @@ export function HowToScreen({ onBack, onShowMe }: { onBack: () => void; onShowMe
                   {shown ? (
                     <View style={styles.body}>
                       {/* The app itself, with a ring on the part the topic is about. */}
-                      {picture && source ? (
-                        <View style={[styles.picture, { borderColor: theme.border, aspectRatio: source.width / source.height }]} accessible={false} importantForAccessibility="no-hide-descendants">
+                      {picture && shape ? (
+                        <View style={[styles.picture, { borderColor: theme.border, aspectRatio: shape }]} accessible={false} importantForAccessibility="no-hide-descendants">
                           <Image source={picture} style={StyleSheet.absoluteFill} resizeMode="cover" />
                           {ring ? (
                             <View

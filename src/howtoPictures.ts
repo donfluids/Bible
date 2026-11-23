@@ -5,6 +5,39 @@ import type { ImageSourcePropType } from 'react-native';
 import RINGS from '../assets/howto/rings.json';
 
 export type Ring = { left: number; top: number; width: number; height: number };
+// Each picture's width over its height (the browser version cannot measure an image).
+export const HOWTO_SHAPES: Partial<Record<string, Partial<Record<number, number>>>> = {
+  en: {
+    1: 1.0842,
+    2: 1.0842,
+    3: 0.7357,
+    4: 0.8957,
+    5: 1.2485,
+    6: 0.9364,
+    7: 0.9364,
+    8: 0.7923,
+    9: 0.7357,
+    10: 0.9364,
+    11: 0.8583,
+    12: 1.0842,
+    13: 0.7357,
+  },
+  ta: {
+    1: 1.0842,
+    2: 1.0842,
+    3: 0.7357,
+    4: 0.8957,
+    5: 1.2485,
+    6: 0.9364,
+    7: 0.9364,
+    8: 0.7923,
+    9: 0.7357,
+    10: 0.9364,
+    11: 0.8583,
+    12: 1.0842,
+    13: 0.7357,
+  },
+};
 export const HOWTO_PICTURES: Partial<Record<string, Partial<Record<number, ImageSourcePropType>>>> = {
   en: {
     1: require('../assets/howto/en/1.jpg'),
