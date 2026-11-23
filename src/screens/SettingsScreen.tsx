@@ -21,7 +21,7 @@ import { translationInfo } from '../types';
 import { useTheme } from '../theme';
 import { useWriteToUs } from '../writeToUs';
 import { Segmented } from '../components/Segmented';
-import { SimpleSheet } from '../components/SimpleSheet';
+import { SheetAction, SimpleSheet } from '../components/SimpleSheet';
 import { listVoices, saySample, stopSaying, voiceReport } from '../speech';
 import { BUILTIN_NAME, BUILTIN_VOICE, PHONE_VOICE, hasBuiltinVoice, sayVerse, stopBuiltinVoice } from '../builtinVoice';
 import type { SpokenLanguage } from '../speech';
@@ -76,6 +76,16 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
   const spoken = SPOKEN.filter(([, id]) => EDITION.translations.includes(id));
   const [choosingVoice, setChoosingVoice] = useState<SpokenLanguage | null>(null);
   const [backupOpen, setBackupOpen] = useState(false);
+  const [choosingBible, setChoosingBible] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  // A Bible's name in its own script, and the line under it: an Indian Bible's English name,
+  // an English one's code (ENG · KJV beside an Indian Bible).
+  const bibleFont = (id: TranslationId) => {
+    const family = scriptureFont(translationInfo(id).script ?? null, false);
+    return family ? { fontFamily: family } : undefined;
+  };
+  const bibleDetail = (id: TranslationId) =>
+    translationInfo(id).script ? `${englishName(id)} · ${id}` : nativeTranslation(EDITION) && id !== nativeTranslation(EDITION) ? `ENG · ${id}` : id;
   const [voiceList, setVoiceList] = useState<VoiceOption[] | null>(null);
   const [sampling, setSampling] = useState<string | null>(null);
   const [report, setReport] = useState<string | null>(null);
@@ -154,26 +164,16 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <Header title={t('settings')} onBack={onBack} backLabel={t('back')} />
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}>
-        <Label text={t('studyTools')} />
+        {/* Reading: what people change most, first. */}
+        <Label text={t('reading')} />
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <SwitchRow style={styles.row} title={t('studyTools')} value={settings.study} onChange={(v) => update({ study: v })}>
-            <Text style={[styles.rowSub, { color: theme.muted }]}>{t('studyToolsDetail')}</Text>
-          </SwitchRow>
-        </View>
-
-        <Label text={t('appearance')} />
-        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          {EDITION.languages.length > 1 ? (
-            <View style={styles.block}>
-              <Text style={[styles.rowTitle, { color: theme.text }]}>{t('language')}</Text>
-              <Segmented
-                options={EDITION.languages.map((id) => [id, LANGUAGE_NAMES[id]]) as [Language, string][]}
-                value={settings.language}
-                onChange={(language) => update({ language })}
-              />
-            </View>
-          ) : null}
-          <View style={[styles.block, EDITION.languages.length > 1 && divider]}>
+          <View style={styles.row}>
+            <IconButton name="text_decrease" onPress={() => setSize(-1)} disabled={sizeIndex <= 0} accessibilityLabel={t('smallerText')} color={theme.accent} />
+            <Text style={[styles.preview, { color: theme.text, fontSize: settings.fontSize, fontFamily: theme.font }]}>{t('previewText')}</Text>
+            <IconButton name="text_increase" onPress={() => setSize(1)} disabled={sizeIndex >= FONT_SIZES.length - 1} accessibilityLabel={t('largerText')} color={theme.accent} />
+          </View>
+          <Text style={[styles.rowSub, styles.sizeHint, { color: theme.muted }]}>{t('textSizeHint')}</Text>
+          <View style={[styles.block, divider]}>
             <Text style={[styles.rowTitle, { color: theme.text }]}>{t('theme')}</Text>
             <Segmented
               options={[
@@ -184,20 +184,25 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
               ] as [ThemeChoice, string][]}
               value={settings.theme}
               onChange={(value) => update({ theme: value })}
+              tick={false}
             />
           </View>
-          <View style={[styles.block, divider]}>
-            <Text style={[styles.rowTitle, { color: theme.text }]}>{t('highlightStyle')}</Text>
-            <Text style={[styles.rowSub, { color: theme.muted }]}>{t('highlightStyleDetail')}</Text>
-            <Segmented
-              options={[
-                ['soft', t('highlightSoft')],
-                ['fluorescent', t('highlightFluorescent')],
-              ] as [HighlightStyle, string][]}
-              value={settings.highlightStyle}
-              onChange={(highlightStyle) => update({ highlightStyle })}
-            />
-          </View>
+          {/* The highlight style is the dark theme's only: shown where that theme can be in use. */}
+          {settings.theme === 'dark' || settings.theme === 'system' ? (
+            <View style={[styles.block, divider]}>
+              <Text style={[styles.rowTitle, { color: theme.text }]}>{t('highlightStyle')}</Text>
+              <Text style={[styles.rowSub, { color: theme.muted }]}>{t('highlightStyleDetail')}</Text>
+              <Segmented
+                options={[
+                  ['soft', t('highlightSoft')],
+                  ['fluorescent', t('highlightFluorescent')],
+                ] as [HighlightStyle, string][]}
+                value={settings.highlightStyle}
+                onChange={(highlightStyle) => update({ highlightStyle })}
+                tick={false}
+              />
+            </View>
+          ) : null}
           <View style={[styles.block, divider]}>
             <Text style={[styles.rowTitle, { color: theme.text }]}>{t('layout')}</Text>
             <Segmented
@@ -207,6 +212,7 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
               ] as [Layout, string][]}
               value={settings.layout}
               onChange={(layout) => update({ layout })}
+              tick={false}
             />
           </View>
           <SwitchRow style={[styles.row, divider]} title={t('serif')} value={settings.serif} onChange={(v) => update({ serif: v })}>
@@ -218,68 +224,67 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
           {nativeTranslation(EDITION) || isMultilingual(EDITION) ? (
             <SwitchRow style={[styles.row, divider]} title={t('sideBySide')} value={settings.sideBySide} onChange={(v) => update({ sideBySide: v })}>
               <Text style={[styles.rowSub, { color: theme.muted }]}>
-                  {isMultilingual(EDITION) ? t('sideBySideDetailAll') : t('sideBySideDetail', { native: nativeTranslation(EDITION) === 'TAM' ? 'Tamil' : 'Malayalam' })}
-                </Text>
+                {isMultilingual(EDITION) ? t('sideBySideDetailAll') : t('sideBySideDetail', { native: nativeTranslation(EDITION) === 'TAM' ? 'Tamil' : 'Malayalam' })}
+              </Text>
             </SwitchRow>
           ) : null}
         </View>
 
+        {/* The Bible read: one row, opening the list the reader's chooser has. */}
         <Label text={t('translation')} />
+        <Pressable
+          onPress={() => setChoosingBible(true)}
+          accessibilityRole="button"
+          accessibilityHint={t('chooseBible')}
+          android_ripple={{ color: theme.accentSoft }}
+          style={[styles.card, styles.row, { backgroundColor: theme.card, borderColor: theme.border }]}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.rowTitle, { color: theme.text }, bibleFont(settings.translation)]}>{bibleName(settings.language, settings.translation)}</Text>
+            <Text style={[styles.rowSub, { color: theme.muted }]}>{bibleDetail(settings.translation)}</Text>
+          </View>
+          <Icon name="chevron_right" color={theme.muted} />
+        </Pressable>
+
+        {/* Study tools, and under them (while they are on) all that goes with the original words. */}
+        <Label text={t('studyTools')} />
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          {EDITION.translations.map((id, i) => {
-            const active = settings.translation === id;
-            return (
-              <Pressable key={id} onPress={() => update({ translation: id })} android_ripple={{ color: theme.accentSoft }} accessibilityRole="radio" accessibilityState={{ checked: active }} style={[styles.row, i > 0 && divider]}>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.rowTitle, { color: theme.text }, scriptureFont(translationInfo(id).script ?? null, false) ? { fontFamily: scriptureFont(translationInfo(id).script ?? null, false) } : null]}>{bibleName(settings.language, id)}</Text>
-                  {/* The English name of an Indian Bible; else the short label the reader's chip shows, and the version's code. */}
-                  <Text style={[styles.rowSub, { color: theme.muted }]}>{translationInfo(id).script ? `${englishName(id)} · ${id}` : nativeTranslation(EDITION) && id !== nativeTranslation(EDITION) ? `ENG · ${id}` : id}</Text>
-                </View>
-                <View style={styles.check}>{active ? <Icon name="check" color={theme.accent} /> : null}</View>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        <Label text={t('textSize')} />
-        <View style={[styles.card, styles.row, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <IconButton name="text_decrease" onPress={() => setSize(-1)} disabled={sizeIndex <= 0} accessibilityLabel={t('smallerText')} color={theme.accent} />
-          <Text style={[styles.preview, { color: theme.text, fontSize: settings.fontSize, fontFamily: theme.font }]}>{t('previewText')}</Text>
-          <IconButton name="text_increase" onPress={() => setSize(1)} disabled={sizeIndex >= FONT_SIZES.length - 1} accessibilityLabel={t('largerText')} color={theme.accent} />
-        </View>
-        <Text style={[styles.rowSub, styles.hint, { color: theme.muted }]}>{t('textSizeHint')}</Text>
-
-        <Label text={t('interlinear')} />
-        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <SwitchRow style={styles.row} title={t('showInterlinear')} value={settings.interlinear} onChange={(v) => update({ interlinear: v })}>
-            <Text style={[styles.rowSub, { color: theme.muted }]}>{t('showInterlinearDetail')}</Text>
+          <SwitchRow style={styles.row} title={t('studyToolsShow')} value={settings.study} onChange={(v) => update({ study: v })}>
+            <Text style={[styles.rowSub, { color: theme.muted }]}>{t('studyToolsShort')}</Text>
           </SwitchRow>
-          {(
-            [
-              ['all', t('everyVerse'), t('everyVerseDetail')],
-              ['tap', t('tappedVerses'), t('tappedVersesDetail')],
-            ] as const
-          ).map(([mode, title, sub]) => (
-            <Pressable key={mode} onPress={() => update({ interlinearMode: mode })} android_ripple={{ color: theme.accentSoft }} accessibilityRole="radio" accessibilityState={{ checked: settings.interlinearMode === mode }} style={[styles.row, divider]}>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.rowTitle, { color: theme.text }]}>{title}</Text>
-                <Text style={[styles.rowSub, { color: theme.muted }]}>{sub}</Text>
-              </View>
-              <View style={styles.check}>{settings.interlinearMode === mode ? <Icon name="check" color={theme.accent} /> : null}</View>
-            </Pressable>
-          ))}
-          <SwitchRow style={[styles.row, divider]} title={t('transliteration')} value={settings.showTranslit} onChange={(v) => update({ showTranslit: v })}>
-            <Text style={[styles.rowSub, { color: theme.muted }]}>{t('transliterationDetail')}</Text>
-          </SwitchRow>
-          <SwitchRow style={[styles.row, divider]} title={t('hideCantillation')} value={settings.hideCantillation} onChange={(v) => update({ hideCantillation: v })}>
-            <Text style={[styles.rowSub, { color: theme.muted }]}>{t('hideCantillationDetail')}</Text>
-          </SwitchRow>
+          {settings.study ? (
+            <>
+              <SwitchRow style={[styles.row, divider]} title={t('showInterlinear')} value={settings.interlinear} onChange={(v) => update({ interlinear: v })}>
+                <Text style={[styles.rowSub, { color: theme.muted }]}>{t('showInterlinearDetail')}</Text>
+              </SwitchRow>
+              {settings.interlinear
+                ? (
+                    [
+                      ['all', t('everyVerse'), t('everyVerseDetail')],
+                      ['tap', t('tappedVerses'), t('tappedVersesDetail')],
+                    ] as const
+                  ).map(([mode, title, sub]) => (
+                    <Pressable key={mode} onPress={() => update({ interlinearMode: mode })} android_ripple={{ color: theme.accentSoft }} accessibilityRole="radio" accessibilityState={{ checked: settings.interlinearMode === mode }} style={[styles.row, styles.indented, divider]}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.rowTitle, { color: theme.text }]}>{title}</Text>
+                        <Text style={[styles.rowSub, { color: theme.muted }]}>{sub}</Text>
+                      </View>
+                      <View style={styles.check}>{settings.interlinearMode === mode ? <Icon name="check" color={theme.accent} /> : null}</View>
+                    </Pressable>
+                  ))
+                : null}
+              <SwitchRow style={[styles.row, divider]} title={t('transliteration')} value={settings.showTranslit} onChange={(v) => update({ showTranslit: v })}>
+                <Text style={[styles.rowSub, { color: theme.muted }]}>{t('transliterationDetail')}</Text>
+              </SwitchRow>
+              <SwitchRow style={[styles.row, divider]} title={t('hideCantillation')} value={settings.hideCantillation} onChange={(v) => update({ hideCantillation: v })}>
+                <Text style={[styles.rowSub, { color: theme.muted }]}>{t('hideCantillationDetail')}</Text>
+              </SwitchRow>
+              <SwitchRow style={[styles.row, divider]} title={t('underline')} value={settings.underlineWords} onChange={(v) => update({ underlineWords: v })}>
+                <Text style={[styles.rowSub, { color: theme.muted }]}>{t('underlineDetail')}</Text>
+              </SwitchRow>
+            </>
+          ) : null}
         </View>
-
-        <Label text={t('reading')} />
-        <SwitchRow style={[styles.card, styles.row, { backgroundColor: theme.card, borderColor: theme.border }]} title={t('underline')} value={settings.underlineWords} onChange={(v) => update({ underlineWords: v })}>
-          <Text style={[styles.rowSub, { color: theme.muted }]}>{t('underlineDetail')}</Text>
-        </SwitchRow>
 
         <Label text={t('readAloudSection')} />
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
@@ -293,66 +298,89 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
             </Pressable>
           ))}
         </View>
-        <Text style={[styles.rowSub, styles.hint, { color: theme.muted }]}>{t(Platform.OS === 'ios' ? 'voiceMoreIos' : 'voiceMore')}</Text>
 
-        <Label text={t('backupRestore')} />
-        <Pressable
-          onPress={() => setBackupOpen(true)}
-          accessibilityRole="button"
-          android_ripple={{ color: theme.accentSoft }}
-          style={[styles.card, styles.row, { backgroundColor: theme.card, borderColor: theme.border }]}
-        >
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.rowTitle, { color: theme.text }]}>{t('backupRestore')}</Text>
-            <Text style={[styles.rowSub, { color: theme.muted }]}>{t('saveBackupDetail')}</Text>
-          </View>
-          <Icon name="chevron_right" color={theme.muted} />
-        </Pressable>
+        {/* The app itself: its language and the backup. */}
+        <Label text={t('appSection')} />
+        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          {EDITION.languages.length > 1 ? (
+            <View style={styles.block}>
+              <Text style={[styles.rowTitle, { color: theme.text }]}>{t('language')}</Text>
+              <Segmented
+                options={EDITION.languages.map((id) => [id, LANGUAGE_NAMES[id]]) as [Language, string][]}
+                value={settings.language}
+                onChange={(language) => update({ language })}
+                tick={false}
+              />
+            </View>
+          ) : null}
+          <Pressable
+            onPress={() => setBackupOpen(true)}
+            accessibilityRole="button"
+            android_ripple={{ color: theme.accentSoft }}
+            style={[styles.row, EDITION.languages.length > 1 && divider]}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.rowTitle, { color: theme.text }]}>{t('backupRestore')}</Text>
+              <Text style={[styles.rowSub, { color: theme.muted }]}>{t('backupShort')}</Text>
+            </View>
+            <Icon name="chevron_right" color={theme.muted} />
+          </Pressable>
+        </View>
 
-        <Label text={t('aboutTexts')} />
-        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border, padding: 14 }]}>
-          <Text style={[styles.about, { color: theme.text }]}>{t(EDITION.id === 'ml' ? 'aboutMalayalam' : EDITION.id === 'ta' ? 'aboutTamil' : EDITION.id === 'all' ? 'aboutAll' : 'aboutEnglish')}</Text>
-          {/* The app's version and build number, for a report of a problem (docs/testing); a tap
-              shows the database's build date too. Where the texts and data come from is on
-              the Sources and licences page. */}
+        {/* Help and about, the version last. */}
+        <Label text={t('aboutApp')} />
+        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          {(
+            [
+              [t('howTo'), onOpenHowTo, null],
+              [t('whyThisBible'), onOpenWhy, null],
+              [t('feedback'), writeToUs, t('feedbackDetail')],
+              [t('privacy'), onOpenPrivacy, null],
+              [t('sourcesLicences'), onOpenLicences, null],
+              // The welcome and the reader's hints, as a new install sees them.
+              [t('welcomeAgain'), () => update({ welcomeSeen: false, hintTitleSeen: false, hintVerseSeen: false }), null],
+            ] as [string, () => void, string | null][]
+          ).map(([title, onPress, sub], i) => (
+            <Pressable key={title} onPress={onPress} accessibilityRole="button" accessibilityHint={sub ?? undefined} android_ripple={{ color: theme.accentSoft }} style={[styles.row, i > 0 && divider]}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.rowTitle, { color: theme.text }]}>{title}</Text>
+                {sub ? <Text style={[styles.rowSub, { color: theme.muted }]}>{sub}</Text> : null}
+              </View>
+              <Icon name="chevron_right" color={theme.muted} />
+            </Pressable>
+          ))}
+        </View>
+        {/* About the texts, two lines until opened; the app's version and build number below,
+            for a report of a problem (docs/testing); a tap on it shows the database's date. */}
+        <View style={styles.aboutBlock}>
+          <Text style={[styles.rowSub, { color: theme.muted }]} numberOfLines={aboutOpen ? undefined : 2}>
+            {t(EDITION.id === 'ml' ? 'aboutMalayalam' : EDITION.id === 'ta' ? 'aboutTamil' : EDITION.id === 'all' ? 'aboutAll' : 'aboutEnglish')}
+          </Text>
+          <Text onPress={() => setAboutOpen((v) => !v)} accessibilityRole="button" style={[styles.rowSub, { color: theme.accent }]}>
+            {aboutOpen ? t('readLess') : t('readMore')}
+          </Text>
           <Text style={[styles.rowSub, { color: theme.muted, marginTop: 10 }]} selectable onPress={() => setShowBuilt((v) => !v)}>
             {t('appVersion', { version: `${Constants.expoConfig?.version ?? '?'} (${Constants.expoConfig?.android?.versionCode ?? Constants.expoConfig?.ios?.buildNumber ?? '?'})` })}
           </Text>
           {showBuilt && meta.built ? <Text style={[styles.rowSub, { color: theme.muted, marginTop: 4 }]}>{t('databaseBuilt', { date: meta.built })}</Text> : null}
-          <Pressable onPress={onOpenHowTo} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>
-            <Text style={[styles.rowTitle, { color: theme.accent, flex: 1 }]}>{t('howTo')}</Text>
-            <Icon name="chevron_right" color={theme.accent} />
-          </Pressable>
-          {/* The welcome and the reader's hints, as a new install sees them. */}
-          <Pressable
-            onPress={() => update({ welcomeSeen: false, hintTitleSeen: false, hintVerseSeen: false })}
-            accessibilityRole="button"
-            android_ripple={{ color: theme.accentSoft }}
-            style={styles.licencesRow}
-          >
-            <Text style={[styles.rowTitle, { color: theme.accent, flex: 1 }]}>{t('welcomeAgain')}</Text>
-          </Pressable>
-          <Pressable onPress={writeToUs} accessibilityRole="button" accessibilityHint={t('feedbackDetail')} android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.rowTitle, { color: theme.accent }]}>{t('feedback')}</Text>
-              <Text style={[styles.rowSub, { color: theme.muted }]}>{t('feedbackDetail')}</Text>
-            </View>
-            <Icon name="chevron_right" color={theme.accent} />
-          </Pressable>
-          <Pressable onPress={onOpenWhy} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>
-            <Text style={[styles.rowTitle, { color: theme.accent, flex: 1 }]}>{t('whyThisBible')}</Text>
-            <Icon name="chevron_right" color={theme.accent} />
-          </Pressable>
-          <Pressable onPress={onOpenPrivacy} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>
-            <Text style={[styles.rowTitle, { color: theme.accent, flex: 1 }]}>{t('privacy')}</Text>
-            <Icon name="chevron_right" color={theme.accent} />
-          </Pressable>
-          <Pressable onPress={onOpenLicences} accessibilityRole="button" android_ripple={{ color: theme.accentSoft }} style={styles.licencesRow}>
-            <Text style={[styles.rowTitle, { color: theme.accent, flex: 1 }]}>{t('sourcesLicences')}</Text>
-            <Icon name="chevron_right" color={theme.accent} />
-          </Pressable>
         </View>
       </ScrollView>
+      <SimpleSheet visible={choosingBible} title={t('chooseBible')} onClose={() => setChoosingBible(false)}>
+        {EDITION.translations.map((id) => (
+          <SheetAction
+            key={id}
+            icon="menu_book"
+            label={bibleName(settings.language, id)}
+            detail={bibleDetail(id)}
+            labelFont={bibleFont(id)?.fontFamily}
+            selected={settings.translation === id}
+            onPress={() => {
+              update({ translation: id });
+              setChoosingBible(false);
+            }}
+          />
+        ))}
+      </SimpleSheet>
       <BackupSheet visible={backupOpen} onClose={() => setBackupOpen(false)} />
 
       <SimpleSheet visible={!!choosingVoice} title={t('voiceChoose')} onClose={() => setChoosingVoice(null)}>
@@ -399,6 +427,8 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
               </View>
             ))}
             {voiceList && voiceList.length === 0 ? <Text style={[styles.rowSub, styles.hint, { color: theme.muted }]}>{t('voiceNone')}</Text> : null}
+            {/* Where more voices come from, beside the list it adds to. */}
+            <Text style={[styles.rowSub, styles.voiceMore, { color: theme.muted }]}>{t(Platform.OS === 'ios' ? 'voiceMoreIos' : 'voiceMore')}</Text>
             {/* What the phone reports about its voices, to send us when a language is not read. */}
             <Text
               onPress={() => choosingVoice && voiceReport(choosingVoice).then(setReport)}
@@ -427,7 +457,6 @@ const styles = StyleSheet.create({
   hint: { marginTop: 6, marginHorizontal: 4 },
   voiceDetails: { paddingHorizontal: 20, paddingVertical: 14 },
   voiceReport: { paddingHorizontal: 20, paddingBottom: 16, fontSize: 11, lineHeight: 15 },
-  licencesRow: { marginTop: 12, minHeight: 48, flexDirection: 'row', alignItems: 'center' },
   screen: { flex: 1 },
   content: { padding: 16, paddingBottom: 48, alignSelf: 'center', width: '100%', maxWidth: 720 },
   label: { marginTop: 22, marginBottom: 8, marginHorizontal: 4 },
@@ -440,7 +469,10 @@ const styles = StyleSheet.create({
   voiceChoice: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 44 },
   voiceGroup: { fontSize: 13, fontWeight: '600', paddingHorizontal: 20, paddingTop: 14, paddingBottom: 2 },
   preview: { flex: 1, textAlign: 'center' },
-  about: { fontSize: 14, lineHeight: 21 },
+  sizeHint: { paddingHorizontal: 14, paddingBottom: 12, marginTop: -6, textAlign: 'center' },
+  indented: { paddingLeft: 28 },
+  aboutBlock: { marginTop: 14, marginHorizontal: 4 },
+  voiceMore: { paddingHorizontal: 20, paddingTop: 10 },
 });
 
 /**

@@ -377,10 +377,10 @@ for (const edition of EDITIONS) {
       await wait(1200);
     });
     await step('plain-reader', async (snap) => {
-      // Study tools off (the switch at the top of Settings): no tappable words in the reader.
+      // Study tools off (their switch in Settings): no tappable words in the reader.
       await vis(page.getByLabel(t.settings)).click();
       await wait(1200);
-      await vis(page.getByRole('switch').first()).click();
+      await vis(page.getByRole('switch', { name: t.studyToolsShow, exact: true })).click();
       await wait(600);
       await vis(page.getByLabel(t.back)).click();
       await wait(1500);
@@ -389,7 +389,7 @@ for (const edition of EDITIONS) {
       // And on again.
       await vis(page.getByLabel(t.settings)).click();
       await wait(1200);
-      await vis(page.getByRole('switch').first()).click();
+      await vis(page.getByRole('switch', { name: t.studyToolsShow, exact: true })).click();
       await wait(600);
       await vis(page.getByLabel(t.back)).click();
       await wait(1500);
