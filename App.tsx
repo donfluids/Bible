@@ -398,7 +398,9 @@ function ReaderRoute({ navigation, route }: Props<'Reader'>) {
       jumpTo={route.params?.ref}
       onBack={from ? () => navigation.goBack() : undefined}
       backLabel={from}
-      tabs={!from}
+      // The tab bar on every reader, also one opened from a list (whose back arrow returns
+      // to the list; Read in the bar goes to the main reader).
+      tabs
       onOpenSearch={() => navigation.navigate('Search')}
       onOpenSettings={() => navigation.navigate('Settings')}
       onOpenHowTo={() => navigation.navigate('HowTo')}
