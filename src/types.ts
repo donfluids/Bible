@@ -35,6 +35,15 @@ export const TRANSLATIONS: Translation[] = [
   { id: 'HIN', name: 'इंडियन रिवाइज्ड वर्जन (Hindi IRV)', tagged: false, lineHeight: 1.7, script: 'hi' },
 ];
 
+/**
+ * The line height for text of a size: the Bible's own spacing up to size 21, then a little
+ * closer as the text grows (by up to 0.15 of the size at 30), so big text keeps its lines
+ * together instead of floating apart.
+ */
+export function textLineHeight(size: number, multiplier: number): number {
+  return Math.round(size * (multiplier - Math.min(0.15, Math.max(0, size - 21) / 60)));
+}
+
 export function translationInfo(id: TranslationId): Translation {
   return TRANSLATIONS.find((t) => t.id === id) ?? TRANSLATIONS[0];
 }

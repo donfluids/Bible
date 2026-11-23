@@ -51,7 +51,7 @@ import { useTheme } from '../theme';
 import { useWriteToUs } from '../writeToUs';
 import { FEEDBACK_NEVER, feedbackCardDue, feedbackLater } from '../feedback';
 import type { Theme } from '../theme';
-import { HIGHLIGHT_COLORS, isEnglish, isIndian, translationInfo } from '../types';
+import { HIGHLIGHT_COLORS, isEnglish, isIndian, textLineHeight, translationInfo } from '../types';
 import type { Book, HighlightColor, Note, OriginalWord, Ref, TextPoint, TranslationId, VerseRow, WordPick } from '../types';
 
 // Width at each screen edge where a horizontal swipe belongs to the system back gesture.
@@ -1221,7 +1221,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
       }
       if (item.kind === 'para') {
         return (
-          <Text style={[styles.para, { fontSize, lineHeight: Math.round(fontSize * translationInfo(translation).lineHeight), color: theme.text, fontFamily: scriptFont }]}>
+          <Text style={[styles.para, { fontSize, lineHeight: textLineHeight(fontSize, translationInfo(translation).lineHeight), color: theme.text, fontFamily: scriptFont }]}>
             {item.verses.map((v, i) => {
               const color = highlights[bookmarkKey(v)];
               return (
@@ -1263,7 +1263,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             <MarkableVerse
               verse={v}
               fontSize={fontSize}
-              lineHeight={Math.round(fontSize * translationInfo(translation).lineHeight)}
+              lineHeight={textLineHeight(fontSize, translationInfo(translation).lineHeight)}
               font={scriptFont}
               theme={theme}
               marks={verseMarks.get(v.verse) ?? NO_MARKS}
@@ -1283,7 +1283,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
         <ReaderVerse
           verse={v}
           fontSize={fontSize}
-          lineHeight={Math.round(fontSize * translationInfo(translation).lineHeight)}
+          lineHeight={textLineHeight(fontSize, translationInfo(translation).lineHeight)}
           theme={theme}
           translation={translation}
           interlinear={interlinear && !sideBySide}
@@ -1539,7 +1539,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
           data={items}
           keyExtractor={itemKey}
           renderItem={renderItem}
-          contentContainerStyle={[styles.list, sideBySide && styles.listWide]}
+          contentContainerStyle={[styles.list, sideBySide && styles.listWide, fontSize >= 26 && styles.listBig]}
           scrollEnabled={!dragging}
           onScroll={onScroll}
           onScrollBeginDrag={reading.active ? () => setFollowing(false) : undefined}
@@ -1891,7 +1891,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
                 >
                   <Text style={[styles.crossRef, { color: theme.accent, fontSize: Math.max(15, fontSize - 3) }, !!scriptOf(label) && { fontFamily: scriptureFont(scriptOf(label), settings.serif, true), fontWeight: 'normal' }]}>{label}</Text>
                   {c.verses.length ? (
-                    <Text style={{ color: theme.text, fontSize: Math.max(15, fontSize - 3), lineHeight: Math.round(Math.max(15, fontSize - 3) * translationInfo(translation).lineHeight), fontFamily: scriptFont }} numberOfLines={4}>
+                    <Text style={{ color: theme.text, fontSize: Math.max(15, fontSize - 3), lineHeight: textLineHeight(Math.max(15, fontSize - 3), translationInfo(translation).lineHeight), fontFamily: scriptFont }} numberOfLines={4}>
                       {c.verses.map((v) => flattenVerse(v.text)).join(' ')}
                     </Text>
                   ) : null}
@@ -2333,6 +2333,8 @@ const styles = StyleSheet.create({
   para: { marginBottom: 12 },
   list: { paddingHorizontal: 18, paddingTop: 12, alignSelf: 'center', width: '100%', maxWidth: MAX_CONTENT_WIDTH },
   listWide: { maxWidth: SIDE_BY_SIDE_MAX_WIDTH },
+  // Big text keeps a little more of the line for its words.
+  listBig: { paddingHorizontal: 14 },
   pair: { borderBottomWidth: StyleSheet.hairlineWidth, paddingBottom: 4, marginBottom: 4 },
   pairRow: { flexDirection: 'row', gap: 20 },
   pairHeads: { marginBottom: 6 },

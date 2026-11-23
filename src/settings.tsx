@@ -104,8 +104,9 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
 
 // The Aa buttons in Settings and pinching the reader step through these: one point at a
 // time around the usual sizes and two above, so a pinch grows or shrinks the text gently.
-// Every size of the earlier, coarser list (15, 17, 19, 21, 24, 28, 32, 36) is among them.
-export const FONT_SIZES = [14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 26, 28, 30, 32, 34, 36];
+// The largest is 30: above it a line of Malayalam on a phone holds a word or two and long
+// words break in the middle. A size chosen before above 30 is read back as 30.
+export const FONT_SIZES = [14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 26, 28, 30];
 
 function defaultsFor(edition: Edition): Settings {
   // A tablet (shorter side 600 points or more) starts a size up, read from further away;

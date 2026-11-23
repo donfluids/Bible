@@ -18,7 +18,7 @@ import type { FoundRef, TextPiece, VerseCount } from '../refs';
 import { useSettings } from '../settings';
 import { MAX_CONTENT_WIDTH, flattenVerse, formatRef } from '../text';
 import { useTheme } from '../theme';
-import { translationInfo } from '../types';
+import { textLineHeight, translationInfo } from '../types';
 import type { Book, Ref, VerseRow } from '../types';
 
 interface Props {
@@ -336,7 +336,7 @@ export function NotePageScreen({ id, isNew, books, onOpenRef, onBack }: Props) {
           if (shown.length === 0) return null;
           return (
             <View key={j} style={[styles.quote, { borderLeftColor: theme.accent, backgroundColor: theme.accentSoft }]}>
-              <Text style={{ fontSize: verseSize, lineHeight: Math.round(verseSize * translationInfo(translation).lineHeight), color: theme.text, fontFamily: scriptFont }}>
+              <Text style={{ fontSize: verseSize, lineHeight: textLineHeight(verseSize, translationInfo(translation).lineHeight), color: theme.text, fontFamily: scriptFont }}>
                 {shown.map((v, k) => (
                   <Text key={k}>
                     {shown.length > 1 ? <Text style={{ color: theme.accent, fontSize: verseSize - 4 }}>{`${verseLabel(v, shown)} `}</Text> : null}

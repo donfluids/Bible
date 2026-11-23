@@ -8,7 +8,7 @@ import { useDisplaySettings } from '../settings';
 import { PILCROW, parseSegments } from '../text';
 import { matchRanges } from '../searchMatch';
 import { useTheme } from '../theme';
-import { translationInfo } from '../types';
+import { textLineHeight, translationInfo } from '../types';
 import type { HighlightColor, Note, Segment, TranslationId, VerseRow, WordPick } from '../types';
 
 /** White space at a verse's start (U+2003 is the em space BSB and the Malayalam Bible use). */
@@ -97,8 +97,10 @@ export const VerseText = memo(function VerseText({
   const bold = script ? { fontFamily: scriptureFont(script, serif, true) } : { fontWeight: '700' as const };
   // Devanagari reads smaller than Latin at the same size: Hindi gets half a step more.
   const size = script === 'hi' ? fontSize + 1 : fontSize;
-  const lineHeight = Math.round(size * translationInfo(script === 'ta' ? 'TAM' : script === 'ml' ? 'MAL' : script === 'hi' ? 'HIN' : 'KJV').lineHeight);
-  const small = Math.max(11, fontSize - 6);
+  const lineHeight = textLineHeight(size, translationInfo(script === 'ta' ? 'TAM' : script === 'ml' ? 'MAL' : script === 'hi' ? 'HIN' : 'KJV').lineHeight);
+  // Verse numbers and note letters grow more slowly than the text: at the largest size a
+  // number the size of the words crowds them (19 -> 13 as before, 30 -> 17).
+  const small = Math.max(11, Math.round(Math.min(fontSize - 6, 11 + (fontSize - 15) * 0.4)));
   // On a highlight colour the text, number and note letters take the colours made for it.
   // A flash covers the highlight colour, so the text keeps the page's colours under it.
   const onMark = (onHighlight || !!highlightColor) && !flash;
