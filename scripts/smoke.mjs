@@ -201,7 +201,8 @@ for (const edition of EDITIONS) {
         await vis(page.getByRole('button', { name: new RegExp(`^${t.chooseBible}:`) })).click();
         await wait(800);
         await page.screenshot({ path: join(shots, `${String(n).padStart(2, '0')}-bible-list.png`) });
-        await vis(page.getByText(/^इंडियन रिवाइज्ड वर्जन/)).click();
+        // The row in the list (a sideways screen also shows the Bible's name as a heading).
+        await vis(page.getByRole('button', { name: /^इंडियन रिवाइज्ड वर्जन/ })).click();
         await wait(2000);
         // A footnote letter sits inside John 1:1's first words, so the pill tells which Bible is open.
         await vis(page.getByRole('button', { name: new RegExp(`^${t.chooseBible}: इंडियन रिवाइज्ड वर्जन`) })).waitFor({ timeout: 8000 });
@@ -210,7 +211,7 @@ for (const edition of EDITIONS) {
         await vis(page.getByRole('button', { name: new RegExp(`^${t.chooseBible}:`) })).click();
         await wait(800);
         // The row's text: in the browser its name also carries the icon's glyph.
-        await vis(page.getByText('King James Version', { exact: true })).click();
+        await vis(page.getByRole('button', { name: /^King James Version/ })).click();
         await wait(2000);
         // The KJV's words are links each, so its pill tells which Bible is open.
         await vis(page.getByRole('button', { name: `${t.chooseBible}: King James Version` })).waitFor({ timeout: 8000 });
@@ -403,14 +404,16 @@ for (const edition of EDITIONS) {
       await wait(1200);
       await vis(page.getByText(t.howTo, { exact: true })).click();
       await wait(1200);
-      await vis(page.getByText(t.howTopic8, { exact: true })).click();
+      // The Notebook topic (its button; the Notebook group's heading has the same word):
+      // its picture and steps, then Show me opens the Notebook tab.
+      await vis(page.getByRole('button', { name: t.howTopic8, exact: true })).click();
       await wait(800);
-      await shows(t.howText8.slice(0, 40));
+      await shows(t.howS8b.replace(/\*\*/g, '').slice(0, 24));
       await snap();
-      await vis(page.getByLabel(t.back)).click();
-      await wait(800);
-      await vis(page.getByLabel(t.back)).click();
-      await wait(1200);
+      await vis(page.getByRole('button', { name: t.howShowMe })).click();
+      await wait(1500);
+      await vis(page.getByLabel(t.newPage)).waitFor({ timeout: 8000 });
+      await tab('tabRead');
     });
     await step('dark', async (snap) => {
       await page.emulateMedia({ colorScheme: 'dark' });
