@@ -40,6 +40,7 @@ import { WhyScreen } from './src/screens/WhyScreen';
 import { IntroScreen } from './src/screens/IntroScreen';
 import { PrivacyScreen } from './src/screens/PrivacyScreen';
 import { HowToScreen } from './src/screens/HowToScreen';
+import type { HowToTarget } from './src/screens/HowToScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { NotebookScreen } from './src/screens/NotebookScreen';
 import { NotePageScreen } from './src/screens/NotePageScreen';
@@ -513,7 +514,13 @@ function IntroRoute({ navigation, route }: Props<'Intro'>) {
 }
 
 function HowToRoute({ navigation }: Props<'HowTo'>) {
-  return <HowToScreen onBack={() => navigation.goBack()} />;
+  // Show me: a tab shows over the reader, as the tab bar shows it; Search and Settings open
+  // as screens (Settings, if How to use came from it, by going back to it).
+  const showMe = (target: HowToTarget) => {
+    if (target === 'Search' || target === 'Settings') navigation.navigate(target);
+    else switchTab(target);
+  };
+  return <HowToScreen onBack={() => navigation.goBack()} onShowMe={showMe} />;
 }
 
 function PrivacyRoute({ navigation }: Props<'Privacy'>) {

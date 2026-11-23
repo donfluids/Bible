@@ -26,6 +26,8 @@ function editionFromGradleProperties() {
   }
 }
 config.cacheVersion = `edition-${edition}`;
+// Each app's interface languages, as src/edition.ts gives them.
+const HOWTO_LANGUAGES = { en: ['en'], ml: ['en', 'ml'], ta: ['en', 'ta'], all: ['en', 'ml', 'ta', 'hi'] };
 const defaultResolve = config.resolver.resolveRequest;
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   let target = moduleName.endsWith('/assets/db/bible.db') ? moduleName.replace(/bible\.db$/, `bible-${edition}.db`) : moduleName;
@@ -35,6 +37,10 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   const voice = (edition === 'ml' || edition === 'all') && process.env.BIBLE_NO_VOICE !== '1';
   // The welcome's pictures show the app in its own language; the four-language app uses the English ones.
   target = target.replace('/assets/welcome/edition/', `/assets/welcome/${edition === 'all' ? 'en' : edition}/`);
+  // How to use's pictures: an app carries those of its own interface languages (src/edition.ts),
+  // and a blank in place of the others'.
+  const howto = /\/assets\/howto\/(\w+)\/\d+\.jpg$/.exec(target);
+  if (howto && !HOWTO_LANGUAGES[edition].includes(howto[1])) target = target.replace(/\/assets\/howto\/.*$/, '/assets/howto/blank.png');
   if (target.endsWith('/assets/speech/voice.onnx')) target = target.replace(/voice\.onnx$/, voice ? 'ml-tiny.onnx' : 'no-model.onnx');
   if (target.endsWith('/assets/speech/voice.bin')) target = target.replace(/voice\.bin$/, voice ? 'ml-letters.bin' : 'no-sounds.bin');
   return defaultResolve ? defaultResolve(context, target, platform) : context.resolveRequest(context, target, platform);
