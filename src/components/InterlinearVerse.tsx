@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Pressable } from './Pressable';
-import { HEBREW_FONT } from '../fonts';
+import { HEBREW_FONT, scriptOf, scriptureFont } from '../fonts';
 import { stripCantillation } from '../text';
 import { useTheme } from '../theme';
 import { FLAG_LXX, FLAG_NOT_IN_NA, FLAG_RESTORED } from '../types';
@@ -42,6 +42,10 @@ export const InterlinearVerse = memo(function InterlinearVerse({ words, hebrew, 
         const marked = (w.flags & (FLAG_NOT_IN_NA | FLAG_LXX | FLAG_RESTORED)) !== 0;
         const gloss = w.strongs === OBJECT_MARKER ? objectMarkerGloss(w.gloss) : w.gloss;
         const faded = w.strongs === OBJECT_MARKER && !gloss;
+        // In a Malayalam Bible, the word it usually uses here in place of the English gloss.
+        const meaning = w.strongs !== OBJECT_MARKER && w.local ? w.local : gloss;
+        const script = scriptOf(meaning);
+        const meaningStyle = script ? { fontFamily: scriptureFont(script, false), fontSize: small + 1, lineHeight: Math.round((small + 1) * 1.6) } : { fontSize: small };
         return (
           <Pressable
             android_ripple={{ color: theme.accentSoft }}
@@ -53,13 +57,13 @@ export const InterlinearVerse = memo(function InterlinearVerse({ words, hebrew, 
               { backgroundColor: pressed ? theme.accentSoft : 'transparent', borderBottomColor: marked ? (highlighted ? theme.markAccent : theme.accent) : 'transparent' },
             ]}
             accessibilityRole="button"
-            accessibilityLabel={faded ? w.text : `${w.text}, ${gloss}`}
+            accessibilityLabel={faded ? w.text : `${w.text}, ${meaning}`}
           >
             <Text allowFontScaling={!appSized} style={[styles.original, { color: faded ? muted : text, fontSize: fontSize + (hebrew ? 5 : 3), writingDirection: hebrew ? 'rtl' : 'ltr', fontFamily: hebrew ? HEBREW_FONT : undefined }]}>
               {hebrew && hideCantillation ? stripCantillation(w.text) : w.text}
             </Text>
             {showTranslit ? <Text allowFontScaling={!appSized} style={[styles.sub, { color: muted, fontSize: small }]}>{w.translit}</Text> : null}
-            {gloss ? <Text allowFontScaling={!appSized} style={[styles.sub, { color: text, fontSize: small }]}>{gloss}</Text> : null}
+            {meaning ? <Text allowFontScaling={!appSized} style={[styles.sub, { color: text }, meaningStyle]}>{meaning}</Text> : null}
           </Pressable>
         );
       })}

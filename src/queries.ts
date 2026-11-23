@@ -4,6 +4,7 @@ import { hindiPattern } from './hindiSearch';
 import { malayalamPattern } from './malayalamSearch';
 import type { MalayalamPattern } from './malayalamSearch';
 import { plainText } from './text';
+import { translationInfo } from './types';
 import type { Book, Heading, LexiconHit, Note, OriginalWord, Ref, RelatedWord, Rendering, StrongsEntry, TranslationId, VerseRow } from './types';
 
 export async function getBooks(db: SQLiteDatabase): Promise<Book[]> {
@@ -324,6 +325,65 @@ async function searchMalayalam(
  * through the verse_map table, which may draw on a neighbouring chapter.
  */
 export async function getInterlinear(
+  db: SQLiteDatabase,
+  book: number,
+  chapter: number,
+  translation?: TranslationId,
+): Promise<Map<number, OriginalWord[]>> {
+  const words = await interlinearIn(db, book, chapter, translation);
+  return translation && LOCAL_WORD_SCRIPTS.has(translationInfo(translation).script ?? '') ? withUsualWords(db, words, translation) : words;
+}
+
+/** Bibles whose own words are shown under the Hebrew and Greek, in place of the English. */
+const LOCAL_WORD_SCRIPTS = new Set(['ml']);
+
+/** Each word's id without a letter after the number (H1121a reads as H1121). */
+const baseId = (strongs: string) => /^[HG]\d+/.exec(strongs)?.[0] ?? '';
+
+// The usual word for each id, per Bible: '' for an id the Bible never links.
+const usualCache = new Map<TranslationId, Map<string, string>>();
+
+/**
+ * The word a Bible most often uses for each Hebrew or Greek word (scripts/align.mjs links
+ * them; the renderings table counts them). Out of its verse, so a word may be off for it.
+ */
+export async function usualWords(db: SQLiteDatabase, translation: TranslationId, ids: string[]): Promise<Map<string, string>> {
+  let known = usualCache.get(translation);
+  if (!known) usualCache.set(translation, (known = new Map()));
+  const wanted = [...new Set(ids.map(baseId).filter((id) => id && !known!.has(id)))];
+  for (let i = 0; i < wanted.length; i += 400) {
+    const part = wanted.slice(i, i + 400);
+    const rows = await db.getAllAsync<{ strongs: string; word: string; count: number }>(
+      `SELECT strongs, word, count FROM renderings WHERE translation = ? AND strongs IN (${part.map(() => '?').join(', ')})`,
+      translation,
+      ...part,
+    );
+    const best = new Map<string, { word: string; count: number }>();
+    for (const r of rows) {
+      const had = best.get(r.strongs);
+      if (!had || r.count > had.count) best.set(r.strongs, r);
+    }
+    for (const id of part) known.set(id, best.get(id)?.word ?? '');
+  }
+  return known;
+}
+
+/** The chapter's words with each one's usual word in the Bible (new objects: the decoded chapter is shared). */
+async function withUsualWords(db: SQLiteDatabase, words: Map<number, OriginalWord[]>, translation: TranslationId): Promise<Map<number, OriginalWord[]>> {
+  const ids = [...words.values()].flatMap((list) => list.map((w) => w.strongs));
+  const usual = await usualWords(db, translation, ids);
+  return new Map(
+    [...words].map(([verse, list]) => [
+      verse,
+      list.map((w) => {
+        const local = usual.get(baseId(w.strongs));
+        return local ? { ...w, local } : w;
+      }),
+    ]),
+  );
+}
+
+async function interlinearIn(
   db: SQLiteDatabase,
   book: number,
   chapter: number,

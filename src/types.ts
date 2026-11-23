@@ -186,6 +186,11 @@ export interface OriginalWord {
   flags: number;
   /** For a Textus Receptus or Byzantine word that replaces another, the Nestle-Aland word. */
   alt?: string;
+  /**
+   * The word the Malayalam Bible being read most often uses for this Hebrew or Greek word,
+   * shown under it in place of the English gloss (src/queries.ts usualWords).
+   */
+  local?: string;
 }
 
 export const FLAG_NOT_IN_NA = 1;
