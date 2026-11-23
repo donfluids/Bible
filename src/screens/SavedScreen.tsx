@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Header } from '../components/Header';
-import { TAB_BAR_HEIGHT, TabBar } from '../components/TabBar';
+import { TabBar, tabBarHeight } from '../components/TabBar';
 import { Toast, useToast } from '../components/Toast';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconButton, Icon } from '../components/Icon';
@@ -126,6 +126,7 @@ export function SavedScreen({ books, onOpenRef, onWord }: Props) {
   latest.current = settings;
   const { toast, show } = useToast();
   const insets = useSafeAreaInsets();
+  const windowHeight = useWindowDimensions().height;
   const remove = (item: Saved) => {
     if (item.kind === 'mark') {
       const mark = settings.marks.find((m) => m.id === item.key);
@@ -273,7 +274,7 @@ export function SavedScreen({ books, onOpenRef, onWord }: Props) {
           />
         </View>
       )}
-      <Toast toast={toast} bottom={insets.bottom + TAB_BAR_HEIGHT + 16} onDone={() => show(null)} />
+      <Toast toast={toast} bottom={insets.bottom + tabBarHeight(windowHeight) + 16} onDone={() => show(null)} />
       <TabBar current="Bookmarks" />
     </View>
   );

@@ -29,6 +29,14 @@ export const TAB_BAR_HEIGHT = 64;
 const SHORT_BAR_HEIGHT = 40;
 
 /**
+ * The bar's height for a window this tall: what the screens above it allow for (the
+ * reader's arrows and the fade above them, the toasts), so they sit on the bar as drawn.
+ */
+export function tabBarHeight(windowHeight: number): number {
+  return windowHeight < SHORT_SCREEN ? SHORT_BAR_HEIGHT : TAB_BAR_HEIGHT;
+}
+
+/**
  * Shows a tab. The main reader is always at the bottom of the stack and the other tabs
  * sit directly on it, so the back button from any tab returns to the reading.
  */
@@ -55,13 +63,14 @@ export function TabBar({ current, hidden = false }: { current: TabName; hidden?:
   // Malayalam, Tamil and Hindi letters read small at 12: their labels are a point larger.
   const labelSize = languageScript(useDisplaySettings()?.language ?? 'en') ? 13 : 12;
   const insets = useSafeAreaInsets();
-  const short = useWindowDimensions().height < SHORT_SCREEN;
+  const windowHeight = useWindowDimensions().height;
+  const short = windowHeight < SHORT_SCREEN;
   const shown = useRef(new Animated.Value(hidden ? 0 : 1)).current;
   useEffect(() => {
     // Height cannot use the native driver; the list above resizes with it.
     Animated.timing(shown, { toValue: hidden ? 0 : 1, duration: 180, useNativeDriver: false }).start();
   }, [hidden, shown]);
-  const height = shown.interpolate({ inputRange: [0, 1], outputRange: [0, short ? SHORT_BAR_HEIGHT : TAB_BAR_HEIGHT] });
+  const height = shown.interpolate({ inputRange: [0, 1], outputRange: [0, tabBarHeight(windowHeight)] });
   return (
     <View style={{ paddingBottom: insets.bottom, backgroundColor: theme.bg }}>
       <Animated.View

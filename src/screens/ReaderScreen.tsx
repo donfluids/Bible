@@ -19,7 +19,7 @@ import { CompareSheet } from '../components/CompareSheet';
 import { useIsFocused } from '@react-navigation/native';
 import { HEADER_MAX_FONT_SCALE, Header, HeaderIconButton, SHORT_SCREEN } from '../components/Header';
 import { useHardwareKeys } from '../keys';
-import { TAB_BAR_HEIGHT, TabBar } from '../components/TabBar';
+import { TabBar, tabBarHeight } from '../components/TabBar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AppSwitch } from '../components/AppSwitch';
 import { Icon, IconButton } from '../components/Icon';
@@ -1493,7 +1493,11 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   const bottomInset = tabs ? 0 : insets.bottom;
   // On a tablet the chapter row and the player keep to the reading width, under the text.
   const barSide = Math.max(0, (windowWidth - (sideBySide ? SIDE_BY_SIDE_MAX_WIDTH : MAX_CONTENT_WIDTH)) / 2);
-  const arrowBottom = bottomInset + (tabs && !barHidden ? TAB_BAR_HEIGHT : 0) + 6;
+  // On the tab bar as drawn: 40 points high on a phone on its side, else 64. With the old
+  // fixed 64 the fade ended above a sideways screen's last line, which showed at full
+  // strength under it and was cut by the bar.
+  const barHeight = tabBarHeight(windowHeight);
+  const arrowBottom = bottomInset + (tabs && !barHidden ? barHeight : 0) + 6;
   // One psalm is "Psalm 23" in the title, though the book is Psalms.
   const fullBookName = bookName(books, position.book, translation);
   const titleBookName = fullBookName === 'Psalms' ? 'Psalm' : fullBookName;
@@ -1701,7 +1705,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
 
       {toastState ? (
         <View
-          style={[styles.toast, { backgroundColor: theme.text, bottom: insets.bottom + 70 + (tabs && !barHidden && !marking ? TAB_BAR_HEIGHT : 0) }]}
+          style={[styles.toast, { backgroundColor: theme.text, bottom: insets.bottom + 70 + (tabs && !barHidden && !marking ? barHeight : 0) }]}
           pointerEvents={toastState.undo ? 'box-none' : 'none'}
         >
           <Text style={[styles.toastText, { color: theme.bg }]}>{toastState.text}</Text>
