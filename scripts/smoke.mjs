@@ -404,9 +404,10 @@ for (const edition of EDITIONS) {
       await wait(1200);
       await vis(page.getByText(t.howTo, { exact: true })).click();
       await wait(1200);
-      // The Notebook topic (its button; the Notebook group's heading has the same word):
-      // its picture and steps, then Show me opens the Notebook tab.
-      await vis(page.getByRole('button', { name: t.howTopic8, exact: true })).click();
+      // The Notebook topic (the button holding its title; the Notebook group's heading has the
+      // same word, and the button's name also carries its icons' glyphs): its picture and steps,
+      // then Show me opens the Notebook tab.
+      await vis(page.getByRole('button').filter({ has: page.getByText(t.howTopic8, { exact: true }) })).click();
       await wait(800);
       await shows(t.howS8b.replace(/\*\*/g, '').slice(0, 24));
       await snap();
