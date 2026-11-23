@@ -1459,6 +1459,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             accessibilityRole="link"
             accessibilityLabel={translate(translationInfo(translation).script ?? 'en', 'aboutBook')}
             hitSlop={6}
+            testID="about-book"
             style={({ pressed }) => [styles.aboutRow, { opacity: pressed ? 0.6 : 1 }]}
           >
             {/* One line, a little smaller if need be, with its arrow beside it. */}

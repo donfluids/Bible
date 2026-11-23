@@ -111,6 +111,9 @@ for (const edition of EDITIONS) {
   const server = await serve(dir);
   const url = `http://localhost:${server.address().port}/`;
   const t = strings(LANGUAGE[edition]);
+  // The book introduction is in the language of the Bible open at that step (the
+  // four-language app has switched to the KJV by then), whatever the menus.
+  const tBible = strings({ en: 'en', ml: 'ml', ta: 'ta', all: 'en' }[edition]);
   const browser = await chromium.launch();
   for (const [size, width, height, scale] of SIZES) {
     const shots = join(OUT, edition, size);
@@ -233,7 +236,7 @@ for (const edition of EDITIONS) {
     });
     await step('word', async (snap) => {
       // A word in the text: the first link that is not the About this book line above chapter 1.
-      await vis(page.locator(`[role="link"]:not([aria-label="${t.aboutBook}"])`)).click();
+      await vis(page.locator('[role="link"]:not([data-testid="about-book"])')).click();
       await wait(2500);
       await shows(t.inThisVerse);
       await snap();
@@ -275,10 +278,10 @@ for (const edition of EDITIONS) {
       await closeSheet();
     });
     await step('about-book', async (snap) => {
-      await vis(page.getByLabel(t.aboutBook)).click();
+      await vis(page.getByTestId('about-book')).click();
       await wait(2000);
       // The introduction has loaded when its outline heading shows.
-      await shows(t.introOutline);
+      await shows(tBible.introOutline);
       await snap();
       await vis(page.getByLabel(t.back)).click();
       await wait(1500);
