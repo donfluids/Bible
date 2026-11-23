@@ -102,8 +102,10 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
   hindiNoteSeen: false,
 };
 
-// The Aa buttons in Settings and pinching the reader step through these.
-export const FONT_SIZES = [15, 17, 19, 21, 24, 28, 32, 36];
+// The Aa buttons in Settings and pinching the reader step through these: one point at a
+// time around the usual sizes and two above, so a pinch grows or shrinks the text gently.
+// Every size of the earlier, coarser list (15, 17, 19, 21, 24, 28, 32, 36) is among them.
+export const FONT_SIZES = [14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 26, 28, 30, 32, 34, 36];
 
 function defaultsFor(edition: Edition): Settings {
   // A tablet (shorter side 600 points or more) starts a size up, read from further away;
