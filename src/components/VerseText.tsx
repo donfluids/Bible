@@ -103,6 +103,11 @@ export const VerseText = memo(function VerseText({
   const segments = useMemo(() => parseSegments(verse), [verse]);
   const selectedStart = useSelectedStart(selectionTranslation, verse.book, verse.chapter, verse.verse);
   const ranges = useMemo(() => (highlightText ? matchRanges(verse.text, highlightText) : []), [verse.text, highlightText]);
+  // Words the translators supplied, in square brackets (the LSV throughout, the KJV once):
+  // drawn lighter and in italics, as printed Bibles set them, the brackets left out. Only in
+  // English: in the Malayalam and Hindi Bibles brackets mark words not in every manuscript,
+  // and the ASV's "[Selah" has no closing bracket; both stay as printed.
+  const supplied = useMemo(() => (scriptOf(verse.text) ? [] : [...verse.text.matchAll(/\[[^[\]]*\]/g)].map((m) => [m.index!, m.index! + m[0].length] as [number, number])), [verse.text]);
   const isTitle = verse.verse === 0;
   // The verse's own script decides its face and spacing (Compare shows two at once).
   const script = scriptOf(verse.text);
@@ -146,10 +151,11 @@ export const VerseText = memo(function VerseText({
       const plain = piece.replace(PILCROW, '');
       return from === 0 ? plain.replace(LEADING_SPACE, '') : plain;
     };
-    if (ranges.length === 0 && marked.length === 0) return drawn(text, start);
     const end = start + text.length;
+    const here = supplied.filter(([a, b]) => a < end && b > start);
+    if (ranges.length === 0 && marked.length === 0 && here.length === 0) return drawn(text, start);
     const cuts = new Set([start, end]);
-    for (const [a, b] of [...ranges, ...marked]) {
+    for (const [a, b] of [...ranges, ...marked, ...here]) {
       if (a > start && a < end) cuts.add(a);
       if (b > start && b < end) cuts.add(b);
     }
@@ -157,15 +163,24 @@ export const VerseText = memo(function VerseText({
     const out: React.ReactNode[] = [];
     for (let i = 0; i + 1 < points.length; i++) {
       const [from, to] = [points[i], points[i + 1]];
-      const piece = drawn(text.slice(from - start, to - start), from);
+      const added = here.some(([a, b]) => a <= from && b >= to);
+      const piece = added ? drawn(text.slice(from - start, to - start), from).replace(/[[\]]/g, '') : drawn(text.slice(from - start, to - start), from);
       const match = ranges.some(([a, b]) => a <= from && b >= to);
       const mark = [...marked].reverse().find(([a, b]) => a <= from && b >= to);
-      if (!match && !mark) {
+      if (!match && !mark && !added) {
         out.push(piece);
         continue;
       }
       out.push(
-        <Text allowFontScaling={scales} key={from} style={[match && bold, mark ? { backgroundColor: theme.marks[mark[2]], color: theme.markText } : { backgroundColor: theme.highlight }]}>
+        <Text
+          allowFontScaling={scales}
+          key={from}
+          style={[
+            added && { fontStyle: 'italic', color: onMark || mark ? theme.markMuted : theme.muted },
+            match && bold,
+            mark ? { backgroundColor: theme.marks[mark[2]], color: added ? theme.markMuted : theme.markText } : match ? { backgroundColor: theme.highlight } : null,
+          ]}
+        >
           {piece}
         </Text>,
       );
