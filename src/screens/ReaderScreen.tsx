@@ -1185,6 +1185,106 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   };
   const confirmHaptic = () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
 
+  // Tapping a verse number selects the verse (tapping more numbers adds theirs), and a bar
+  // in place of the tabs copies, shares, highlights or bookmarks them together, adds a note
+  // to one, or opens one's whole menu (More). Holding a verse still opens that menu at once.
+  const [selected, setSelected] = useState<VerseRow[]>([]);
+  const [selectColours, setSelectColours] = useState(false);
+  const selecting = selected.length > 0;
+  const selectedSet = useMemo(() => new Set(selected.map((v) => v.verse)), [selected]);
+  const clearSelection = useCallback(() => {
+    setSelected([]);
+    setSelectColours(false);
+  }, []);
+  const toggleSelected = (v: VerseRow) => {
+    Haptics.selectionAsync().catch(() => undefined);
+    setSelectColours(false);
+    setSelected((now) => (now.some((x) => x.verse === v.verse) ? now.filter((x) => x.verse !== v.verse) : [...now, v].sort((a, b) => a.verse - b.verse)));
+    // The verse's menu found without being told of it: its hint is not shown.
+    if (!settings.hintVerseSeen) update({ hintVerseSeen: true });
+  };
+  // A new chapter or Bible, or marking, starts without a selection.
+  useEffect(() => {
+    clearSelection();
+  }, [chapterKey, translation, marking, clearSelection]);
+  // Android's back button ends the selection first.
+  useEffect(() => {
+    if (!selecting || !focused) return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      clearSelection();
+      return true;
+    });
+    return () => sub.remove();
+  }, [selecting, focused, clearSelection]);
+  /** The selection as one reference: John 1:3, John 1:3–5, or John 1:3, 5–6. */
+  const selectionRef = (verses: VerseRow[]) => {
+    const runs: [number, number][] = [];
+    for (const v of verses) {
+      const last = runs[runs.length - 1];
+      if (last && v.verse === last[1] + 1) last[1] = v.verse;
+      else runs.push([v.verse, v.verse]);
+    }
+    const first = formatRef(books, verses[0], translation);
+    const head = first.slice(0, first.length - String(verses[0].verse).length);
+    return head + runs.map(([a, b]) => (a === b ? `${a}` : `${a}–${b}`)).join(', ');
+  };
+  /** The selected verses' words, each after its number, then their reference and Bible. */
+  const selectionText = () => {
+    if (selected.length === 1) return verseForClipboard(selected[0]);
+    const body = selected.map((v) => `${v.verse} ${flattenVerse(v.text)}`).join(' ');
+    const bible = translation === 'MAL' ? 'സത്യവേദപുസ്തകം' : translation === 'TAM' || translation === 'HIN' ? 'IRV' : translation;
+    return `${body}\n— ${selectionRef(selected)} (${bible})`;
+  };
+  const copySelection = async () => {
+    const text = selectionText();
+    clearSelection();
+    await Clipboard.setStringAsync(text);
+    setToast(t('copied'));
+  };
+  const shareSelection = () => {
+    const text = selectionText();
+    clearSelection();
+    Share.share({ message: text }).catch(() => undefined);
+  };
+  const highlightSelection = (color: HighlightColor | null) => {
+    const keys = selected.map(bookmarkKey);
+    const before = Object.fromEntries(keys.map((k) => [k, highlights[k]]));
+    const next = { ...highlights };
+    for (const k of keys) {
+      if (color) next[k] = color;
+      else delete next[k];
+    }
+    clearSelection();
+    update({ highlights: next });
+    confirmHaptic();
+    setToast(color ? t('highlighted') : t('highlightRemoved'), () => {
+      const now = { ...latestSettings.current.highlights };
+      for (const k of keys) {
+        if (before[k]) now[k] = before[k]!;
+        else delete now[k];
+      }
+      update({ highlights: now });
+    });
+  };
+  // Bookmark: each verse its own bookmark, as one verse at a time would be; when all are
+  // bookmarked already, the same button takes them off.
+  const bookmarkSelection = () => {
+    const keys = new Set(selected.map(bookmarkKey));
+    const allMarked = selected.every((v) => bookmarked.has(bookmarkKey(v)));
+    clearSelection();
+    if (allMarked) {
+      const removed = bookmarks.filter((b) => keys.has(`${b.book}:${b.chapter}:${b.verse}`));
+      update({ bookmarks: bookmarks.filter((b) => !keys.has(`${b.book}:${b.chapter}:${b.verse}`)) });
+      setToast(t('bookmarkRemoved'), () => update({ bookmarks: [...latestSettings.current.bookmarks.filter((b) => !keys.has(`${b.book}:${b.chapter}:${b.verse}`)), ...removed] }));
+      return;
+    }
+    const added = selected.filter((v) => !bookmarked.has(bookmarkKey(v))).map((v) => ({ book: v.book, chapter: v.chapter, verse: v.verse, translation, added: Date.now() }));
+    update({ bookmarks: [...bookmarks, ...added] });
+    confirmHaptic();
+    setToast(t('bookmarked'));
+  };
+  const allSelectedBookmarked = selecting && selected.every((v) => bookmarked.has(bookmarkKey(v)));
+
   const setHighlight = (v: VerseRow, color: HighlightColor | null) => {
     setActions(null);
     const key = bookmarkKey(v);
@@ -1264,6 +1364,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   rowActions.current = {
     word: handleWord,
     actions: (v) => openActions(v),
+    select: (v) => toggleSelected(v),
     note: (v, n) => setNote({ verse: v, note: n }),
     userNote: (v) => openNote(v),
     toggle: toggleExpanded,
@@ -1306,6 +1407,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
                     marks={verseMarks.get(v.verse)}
                     hasNote={bookmarkKey(v) in userNotes}
                     translation={translation}
+                    selected={selectedSet.has(v.verse)}
                   />
                 </React.Fragment>
               );
@@ -1368,6 +1470,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
           tapLabel={`${v.verse}, ${t('tapVerseNumber', { lang: originalLanguage(v) })}`}
           onWord={wordTap}
           actions={rowActions}
+          selected={selectedSet.has(v.verse)}
         />
       );
       if (!sideBySide) return verseRow;
@@ -1402,7 +1505,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
       );
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [sideBySide, besideVerses, theme, fontSize, wordTap, onRowWord, underlineWords, flash, readingVerse, interlinear, interlinearMode, expanded, originalWords, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, translation, t, scriptFont, verseMarks, marking, markTool, selection, registerWord],
+    [sideBySide, besideVerses, theme, fontSize, wordTap, onRowWord, underlineWords, flash, readingVerse, interlinear, interlinearMode, expanded, originalWords, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, translation, t, scriptFont, verseMarks, marking, markTool, selection, registerWord, selectedSet],
   );
 
   // The list's own props stay the same objects between renders, so a change elsewhere on
@@ -1735,14 +1838,92 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             pointerEvents="none"
             style={[styles.fade, tabs && !barHidden ? { bottom: arrowBottom - 6 } : { bottom: 0, height: 40 + bottomInset }]}
           />
-          <Animated.View pointerEvents={arrowsAway ? 'none' : 'box-none'} style={[StyleSheet.absoluteFill, { opacity: arrowFade }]}>
-            <ChapterArrow icon="chevron_left" onPress={() => go(-1)} disabled={atStart} accessibilityLabel={t('previousChapter')} style={{ left: 10 + barSide, bottom: arrowBottom }} />
-            <ChapterArrow icon="chevron_right" onPress={() => go(1)} disabled={atEnd} accessibilityLabel={t('nextChapter')} style={{ right: 10 + barSide, bottom: arrowBottom }} />
-          </Animated.View>
+          {selecting ? null : (
+            <Animated.View pointerEvents={arrowsAway ? 'none' : 'box-none'} style={[StyleSheet.absoluteFill, { opacity: arrowFade }]}>
+              <ChapterArrow icon="chevron_left" onPress={() => go(-1)} disabled={atStart} accessibilityLabel={t('previousChapter')} style={{ left: 10 + barSide, bottom: arrowBottom }} />
+              <ChapterArrow icon="chevron_right" onPress={() => go(1)} disabled={atEnd} accessibilityLabel={t('nextChapter')} style={{ right: 10 + barSide, bottom: arrowBottom }} />
+            </Animated.View>
+          )}
         </>
       )}
 
-      {tabs ? <TabBar current="Reader" hidden={barHidden || marking} /> : null}
+      {selecting && !marking ? (
+        // The selected verses' bar, in the tabs' place: what is done to verses most often,
+        // or (Highlight) the colours; More opens one verse's whole menu.
+        <View style={[styles.selectBar, { paddingBottom: insets.bottom + 10, paddingHorizontal: 12 + barSide, borderTopColor: theme.border, backgroundColor: theme.card }]}>
+          <View style={styles.selectHead}>
+            {selectColours ? (
+              <Pressable onPress={() => setSelectColours(false)} hitSlop={10} accessibilityRole="button" accessibilityLabel={t('back')} style={styles.selectBack}>
+                <Icon name="arrow_back" size={22} color={theme.text} />
+              </Pressable>
+            ) : null}
+            <Text style={[styles.selectTitle, { color: theme.text, fontFamily: scriptureFont(scriptOf(selectionRef(selected)), false, true) ?? theme.font }]} numberOfLines={1}>
+              {selectionRef(selected)}
+            </Text>
+            <Text style={[styles.selectCount, { color: theme.muted }]} numberOfLines={1}>
+              {selected.length === 1 ? t('selectedOne') : t('selectedMany', { n: selected.length })}
+            </Text>
+            <View style={styles.flex} />
+            <Pressable onPress={clearSelection} hitSlop={10} accessibilityRole="button" accessibilityLabel={t('clearSelection')}>
+              <Icon name="close" size={24} color={theme.text} />
+            </Pressable>
+          </View>
+          {selectColours ? (
+            <View style={styles.swatchRow}>
+              {HIGHLIGHT_COLORS.map((c) => (
+                <Pressable
+                  key={c}
+                  onPress={() => highlightSelection(c)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${t('highlight')} ${t(COLOUR_NAMES[c])}`}
+                  hitSlop={6}
+                  style={[styles.swatch, { backgroundColor: theme.marks[c], borderColor: theme.dark ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.12)' }]}
+                />
+              ))}
+              <Pressable
+                onPress={() => highlightSelection(null)}
+                disabled={!selected.some((v) => highlights[bookmarkKey(v)])}
+                accessibilityRole="button"
+                accessibilityLabel={t('noHighlight')}
+                hitSlop={6}
+                style={[styles.swatch, { borderColor: theme.border, opacity: selected.some((v) => highlights[bookmarkKey(v)]) ? 1 : 0.4 }]}
+              >
+                <Icon name="format_color_reset" size={20} color={theme.muted} />
+              </Pressable>
+            </View>
+          ) : (
+            <View style={styles.selectActions}>
+              <SelectAction icon="content_copy" label={t('actCopy')} onPress={copySelection} />
+              <SelectAction icon="share" label={t('actShare')} onPress={shareSelection} />
+              <SelectAction icon="ink_highlighter" label={t('highlight')} onPress={() => setSelectColours(true)} />
+              <SelectAction icon={allSelectedBookmarked ? 'bookmark_fill' : 'bookmark_add'} label={allSelectedBookmarked ? t('actBookmarked') : t('actBookmark')} onPress={bookmarkSelection} />
+              {/* A note and the whole menu are one verse's: with several selected, they wait. */}
+              <SelectAction
+                icon="edit_note"
+                label={t('actNote')}
+                disabled={selected.length !== 1}
+                onPress={() => {
+                  const v = selected[0];
+                  clearSelection();
+                  openNote(v);
+                }}
+              />
+              <SelectAction
+                icon="more_horiz"
+                label={t('actMore')}
+                disabled={selected.length !== 1}
+                onPress={() => {
+                  const v = selected[0];
+                  clearSelection();
+                  openActions(v);
+                }}
+              />
+            </View>
+          )}
+        </View>
+      ) : tabs ? (
+        <TabBar current="Reader" hidden={barHidden || marking} />
+      ) : null}
 
       {toastState ? (
         <View
@@ -2188,6 +2369,7 @@ function sameRanges(a: [number, number, HighlightColor][], b: [number, number, H
 interface RowActions {
   word: (pick: WordPick) => void;
   actions: (v: VerseRow) => void;
+  select: (v: VerseRow) => void;
   note: (v: VerseRow, n: Note) => void;
   userNote: (v: VerseRow) => void;
   toggle: (verse: number) => void;
@@ -2198,6 +2380,7 @@ function useVerseCallbacks(v: VerseRow, actions: React.RefObject<RowActions>) {
   return useMemo(
     () => ({
       openActions: () => actions.current.actions(v),
+      select: () => actions.current.select(v),
       openNote: (n: Note) => actions.current.note(v, n),
       openUserNote: () => actions.current.userNote(v),
       toggle: () => actions.current.toggle(v.verse),
@@ -2221,6 +2404,7 @@ const ParaVerse = memo(function ParaVerse({
   marks,
   hasNote,
   translation,
+  selected,
 }: {
   verse: VerseRow;
   fontSize: number;
@@ -2236,6 +2420,7 @@ const ParaVerse = memo(function ParaVerse({
   marks: [number, number, HighlightColor][] | undefined;
   hasNote: boolean;
   translation: TranslationId;
+  selected: boolean;
 }) {
   const cb = useVerseCallbacks(v, actions);
   return (
@@ -2245,8 +2430,9 @@ const ParaVerse = memo(function ParaVerse({
       fontSize={fontSize}
       onWord={onWord}
       onLongPress={cb.openActions}
-      onNumberPress={cb.openActions}
+      onNumberPress={cb.select}
       numberLabel={numberLabel}
+      selected={selected}
       notes={notes}
       onNote={cb.openNote}
       underline={underline}
@@ -2285,6 +2471,7 @@ const ReaderVerse = memo(function ReaderVerse({
   tapLabel,
   onWord,
   actions,
+  selected,
 }: {
   verse: VerseRow;
   fontSize: number;
@@ -2308,6 +2495,7 @@ const ReaderVerse = memo(function ReaderVerse({
   tapLabel: string;
   onWord?: (pick: WordPick) => void;
   actions: React.RefObject<RowActions>;
+  selected: boolean;
 }) {
   const cb = useVerseCallbacks(v, actions);
   // While a verse shows its Hebrew or Greek words, those are what is tapped: the verse's
@@ -2317,7 +2505,8 @@ const ReaderVerse = memo(function ReaderVerse({
   const underlined = underlineWords && !interlinear;
   // A flash (a jump here, or the verse being read aloud) covers the highlight colour, so
   // the text goes back to the colours made for the page.
-  const onMark = !!markColor && !flashing;
+  // A selected verse stands on the selection's shade, not its highlight colour.
+  const onMark = !!markColor && !flashing && !selected;
   return (
     <View
       style={[
@@ -2327,6 +2516,7 @@ const ReaderVerse = memo(function ReaderVerse({
         marked && [styles.verseBookmarked, { borderLeftColor: theme.accent }],
         markColor ? { backgroundColor: markColor } : null,
         flashing && { backgroundColor: theme.highlight },
+        selected && { backgroundColor: theme.accentSoft },
       ]}
     >
       {tapMode ? (
@@ -2375,9 +2565,11 @@ const ReaderVerse = memo(function ReaderVerse({
           onLongPress={cb.openActions}
           hasNote={hasNote}
           onNotePress={cb.openUserNote}
-          // The verse number opens the verse's actions.
-          onNumberPress={cb.openActions}
+          // The verse number selects the verse, for the bar of its actions.
+          onNumberPress={cb.select}
           numberLabel={numberLabel}
+          selected={selected}
+          shadedBehind
           notes={notes}
           onNote={cb.openNote}
           underline={underlined}
@@ -2392,6 +2584,22 @@ const ReaderVerse = memo(function ReaderVerse({
     </View>
   );
 });
+
+/** A button of the selected verses' bar: an icon in a soft pill over a short label. */
+function SelectAction({ icon, label, onPress, disabled }: { icon: IconName; label: string; onPress: () => void; disabled?: boolean }) {
+  const theme = useTheme();
+  const script = scriptOf(label);
+  return (
+    <Pressable onPress={onPress} disabled={disabled} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: !!disabled }} android_ripple={{ color: theme.accentSoft, borderless: true }} style={[styles.selectAction, disabled && styles.selectActionOff]}>
+      <View style={[styles.selectIcon, { backgroundColor: theme.accentSoft }]}>
+        <Icon name={icon} size={22} color={theme.accent} />
+      </View>
+      <Text style={[styles.selectLabel, { color: theme.text }, !!script && { fontFamily: scriptureFont(script, false) }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
 
 /** One of the four round buttons at the top of the verse sheet: an icon over a short label. */
 function ActionButton({ icon, label, onPress, accessibilityLabel }: { icon: IconName; label: string; onPress: () => void; accessibilityLabel?: string }) {
@@ -2490,6 +2698,17 @@ const styles = StyleSheet.create({
   markSwatchChosen: { borderWidth: 2 },
   markDone: { paddingHorizontal: 20, minHeight: 48, justifyContent: 'center', borderRadius: 999 },
   markDoneText: { fontSize: 15, fontWeight: '600' },
+  selectBar: { borderTopWidth: StyleSheet.hairlineWidth, borderTopLeftRadius: 18, borderTopRightRadius: 18, paddingTop: 10, shadowColor: '#3C280F', shadowOpacity: 0.1, shadowRadius: 12, shadowOffset: { width: 0, height: -4 }, elevation: 8 },
+  selectHead: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 6, paddingBottom: 8, minHeight: 32 },
+  selectBack: { marginRight: 2 },
+  selectTitle: { fontSize: 15, fontWeight: '600', flexShrink: 1 },
+  selectCount: { fontSize: 13, flexShrink: 0 },
+  flex: { flex: 1 },
+  selectActions: { flexDirection: 'row', justifyContent: 'space-between' },
+  selectAction: { flex: 1, alignItems: 'center', gap: 5, paddingVertical: 2 },
+  selectActionOff: { opacity: 0.35 },
+  selectIcon: { width: 46, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  selectLabel: { fontSize: 11.5 },
   toast: {
     position: 'absolute',
     alignSelf: 'center',

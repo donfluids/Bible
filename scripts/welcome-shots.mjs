@@ -114,7 +114,10 @@ async function photograph(browser, edition, language, dir) {
     await page.screenshot({ path: join(dir, `${name}.png`) });
   };
   const menu = async (verse) => {
+    // The verse's number selects it; More in the bar opens its whole menu.
     await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', String(verse)) })).click();
+    await wait(600);
+    await vis(page.getByRole('button', { name: t.actMore, exact: true })).click();
     await wait(1200);
   };
   const closeSheet = async () => {

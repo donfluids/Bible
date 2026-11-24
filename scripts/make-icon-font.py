@@ -37,6 +37,7 @@ ICONS = [
     'link', 'download', 'upload', 'picture_as_pdf', 'view_column',
     'backup', 'settings_backup_restore', 'gesture', 'touch_app',
     'school', 'school_fill',
+    'more_horiz',
 ]
 
 

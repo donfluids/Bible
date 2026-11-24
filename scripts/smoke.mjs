@@ -247,14 +247,37 @@ for (const edition of EDITIONS) {
       await closeSheet();
     });
     // Opens the verse sheet's study row, unless it is open already (it stays as it was left).
+    // A verse's whole menu: its number selects it, and More in the bar opens the menu.
+    const verseMenu = async (n) => {
+      await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', String(n)) })).click();
+      await wait(600);
+      await vis(page.getByRole('button', { name: t.actMore, exact: true })).click();
+    };
     const openStudy = async () => {
       // Exact: the row's own line under it also starts with "Compare translations".
       if (await page.getByText(t.compare, { exact: true }).locator('visible=true').count()) return;
       await vis(page.getByText(t.studyVerse, { exact: true })).click();
       await wait(800);
     };
-    await step('compare', async (snap) => {
+    await step('select', async (snap) => {
+      // Verse numbers select their verses; the bar names them and copies them together.
       await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', '2') })).click();
+      await wait(400);
+      await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', '3') })).click();
+      await wait(800);
+      await shows(t.selectedMany.replace('{n}', '2'));
+      await vis(page.getByRole('button', { name: t.actCopy, exact: true })).waitFor({ timeout: 5000 });
+      await snap();
+      // Taking one out leaves one, and the bar goes with the last.
+      await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', '3') })).click();
+      await wait(400);
+      await shows(t.selectedOne);
+      await vis(page.getByRole('button', { name: t.clearSelection })).click();
+      await wait(600);
+      if (await page.getByRole('button', { name: t.actCopy, exact: true }).locator('visible=true').count()) throw new Error('the bar stayed after the selection was cleared');
+    });
+    await step('compare', async (snap) => {
+      await verseMenu(2);
       await wait(1200);
       // The verse's menu.
       await snap('menu');
@@ -270,7 +293,7 @@ for (const edition of EDITIONS) {
       if (await page.getByLabel(t.close).locator('visible=true').count()) await closeSheet();
     });
     await step('cross-references', async (snap) => {
-      await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', '1') })).click();
+      await verseMenu(1);
       await wait(1500);
       await openStudy();
       // The row says how many there are after its name ("Cross references, 10" to TalkBack).
@@ -291,7 +314,7 @@ for (const edition of EDITIONS) {
       await wait(1500);
     });
     await step('card', async (snap) => {
-      await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', '3') })).click();
+      await verseMenu(3);
       await wait(1200);
       await vis(page.getByText(t.shareAsCard)).click();
       await wait(2500);

@@ -58,6 +58,10 @@ interface Props {
   selectionTranslation?: TranslationId;
   /** Number the verse with its chapter (7:25), for a verse beside another chapter's. */
   withChapter?: boolean;
+  /** The verse is selected (its number was tapped): its number filled, the verse shaded. */
+  selected?: boolean;
+  /** The verse stands on a shade drawn behind it already (the reader's verse rows). */
+  shadedBehind?: boolean;
 }
 
 export function noteLetter(n: number): string {
@@ -89,6 +93,8 @@ export const VerseText = memo(function VerseText({
   onNotePress,
   selectionTranslation,
   withChapter = false,
+  selected = false,
+  shadedBehind = false,
 }: Props) {
   const scales = !appSized;
   const theme = useTheme();
@@ -208,6 +214,7 @@ export const VerseText = memo(function VerseText({
         isTitle && styles.title,
         highlightColor ? { backgroundColor: highlightColor } : null,
         flash && { backgroundColor: theme.highlight },
+        selected && !shadedBehind && { backgroundColor: theme.accentSoft },
       ]}
       numberOfLines={numberOfLines}
       selectable={false}
@@ -231,9 +238,21 @@ export const VerseText = memo(function VerseText({
           suppressHighlighting
           accessibilityRole={onNumberPress ? 'button' : undefined}
           accessibilityLabel={onNumberPress ? numberLabel : undefined}
-          style={[styles.number, fontSize >= 24 && styles.numberBig, { color: onMark ? accent : theme.muted, fontSize: small }]}
+          accessibilityState={onNumberPress ? { selected } : undefined}
+          style={[
+            styles.number,
+            fontSize >= 24 && styles.numberBig,
+            { color: onMark ? accent : theme.muted, fontSize: small },
+            // A number that selects its verse looks it: in the accent colour, and filled while
+            // its verse is selected (text inside text takes no rounding or padding, so thin
+            // spaces pad the fill, and widen the number for a finger).
+            !!onNumberPress && { color: accent },
+            !!onNumberPress && selected && { color: theme.onAccent, backgroundColor: theme.accent },
+          ]}
         >
+          {onNumberPress ? '\u2009' : null}
           {withChapter ? `${verse.chapter}:${verse.verse}` : verse.verse}
+          {onNumberPress ? '\u2009' : null}
         </Text>
       ) : null}
       {/* The space after the number at the text's size: at the number's size it is so narrow

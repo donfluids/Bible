@@ -116,7 +116,10 @@ for (const arg of process.argv.slice(2)) {
   const top = (height) => ({ x: 0, y: 0, width: WIDTH, height });
   const bottom = (height) => ({ x: 0, y: HEIGHT - height, width: WIDTH, height });
   const menu = async (verse) => {
+    // The verse's number selects it; More in the bar opens its whole menu.
     await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', String(verse)) })).click();
+    await wait(600);
+    await vis(page.getByRole('button', { name: t.actMore, exact: true })).click();
     await wait(1200);
   };
   const closeSheet = async () => {
@@ -173,7 +176,7 @@ for (const arg of process.argv.slice(2)) {
     if (await note.count()) await note.last().click();
     await wait(800);
   };
-  const indianBible = page.getByText({ ml: /^സത്യവേദപുസ്തകം/, ta: /^இண்டியன்/, hi: /^इंडियन रिवाइज्ड वर्जन/ }[language]);
+  const indianBible = page.getByText({ ml: /^സത്യവേദപുസ്തകം/, ta: /^இண்டியன்/, hi: /^इंडियन रिवाइज्ड वर्जन/ }[language] ?? /^$/);
   if (edition === 'all' && language !== 'en') await chooseBible(indianBible);
 
   // 1 Reading a chapter: the reader, the book name ringed. 2 Switching Bibles: the Bible's
@@ -184,10 +187,13 @@ for (const arg of process.argv.slice(2)) {
   await picture(2, top(380), page.getByRole('button', { name: new RegExp(`^${escape(t.chooseBible)}:`) }));
   await picture(12, top(380), page.getByTestId('about-book'));
 
-  // 3 A verse's menu: its four buttons. 11 Listening: Read from here. 13 Picture cards:
-  // Share as card. All from verse 2's menu.
-  await menu(2);
-  await picture(3, bottom(560), { l: page.getByText(t.actCopy, { exact: true }), row: 300 });
+  // 3 A verse's menu: verse 2 selected by its number, the bar's buttons. 11 Listening: Read
+  // from here. 13 Picture cards: Share as card. Both from verse 2's whole menu (More).
+  await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', '2') })).click();
+  await wait(1000);
+  await picture(3, bottom(420), { l: page.getByRole('button', { name: t.actCopy, exact: true }), row: 300 });
+  await vis(page.getByRole('button', { name: t.actMore, exact: true })).click();
+  await wait(1200);
   await picture(11, bottom(480), { l: page.getByText(t.readFromHere, { exact: true }), withIcon: true });
   await picture(13, bottom(560), { l: page.getByText(t.shareAsCard, { exact: true }), withIcon: true });
   // A bookmark and a highlight for Saved: verse 2 bookmarked here, verse 3 highlighted.

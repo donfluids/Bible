@@ -228,13 +228,18 @@ function Gestures({ width }: { width: number }) {
       'welcomeTapName',
     ],
     [
+      // A verse: its number in the accent colour, on its soft block, with the hand on it.
       <View style={art}>
+        <View style={[styles.verseNumber, { backgroundColor: theme.card }]}>
+          <Text style={[styles.verseNumberText, { color: theme.accent }]} maxFontSizeMultiplier={1}>
+            3
+          </Text>
+        </View>
         <View style={styles.bars}>
           <View style={[styles.bar, { backgroundColor: theme.border }]} />
-          <View style={[styles.bar, { backgroundColor: theme.accent, opacity: 0.45 }]} />
           <View style={[styles.bar, styles.barShort, { backgroundColor: theme.border }]} />
         </View>
-        {hand({ right: 12, bottom: 2 })}
+        {hand({ left: 14, bottom: -6 })}
       </View>,
       'welcomeHold',
     ],
@@ -305,7 +310,9 @@ const styles = StyleSheet.create({
   mini: { fontSize: 14, fontWeight: '600' },
   pill: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderRadius: 10, paddingLeft: 7, paddingRight: 2, paddingVertical: 2, maxWidth: 80 },
   pillText: { fontSize: 11, fontWeight: '600', flexShrink: 1 },
-  bars: { width: 64, gap: 7 },
+  bars: { width: 44, gap: 7, marginLeft: 6 },
+  verseNumber: { borderRadius: 7, paddingHorizontal: 6, paddingVertical: 1, marginTop: -14 },
+  verseNumberText: { fontSize: 13, fontWeight: '700' },
   bar: { height: 6, borderRadius: 3 },
   barShort: { width: '70%' },
 });

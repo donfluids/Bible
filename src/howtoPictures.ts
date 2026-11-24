@@ -10,7 +10,7 @@ export const HOWTO_SHAPES: Partial<Record<string, Partial<Record<number, number>
   en: {
     1: 1.0842,
     2: 1.0842,
-    3: 0.7357,
+    3: 0.9810,
     4: 0.8957,
     5: 1.2485,
     6: 0.9364,
@@ -25,7 +25,7 @@ export const HOWTO_SHAPES: Partial<Record<string, Partial<Record<number, number>
   hi: {
     1: 1.0842,
     2: 1.0842,
-    3: 0.7357,
+    3: 0.9810,
     4: 0.8957,
     5: 1.2485,
     6: 0.9364,
@@ -40,7 +40,7 @@ export const HOWTO_SHAPES: Partial<Record<string, Partial<Record<number, number>
   ml: {
     1: 1.0842,
     2: 1.0842,
-    3: 0.7357,
+    3: 0.9810,
     4: 0.8957,
     5: 1.2485,
     6: 0.9364,
@@ -55,7 +55,7 @@ export const HOWTO_SHAPES: Partial<Record<string, Partial<Record<number, number>
   ta: {
     1: 1.0842,
     2: 1.0842,
-    3: 0.7357,
+    3: 0.9810,
     4: 0.8957,
     5: 1.2485,
     6: 0.9364,
