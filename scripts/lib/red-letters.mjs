@@ -14,8 +14,10 @@
 // - Part of it, and the target has no quotation marks: the ASV, worded like the KJV, takes the
 //   red words over word by word; the others are left black (reported speech).
 // A quotation is followed across verses: a verse that starts inside one is red from its start.
-// Hand corrections (data/overrides/red-letters.json) give, for a verse with more than one
-// quotation, the numbers of the quotations that are red, counted from 1 in the verse.
+// Hand corrections (data/overrides/red-letters.json), for any Bible: the red words of a verse
+// as text, in order (an empty list for none); or, for a carried-over verse with more than one
+// quotation, the numbers of the quotations that are red, counted from 1 in the verse. Those
+// for the Bibles that mark the words themselves are made first, so the carried ones follow them.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -177,6 +179,21 @@ function byWords(ref, refSpans, text) {
   return spans;
 }
 
+// A hand correction given as the red words themselves, in order ("↵" for a line break).
+function textSpans(text, parts, where) {
+  const spans = [];
+  let from = 0;
+  for (const part of parts) {
+    const want = part.replaceAll('↵', '\n');
+    const at = text.indexOf(want, from);
+    if (at < 0) throw new Error(`red-letters.json: ${where}: "${part}" is not in the verse`);
+    spans.push([at, at + want.length]);
+    from = at + want.length;
+  }
+  return spans;
+}
+const isText = (fix) => Array.isArray(fix) && fix.every((x) => typeof x === 'string');
+
 function loadOverrides(root) {
   try {
     return JSON.parse(readFileSync(join(root, 'data', 'overrides', 'red-letters.json'), 'utf8'));
@@ -191,7 +208,22 @@ export function carryRedLetters(db, root) {
   const select = db.prepare('SELECT book, chapter, verse, text, tags, omitted, jesus FROM verses WHERE translation = ? AND book >= 40 ORDER BY book, chapter, verse');
   const update = db.prepare('UPDATE verses SET jesus = ? WHERE translation = ? AND book = ? AND chapter = ? AND verse = ?');
   const stats = {};
+  const getVerse = db.prepare('SELECT text, omitted FROM verses WHERE translation = ? AND book = ? AND chapter = ? AND verse = ?');
   db.exec('BEGIN');
+  // First the Bibles that mark the words of Jesus themselves: their hand corrections, so that
+  // those carried over start from the corrected marks.
+  for (const [id, fixes] of Object.entries(overrides)) {
+    if (CARRY[id] || !have.has(id)) continue;
+    let n = 0;
+    for (const [k, fix] of Object.entries(fixes)) {
+      const [b, c, v] = k.split(':').map(Number);
+      const row = getVerse.get(id, b, c, v);
+      if (!row || row.omitted) throw new Error(`red-letters.json: ${id} ${k} is not a verse`);
+      update.run(textSpans(row.text, fix, `${id} ${k}`).map(([a, e]) => `${a},${e}`).join(' '), id, b, c, v);
+      n++;
+    }
+    stats[id] = { corrected: n };
+  }
   for (const [target, refId] of Object.entries(CARRY)) {
     if (!have.has(target) || !have.has(refId)) continue;
     const ref = new Map(select.all(refId).map((r) => [key(r.book, r.chapter, r.verse), r]));
@@ -202,6 +234,13 @@ export function carryRedLetters(db, root) {
     for (const row of rows) {
       const k = key(row.book, row.chapter, row.verse);
       const r = ref.get(k);
+      if (isText(fixes[k]) && !row.omitted) {
+        const spans = textSpans(row.text, fixes[k], `${target} ${k}`);
+        update.run(spans.map(([a, b]) => `${a},${b}`).join(' '), target, row.book, row.chapter, row.verse);
+        st.overridden++;
+        if (spans.length) st.verses++;
+        continue;
+      }
       if (!r?.jesus || row.omitted || !row.text) continue;
       const t = row.text, rt = r.text;
       const rj = r.jesus.split(' ').map((p) => p.split(',').map(Number));
