@@ -866,11 +866,54 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   useEffect(() => () => {
     if (arrowTimer.current) clearTimeout(arrowTimer.current);
   }, []);
+  // The tab bar slides away while the text is read downward and comes back on any scroll
+  // up, at the top or the end of the chapter, on a new chapter or a selected verse. It
+  // floats over the text, which keeps its size (the old way folded the bar's height, and
+  // the list jumped and the bar sometimes stayed away). With a screen reader on it stays.
+  const barShown = useRef(new Animated.Value(1)).current;
+  const [barAway, setBarAway] = useState(false);
+  const barAwayRef = useRef(false);
+  const travel = useRef(0);
+  // Only the reader's own scrolling (a finger and its fling) moves the bar, not a jump to a verse.
+  const fingerScroll = useRef(false);
+  const [screenReader, setScreenReader] = useState(false);
+  useEffect(() => {
+    // The browser version (the screen check's) always answers yes; there it is taken as no.
+    if (Platform.OS === 'web') return;
+    AccessibilityInfo.isScreenReaderEnabled().then(setScreenReader).catch(() => undefined);
+    const sub = AccessibilityInfo.addEventListener('screenReaderChanged', setScreenReader);
+    return () => sub.remove();
+  }, []);
+  const showTabBar = useCallback(
+    (show: boolean) => {
+      travel.current = 0;
+      if (barAwayRef.current === !show) return;
+      barAwayRef.current = !show;
+      setBarAway(!show);
+      Animated.timing(barShown, { toValue: show ? 1 : 0, duration: show ? 200 : 240, easing: Easing.out(Easing.quad), useNativeDriver: true }).start();
+    },
+    [barShown],
+  );
+  const barSlides = !!tabs && !screenReader;
+  useEffect(() => {
+    if (!barSlides) showTabBar(true);
+  }, [barSlides, showTabBar]);
   const onListScroll = useCallback(
     (y: number) => {
-      const moved = Math.abs(y - scrollY.current);
+      const delta = y - scrollY.current;
+      const moved = Math.abs(delta);
       scrollY.current = y;
       if (moved < 2) return;
+      if (barSlides && fingerScroll.current) {
+        const end = contentHeight.current - listHeight.current - y < 48;
+        if (y < 40 || end) showTabBar(true);
+        else {
+          // A little way in one direction before the bar moves: a jitter of the finger does not.
+          travel.current = Math.sign(delta) === Math.sign(travel.current) ? travel.current + delta : delta;
+          if (travel.current > 24) showTabBar(false);
+          else if (travel.current < -30) showTabBar(true);
+        }
+      }
       if (arrowTimer.current) clearTimeout(arrowTimer.current);
       const atBottom = contentHeight.current - listHeight.current - y < 48;
       if (atBottom) {
@@ -880,7 +923,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
       showArrows(false);
       arrowTimer.current = setTimeout(() => showArrows(true), 700);
     },
-    [showArrows],
+    [showArrows, barSlides, showTabBar],
   );
   type DragState = {
     boxes: WordBox[] | null;
@@ -1226,6 +1269,10 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
     // The verse's menu found without being told of it: its hint is not shown.
     if (!settings.hintVerseSeen) update({ hintVerseSeen: true });
   };
+  // The tab bar comes back with a new chapter or Bible, and when verses are selected or deselected.
+  useEffect(() => {
+    showTabBar(true);
+  }, [chapterKey, translation, selecting, marking, showTabBar]);
   // A new chapter or Bible, or marking, starts without a selection.
   useEffect(() => {
     clearSelection();
@@ -1531,6 +1578,36 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
     [sideBySide, besideVerses, theme, fontSize, wordTap, onRowWord, underlineWords, flash, readingVerse, interlinear, interlinearMode, expanded, originalWords, notes, bookmarked, highlights, userNotes, showTranslit, hideCantillation, translation, t, scriptFont, verseMarks, marking, markTool, selection, registerWord, selectedSet],
   );
 
+  const readingActive = reading.active;
+  const onScrollBeginDrag = useCallback(() => {
+    fingerScroll.current = true;
+    if (readingActive) setFollowing(false);
+  }, [readingActive]);
+  // The finger's scrolling ends when it lets go, or after the fling it gave, when that stops.
+  // (A touch marks it too: the browser version never reports the start of a drag.)
+  const flinging = useRef(false);
+  const fingerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onTouchStart = useCallback(() => {
+    if (fingerTimer.current) clearTimeout(fingerTimer.current);
+    fingerScroll.current = true;
+  }, []);
+  const onTouchEnd = useCallback(() => {
+    if (fingerTimer.current) clearTimeout(fingerTimer.current);
+    fingerTimer.current = setTimeout(() => {
+      if (!flinging.current) fingerScroll.current = false;
+    }, 150);
+  }, []);
+  const onScrollEndDrag = useCallback(() => onTouchEnd(), [onTouchEnd]);
+  const onMomentumScrollBegin = useCallback(() => {
+    flinging.current = true;
+  }, []);
+  const onMomentumScrollEnd = useCallback(() => {
+    flinging.current = false;
+    fingerScroll.current = false;
+  }, []);
+  useEffect(() => () => {
+    if (fingerTimer.current) clearTimeout(fingerTimer.current);
+  }, []);
   // The list's own props stay the same objects between renders, so a change elsewhere on
   // the screen (the tab bar, a toast, a sheet) does not redraw the rows.
   const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => onListScroll(e.nativeEvent.contentOffset.y), [onListScroll]);
@@ -1685,6 +1762,10 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   // The tab bar also takes the strip of the phone's own navigation (the home indicator or
   // gesture bar), so with the bar the arrows and the fade stand above both.
   const arrowBottom = (tabs && !barHidden ? insets.bottom + barHeight : bottomInset) + 6;
+  // The bar floats over the text: the text keeps room under its end, so its last verse
+  // scrolls clear of the bar (none while the selection's or the marking bar stands instead).
+  const barRoom = tabs && !selecting && !marking ? { paddingBottom: barHeight + insets.bottom } : null;
+  const barSlide = barShown.interpolate({ inputRange: [0, 1], outputRange: [barHeight + insets.bottom + 2, 0] });
   // One psalm is "Psalm 23" in the title, though the book is Psalms.
   const fullBookName = bookName(books, position.book, translation);
   const titleBookName = fullBookName === 'Psalms' ? 'Psalm' : fullBookName;
@@ -1768,10 +1849,15 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
           data={items}
           keyExtractor={itemKey}
           renderItem={renderItem}
-          contentContainerStyle={[styles.list, sideBySide && styles.listWide, fontSize >= 26 && styles.listBig]}
+          contentContainerStyle={[styles.list, sideBySide && styles.listWide, fontSize >= 26 && styles.listBig, barRoom]}
           scrollEnabled={!dragging}
           onScroll={onScroll}
-          onScrollBeginDrag={reading.active ? () => setFollowing(false) : undefined}
+          onScrollBeginDrag={onScrollBeginDrag}
+          onScrollEndDrag={onScrollEndDrag}
+          onMomentumScrollBegin={onMomentumScrollBegin}
+          onMomentumScrollEnd={onMomentumScrollEnd}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
           onLayout={onListLayout}
           scrollEventThrottle={16}
           onContentSizeChange={onContentSizeChange}
@@ -1882,14 +1968,17 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
         <>
           {/* The text fades into the edge it stops at: the tab bar, or with no bar (a reader
               opened from a list) the very bottom of the screen, home indicator strip and all. */}
-          <LinearGradient
-            colors={[`${theme.bg}00`, theme.bg, theme.bg]}
-            locations={[0, tabs && !barHidden ? 1 : 40 / (40 + bottomInset), 1]}
-            pointerEvents="none"
-            style={[styles.fade, tabs && !barHidden ? { bottom: arrowBottom - 6 } : { bottom: 0, height: 40 + bottomInset }]}
-          />
+          {/* The fade moves with the bar: with the bar away, the text runs to the screen's edge. */}
+          <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { transform: [{ translateY: barSlide }] }]}>
+            <LinearGradient
+              colors={[`${theme.bg}00`, theme.bg, theme.bg]}
+              locations={[0, tabs && !barHidden ? 1 : 40 / (40 + bottomInset), 1]}
+              pointerEvents="none"
+              style={[styles.fade, tabs && !barHidden ? { bottom: arrowBottom - 6 } : { bottom: 0, height: 40 + bottomInset }]}
+            />
+          </Animated.View>
           {selecting ? null : (
-            <Animated.View pointerEvents={arrowsAway ? 'none' : 'box-none'} style={[StyleSheet.absoluteFill, { opacity: arrowFade }]}>
+            <Animated.View pointerEvents={arrowsAway || barAway ? 'none' : 'box-none'} style={[StyleSheet.absoluteFill, { opacity: Animated.multiply(arrowFade, barShown) }]}>
               <ChapterArrow icon="chevron_left" onPress={() => go(-1)} disabled={atStart} accessibilityLabel={t('previousChapter')} style={{ left: 10 + barSide, bottom: arrowBottom }} />
               <ChapterArrow icon="chevron_right" onPress={() => go(1)} disabled={atEnd} accessibilityLabel={t('nextChapter')} style={{ right: 10 + barSide, bottom: arrowBottom }} />
             </Animated.View>
@@ -1972,7 +2061,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
           )}
         </View>
       ) : tabs ? (
-        <TabBar current="Reader" hidden={barHidden || marking} />
+        <TabBar current="Reader" hidden={barHidden || marking} slide={barShown} away={barAway} />
       ) : null}
 
       {toastState ? (
