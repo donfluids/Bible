@@ -195,11 +195,14 @@ function textSpans(text, parts, where) {
 const isText = (fix) => Array.isArray(fix) && fix.every((x) => typeof x === 'string');
 
 function loadOverrides(root) {
+  // A missing file means no corrections; one that does not parse stops the build.
+  let raw;
   try {
-    return JSON.parse(readFileSync(join(root, 'data', 'overrides', 'red-letters.json'), 'utf8'));
+    raw = readFileSync(join(root, 'data', 'overrides', 'red-letters.json'), 'utf8');
   } catch {
     return {};
   }
+  return JSON.parse(raw);
 }
 
 export function carryRedLetters(db, root) {

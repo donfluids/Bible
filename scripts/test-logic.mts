@@ -561,6 +561,10 @@ test('side by side: the second Bible, chosen per slot, never the one open', () =
       assert.ok(words.startsWith('ആമേൻ, ആമേൻ'), words);
       assert.ok(!words.includes('ഉത്തരം പറഞ്ഞു'), 'the narration after His words stays outside');
     });
+    test('words of Jesus: hand corrections to a Bible that marks them itself', () => {
+      // Mark 8:29: the Malayalam 1910's source marks Peter's answer; Jesus' question is red.
+      assert.deepEqual(spoken('bible-ml.db', 'MAL', 41, 8, 29), ['എന്നാൽ നിങ്ങൾ എന്നെ ആർ എന്നു പറയുന്നു']);
+    });
     test('words of Jesus: carried over to the OMCV from the Malayalam 1910', () => {
       assert.deepEqual(spoken('bible-ml.db', 'OMCV', 43, 3, 3), ['“ഞാൻ താങ്കളോട് സത്യം സത്യമായി പറയട്ടെ: വീണ്ടും ജനിച്ചില്ല എങ്കിൽ ദൈവരാജ്യം കാണാൻ ആർക്കും കഴിയുകയില്ല”']);
       // Mark 8:29: His question red, Peter's answer not.
