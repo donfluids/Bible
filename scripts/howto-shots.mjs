@@ -159,12 +159,22 @@ for (const arg of process.argv.slice(2)) {
     await back();
   }
   // The four-language app reads its Indian Bible for the interface language.
-  if (edition === 'all' && language !== 'en') {
+  const chooseBible = async (row) => {
     await vis(page.getByRole('button', { name: new RegExp(`^${escape(t.chooseBible)}:`) })).click();
     await wait(800);
-    await vis(page.getByText({ ml: /^സത്യവേദപുസ്തകം/, ta: /^இண்டியன்/, hi: /^इंडियन रिवाइज्ड वर्जन/ }[language])).click();
+    await vis(row).click();
     await wait(2000);
-  }
+    // The new Bible opens on the verse read, below the About link: back to the top, and
+    // the Hindi's one-time note about its words closed.
+    await page.mouse.move(WIDTH / 2, HEIGHT / 2);
+    await page.mouse.wheel(0, -3000);
+    await wait(800);
+    const note = page.getByRole('button', { name: t.gotIt, exact: true }).locator('visible=true');
+    if (await note.count()) await note.last().click();
+    await wait(800);
+  };
+  const indianBible = page.getByText({ ml: /^സത്യവേദപുസ്തകം/, ta: /^இண்டியன்/, hi: /^इंडियन रिवाइज्ड वर्जन/ }[language]);
+  if (edition === 'all' && language !== 'en') await chooseBible(indianBible);
 
   // 1 Reading a chapter: the reader, the book name ringed. 2 Switching Bibles: the Bible's
   // name. 12 Study tools: About this book.
@@ -196,12 +206,17 @@ for (const arg of process.argv.slice(2)) {
   await wait(1200);
 
   // 4 Words: a word's sheet, its card for this verse ringed.
+  // The Hindi Bible's words are not linked yet (its steps say so): its word from the KJV.
+  const unlinked = language === 'hi';
+  // The KJV's row by the line under its name (the name itself is in the menu language).
+  if (unlinked) await chooseBible(page.getByRole('button', { name: /KJV$/ }));
   await vis(page.locator('[role="link"]:not([data-testid="about-book"])')).click();
   await wait(2500);
   const card = page.getByText(t.inThisVerse, { exact: true });
   const cardBox = await vis(card).boundingBox();
   await picture(4, { x: 0, y: Math.max(0, cardBox.y - 110), width: WIDTH, height: 460 }, card.locator('xpath=..'));
   await closeSheet();
+  if (unlinked) await chooseBible(indianBible);
 
   // 7 Search: a word's results, the search box ringed.
   await vis(page.getByLabel(t.search)).click();

@@ -65,6 +65,8 @@ const GROUPS: { title: StringKey; topics: Topic[] }[] = [
 ];
 /** The four-language app's search also chooses the Bible searched. */
 const SEARCH_ALL_STEP: [IconName, StringKey] = ['menu_book', 'howS7c'];
+// The Hindi Bible's words are not linked to the Hebrew or Greek yet: said in Hindi, whose readers meet it.
+const HINDI_WORDS_STEP: [IconName, StringKey] = ['info', 'howS4Hindi'];
 
 /** A word on the quick start's third tile, in the menu language's own letters. */
 const SAMPLE_WORD: Record<string, string> = { en: 'beginning', ml: 'ആദിയിൽ', ta: 'ஆதியிலே', hi: 'आदि में' };
@@ -173,7 +175,8 @@ export function HowToScreen({ onBack, onShowMe }: { onBack: () => void; onShowMe
             </Text>
             {group.topics.map((topic) => {
               const shown = open === topic.n;
-              const steps = topic.n === 7 && multilingual ? [...topic.steps, SEARCH_ALL_STEP] : topic.steps;
+              const steps =
+                topic.n === 7 && multilingual ? [...topic.steps, SEARCH_ALL_STEP] : topic.n === 4 && settings.language === 'hi' ? [...topic.steps, HINDI_WORDS_STEP] : topic.steps;
               const picture = pictures[topic.n];
               const ring = rings[topic.n];
               const shape = shapes[topic.n];
