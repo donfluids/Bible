@@ -540,9 +540,19 @@ test('side by side: the second Bible, chosen per slot, never the one open', () =
       // John 3:3: "Jesus answered and said unto him," then His words.
       assert.deepEqual(spoken('bible-en.db', 'KJV', 43, 3, 3), ['Verily, verily, I say unto thee, Except a man be born again, he cannot see the kingdom of God.']);
       assert.ok(spoken('bible-en.db', 'WEB', 43, 3, 3)[0]?.startsWith('“Most certainly'));
-      // Narration only (John 3:4), and a Bible whose source has none (the BSB).
+      // Narration only (John 3:4).
       assert.deepEqual(spoken('bible-en.db', 'KJV', 43, 3, 4), []);
-      assert.deepEqual(spoken('bible-en.db', 'BSB', 43, 3, 3), []);
+    });
+    test('words of Jesus: carried over to the BSB, LSV and ASV from the KJV', () => {
+      // The quotation is red, "Jesus replied" is not.
+      assert.deepEqual(spoken('bible-en.db', 'BSB', 43, 3, 3), ['“Truly, truly, I tell you, no one can see the kingdom of God unless he is born again.”']);
+      assert.ok(spoken('bible-en.db', 'LSV', 43, 3, 3)[0]?.startsWith('“Truly, truly'));
+      // The ASV has no quotation marks: word by word from the KJV.
+      assert.deepEqual(spoken('bible-en.db', 'ASV', 43, 3, 3), ['Verily, verily, I say unto thee, Except one be born anew, he cannot see the kingdom of God.']);
+      // Someone else's answer in the same verse stays black (a hand correction).
+      assert.deepEqual(spoken('bible-en.db', 'BSB', 43, 4, 17), ['“You are correct to say that you have no husband.']);
+      assert.deepEqual(spoken('bible-en.db', 'LSV', 40, 22, 21), ['“Render therefore the things of Caesar to Caesar, and the things of God to God”']);
+      assert.deepEqual(spoken('bible-en.db', 'BSB', 43, 3, 4), []);
     });
   }
   if (there(dir + 'bible-ml.db')) {
@@ -550,6 +560,13 @@ test('side by side: the second Bible, chosen per slot, never the one open', () =
       const [words] = spoken('bible-ml.db', 'MAL', 43, 3, 3);
       assert.ok(words.startsWith('ആമേൻ, ആമേൻ'), words);
       assert.ok(!words.includes('ഉത്തരം പറഞ്ഞു'), 'the narration after His words stays outside');
+    });
+    test('words of Jesus: carried over to the OMCV from the Malayalam 1910', () => {
+      assert.deepEqual(spoken('bible-ml.db', 'OMCV', 43, 3, 3), ['“ഞാൻ താങ്കളോട് സത്യം സത്യമായി പറയട്ടെ: വീണ്ടും ജനിച്ചില്ല എങ്കിൽ ദൈവരാജ്യം കാണാൻ ആർക്കും കഴിയുകയില്ല”']);
+      // Mark 8:29: His question red, Peter's answer not.
+      const words = spoken('bible-ml.db', 'OMCV', 41, 8, 29);
+      assert.equal(words.length, 2);
+      assert.ok(!words.some((w) => w.includes('ക്രിസ്തു')), words.join(' | '));
     });
   }
 }

@@ -87,7 +87,6 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
   // The other slot's name: the app's own language, or (four languages) any Indian one.
   const besideIndianKey = isMultilingual(EDITION) ? 'besideIndian' : nativeTranslation(EDITION) === 'TAM' ? 'besideTamil' : 'besideMalayalam';
   // The Bibles here whose sources do not mark the words of Jesus.
-  const unmarked = EDITION.translations.filter((id) => ['BSB', 'LSV', 'ASV', 'OMCV'].includes(id));
   const bibleFont = (id: TranslationId) => {
     const family = scriptureFont(translationInfo(id).script ?? null, false);
     return family ? { fontFamily: family } : undefined;
@@ -230,12 +229,8 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
           <SwitchRow style={[styles.row, divider]} title={t('keepAwake')} value={settings.keepAwake} onChange={(v) => update({ keepAwake: v })}>
             <Text style={[styles.rowSub, { color: theme.muted }]}>{t('keepAwakeDetail')}</Text>
           </SwitchRow>
-          {/* Red letters: the Bibles whose sources mark the words of Jesus have them. */}
-          <SwitchRow style={[styles.row, divider]} title={t('redLetters')} value={settings.redLetters} onChange={(v) => update({ redLetters: v })}>
-            <Text style={[styles.rowSub, { color: theme.muted }]}>
-              {unmarked.length ? t('redLettersDetail', { list: unmarked.join(', ') }) : t('redLettersDetailAll')}
-            </Text>
-          </SwitchRow>
+          {/* Red letters: every Bible has them (scripts/lib/red-letters.mjs for those whose sources do not mark them). */}
+          <SwitchRow style={[styles.row, divider]} title={t('redLetters')} value={settings.redLetters} onChange={(v) => update({ redLetters: v })} />
           {nativeTranslation(EDITION) || isMultilingual(EDITION) ? (
             <SwitchRow style={[styles.row, divider]} title={t('sideBySide')} value={settings.sideBySide} onChange={(v) => update({ sideBySide: v })}>
               <Text style={[styles.rowSub, { color: theme.muted }]}>

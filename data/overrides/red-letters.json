@@ -1,0 +1,15 @@
+{
+  "_about": "Hand corrections to the words of Jesus carried over from the KJV (the BSB, LSV) and the Malayalam 1910 (the OMCV) by scripts/lib/red-letters.mjs: for a verse with more than one quotation, the numbers of the quotations that are red, counted from 1 in the verse; a quotation inside a quotation (‘…’) counts on its own.",
+  "BSB": {
+    "40:21:25": [1], "40:22:43": [1, 2, 3], "41:8:29": [1, 2], "42:4:35": [1, 2], "42:5:14": [1, 2],
+    "43:4:17": [2], "43:13:8": [2]
+  },
+  "LSV": {
+    "40:19:18": [2], "40:22:21": [2], "43:21:6": [2], "43:21:17": [1, 4], "44:9:10": [1]
+  },
+  "OMCV": {
+    "40:13:51": [1], "40:21:16": [2, 3, 4], "40:22:21": [2], "41:8:29": [1, 2], "41:10:39": [2],
+    "41:11:3": [1, 2, 3, 4], "41:12:15": [2], "42:9:59": [1], "42:17:21": [1, 2, 3, 4, 5],
+    "42:22:67": [3], "43:21:17": [1, 4], "44:26:15": [4]
+  }
+}

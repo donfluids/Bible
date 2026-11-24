@@ -26,7 +26,8 @@
 //            span in characters, number is the Strong's number without its letter.
 //            The letter is H for Old Testament books and G for New Testament books.
 //     jesus = the words of Jesus where the source marks them (USFM \wj: the KJV, WEB, the
-//            Malayalam 1910 and IRV, the Tamil and Hindi IRV), as "start,end" character
+//            Malayalam 1910 and IRV, the Tamil and Hindi IRV), and for the BSB, LSV, ASV and
+//            OMCV carried over from the KJV or Malayalam 1910 (scripts/lib/red-letters.mjs), as "start,end" character
 //            offsets into text separated by spaces; '' where there are none
 //     verse 0 holds a Psalm's title line (USFM \d) when the chapter has one
 //   headings(translation, book, chapter, before_verse, text)
@@ -78,6 +79,7 @@ import { abbottSmith, bdbGlosses } from './lib/lexicons.mjs';
 import { addCrossRefs } from './lib/crossrefs.mjs';
 import { addIntros } from './lib/intros.mjs';
 import { addParallels } from './lib/parallels.mjs';
+import { carryRedLetters } from './lib/red-letters.mjs';
 import { keepBuildDate, previousBuild, recordDatabase } from './lib/dbfiles.mjs';
 import { readFileSync, readdirSync, mkdirSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -1255,6 +1257,7 @@ function buildEdition(edition) {
   stats.interlinear = { ...interlinear, versesNotInKjv: unmatched, kjvVersesWithoutOriginal: missing };
   stats.crossrefs = addCrossRefs(db, RAW);
   stats.parallels = addParallels(db, RAW);
+  stats.redLetters = carryRedLetters(db, ROOT);
   stats.intros = addIntros(db, ROOT, edition);
   keepBuildDate(db, previous);
   db.exec('VACUUM');
