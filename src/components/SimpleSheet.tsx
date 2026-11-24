@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Animated, KeyboardAvoidingView, Modal, PanResponder, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Animated, KeyboardAvoidingView, Modal, type ModalProps, PanResponder, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { Pressable } from './Pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useT } from '../i18n';
@@ -20,6 +20,9 @@ interface Props {
    */
   openedAtEnd?: boolean;
 }
+
+// A sheet turns with the phone, as the screen under it does.
+const ORIENTATIONS: ModalProps['supportedOrientations'] = ['portrait', 'portrait-upside-down', 'landscape', 'landscape-left', 'landscape-right'];
 
 /**
  * A bottom sheet for notes, verse actions and the like, in the word sheet's style: it
@@ -73,7 +76,9 @@ function SheetBody({ title, onClose, children, openedAtEnd }: Omit<Props, 'visib
   }, [openedAtEnd]);
   const translateY = Animated.add(shown.interpolate({ inputRange: [0, 1], outputRange: [0, 600] }), drag);
   return (
-    <Modal visible transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
+    // Every orientation: on iOS a Modal otherwise allows only portrait, and opening a sheet
+    // on a sideways phone turned the whole app upright.
+    <Modal visible transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent supportedOrientations={ORIENTATIONS}>
       {/* The backdrop closes the sheet with a tap; screen readers use the close button instead. */}
       <Pressable style={styles.backdrop} onPress={onClose} importantForAccessibility="no" accessibilityElementsHidden />
       {/* Lifted above the keyboard while a note is typed: the app draws edge to edge, so Android does not resize it. */}
