@@ -28,6 +28,8 @@ function editionFromGradleProperties() {
 config.cacheVersion = `edition-${edition}`;
 // Each app's interface languages, as src/edition.ts gives them.
 const HOWTO_LANGUAGES = { en: ['en'], ml: ['en', 'ml'], ta: ['en', 'ta'], all: ['en', 'ml', 'ta', 'hi'] };
+// Each app's welcome picture sets: the app and the interface language they show.
+const WELCOME_SETS = { en: ['en-en'], ml: ['ml-en', 'ml-ml'], ta: ['ta-en', 'ta-ta'], all: ['en-en', 'all-ml', 'all-ta', 'all-hi'] };
 const defaultResolve = config.resolver.resolveRequest;
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   let target = moduleName.endsWith('/assets/db/bible.db') ? moduleName.replace(/bible\.db$/, `bible-${edition}.db`) : moduleName;
@@ -35,8 +37,10 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   // get a one-byte file in its place. Each pair has two different names: Android cannot hold
   // two resources that differ only in their ending (hence ml-tiny.onnx and ml-letters.bin).
   const voice = (edition === 'ml' || edition === 'all') && process.env.BIBLE_NO_VOICE !== '1';
-  // The welcome's pictures show the app in its own language; the four-language app uses the English ones.
-  target = target.replace('/assets/welcome/edition/', `/assets/welcome/${edition === 'all' ? 'en' : edition}/`);
+  // The welcome's pictures: an app carries the sets of its own interface languages
+  // (src/screens/WelcomeScreen.tsx names them), and a blank in place of the others'.
+  const welcome = /\/assets\/welcome\/([\w-]+)\/\w+\.jpg$/.exec(target);
+  if (welcome && !WELCOME_SETS[edition].includes(welcome[1])) target = target.replace(/\/assets\/welcome\/.*$/, '/assets/howto/blank.png');
   // How to use's pictures: an app carries those of its own interface languages (src/edition.ts),
   // and a blank in place of the others'.
   const howto = /\/assets\/howto\/(\w+)\/\d+\.jpg$/.exec(target);

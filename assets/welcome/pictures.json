@@ -1,0 +1,450 @@
+{
+ "en-en": {
+  "word": {
+   "shape": 0.687,
+   "ring": {
+    "left": 0.05,
+    "top": 0.596,
+    "width": 0.9,
+    "height": 0.243
+   }
+  },
+  "original": {
+   "shape": 0.799,
+   "ring": {
+    "left": 0.041,
+    "top": 0.463,
+    "width": 0.187,
+    "height": 0.183
+   }
+  },
+  "study": {
+   "shape": 0.89,
+   "ring": {
+    "left": 0.035,
+    "top": 0.564,
+    "width": 0.929,
+    "height": 0.419
+   }
+  },
+  "saved": {
+   "shape": 0.771,
+   "ring": {
+    "left": 0.029,
+    "top": 0.848,
+    "width": 0.941,
+    "height": 0.145
+   }
+  },
+  "notebook": {
+   "shape": 1.021,
+   "ring": {
+    "left": 0.044,
+    "top": 0.117,
+    "width": 0.912,
+    "height": 0.36
+   }
+  },
+  "share": {
+   "shape": 0.749,
+   "ring": {
+    "left": 0.035,
+    "top": 0.871,
+    "width": 0.929,
+    "height": 0.115
+   }
+  }
+ },
+ "all-hi": {
+  "word": {
+   "shape": 0.687,
+   "ring": {
+    "left": 0.05,
+    "top": 0.596,
+    "width": 0.9,
+    "height": 0.243
+   }
+  },
+  "original": {
+   "shape": 0.795,
+   "ring": {
+    "left": 0.041,
+    "top": 0.465,
+    "width": 0.187,
+    "height": 0.182
+   }
+  },
+  "study": {
+   "shape": 1.032,
+   "ring": {
+    "left": 0.035,
+    "top": 0.655,
+    "width": 0.929,
+    "height": 0.328
+   }
+  },
+  "saved": {
+   "shape": 0.792,
+   "ring": {
+    "left": 0.029,
+    "top": 0.816,
+    "width": 0.941,
+    "height": 0.177
+   }
+  },
+  "notebook": {
+   "shape": 1.082,
+   "ring": {
+    "left": 0.044,
+    "top": 0.124,
+    "width": 0.912,
+    "height": 0.321
+   }
+  },
+  "share": {
+   "shape": 0.749,
+   "ring": {
+    "left": 0.035,
+    "top": 0.871,
+    "width": 0.929,
+    "height": 0.115
+   }
+  }
+ },
+ "ml-en": {
+  "word": {
+   "shape": 0.687,
+   "ring": {
+    "left": 0.05,
+    "top": 0.596,
+    "width": 0.9,
+    "height": 0.243
+   }
+  },
+  "original": {
+   "shape": 0.694,
+   "ring": {
+    "left": 0.041,
+    "top": 0.496,
+    "width": 0.328,
+    "height": 0.171
+   }
+  },
+  "study": {
+   "shape": 0.89,
+   "ring": {
+    "left": 0.035,
+    "top": 0.564,
+    "width": 0.929,
+    "height": 0.419
+   }
+  },
+  "saved": {
+   "shape": 0.667,
+   "ring": {
+    "left": 0.029,
+    "top": 0.786,
+    "width": 0.941,
+    "height": 0.208
+   }
+  },
+  "notebook": {
+   "shape": 0.906,
+   "ring": {
+    "left": 0.044,
+    "top": 0.104,
+    "width": 0.912,
+    "height": 0.432
+   }
+  },
+  "share": {
+   "shape": 0.749,
+   "ring": {
+    "left": 0.035,
+    "top": 0.871,
+    "width": 0.929,
+    "height": 0.115
+   }
+  }
+ },
+ "ml-ml": {
+  "word": {
+   "shape": 0.767,
+   "ring": {
+    "left": 0.05,
+    "top": 0.546,
+    "width": 0.9,
+    "height": 0.275
+   }
+  },
+  "original": {
+   "shape": 0.694,
+   "ring": {
+    "left": 0.041,
+    "top": 0.496,
+    "width": 0.328,
+    "height": 0.171
+   }
+  },
+  "study": {
+   "shape": 0.881,
+   "ring": {
+    "left": 0.035,
+    "top": 0.559,
+    "width": 0.929,
+    "height": 0.425
+   }
+  },
+  "saved": {
+   "shape": 0.667,
+   "ring": {
+    "left": 0.029,
+    "top": 0.786,
+    "width": 0.941,
+    "height": 0.208
+   }
+  },
+  "notebook": {
+   "shape": 0.906,
+   "ring": {
+    "left": 0.044,
+    "top": 0.104,
+    "width": 0.912,
+    "height": 0.432
+   }
+  },
+  "share": {
+   "shape": 0.749,
+   "ring": {
+    "left": 0.035,
+    "top": 0.871,
+    "width": 0.929,
+    "height": 0.115
+   }
+  }
+ },
+ "ta-en": {
+  "word": {
+   "shape": 0.687,
+   "ring": {
+    "left": 0.05,
+    "top": 0.596,
+    "width": 0.9,
+    "height": 0.243
+   }
+  },
+  "original": {
+   "shape": 0.792,
+   "ring": {
+    "left": 0.041,
+    "top": 0.643,
+    "width": 0.187,
+    "height": 0.182
+   }
+  },
+  "study": {
+   "shape": 0.89,
+   "ring": {
+    "left": 0.035,
+    "top": 0.564,
+    "width": 0.929,
+    "height": 0.419
+   }
+  },
+  "saved": {
+   "shape": 0.667,
+   "ring": {
+    "left": 0.029,
+    "top": 0.786,
+    "width": 0.941,
+    "height": 0.208
+   }
+  },
+  "notebook": {
+   "shape": 0.906,
+   "ring": {
+    "left": 0.044,
+    "top": 0.104,
+    "width": 0.912,
+    "height": 0.432
+   }
+  },
+  "share": {
+   "shape": 0.749,
+   "ring": {
+    "left": 0.035,
+    "top": 0.871,
+    "width": 0.929,
+    "height": 0.115
+   }
+  }
+ },
+ "ta-ta": {
+  "word": {
+   "shape": 0.767,
+   "ring": {
+    "left": 0.05,
+    "top": 0.546,
+    "width": 0.9,
+    "height": 0.275
+   }
+  },
+  "original": {
+   "shape": 0.792,
+   "ring": {
+    "left": 0.041,
+    "top": 0.643,
+    "width": 0.187,
+    "height": 0.182
+   }
+  },
+  "study": {
+   "shape": 0.89,
+   "ring": {
+    "left": 0.035,
+    "top": 0.564,
+    "width": 0.929,
+    "height": 0.419
+   }
+  },
+  "saved": {
+   "shape": 0.667,
+   "ring": {
+    "left": 0.029,
+    "top": 0.786,
+    "width": 0.941,
+    "height": 0.208
+   }
+  },
+  "notebook": {
+   "shape": 0.906,
+   "ring": {
+    "left": 0.044,
+    "top": 0.104,
+    "width": 0.912,
+    "height": 0.432
+   }
+  },
+  "share": {
+   "shape": 0.749,
+   "ring": {
+    "left": 0.035,
+    "top": 0.871,
+    "width": 0.929,
+    "height": 0.115
+   }
+  }
+ },
+ "all-ml": {
+  "word": {
+   "shape": 0.767,
+   "ring": {
+    "left": 0.05,
+    "top": 0.546,
+    "width": 0.9,
+    "height": 0.275
+   }
+  },
+  "original": {
+   "shape": 0.694,
+   "ring": {
+    "left": 0.041,
+    "top": 0.496,
+    "width": 0.328,
+    "height": 0.171
+   }
+  },
+  "study": {
+   "shape": 0.881,
+   "ring": {
+    "left": 0.035,
+    "top": 0.559,
+    "width": 0.929,
+    "height": 0.425
+   }
+  },
+  "saved": {
+   "shape": 0.667,
+   "ring": {
+    "left": 0.029,
+    "top": 0.786,
+    "width": 0.941,
+    "height": 0.208
+   }
+  },
+  "notebook": {
+   "shape": 0.906,
+   "ring": {
+    "left": 0.044,
+    "top": 0.104,
+    "width": 0.912,
+    "height": 0.432
+   }
+  },
+  "share": {
+   "shape": 0.749,
+   "ring": {
+    "left": 0.035,
+    "top": 0.871,
+    "width": 0.929,
+    "height": 0.115
+   }
+  }
+ },
+ "all-ta": {
+  "word": {
+   "shape": 0.767,
+   "ring": {
+    "left": 0.05,
+    "top": 0.546,
+    "width": 0.9,
+    "height": 0.275
+   }
+  },
+  "original": {
+   "shape": 0.792,
+   "ring": {
+    "left": 0.041,
+    "top": 0.643,
+    "width": 0.187,
+    "height": 0.182
+   }
+  },
+  "study": {
+   "shape": 0.89,
+   "ring": {
+    "left": 0.035,
+    "top": 0.564,
+    "width": 0.929,
+    "height": 0.419
+   }
+  },
+  "saved": {
+   "shape": 0.667,
+   "ring": {
+    "left": 0.029,
+    "top": 0.786,
+    "width": 0.941,
+    "height": 0.208
+   }
+  },
+  "notebook": {
+   "shape": 0.906,
+   "ring": {
+    "left": 0.044,
+    "top": 0.104,
+    "width": 0.912,
+    "height": 0.432
+   }
+  },
+  "share": {
+   "shape": 0.749,
+   "ring": {
+    "left": 0.035,
+    "top": 0.871,
+    "width": 0.929,
+    "height": 0.115
+   }
+  }
+ }
+}

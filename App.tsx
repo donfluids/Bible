@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, useLayoutEffect } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useLayoutEffect } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -251,6 +251,8 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
   const [booksAttempt, setBooksAttempt] = useState(0);
   // Word sheet entries; following a link in the derivation pushes, the back arrow pops.
   const [picks, setPicks] = useState<WordPick[]>([]);
+  // The welcome's last page can open How to use; it opens when the screens are ready.
+  const openHowTo = useRef(false);
   const pick = picks.length > 0 ? picks[picks.length - 1] : null;
 
   useEffect(() => {
@@ -322,7 +324,14 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
     return (
       <>
         <StatusBar style={theme.dark ? 'light' : 'dark'} />
-        <WelcomeScreen onDone={() => commit({ welcomeSeen: true })} />
+        <WelcomeScreen
+          onDone={() => commit({ welcomeSeen: true })}
+          onHowTo={() => {
+            // The guide opens over the reader once the screens are there.
+            openHowTo.current = true;
+            commit({ welcomeSeen: true });
+          }}
+        />
       </>
     );
   }
@@ -335,7 +344,15 @@ function Shell({ initialBooks }: { initialBooks: Book[] | null }) {
       <View style={[styles.root, wide && styles.rootWide, { paddingLeft: insets.left, paddingRight: insets.right, backgroundColor: theme.bg }]}>
       {/* While the word sheet covers the screens, a screen reader reads only the sheet. */}
       <View style={styles.root} importantForAccessibility={pick && !wide ? 'no-hide-descendants' : 'auto'} accessibilityElementsHidden={!!pick && !wide}>
-      <NavigationContainer ref={navigationRef} theme={navTheme}>
+      <NavigationContainer
+        ref={navigationRef}
+        theme={navTheme}
+        onReady={() => {
+          if (!openHowTo.current) return;
+          openHowTo.current = false;
+          navigationRef.dispatch(StackActions.push('HowTo'));
+        }}
+      >
         <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.bg } }}>
           <Stack.Screen name="Reader" component={ReaderRoute} />
           {/* The tabs of the bottom bar change without sliding, as tabs do. */}

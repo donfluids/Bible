@@ -33,8 +33,7 @@ const SIZES =
       ];
 const LANGUAGE = { en: 'en', ml: 'en', ta: 'en', all: 'en' };
 const QUERY = { en: 'love', ml: 'സ്നേഹം', ta: 'அன்பு', all: 'love' };
-// A notebook page: a heading and three verses, each quoted under its reference (also the
-// picture on the welcome's last screen, so it is a page with something on it).
+// A notebook page: a heading and three verses, each quoted under its reference.
 const PAGE = {
   en: 'Love – John 3:16\nRomans 5:8\n1 John 4:8',
   ml: 'സ്നേഹം – യോഹന്നാൻ 3:16\nറോമർ 5:8\n1. യോഹന്നാൻ 4:8',
@@ -180,10 +179,14 @@ for (const edition of EDITIONS) {
       const skip = page.getByText(t.welcomeSkip, { exact: true });
       if (await skip.locator('visible=true').count()) {
         await page.screenshot({ path: join(shots, '00-welcome.png') });
-        for (let i = 0; i < 3; i++) {
+        // Seven pages; each but the first is a picture of the app.
+        for (let i = 0; i < 6; i++) {
           await vis(page.getByText(t.welcomeNext, { exact: true })).click();
           await wait(700);
+          if (i === 1) await page.screenshot({ path: join(shots, '00-welcome-original.png') });
         }
+        // The last page also leads to How to use.
+        await vis(page.getByRole('link', { name: t.howTo, exact: true })).waitFor({ timeout: 8000 });
         await page.screenshot({ path: join(shots, '00-welcome-last.png') });
         await vis(page.getByText(t.welcomeStart, { exact: true })).click();
         await wait(2500);
@@ -253,7 +256,7 @@ for (const edition of EDITIONS) {
     await step('compare', async (snap) => {
       await vis(page.getByRole('button', { name: t.verseActions.replace('{n}', '2') })).click();
       await wait(1200);
-      // The verse's menu, also the picture on the welcome's third screen.
+      // The verse's menu.
       await snap('menu');
       // The study tools are behind one row, opened in place.
       await openStudy();
