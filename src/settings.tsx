@@ -27,6 +27,8 @@ export interface Settings {
   /** Highlight colours: soft tints of the page, or bright highlighter-pen colours. */
   highlightStyle: HighlightStyle;
   keepAwake: boolean;
+  /** The words of Jesus in burgundy, where the Bible marks them. */
+  redLetters: boolean;
   /** On a wide screen (a tablet, or a phone on its side), the edition's own Bible and the KJV side by side. */
   sideBySide: boolean;
   /** Study tools on: tappable words, the Hebrew or Greek words, cross references, parallels, Compare, introductions. Off is a plain reader. */
@@ -85,6 +87,7 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
   layout: 'verses',
   highlightStyle: 'soft',
   keepAwake: false,
+  redLetters: true,
   sideBySide: true,
   study: true,
   readSpeed: 1,
@@ -230,8 +233,8 @@ export function SettingsProvider({ edition, children }: { edition: Edition; chil
   // a change reaches every verse, memoised or not, while a chapter is open.
   const systemDark = useColorScheme() === 'dark';
   const display = useMemo(
-    () => ({ theme: settings.theme, serif: settings.serif, language: settings.language, highlightStyle: settings.highlightStyle, systemDark }),
-    [settings.theme, settings.serif, settings.language, settings.highlightStyle, systemDark],
+    () => ({ theme: settings.theme, serif: settings.serif, language: settings.language, highlightStyle: settings.highlightStyle, redLetters: settings.redLetters, systemDark }),
+    [settings.theme, settings.serif, settings.language, settings.highlightStyle, settings.redLetters, systemDark],
   );
   return (
     <SettingsContext.Provider value={value}>
@@ -255,6 +258,7 @@ export interface DisplaySettings {
   serif: boolean;
   language: Language;
   highlightStyle: HighlightStyle;
+  redLetters: boolean;
   /** The phone is in dark mode. */
   systemDark: boolean;
 }

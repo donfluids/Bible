@@ -99,7 +99,10 @@ export const VerseText = memo(function VerseText({
   const scales = !appSized;
   const theme = useTheme();
   const t = useT();
-  const serif = useDisplaySettings()?.serif ?? false;
+  const display = useDisplaySettings();
+  const serif = display?.serif ?? false;
+  // The words of Jesus, where the Bible marks them, in burgundy (Settings; on unless turned off).
+  const redLetters = display?.redLetters ?? true;
   const segments = useMemo(() => parseSegments(verse), [verse]);
   const selectedStart = useSelectedStart(selectionTranslation, verse.book, verse.chapter, verse.verse);
   const ranges = useMemo(() => (highlightText ? matchRanges(verse.text, highlightText) : []), [verse.text, highlightText]);
@@ -107,6 +110,13 @@ export const VerseText = memo(function VerseText({
   // drawn lighter and in italics, as printed Bibles set them, the brackets left out. Only in
   // English: in the Malayalam and Hindi Bibles brackets mark words not in every manuscript,
   // and the ASV's "[Selah" has no closing bracket; both stay as printed.
+  const jesus = useMemo(
+    () =>
+      redLetters && verse.jesus
+        ? verse.jesus.split(' ').map((pair) => pair.split(',').map(Number) as [number, number]).filter(([a, b]) => b > a)
+        : [],
+    [redLetters, verse.jesus],
+  );
   const supplied = useMemo(() => (scriptOf(verse.text) ? [] : [...verse.text.matchAll(/\[[^[\]]*\]/g)].map((m) => [m.index!, m.index! + m[0].length] as [number, number])), [verse.text]);
   const isTitle = verse.verse === 0;
   // The verse's own script decides its face and spacing (Compare shows two at once).
@@ -153,9 +163,10 @@ export const VerseText = memo(function VerseText({
     };
     const end = start + text.length;
     const here = supplied.filter(([a, b]) => a < end && b > start);
-    if (ranges.length === 0 && marked.length === 0 && here.length === 0) return drawn(text, start);
+    const spoken = jesus.filter(([a, b]) => a < end && b > start);
+    if (ranges.length === 0 && marked.length === 0 && here.length === 0 && spoken.length === 0) return drawn(text, start);
     const cuts = new Set([start, end]);
-    for (const [a, b] of [...ranges, ...marked, ...here]) {
+    for (const [a, b] of [...ranges, ...marked, ...here, ...spoken]) {
       if (a > start && a < end) cuts.add(a);
       if (b > start && b < end) cuts.add(b);
     }
@@ -167,7 +178,8 @@ export const VerseText = memo(function VerseText({
       const piece = added ? drawn(text.slice(from - start, to - start), from).replace(/[[\]]/g, '') : drawn(text.slice(from - start, to - start), from);
       const match = ranges.some(([a, b]) => a <= from && b >= to);
       const mark = [...marked].reverse().find(([a, b]) => a <= from && b >= to);
-      if (!match && !mark && !added) {
+      const red = spoken.some(([a, b]) => a <= from && b >= to);
+      if (!match && !mark && !added && !red) {
         out.push(piece);
         continue;
       }
@@ -179,6 +191,9 @@ export const VerseText = memo(function VerseText({
             added && { fontStyle: 'italic', color: onMark || mark ? theme.markMuted : theme.muted },
             match && bold,
             mark ? { backgroundColor: theme.marks[mark[2]], color: added ? theme.markMuted : theme.markText } : match ? { backgroundColor: theme.highlight } : null,
+            // The words of Jesus keep their colour through the rest; supplied words in them
+            // stay italic, in burgundy.
+            red && { color: onMark || mark ? theme.markJesus : theme.jesus },
           ]}
         >
           {piece}

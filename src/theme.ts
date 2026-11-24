@@ -31,9 +31,18 @@ export interface Theme {
   markText: string;
   markMuted: string;
   markAccent: string;
+  /** The words of Jesus, where the Bible marks them (Settings: Words of Jesus in red). */
+  jesus: string;
+  /** The words of Jesus on a highlight colour. */
+  markJesus: string;
 }
 
-type Palette = Omit<Theme, 'font' | 'markText' | 'markMuted' | 'markAccent'>;
+type Palette = Omit<Theme, 'font' | 'markText' | 'markMuted' | 'markAccent' | 'jesus' | 'markJesus'>;
+
+// The words of Jesus in burgundy: deep on light and sepia pages (9.2:1 and 7.7:1), a soft
+// rose on dark ones (7.8:1); on a highlight colour a shade that still reads on it.
+const JESUS = { light: '#7D2335', sepia: '#74243A', dark: '#E5919F' };
+const JESUS_ON_MARK = { light: '#6A1B2B', sepia: '#661E31', dark: '#F0AAB5', fluorescent: '#5E1424' };
 
 const LIGHT_MARKS: Record<HighlightColor, string> = { yellow: '#FFF0A6', green: '#D7F0C3', blue: '#D2E6FF', pink: '#FFD9E6' };
 const SEPIA_MARKS: Record<HighlightColor, string> = { yellow: '#F3DE8E', green: '#CFE1AE', blue: '#C6DAEF', pink: '#F0C9D5' };
@@ -159,6 +168,8 @@ export function useTheme(): Theme {
     const onMark = fluorescent
       ? { markText: ON_FLUORESCENT, markMuted: ON_FLUORESCENT_MUTED, markAccent: ON_FLUORESCENT }
       : { markText: base.text, markMuted: base.muted, markAccent: base.accent };
-    return { ...base, ...onMark, marks: fluorescent ? FLUORESCENT_MARKS : base.marks, font: serif ? SERIF_FONT : undefined };
+    const page = base.dark ? 'dark' : base.name === 'sepia' ? 'sepia' : 'light';
+    const jesus = { jesus: JESUS[page], markJesus: fluorescent ? JESUS_ON_MARK.fluorescent : JESUS_ON_MARK[page] };
+    return { ...base, ...onMark, ...jesus, marks: fluorescent ? FLUORESCENT_MARKS : base.marks, font: serif ? SERIF_FONT : undefined };
   }, [base, serif, fluorescent]);
 }

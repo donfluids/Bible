@@ -86,6 +86,8 @@ export interface VerseRow extends Ref {
   omitted: number;
   /** Break before the verse: '' none, 'p' paragraph, 'b' blank line, 'q0'..'q2' poetry line. */
   para: string;
+  /** The words of Jesus where the source marks them: "start,end" offsets into text, spaced. */
+  jesus?: string;
 }
 
 /** A translators' footnote (kind f) or cross reference (kind x) anchored in a verse. */

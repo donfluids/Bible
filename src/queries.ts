@@ -33,7 +33,7 @@ export async function getChapter(
 ): Promise<ChapterData> {
   const [verses, headings] = await Promise.all([
     db.getAllAsync<VerseRow>(
-      'SELECT book, chapter, verse, text, tags, omitted, para FROM verses WHERE translation = ? AND book = ? AND chapter = ? ORDER BY verse',
+      'SELECT book, chapter, verse, text, tags, omitted, para, jesus FROM verses WHERE translation = ? AND book = ? AND chapter = ? ORDER BY verse',
       translation,
       book,
       chapter,
@@ -233,7 +233,7 @@ export async function getVerses(
     const params: (string | number)[] = [translation];
     for (const r of slice) params.push(r.book, r.chapter, r.verse);
     const rows = await db.getAllAsync<VerseRow>(
-      `SELECT book, chapter, verse, text, tags, omitted, para FROM verses WHERE translation = ? AND (book, chapter, verse) IN (VALUES ${values})`,
+      `SELECT book, chapter, verse, text, tags, omitted, para, jesus FROM verses WHERE translation = ? AND (book, chapter, verse) IN (VALUES ${values})`,
       params,
     );
     for (const row of rows) found.set(`${row.book}:${row.chapter}:${row.verse}`, row);

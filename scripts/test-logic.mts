@@ -526,6 +526,34 @@ test('side by side: the second Bible, chosen per slot, never the one open', () =
   assert.equal(besideChoice(EDITIONS.all, 'english', { ...none, language: 'hi' }), 'HIN');
 });
 
+// --- Words of Jesus: the ranges kept from the sources' \\wj (needs the built databases) ---
+{
+  const { DatabaseSync: Sqlite } = await import('node:sqlite');
+  const { existsSync: there } = await import('node:fs');
+  const dir = new URL('../assets/db/', import.meta.url).pathname;
+  const spoken = (file: string, translation: string, book: number, chapter: number, verse: number) => {
+    const row = new Sqlite(dir + file, { readOnly: true }).prepare('SELECT text, jesus FROM verses WHERE translation = ? AND book = ? AND chapter = ? AND verse = ?').get(translation, book, chapter, verse) as { text: string; jesus: string };
+    return row.jesus ? row.jesus.split(' ').map((p) => { const [a, b] = p.split(',').map(Number); return row.text.slice(a, b); }) : [];
+  };
+  if (there(dir + 'bible-en.db')) {
+    test('words of Jesus: the KJV and WEB keep them, the narration outside', () => {
+      // John 3:3: "Jesus answered and said unto him," then His words.
+      assert.deepEqual(spoken('bible-en.db', 'KJV', 43, 3, 3), ['Verily, verily, I say unto thee, Except a man be born again, he cannot see the kingdom of God.']);
+      assert.ok(spoken('bible-en.db', 'WEB', 43, 3, 3)[0]?.startsWith('“Most certainly'));
+      // Narration only (John 3:4), and a Bible whose source has none (the BSB).
+      assert.deepEqual(spoken('bible-en.db', 'KJV', 43, 3, 4), []);
+      assert.deepEqual(spoken('bible-en.db', 'BSB', 43, 3, 3), []);
+    });
+  }
+  if (there(dir + 'bible-ml.db')) {
+    test('words of Jesus: the Malayalam 1910 marks His words inside the verse', () => {
+      const [words] = spoken('bible-ml.db', 'MAL', 43, 3, 3);
+      assert.ok(words.startsWith('ആമേൻ, ആമേൻ'), words);
+      assert.ok(!words.includes('ഉത്തരം പറഞ്ഞു'), 'the narration after His words stays outside');
+    });
+  }
+}
+
 if (failures.length) {
   console.log(`${failures.length} failed, ${passed} passed:\n  ${failures.join('\n  ')}`);
   process.exit(1);

@@ -12,7 +12,7 @@
 // Output schema (all text is UTF-8):
 //   books(id, osis, name, testament, chapters)
 //   book_names(translation, book, name)   book names in each translation's own language
-//   verses(translation, book, chapter, verse, text, tags, omitted, para)
+//   verses(translation, book, chapter, verse, text, tags, omitted, para, jesus)
 //     para = the break that precedes the verse: '' none, 'p' new paragraph, 'b' blank
 //            line, 'q0' 'q1' 'q2' a poetry line at that indent level
 //     text = the verse as plain text. Poetry and paragraph breaks inside a verse are
@@ -25,6 +25,9 @@
 //            end of the previous tag (or the start of the verse), length is the tagged
 //            span in characters, number is the Strong's number without its letter.
 //            The letter is H for Old Testament books and G for New Testament books.
+//     jesus = the words of Jesus where the source marks them (USFM \wj: the KJV, WEB, the
+//            Malayalam 1910 and IRV, the Tamil and Hindi IRV), as "start,end" character
+//            offsets into text separated by spaces; '' where there are none
 //     verse 0 holds a Psalm's title line (USFM \d) when the chapter has one
 //   headings(translation, book, chapter, before_verse, text)
 //     section headings that sit between verses (the acrostic labels in WEB Psalm 119)
@@ -184,6 +187,9 @@ function shortGloss(strongs) {
 // Internal markers used while a verse is being assembled; none appear in the output.
 const BREAK = '\x07'; // followed by an indent level digit
 const NOTE = '\x06'; // wraps a note index
+// The words of Jesus (\wj … \wj*): where they start and end, kept as the verse's `jesus` ranges.
+const JESUS_OPEN = '\x0e';
+const JESUS_CLOSE = '\x0f';
 const FS = '\x1c';
 const GS = '\x1d';
 const RS = '\x1e';
@@ -265,6 +271,9 @@ function normalizeStrongs(raw) {
 function cleanVerse(raw) {
   // Figures (\fig caption|src=… copy=…\fig*) are illustrations, not text.
   let s = raw.replace(/\\fig\s[\s\S]*?\\fig\*/g, '');
+  // The words of Jesus, marked where they start and end. Only the markers are replaced: the
+  // space after "\wj" stays in the text, as before, and below moves outside the mark.
+  s = s.replace(/\\\+?wj\*/g, JESUS_CLOSE).replace(/\\\+?wj(?=\s)/g, JESUS_OPEN);
   // \w word|strong="H0430"\w*  and nested  \+w ...\+w*
   s = s.replace(/\\\+?w\s+([^|\\]*?)\|([^\\]*?)\\\+?w\*/g, (_, word, attrs) => {
     const sm = /strong="([^"]+)"/.exec(attrs);
@@ -278,9 +287,11 @@ function cleanVerse(raw) {
   s = s.replace(/\\\+?w\s+([^\\]*?)\\\+?w\*/g, '$1');
   // Remaining character markers (\add \nd \wj \tl \qs \bk ...): keep content, drop markers.
   s = s.replace(/\\\+?[a-z]+\d?\*?/g, '');
-  s = s.replace(/\s+/g, ' ').trim();
+  s = s.replace(/\s+/g, ' ').replace(/\x0e\s+/g, ' \x0e').replace(/\s+\x0f/g, '\x0f ').replace(/\s+/g, ' ').trim();
+  // A span with nothing in it (the marks only) is dropped.
+  s = s.replace(/\x0e\x0f/g, '');
   // Tidy spaces the markup left before punctuation.
-  s = s.replace(/ ([,.;:!?’”)])/g, '$1');
+  s = s.replace(/ ([\x0e\x0f]*[,.;:!?’”)])/g, '$1');
   // Poetry and paragraph breaks become newlines, indented with em spaces.
   s = s.replace(/\s*\x07(\d)\s*/g, (_, level) => '\n' + '\u2003'.repeat(Number(level)));
   s = s.replace(/\n+/g, '\n').replace(/^\n/, '').replace(/[\n\u2003]+$/, '');
@@ -302,9 +313,12 @@ function splitTags(tagged) {
   const notes = [];
   let last = 0;
   let prevEnd = 0;
-  for (const m of tagged.matchAll(/⟨([^|⟩]*)\|([HG]\d+(?:\+[HG]\d+)*)⟩|\x06(\d+)\x06/g)) {
+  for (const m of tagged.matchAll(/⟨([^|⟩]*)\|([HG]\d+(?:\+[HG]\d+)*)⟩|\x06(\d+)\x06|([\x0e\x0f])/g)) {
     text += tagged.slice(last, m.index);
-    if (m[3] !== undefined) {
+    if (m[4] !== undefined) {
+      // A words-of-Jesus mark: carried with the notes' positions (idx -1 opens, -2 closes).
+      notes.push({ idx: m[4] === JESUS_OPEN ? -1 : -2, pos: text.length });
+    } else if (m[3] !== undefined) {
       notes.push({ idx: Number(m[3]), pos: text.length });
     } else {
       const start = text.length;
@@ -840,6 +854,7 @@ function buildEdition(edition) {
     CREATE TABLE book_names(translation TEXT NOT NULL, book INTEGER NOT NULL, name TEXT NOT NULL, PRIMARY KEY(translation, book)) WITHOUT ROWID;
     CREATE TABLE verses(translation TEXT NOT NULL, book INTEGER NOT NULL, chapter INTEGER NOT NULL, verse INTEGER NOT NULL,
                         text TEXT NOT NULL, tags TEXT NOT NULL, omitted INTEGER NOT NULL DEFAULT 0, para TEXT NOT NULL DEFAULT '',
+                        jesus TEXT NOT NULL DEFAULT '',
                         PRIMARY KEY(translation, book, chapter, verse)) WITHOUT ROWID;
     CREATE TABLE headings(translation TEXT NOT NULL, book INTEGER NOT NULL, chapter INTEGER NOT NULL, before_verse INTEGER NOT NULL,
                         text TEXT NOT NULL, PRIMARY KEY(translation, book, chapter, before_verse)) WITHOUT ROWID;
@@ -862,7 +877,7 @@ function buildEdition(edition) {
     CREATE TABLE meta(key TEXT PRIMARY KEY, value TEXT NOT NULL) WITHOUT ROWID;
   `);
 
-  const insVerse = db.prepare('INSERT INTO verses VALUES (?,?,?,?,?,?,?,?)');
+  const insVerse = db.prepare('INSERT INTO verses VALUES (?,?,?,?,?,?,?,?,?)');
   const insHeading = db.prepare('INSERT OR REPLACE INTO headings VALUES (?,?,?,?,?)');
   const insNote = db.prepare('INSERT INTO notes VALUES (?,?,?,?,?,?,?,?)');
   const insRendering = db.prepare('INSERT INTO renderings VALUES (?,?,?,?,?)');
@@ -889,7 +904,7 @@ function buildEdition(edition) {
     const files = readdirSync(join(RAW, t.dir));
     const conc = new Map(); // strongs -> array of [b,c,v]
     const rend = new Map(); // strongs -> Map(lowercased word -> { forms: Map(display -> n), refs: [], lastKey })
-    let verses = 0, tagCount = 0, omitted = 0, noteCount = 0, alignedVerses = 0;
+    let verses = 0, tagCount = 0, omitted = 0, noteCount = 0, alignedVerses = 0, jesusVerses = 0;
     const linked = LINKED[t.id];
     const projected = PROJECTED[t.id];
     const alignments = linked || projected ? loadAlignments((linked ?? projected).folder) : new Map();
@@ -978,7 +993,7 @@ function buildEdition(edition) {
       for (const [key, into] of joins) {
         const [chapter, verse] = key.split(':').map(Number);
         if (chapters.get(chapter)?.has(verse)) continue;
-        insVerse.run(t.id, book.id, chapter, verse, String(into), '', 2, '');
+        insVerse.run(t.id, book.id, chapter, verse, String(into), '', 2, '', '');
         omitted++;
       }
       const nChapters = Math.max(...chapters.keys());
@@ -988,7 +1003,7 @@ function buildEdition(edition) {
           const tagged = cleanVerse(raw);
           if (!tagged) continue;
           if (tagged.startsWith('\u2205')) {
-            insVerse.run(t.id, book.id, chapter, verse, tagged.slice(1).trim(), '', 1, paras.get(`${chapter}:${verse}`) || '');
+            insVerse.run(t.id, book.id, chapter, verse, tagged.slice(1).trim().replace(/[\x0e\x0f]/g, ''), '', 1, paras.get(`${chapter}:${verse}`) || '', '');
             omitted++;
             continue;
           }
@@ -1081,9 +1096,18 @@ function buildEdition(edition) {
     if (linked && alignedVerses) relinkShifted(pending, loadVerseMap()[t.id] ?? {});
     for (const row of pending) {
       const { book: bookId, chapter, verse, entries, notes, para } = row;
-      const { text, tags, markers } = collapseSpaces(row.text, row.tags, row.markers);
+      const { text, tags, markers: allMarkers } = collapseSpaces(row.text, row.tags, row.markers);
+      // The words of Jesus as "start,end start,end" offsets into the text; the notes are the rest.
+      const jesus = [];
+      for (const mk of allMarkers) {
+        if (mk.idx === -1) jesus.push([mk.pos, text.length]);
+        else if (mk.idx === -2 && jesus.length) jesus[jesus.length - 1][1] = mk.pos;
+      }
+      const markers = allMarkers.filter((mk) => mk.idx >= 0);
       if (t.notesAfterWord) for (const mk of markers) if (mk.pos > 0 && text[mk.pos - 1] === ' ' && mk.pos < text.length && text[mk.pos] !== ' ') mk.pos--;
-      insVerse.run(t.id, bookId, chapter, verse, text, tags, 0, para);
+      const jesusRanges = jesus.filter(([a, b]) => b > a).map(([a, b]) => `${a},${b}`).join(' ');
+      if (jesusRanges) jesusVerses++;
+      insVerse.run(t.id, bookId, chapter, verse, text, tags, 0, para, jesusRanges);
       verses++;
       markers.forEach((mk, n) => {
         const note = notes[mk.idx];
@@ -1132,7 +1156,7 @@ function buildEdition(edition) {
       }
     }
     db.exec('COMMIT');
-    stats[t.id] = { verses, omittedVerses: omitted, ...(linked ? { alignedVerses, misLinksDropped: misLinks, lordGodFixes, shiftFixes } : {}), ...(projected ? { projectedLinks, modelLinks } : {}), tags: tagCount, strongsNumbers: conc.size, notes: noteCount, renderings: renderingRows };
+    stats[t.id] = { verses, omittedVerses: omitted, ...(linked ? { alignedVerses, misLinksDropped: misLinks, lordGodFixes, shiftFixes } : {}), ...(projected ? { projectedLinks, modelLinks } : {}), tags: tagCount, strongsNumbers: conc.size, notes: noteCount, wordsOfJesusVerses: jesusVerses, renderings: renderingRows };
   }
 
   db.exec('BEGIN');
