@@ -1061,7 +1061,8 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
     if (seen && seen.key === chapterKey) {
       target = await mapRef(db, translation, next, { book: position.book, chapter: position.chapter, verse: seen.verse }).catch(() => null);
     }
-    scrollTarget.current = target ? { verse: target.verse, flash: false } : null;
+    // On verse 1 the new Bible opens at the top, with the book's About link (and any note) above it.
+    scrollTarget.current = target ? (target.verse === 1 ? { flash: false } : { verse: target.verse, flash: false }) : null;
     if (target && (target.book !== position.book || target.chapter !== position.chapter)) {
       // The chapter counts as shown once it has loaded (as any new chapter does), so the old
       // chapter's rows are not taken for it meanwhile, and Recent and the notes are updated.
