@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, ActivityIndicator, Alert, Animated, AppState, BackHandler, FlatList, Share, StyleSheet, Text, TextInput, useWindowDimensions, View, Platform } from 'react-native';
+import { AccessibilityInfo, ActivityIndicator, Alert, Animated, AppState, BackHandler, Easing, FlatList, Share, StyleSheet, Text, TextInput, useWindowDimensions, View, Platform } from 'react-native';
 import { Pressable } from '../components/Pressable';
 import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, ViewStyle, ViewToken } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -694,10 +694,22 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   // Swipe left for the next chapter, right for the previous. Vertical movement fails the
   // gesture quickly so scrolling is unaffected, and a swipe starting at either edge is
   // left to Android's back gesture.
-  // Swiping left or right turns the chapter. The page follows the finger (a little slower),
-  // the chapter it leads to is named at the edge, and a long swipe or a quick flick turns it;
-  // a slightly slanted swipe still counts, a mostly upright one is a scroll.
+  // Swiping left or right turns the chapter like a page: the page follows the finger, the
+  // chapter it leads to is named at the edge, and a long swipe or a quick flick carries the
+  // page off the screen while the next chapter slides in from the other side; a slightly
+  // slanted swipe still counts, a mostly upright one is a scroll.
   const swipeX = useRef(new Animated.Value(0)).current;
+  const pageWidth = useRef(windowWidth);
+  pageWidth.current = windowWidth;
+  // The side the next chapter comes in from, once a swipe has turned the page.
+  const slideIn = useRef<1 | -1 | null>(null);
+  const slideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const settle = useCallback(() => {
+    if (slideTimer.current) clearTimeout(slideTimer.current);
+    slideTimer.current = null;
+    slideIn.current = null;
+    Animated.timing(swipeX, { toValue: 0, duration: 220, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+  }, [swipeX]);
   const [swipeTo, setSwipeTo] = useState<1 | -1 | null>(null);
   const swipeDir = useRef<1 | -1 | null>(null);
   const swipeEnds = useRef({ atStart: false, atEnd: false });
@@ -718,7 +730,7 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
           const dir: 1 | -1 = e.translationX < 0 ? 1 : -1;
           const blocked = dir === 1 ? swipeEnds.current.atEnd : swipeEnds.current.atStart;
           // Past the first or last chapter the page only gives a little.
-          swipeX.setValue(e.translationX * (blocked ? 0.15 : 0.6));
+          swipeX.setValue(e.translationX * (blocked ? 0.15 : 1));
           showSwipe(blocked || Math.abs(e.translationX) < 24 ? null : dir);
         })
         .onEnd((e) => {
@@ -727,10 +739,18 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
           const far = Math.abs(e.translationX) > 70;
           const flick = Math.abs(e.velocityX) > 500 && Math.abs(e.translationX) > 25 && Math.sign(e.velocityX) === Math.sign(e.translationX);
           if (!blocked && (far || flick)) {
-            Animated.timing(swipeX, { toValue: -dir * 140, duration: 120, useNativeDriver: true }).start(() => {
-              goRef.current(dir);
-              swipeX.setValue(0);
+            const width = pageWidth.current;
+            // The rest of the way off, at the finger's speed or a little quicker.
+            const left = width - Math.abs(e.translationX);
+            const duration = Math.max(90, Math.min(200, Math.abs(e.velocityX) > 0 ? (left / Math.abs(e.velocityX)) * 1000 : 200));
+            Animated.timing(swipeX, { toValue: -dir * width, duration, easing: Easing.out(Easing.quad), useNativeDriver: true }).start(() => {
+              // The next chapter waits off the other side until its verses are in.
+              slideIn.current = dir;
+              swipeX.setValue(dir * width);
               showSwipe(null);
+              goRef.current(dir);
+              if (slideTimer.current) clearTimeout(slideTimer.current);
+              slideTimer.current = setTimeout(settle, 700);
             });
           } else {
             Animated.spring(swipeX, { toValue: 0, useNativeDriver: true, bounciness: 0, speed: 20 }).start();
@@ -744,6 +764,17 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
         }),
     [],
   );
+
+  // A turned page's chapter slides in once its verses are there (they are read ahead, so
+  // this is at once); if they are slow, it comes in after a moment anyway.
+  useEffect(() => {
+    if (!slideIn.current || !items || shownKey.current !== chapterKey) return;
+    const timer = setTimeout(settle, 30);
+    return () => clearTimeout(timer);
+  }, [items, chapterKey, settle]);
+  useEffect(() => () => {
+    if (slideTimer.current) clearTimeout(slideTimer.current);
+  }, []);
 
   // Pinch the text to change its size: spreading two fingers steps up through the text
   // sizes, pinching steps down. Each step applies at once, with a tick and a note of the
@@ -1498,7 +1529,9 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   // fixed 64 the fade ended above a sideways screen's last line, which showed at full
   // strength under it and was cut by the bar.
   const barHeight = tabBarHeight(windowHeight);
-  const arrowBottom = bottomInset + (tabs && !barHidden ? barHeight : 0) + 6;
+  // The tab bar also takes the strip of the phone's own navigation (the home indicator or
+  // gesture bar), so with the bar the arrows and the fade stand above both.
+  const arrowBottom = (tabs && !barHidden ? insets.bottom + barHeight : bottomInset) + 6;
   // One psalm is "Psalm 23" in the title, though the book is Psalms.
   const fullBookName = bookName(books, position.book, translation);
   const titleBookName = fullBookName === 'Psalms' ? 'Psalm' : fullBookName;
@@ -1703,8 +1736,8 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             style={[styles.fade, tabs && !barHidden ? { bottom: arrowBottom - 6 } : { bottom: 0, height: 40 + bottomInset }]}
           />
           <Animated.View pointerEvents={arrowsAway ? 'none' : 'box-none'} style={[StyleSheet.absoluteFill, { opacity: arrowFade }]}>
-            <ChapterArrow icon="chevron_left" onPress={() => go(-1)} disabled={atStart} accessibilityLabel={t('previousChapter')} style={{ left: 2 + barSide, bottom: arrowBottom }} />
-            <ChapterArrow icon="chevron_right" onPress={() => go(1)} disabled={atEnd} accessibilityLabel={t('nextChapter')} style={{ right: 2 + barSide, bottom: arrowBottom }} />
+            <ChapterArrow icon="chevron_left" onPress={() => go(-1)} disabled={atStart} accessibilityLabel={t('previousChapter')} style={{ left: 10 + barSide, bottom: arrowBottom }} />
+            <ChapterArrow icon="chevron_right" onPress={() => go(1)} disabled={atEnd} accessibilityLabel={t('nextChapter')} style={{ right: 10 + barSide, bottom: arrowBottom }} />
           </Animated.View>
         </>
       )}
