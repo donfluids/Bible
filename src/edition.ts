@@ -1,61 +1,9 @@
 import Constants from 'expo-constants';
 import { createContext, useContext } from 'react';
-import { isEnglish, isIndian, translationInfo } from './types';
-import type { TranslationId } from './types';
 
-export type EditionId = 'en' | 'ml' | 'ta' | 'all';
-export type Language = 'en' | 'ml' | 'ta' | 'hi';
-
-export interface Edition {
-  id: EditionId;
-  /** Translations bundled in this edition's database, in display order. */
-  translations: TranslationId[];
-  defaultTranslation: TranslationId;
-  /** Interface languages offered; the first, English in every app, is the default. */
-  languages: Language[];
-}
-
-export const EDITIONS: Record<EditionId, Edition> = {
-  en: { id: 'en', translations: ['KJV', 'BSB', 'WEB', 'LSV', 'ASV'], defaultTranslation: 'KJV', languages: ['en'] },
-  ml: { id: 'ml', translations: ['MAL', 'IRV', 'OMCV', 'KJV', 'BSB', 'LSV', 'ASV'], defaultTranslation: 'MAL', languages: ['en', 'ml'] },
-  ta: { id: 'ta', translations: ['TAM', 'KJV', 'BSB', 'LSV', 'ASV'], defaultTranslation: 'TAM', languages: ['en', 'ta'] },
-  // The four-language app: every Bible the others carry, and the Hindi. Its interface is
-  // English, Malayalam, Tamil or Hindi; the first opening asks which.
-  all: { id: 'all', translations: ['KJV', 'BSB', 'WEB', 'LSV', 'ASV', 'MAL', 'TAM', 'HIN'], defaultTranslation: 'KJV', languages: ['en', 'ml', 'ta', 'hi'] },
-};
-
-/** The edition's own-language Bible (MAL, TAM), if it has exactly one besides the English. */
-export function nativeTranslation(edition: Edition): TranslationId | null {
-  const first = edition.translations[0];
-  return isEnglish(first) ? null : first;
-}
-
-/** True for an edition with Bibles in more than one Indian language (the four-language app). */
-export const isMultilingual = (edition: Edition) => new Set(edition.translations.filter(isIndian).map((id) => translationInfo(id).script)).size > 1;
-
-/** The Indian Bible of an interface language, in an edition that has it. */
-export function bibleOfLanguage(edition: Edition, language: string): TranslationId | null {
-  const id: TranslationId | null = language === 'ml' ? 'MAL' : language === 'ta' ? 'TAM' : language === 'hi' ? 'HIN' : null;
-  return id && edition.translations.includes(id) ? id : null;
-}
-
-/**
- * The Indian Bible that goes with what is being read: beside the KJV on a wide screen, the
- * other side of the Bible switch, and the language of the word sheet's headline. In a
- * one-language app it is that app's Bible. In the four-language app it is the Indian Bible
- * open now, else the one read last, else the one of the interface language.
- */
-export function pairedBible(edition: Edition, translation: TranslationId, lastIndian: string, language: string): TranslationId | null {
-  // The Malayalam app has three Malayalam Bibles: the one open, else the one read last.
-  if (isIndian(translation)) return translation;
-  const last = edition.translations.find((id) => id === lastIndian);
-  if (!isMultilingual(edition)) return last ?? nativeTranslation(edition);
-  return last ?? bibleOfLanguage(edition, language);
-}
-
-export function isEditionId(value: unknown): value is EditionId {
-  return value === 'en' || value === 'ml' || value === 'ta' || value === 'all';
-}
+export * from './editions';
+import { EDITIONS, isEditionId } from './editions';
+import type { Edition, EditionId } from './editions';
 
 const configured = (Constants.expoConfig?.extra as { edition?: string } | undefined)?.edition;
 

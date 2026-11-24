@@ -24,7 +24,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { AppSwitch } from '../components/AppSwitch';
 import { Icon, IconButton } from '../components/Icon';
 import type { IconName } from '../components/Icon';
-import { isMultilingual, pairedBible, useEdition } from '../edition';
+import { besideBible, besideSlot, isMultilingual, pairedBible, useEdition } from '../edition';
 import { languageScript, scriptOf, scriptureFont } from '../fonts';
 import type { Script } from '../fonts';
 import { shortBookName } from '../shortNames';
@@ -1104,8 +1104,31 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   };
   const originalLanguage = (v: { book: number }) => (v.book <= 39 ? t('hebrew') : t('greek'));
   // Side by side shows both Bibles: the one open on the left (it is the one read aloud,
-  // and stays open when the phone is turned back), the other beside it.
-  const besideTranslation: TranslationId = translation === sideBible ? 'KJV' : sideBible ?? 'KJV';
+  // and stays open when the phone is turned back), the other beside it, as chosen from the
+  // right-hand heading (kept one for English Bibles and one for Indian ones).
+  const besideTranslation: TranslationId = besideBible(edition, translation, settings);
+  const [choosingBeside, setChoosingBeside] = useState(false);
+  // The Bibles in groups, as both lists show them: the Malayalam and Tamil apps put their own
+  // language first, the four-language app the English ones.
+  const bibleGroups = (): [string, TranslationId[]][] =>
+    (
+      (edition.id === 'ml' || edition.id === 'ta'
+        ? [
+            [LANGUAGE_WORD[edition.translations.find((id) => !isEnglish(id)) ?? ''] ?? t('indianBibles'), edition.translations.filter((id) => !isEnglish(id))],
+            [t('englishBibles'), edition.translations.filter(isEnglish)],
+          ]
+        : [
+            [t('englishBibles'), edition.translations.filter(isEnglish)],
+            [t('indianBibles'), edition.translations.filter((id) => !isEnglish(id))],
+          ]) as [string, TranslationId[]][]
+    ).filter(([, ids]) => ids.length);
+  // ⇄: the right-hand Bible becomes the one open, and the one open goes beside it.
+  const swapSides = () => {
+    const main = translation;
+    const other = besideTranslation;
+    update(besideSlot(other) === 'english' ? { besideEnglish: main } : { besideIndian: main });
+    switchTranslation(other);
+  };
   // The other Bible's verses beside each verse of the chapter, with the chapter they belong to.
   const [beside, setBeside] = useState<{ key: string; verses: Map<number, VerseRow[]> } | null>(null);
   const besideKey = `${translation}:${besideTranslation}:${chapterKey}`;
@@ -1527,15 +1550,42 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
         {/* Side by side: each column's Bible named above it. */}
         {sideBySide ? (
           <View style={[styles.pairRow, styles.pairHeads]}>
-            {[translation, besideTranslation].map((id, i) => (
+            {/* ⇄ at the end of the left heading swaps the columns; the right-hand heading
+                chooses its Bible. Each heading stands over its own column. */}
+            <View style={[styles.pairColumn, styles.pairLeftHead]}>
               <Text
-                key={id}
-                style={[styles.pairColumn, styles.pairHead, i === 1 && styles.pairRight, { color: theme.accent }, nameFont(id) ? { fontFamily: nameFont(id), fontWeight: 'normal' } : null]}
+                style={[styles.pairHead, styles.pairChooserText, { color: theme.accent }, nameFont(translation) ? { fontFamily: nameFont(translation), fontWeight: 'normal' } : null]}
                 accessibilityRole="header"
               >
-                {bibleName(settings.language, id)}
+                {bibleName(settings.language, translation)}
               </Text>
-            ))}
+              <Pressable
+                onPress={swapSides}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={t('swapBibles')}
+                style={({ pressed }) => [styles.pairSwap, { borderColor: theme.border, backgroundColor: pressed ? theme.accentSoft : theme.card }]}
+              >
+                <Icon name="swap_horiz" size={20} color={theme.accent} />
+              </Pressable>
+            </View>
+            <View style={styles.pairColumn}>
+              <Pressable
+                onPress={() => setChoosingBeside(true)}
+                hitSlop={6}
+                accessibilityRole="button"
+                accessibilityLabel={`${t('chooseSecondBible')}: ${bibleName(settings.language, besideTranslation)}`}
+                style={({ pressed }) => [styles.pairChooser, { borderColor: theme.border, backgroundColor: pressed ? theme.accentSoft : theme.card }]}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={[styles.pairHead, styles.pairChooserText, { color: theme.accent }, nameFont(besideTranslation) ? { fontFamily: nameFont(besideTranslation), fontWeight: 'normal' } : null]}
+                >
+                  {bibleName(settings.language, besideTranslation)}
+                </Text>
+                <Icon name="arrow_drop_down" size={20} color={theme.accent} />
+              </Pressable>
+            </View>
           </View>
         ) : null}
         {tipSeen ? null : (
@@ -1952,24 +2002,39 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
         {note ? <Text style={[styles.noteText, { color: theme.text }]}>{note.note.text}</Text> : null}
       </SimpleSheet>
 
+      {/* The Bible in the right-hand column on a wide screen: any but the one open. */}
+      <SimpleSheet visible={choosingBeside} title={t('besideTitle', { name: bibleName(settings.language, translation) })} onClose={() => setChoosingBeside(false)}>
+        {bibleGroups()
+          .map(([heading, ids]) => [heading, ids.filter((id) => id !== translation)] as [string, TranslationId[]])
+          .filter(([, ids]) => ids.length)
+          .map(([heading, ids]) => (
+            <View key={heading}>
+              <Text style={[styles.sheetGroup, { color: theme.accent }]} accessibilityRole="header">
+                {heading}
+              </Text>
+              {ids.map((id) => (
+                <SheetAction
+                  key={id}
+                  icon={id === besideTranslation ? 'check' : 'menu_book'}
+                  selected={id === besideTranslation}
+                  label={NATIVE_BIBLE_NAME[id] ?? translationName(settings.language, id)}
+                  labelFont={nameFont(id) ? scriptureFont(translationInfo(id).script ?? null, false) : undefined}
+                  detail={isEnglish(id) ? id : edition.id === 'all' ? `${LANGUAGE_IN_ENGLISH[id]} · ${englishName(id)}` : englishName(id)}
+                  onPress={() => {
+                    setChoosingBeside(false);
+                    update(besideSlot(translation) === 'english' ? { besideEnglish: id } : { besideIndian: id });
+                  }}
+                />
+              ))}
+            </View>
+          ))}
+      </SimpleSheet>
       <SimpleSheet visible={choosingBible} title={t('chooseBible')} onClose={() => setChoosingBible(false)}>
         {/* The Malayalam and Tamil apps put their own Bible first, under its language's name; the
             four-language app puts the English ones first. Each Bible under its own name, with no
             word repeated below it: the English ones by their abbreviation, an Indian one by its
             English name (and, in the four-language app, its language in English). */}
-        {(
-          (edition.id === 'ml' || edition.id === 'ta'
-            ? [
-                [LANGUAGE_WORD[edition.translations.find((id) => !isEnglish(id)) ?? ''] ?? t('indianBibles'), edition.translations.filter((id) => !isEnglish(id))],
-                [t('englishBibles'), edition.translations.filter(isEnglish)],
-              ]
-            : [
-                [t('englishBibles'), edition.translations.filter(isEnglish)],
-                [t('indianBibles'), edition.translations.filter((id) => !isEnglish(id))],
-              ]) as [string, TranslationId[]][]
-        )
-          .filter(([, ids]) => ids.length)
-          .map(([heading, ids]) => (
+        {bibleGroups().map(([heading, ids]) => (
             <View key={heading}>
               {edition.translations.length > ids.length ? (
                 <Text style={[styles.sheetGroup, { color: theme.accent }]} accessibilityRole="header">
@@ -2645,7 +2710,11 @@ const styles = StyleSheet.create({
   listBig: { paddingHorizontal: 14 },
   pair: { borderBottomWidth: StyleSheet.hairlineWidth, paddingBottom: 4, marginBottom: 4 },
   pairRow: { flexDirection: 'row', gap: 20 },
-  pairHeads: { marginBottom: 6 },
+  pairHeads: { marginBottom: 6, alignItems: 'center' },
+  pairLeftHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  pairSwap: { width: 34, height: 34, borderRadius: 17, borderWidth: 1, alignItems: 'center', justifyContent: 'center', marginLeft: 'auto' },
+  pairChooser: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', maxWidth: '100%', borderWidth: 1, borderRadius: 14, paddingLeft: 10, paddingRight: 4, paddingVertical: 3 },
+  pairChooserText: { flexShrink: 1 },
   pairHead: { fontSize: 14, fontWeight: '700' },
   pairColumn: { flex: 1 },
   pairRight: { paddingVertical: 2, paddingHorizontal: 4, borderRadius: 6 },

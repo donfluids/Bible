@@ -60,6 +60,10 @@ export interface Settings {
   feedbackDue: number;
   /** The Indian Bible read last (four-language app): beside the English, and the switch's other side. */
   lastIndian: string;
+  /** The Bible shown beside an English one on a wide screen ('' for the default). */
+  besideEnglish: string;
+  /** The Bible shown beside an Indian one on a wide screen ('' for the default, the KJV). */
+  besideIndian: string;
   /** The Bible read before the one open: the swap button's other side (four-language app). */
   previousTranslation: string;
   /** The four-language app has asked the reader's language once, on first opening. */
@@ -102,6 +106,8 @@ const BASE_DEFAULTS: Omit<Settings, 'translation' | 'language'> = {
   hintVerseSeen: true,
   feedbackDue: 0,
   lastIndian: '',
+  besideEnglish: '',
+  besideIndian: '',
   previousTranslation: '',
   languageChosen: false,
   hindiNoteSeen: false,

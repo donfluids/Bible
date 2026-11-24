@@ -23,6 +23,7 @@ import { countCrossRefs, getBeside, getCrossRefs, getIntro } from '../src/querie
 import { findReferences, parseReference } from '../src/refs';
 import { newTestamentFirst, refInScope, scopeCounts } from '../src/searchScope';
 import { cleanSettings } from '../src/settingsClean';
+import { EDITIONS, besideBible, besideChoice } from '../src/editions';
 import { flattenVerse, parseSegments } from '../src/text';
 import type { Book, OriginalWord, Rendering } from '../src/types';
 import { headlineWords, sameSpelling, topRenderings, wordsInVerse } from '../src/wordChoice';
@@ -504,6 +505,25 @@ test('card looks: a saved photo is found again after iPhone renames the app fold
   assert.equal(rebasePhoto('file:///var/mobile/Containers/Data/Application/NEW/Library/Caches/pick.jpg', dir), 'file:///var/mobile/Containers/Data/Application/NEW/Library/Caches/pick.jpg');
   assert.equal(rebasePhoto('file:///x/../card-photos/abc1.jpg', dir), 'file:///x/../card-photos/abc1.jpg');
   assert.equal(rebasePhoto('blob:abc', dir), 'blob:abc');
+});
+
+test('side by side: the second Bible, chosen per slot, never the one open', () => {
+  const ml = EDITIONS.ml;
+  const none = { besideEnglish: '', besideIndian: '', lastIndian: '', language: 'en' };
+  // Defaults: the KJV beside a Malayalam Bible, the app's own (or the last read) beside an English one.
+  assert.equal(besideBible(ml, 'IRV', none), 'KJV');
+  assert.equal(besideBible(ml, 'KJV', none), 'MAL');
+  assert.equal(besideBible(ml, 'BSB', { ...none, lastIndian: 'OMCV' }), 'OMCV');
+  // Chosen: any Bible, two of one language included.
+  assert.equal(besideBible(ml, 'IRV', { ...none, besideIndian: 'BSB' }), 'BSB');
+  assert.equal(besideBible(ml, 'IRV', { ...none, besideIndian: 'MAL' }), 'MAL');
+  assert.equal(besideBible(ml, 'KJV', { ...none, besideEnglish: 'ASV' }), 'ASV');
+  // The choice is the Bible open: the slot's default stands in.
+  assert.equal(besideBible(ml, 'MAL', { ...none, besideIndian: 'MAL' }), 'KJV');
+  assert.equal(besideBible(ml, 'KJV', { ...none, besideIndian: 'KJV', besideEnglish: 'KJV' }), 'MAL');
+  // A Bible the app does not carry (a backup from another app) is not chosen.
+  assert.equal(besideBible(EDITIONS.ta, 'TAM', { ...none, besideIndian: 'IRV' }), 'KJV');
+  assert.equal(besideChoice(EDITIONS.all, 'english', { ...none, language: 'hi' }), 'HIN');
 });
 
 if (failures.length) {

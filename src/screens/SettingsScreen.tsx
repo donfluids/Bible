@@ -10,7 +10,8 @@ import { BackupSheet } from '../components/BackupSheet';
 import { Header } from '../components/Header';
 import { Icon, IconButton } from '../components/Icon';
 import { SectionLabel } from '../components/SectionLabel';
-import { isMultilingual, nativeTranslation, useEdition } from '../edition';
+import { besideChoice, isMultilingual, nativeTranslation, useEdition } from '../edition';
+import type { BesideSlot } from '../edition';
 import type { Language } from '../edition';
 import { bibleName, englishName, useT } from '../i18n';
 import { getMeta } from '../queries';
@@ -77,9 +78,14 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
   const [choosingVoice, setChoosingVoice] = useState<SpokenLanguage | null>(null);
   const [backupOpen, setBackupOpen] = useState(false);
   const [choosingBible, setChoosingBible] = useState(false);
+  // The second Bible on a wide screen: one row, opening the two choices (beside an English
+  // Bible, beside an Indian one), each opening the list of Bibles.
+  const [secondBible, setSecondBible] = useState<null | 'menu' | BesideSlot>(null);
   const [aboutOpen, setAboutOpen] = useState(false);
   // A Bible's name in its own script, and the line under it: an Indian Bible's English name,
   // an English one's code (ENG · KJV beside an Indian Bible).
+  // The other slot's name: the app's own language, or (four languages) any Indian one.
+  const besideIndianKey = isMultilingual(EDITION) ? 'besideIndian' : nativeTranslation(EDITION) === 'TAM' ? 'besideTamil' : 'besideMalayalam';
   const bibleFont = (id: TranslationId) => {
     const family = scriptureFont(translationInfo(id).script ?? null, false);
     return family ? { fontFamily: family } : undefined;
@@ -228,6 +234,20 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
                 {isMultilingual(EDITION) ? t('sideBySideDetailAll') : t('sideBySideDetail', { native: nativeTranslation(EDITION) === 'TAM' ? 'Tamil' : 'Malayalam' })}
               </Text>
             </SwitchRow>
+          ) : null}
+          {(nativeTranslation(EDITION) || isMultilingual(EDITION)) && settings.sideBySide ? (
+            <Pressable
+              onPress={() => setSecondBible('menu')}
+              accessibilityRole="button"
+              android_ripple={{ color: theme.accentSoft }}
+              style={[styles.row, divider]}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.rowTitle, { color: theme.text }]}>{t('secondBible')}</Text>
+                <Text style={[styles.rowSub, { color: theme.muted }]}>{t('secondBibleDetail')}</Text>
+              </View>
+              <Icon name="chevron_right" color={theme.muted} />
+            </Pressable>
           ) : null}
         </View>
 
@@ -381,6 +401,41 @@ export function SettingsScreen({ onBack, onOpenLicences, onOpenWhy, onOpenPrivac
             }}
           />
         ))}
+      </SimpleSheet>
+      <SimpleSheet
+        visible={!!secondBible}
+        title={secondBible === 'menu' || !secondBible ? t('secondBible') : t(secondBible === 'english' ? 'besideEnglish' : besideIndianKey)}
+        onClose={() => setSecondBible(null)}
+      >
+        {secondBible === 'menu'
+          ? (['indian', 'english'] as BesideSlot[]).map((slot) => {
+              const id = besideChoice(EDITION, slot, settings);
+              return (
+                <SheetAction
+                  key={slot}
+                  icon="view_column"
+                  label={t(slot === 'english' ? 'besideEnglish' : besideIndianKey)}
+                  detail={bibleName(settings.language, id)}
+                  onPress={() => setSecondBible(slot)}
+                />
+              );
+            })
+          : secondBible
+            ? EDITION.translations.map((id) => (
+                <SheetAction
+                  key={id}
+                  icon={besideChoice(EDITION, secondBible, settings) === id ? 'check' : 'menu_book'}
+                  label={bibleName(settings.language, id)}
+                  detail={bibleDetail(id)}
+                  labelFont={bibleFont(id)?.fontFamily}
+                  selected={besideChoice(EDITION, secondBible, settings) === id}
+                  onPress={() => {
+                    update(secondBible === 'english' ? { besideEnglish: id } : { besideIndian: id });
+                    setSecondBible('menu');
+                  }}
+                />
+              ))
+            : null}
       </SimpleSheet>
       <BackupSheet visible={backupOpen} onClose={() => setBackupOpen(false)} />
 

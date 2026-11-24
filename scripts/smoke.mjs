@@ -455,6 +455,27 @@ for (const edition of EDITIONS) {
       await snap();
       await page.emulateMedia({ colorScheme: 'light' });
     });
+    // A wide screen in an app with an Indian Bible reads two side by side: the right-hand
+    // heading chooses the second Bible (the BSB here), and ⇄ makes it the one open.
+    if (width >= 720 && edition !== 'en') {
+      await step('side-by-side', async (snap) => {
+        await vis(page.getByRole('button', { name: new RegExp(`^${t.chooseSecondBible}:`) })).click();
+        await wait(800);
+        await vis(page.getByRole('button', { name: /Berean Standard Bible.*BSB/ })).click();
+        await wait(2000);
+        await vis(page.getByRole('button', { name: `${t.chooseSecondBible}: Berean Standard Bible` })).waitFor({ timeout: 8000 });
+        await snap();
+        const pill = () => vis(page.getByRole('button', { name: new RegExp(`^${t.chooseBible}:`) })).getAttribute('aria-label');
+        const before = await pill();
+        await vis(page.getByRole('button', { name: t.swapBibles })).click();
+        await wait(2000);
+        if ((await pill()) !== `${t.chooseBible}: Berean Standard Bible`) throw new Error(`⇄ left ${await pill()} open (was ${before})`);
+        // And back, so the steps after read the app's own Bible as before.
+        await vis(page.getByRole('button', { name: t.swapBibles })).click();
+        await wait(2000);
+        if ((await pill()) !== before) throw new Error(`⇄ twice left ${await pill()} open (was ${before})`);
+      });
+    }
     if (width >= 1000) {
       await step('keyboard', async () => {
         const title = () => vis(page.getByRole('button', { name: new RegExp(t.choosePassage.replace('{title}', '.*')) })).getAttribute('aria-label');
