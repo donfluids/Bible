@@ -19,3 +19,4 @@ ml
 # 2026-11-22: 0.4.38: council 8 fixes (undo, fuller backup, Settings switches, voice, Books headings and more), shorter Why this Bible.
 # 2026-11-23: 0.4.39: the Malayalam IRV and the Open Malayalam Contemporary Version, with word links.
 # 2026-11-23: 0.4.40: easier swipe and clearer chapter arrows, smoother pinch, tidier big text, Settings and Notebook redone, Bible text kept at its own size, Malayalam under the Hebrew and Greek, a clearer word sheet.
+# 2026-11-24: 0.4.41: seven-page welcome, How to use redone with pictures, tap a verse number to select verses, page-turn swipe, arrows above the tab bar, introductions in the Bible's language, SV 1910, no grey shading on held verses.
