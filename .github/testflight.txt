@@ -1,4 +1,4 @@
-ml
+en
 # The first word names the app the TestFlight workflow uploads when this file changes
 # in a push (ml, en or ta); "novoice" after it leaves out the app's own voice and
 # ONNX Runtime. The lines after it are notes. Edit it (the note below will
@@ -23,3 +23,4 @@ ml
 # 2026-11-24: 0.4.42: side by side with a chosen second Bible and a swap, the tab bar slides away while reading, LSV supplied words in italics, the words of Jesus in red.
 # 2026-11-25: 0.4.43: the words of Jesus in red in every Bible, corrected by who is speaking; sheets turn with a sideways phone instead of turning the app upright.
 # 2026-11-25: 0.4.44: the top bar redone: the Bible named under the passage, About this book as ⓘ, side by side in one row.
+# 2026-11-25: 0.4.44 for the en app.
