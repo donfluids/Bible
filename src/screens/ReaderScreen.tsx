@@ -1624,47 +1624,6 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
   const listHeader = useMemo(
     () => (
       <>
-        {/* Side by side: each column's Bible named above it. */}
-        {sideBySide ? (
-          <View style={[styles.pairRow, styles.pairHeads]}>
-            {/* ⇄ at the end of the left heading swaps the columns; the right-hand heading
-                chooses its Bible. Each heading stands over its own column. */}
-            <View style={[styles.pairColumn, styles.pairLeftHead]}>
-              <Text
-                style={[styles.pairHead, styles.pairChooserText, { color: theme.accent }, nameFont(translation) ? { fontFamily: nameFont(translation), fontWeight: 'normal' } : null]}
-                accessibilityRole="header"
-              >
-                {bibleName(settings.language, translation)}
-              </Text>
-              <Pressable
-                onPress={swapSides}
-                hitSlop={8}
-                accessibilityRole="button"
-                accessibilityLabel={t('swapBibles')}
-                style={({ pressed }) => [styles.pairSwap, { borderColor: theme.border, backgroundColor: pressed ? theme.accentSoft : theme.card }]}
-              >
-                <Icon name="swap_horiz" size={20} color={theme.accent} />
-              </Pressable>
-            </View>
-            <View style={styles.pairColumn}>
-              <Pressable
-                onPress={() => setChoosingBeside(true)}
-                hitSlop={6}
-                accessibilityRole="button"
-                accessibilityLabel={`${t('chooseSecondBible')}: ${bibleName(settings.language, besideTranslation)}`}
-                style={({ pressed }) => [styles.pairChooser, { borderColor: theme.border, backgroundColor: pressed ? theme.accentSoft : theme.card }]}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={[styles.pairHead, styles.pairChooserText, { color: theme.accent }, nameFont(besideTranslation) ? { fontFamily: nameFont(besideTranslation), fontWeight: 'normal' } : null]}
-                >
-                  {bibleName(settings.language, besideTranslation)}
-                </Text>
-                <Icon name="arrow_drop_down" size={20} color={theme.accent} />
-              </Pressable>
-            </View>
-          </View>
-        ) : null}
         {tipSeen ? null : (
           <View style={[styles.tip, { backgroundColor: theme.accentSoft, borderColor: theme.border }]}>
             <Text style={[styles.tipText, cardText, { color: theme.text }]}>{translationInfo(translation).tagged ? t('tip') : t('tipNoTags')}</Text>
@@ -1712,25 +1671,6 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
               </Pressable>
             </View>
           </View>
-        ) : null}
-        {/* The book's introduction, offered where a book is begun (it is also above the chapter numbers). */}
-        {study && position.chapter === 1 && !marking ? (
-          <Pressable
-            onPress={() => onOpenIntro(position.book)}
-            android_ripple={{ color: theme.accentSoft }}
-            accessibilityRole="link"
-            accessibilityLabel={translate(translationInfo(translation).script ?? 'en', 'aboutBook')}
-            hitSlop={6}
-            testID="about-book"
-            style={({ pressed }) => [styles.aboutRow, { opacity: pressed ? 0.6 : 1 }]}
-          >
-            {/* One line, a little smaller if need be, with its arrow beside it. */}
-            <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={[styles.aboutText, { color: theme.muted, fontFamily: scriptureFont(scriptOf(bookName(books, position.book, translation)), settings.serif) ?? theme.font }]}>
-              {/* In the language of the Bible read, as the introduction it opens. */}
-              {translate(translationInfo(translation).script ?? 'en', 'aboutBookNamed', { book: bookName(books, position.book, translation) })}
-            </Text>
-            <Icon name="chevron_right" size={16} color={theme.muted} />
-          </Pressable>
         ) : null}
         {!marking && interlinear && interlinearMode === 'tap' ? (
           <Text style={[styles.modeHint, { color: theme.muted }]}>{t('tapVerseNumber', { lang: book?.testament === 'OT' ? t('hebrew') : t('greek') })}</Text>
@@ -1798,7 +1738,9 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
         backLabel={backLabel}
         maxWidth={sideBySide ? SIDE_BY_SIDE_MAX_WIDTH : undefined}
         center={
-          // Two drop-downs: the passage (book and chapter) and the Bible.
+          // The passage (book and chapter) and, under it, the Bible by its full name: each
+          // opens its list. Side by side the two Bibles stand beside the passage instead,
+          // with ⇄ between them.
           <ReaderTitle
             name={titleBookName}
             short={shortBookName(position.book, translation)}
@@ -1807,24 +1749,43 @@ export function ReaderScreen({ books, jumpTo, onBack, backLabel, onOpenSearch, o
             onPress={() => setPicking(true)}
             spotRef={titleSpot}
             accessibilityLabel={t('choosePassage', { title })}
+            bible={
+              sideBySide
+                ? undefined
+                : {
+                    full: bibleName(settings.language, translation),
+                    short: pillLabel(translation),
+                    font: nameFont(translation),
+                    shortFont: pillFont(translation),
+                    onPress: () => setChoosingBible(true),
+                    label: `${t('chooseBible')}: ${translationName(settings.language, translation)}`,
+                  }
+            }
             trailing={
-              <Pressable
-                onPress={() => setChoosingBible(true)}
-                hitSlop={8}
-                accessibilityRole="button"
-                accessibilityLabel={`${t('chooseBible')}: ${translationName(settings.language, translation)}`}
-                style={({ pressed }) => [styles.bibleButton, { opacity: pressed ? 0.6 : 1 }]}
-              >
-                <Text style={[styles.bibleButtonText, { color: theme.muted }, pillFont(translation) ? { fontFamily: pillFont(translation), fontWeight: 'normal' } : null]} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE}>
-                  {pillLabel(translation)}
-                </Text>
-                <Icon name="arrow_drop_down" size={20} color={theme.muted} />
-              </Pressable>
+              sideBySide ? (
+                <BiblePair
+                  left={{ full: bibleName(settings.language, translation), short: pillLabel(translation), font: nameFont(translation), shortFont: pillFont(translation) }}
+                  right={{ full: bibleName(settings.language, besideTranslation), short: pillLabel(besideTranslation), font: nameFont(besideTranslation), shortFont: pillFont(besideTranslation) }}
+                  room={windowWidth * 0.5}
+                  onLeft={() => setChoosingBible(true)}
+                  onRight={() => setChoosingBeside(true)}
+                  onSwap={swapSides}
+                  leftLabel={`${t('chooseBible')}: ${translationName(settings.language, translation)}`}
+                  rightLabel={`${t('chooseSecondBible')}: ${bibleName(settings.language, besideTranslation)}`}
+                  swapLabel={t('swapBibles')}
+                />
+              ) : undefined
             }
           />
         }
         right={
           <>
+            {/* The book's introduction (also above the chapter numbers in the passage list). */}
+            {study && !marking ? (
+              <View testID="about-book">
+                <HeaderIconButton icon="info" onPress={() => onOpenIntro(position.book)} accessibilityLabel={translate(translationInfo(translation).script ?? 'en', 'aboutBookNamed', { book: bookName(books, position.book, translation) })} />
+              </View>
+            ) : null}
             <HeaderIconButton icon="search" onPress={onOpenSearch} accessibilityLabel={t('search')} />
             <HeaderIconButton icon="settings" onPress={onOpenSettings} accessibilityLabel={t('settings')} />
           </>
@@ -2445,9 +2406,12 @@ function ChapterArrow({ icon, onPress, disabled, accessibilityLabel, style }: { 
  * letters shrink to fit, down to MIN_TITLE_SCALE of their size, and on the narrowest
  * screens the drop-down arrow is left out.
  */
-function ReaderTitle({ name, short, chapter, script, trailing, onPress, accessibilityLabel, spotRef }: { name: string; short: string; chapter: number; script: Script | null; trailing?: React.ReactNode; onPress: () => void; accessibilityLabel: string; spotRef?: React.Ref<View> }) {
+function ReaderTitle({ name, short, chapter, script, trailing, bible, onPress, accessibilityLabel, spotRef }: { name: string; short: string; chapter: number; script: Script | null; trailing?: React.ReactNode; bible?: BibleLine; onPress: () => void; accessibilityLabel: string; spotRef?: React.Ref<View> }) {
   const theme = useTheme();
+  // The Bible under the title: its full name, or its short one where that does not fit.
+  const [bibleWidth, setBibleWidth] = useState(0);
   const [roomAll, setRoomAll] = useState(0);
+  const bibleShort = !!bible && roomAll > 0 && bibleWidth > 0 && bibleWidth + BIBLE_ARROW > roomAll;
   const [trailingWidth, setTrailingWidth] = useState(0);
   const [fullWidth, setFullWidth] = useState(0);
   const [shortWidth, setShortWidth] = useState(0);
@@ -2482,7 +2446,7 @@ function ReaderTitle({ name, short, chapter, script, trailing, onPress, accessib
         </View>
       ) : null}
       <View style={styles.titleRow}>
-        <Pressable onPress={onPress} hitSlop={8} accessibilityRole="button" accessibilityLabel={accessibilityLabel} style={styles.titleButton}>
+        <Pressable onPress={onPress} hitSlop={8} accessibilityRole="button" accessibilityLabel={accessibilityLabel} style={[styles.titleButton, !!bible && styles.titleButtonStacked]}>
           <Text numberOfLines={1} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={[shownStyle, styles.titleName]}>
             {useShort ? short : name}
           </Text>
@@ -2493,9 +2457,96 @@ function ReaderTitle({ name, short, chapter, script, trailing, onPress, accessib
         </Pressable>
         {trailing ? <View onLayout={(e) => setTrailingWidth(e.nativeEvent.layout.width)}>{trailing}</View> : null}
       </View>
+      {bible ? (
+        <>
+          <View style={styles.titleMeasure} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+            <Text maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={[styles.bibleLineText, bible.font ? { fontFamily: bible.font, fontWeight: 'normal' } : null]} onLayout={(e) => setBibleWidth(e.nativeEvent.layout.width)}>
+              {bible.full}
+            </Text>
+          </View>
+          <Pressable
+            onPress={bible.onPress}
+            hitSlop={{ top: 4, bottom: 8, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel={bible.label}
+            style={({ pressed }) => [styles.bibleLine, { opacity: pressed ? 0.6 : 1 }]}
+          >
+            <Text
+              numberOfLines={1}
+              maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE}
+              style={[styles.bibleLineText, { color: theme.accent }, (bibleShort ? bible.shortFont : bible.font) ? { fontFamily: bibleShort ? bible.shortFont : bible.font, fontWeight: 'normal' } : null]}
+            >
+              {bibleShort ? bible.short : bible.full}
+            </Text>
+            <Icon name="arrow_drop_down" size={18} color={theme.accent} />
+          </Pressable>
+        </>
+      ) : null}
     </View>
   );
 }
+
+/** The Bible named under the reader's title, opening the list of Bibles. */
+interface BibleLine { full: string; short: string; font?: string; shortFont?: string; onPress: () => void; label: string }
+// The drop-down arrow beside the Bible's name, and a little room.
+const BIBLE_ARROW = 22;
+
+interface PairSide { full: string; short: string; font?: string; shortFont?: string }
+
+/**
+ * Side by side, in the top bar: the Bible on the left and the one on the right, each opening
+ * its list, with ⇄ between them. By their full names when both fit in `room`, else by their
+ * short ones (SV 1910 · BSB).
+ */
+function BiblePair({ left, right, room, onLeft, onRight, onSwap, leftLabel, rightLabel, swapLabel }: { left: PairSide; right: PairSide; room: number; onLeft: () => void; onRight: () => void; onSwap: () => void; leftLabel: string; rightLabel: string; swapLabel: string }) {
+  const theme = useTheme();
+  const [fullWidth, setFullWidth] = useState(0);
+  // The two names, the arrows, the chips' padding and ⇄.
+  const useShort = fullWidth > 0 && fullWidth + PAIR_CHROME > room;
+  const chooser = (side: PairSide, onPress: () => void, label: string) => {
+    const font = useShort ? side.shortFont : side.font;
+    return (
+      <Pressable
+        onPress={onPress}
+        hitSlop={6}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        style={({ pressed }) => [styles.pairChooser, { borderColor: theme.border, backgroundColor: pressed ? theme.accentSoft : theme.card }]}
+      >
+        <Text numberOfLines={1} maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={[styles.pairHead, styles.pairChooserText, { color: theme.accent }, font ? { fontFamily: font, fontWeight: 'normal' } : null]}>
+          {useShort ? side.short : side.full}
+        </Text>
+        <Icon name="arrow_drop_down" size={20} color={theme.accent} />
+      </Pressable>
+    );
+  };
+  return (
+    <View style={styles.pairBar}>
+      {/* Both full names laid out off screen, to see whether they fit. */}
+      <View style={styles.titleMeasure} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        <View style={styles.pairMeasure} onLayout={(e) => setFullWidth(e.nativeEvent.layout.width)}>
+          <Text maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={[styles.pairHead, left.font ? { fontFamily: left.font, fontWeight: 'normal' } : null]}>{left.full}</Text>
+          <Text maxFontSizeMultiplier={HEADER_MAX_FONT_SCALE} style={[styles.pairHead, right.font ? { fontFamily: right.font, fontWeight: 'normal' } : null]}>{right.full}</Text>
+        </View>
+      </View>
+      {chooser(left, onLeft, leftLabel)}
+      <Pressable
+        onPress={onSwap}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel={swapLabel}
+        style={({ pressed }) => [styles.pairSwap, { borderColor: theme.border, backgroundColor: pressed ? theme.accentSoft : theme.card }]}
+      >
+        <Icon name="swap_horiz" size={20} color={theme.accent} />
+      </Pressable>
+      {chooser(right, onRight, rightLabel)}
+    </View>
+  );
+}
+
+// Room the pair takes besides the two names: two arrows, the chips' padding and borders, ⇄
+// and the gaps.
+const PAIR_CHROME = 2 * (20 + 16) + 34 + 3 * 10;
 
 const MIN_TITLE_SCALE = 0.6;
 const FULL_NAME_SCALE = 0.85;
@@ -2786,6 +2837,12 @@ const styles = StyleSheet.create({
   crossSource: { fontSize: 12, paddingHorizontal: 20, paddingTop: 10, paddingBottom: 4 },
   screen: { flex: 1 },
   titleButton: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', minHeight: 48, maxWidth: '100%' },
+  // Over the Bible's name: the two lines together stay within the bar's 64 points.
+  titleButtonStacked: { minHeight: 34 },
+  bibleLine: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', maxWidth: '100%', marginTop: -2, paddingBottom: 4 },
+  bibleLineText: { fontSize: 14, lineHeight: 20, fontWeight: '600', flexShrink: 1 },
+  pairBar: { flexDirection: 'row', alignItems: 'center', gap: 10, marginLeft: 12 },
+  pairMeasure: { flexDirection: 'row', gap: 0 },
   title: { fontSize: 22, lineHeight: 30, fontWeight: '500' },
   titleName: { flexShrink: 1 },
   titleRoom: { flex: 1, justifyContent: 'center' },
@@ -2799,9 +2856,7 @@ const styles = StyleSheet.create({
   listBig: { paddingHorizontal: 14 },
   pair: { borderBottomWidth: StyleSheet.hairlineWidth, paddingBottom: 4, marginBottom: 4 },
   pairRow: { flexDirection: 'row', gap: 20 },
-  pairHeads: { marginBottom: 6, alignItems: 'center' },
-  pairLeftHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  pairSwap: { width: 34, height: 34, borderRadius: 17, borderWidth: 1, alignItems: 'center', justifyContent: 'center', marginLeft: 'auto' },
+  pairSwap: { width: 34, height: 34, borderRadius: 17, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   pairChooser: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', maxWidth: '100%', borderWidth: 1, borderRadius: 14, paddingLeft: 10, paddingRight: 4, paddingVertical: 3 },
   pairChooserText: { flexShrink: 1 },
   pairHead: { fontSize: 14, fontWeight: '700' },
@@ -2822,8 +2877,6 @@ const styles = StyleSheet.create({
   tipMain: { borderRadius: 24, paddingHorizontal: 18 },
   tipDismiss: { fontSize: 15, fontWeight: '700' },
   modeHint: { fontSize: 12, marginBottom: 6 },
-  aboutRow: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', maxWidth: '100%', gap: 2, minHeight: 36 },
-  aboutText: { fontSize: 14, fontWeight: '500', flexShrink: 1 },
   sheetGroup: { fontSize: 13, fontWeight: '600', marginTop: 10, marginBottom: 2 },
   heading: { fontWeight: '700', letterSpacing: 1, marginTop: 14, marginBottom: 2 },
   // Letter spacing breaks up Malayalam conjuncts on some phones.
@@ -2834,8 +2887,6 @@ const styles = StyleSheet.create({
   swipeLabelText: { fontSize: 15, fontWeight: '600' },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   fade: { position: 'absolute', left: 0, right: 0, height: 40 },
-  bibleButton: { flexDirection: 'row', alignItems: 'center', minHeight: 48, paddingLeft: 4 },
-  bibleButtonText: { fontSize: 15, fontWeight: '600' },
   sheetSwitch: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 12, marginTop: 6, borderTopWidth: StyleSheet.hairlineWidth },
   sheetSwitchTexts: { flex: 1 },
   sheetSwitchTitle: { fontSize: 16, fontWeight: '500' },
