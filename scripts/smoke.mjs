@@ -382,6 +382,9 @@ for (const edition of EDITIONS) {
       await page.keyboard.type(QUERY[edition]);
       await wait(4000);
       await shows(new RegExp(t.nVerses.replace('{n}', '[\\d,]+')));
+      // The browser's focus outline round the box is the web's, not the app's: off for the picture.
+      await page.evaluate(() => document.activeElement?.blur());
+      await wait(300);
       await snap();
       await vis(page.getByLabel(t.back)).click();
       await wait(1200);

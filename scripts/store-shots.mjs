@@ -19,13 +19,13 @@ const ACCENT = '#7A4E1D';
 // Each picture: the screen check's screenshot, a headline and a line under it.
 const PICTURES = {
   ml: [
-    ['read', '01-open', 'Read the Bible your way', 'The Sathyavedapusthakam (1910), with the KJV and the Berean Standard Bible'],
+    ['read', '01-open', 'Read the Bible your way', 'The Sathyavedapusthakam 1910, the IRV and the OMCV, with four English Bibles'],
     ['word', '03-word', 'See the word behind the word', 'Tap a word for the Greek or Hebrew it translates'],
-    ['compare', '04-compare', 'Compare Bibles verse by verse', 'Malayalam, English and the original, side by side'],
-    ['verse', '04-compare-menu', 'Hold a verse to do more', 'Highlight, note, share or hear it read aloud'],
-    ['card', '07-card', 'Share a verse as a picture', 'For a greeting, a festival or your status'],
-    ['notebook', '10-notebook', 'Keep your own notebook', 'Typed or handwritten. Everything stays on your phone'],
-    ['search', '12-search', 'Search the whole Bible', 'In Malayalam or English, with no internet'],
+    ['compare', '05-compare', 'Compare Bibles verse by verse', 'Three Malayalam Bibles and four English ones, one under another'],
+    ['verse', '04-select', 'Tap a verse number to do more', 'Copy, share, highlight, bookmark or add a note'],
+    ['card', '08-card', 'Share a verse as a picture', 'For a greeting, a festival or your status'],
+    ['notebook', '11-notebook', 'Keep your own notebook', 'Typed or handwritten. Everything stays on your phone'],
+    ['search', '13-search', 'Search the whole Bible', 'In Malayalam or English, with no internet'],
   ],
 };
 
