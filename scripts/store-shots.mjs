@@ -19,13 +19,13 @@ const ACCENT = '#7A4E1D';
 // Each picture: the screen check's screenshot, a headline and a line under it.
 const PICTURES = {
   ml: [
-    ['read', '01-open', 'Read the Bible your way', 'The Sathyavedapusthakam 1910, the IRV and the OMCV, with four English Bibles'],
-    ['word', '03-word', 'See the word behind the word', 'Tap a word for the Greek or Hebrew it translates'],
-    ['compare', '05-compare', 'Compare Bibles verse by verse', 'Three Malayalam Bibles and four English ones, one under another'],
-    ['verse', '04-select', 'Tap a verse number to do more', 'Copy, share, highlight, bookmark or add a note'],
-    ['card', '08-card', 'Share a verse as a picture', 'For a greeting, a festival or your status'],
-    ['notebook', '11-notebook', 'Keep your own notebook', 'Typed or handwritten. Everything stays on your phone'],
-    ['search', '13-search', 'Search the whole Bible', 'In Malayalam or English, with no internet'],
+    ['read', '01-open', 'Three Malayalam translations', 'Sathyavedapusthakam 1910, IRV and OMCV, with four English translations'],
+    ['word', '03-word', 'Hebrew and Greek', 'Selecting a word shows the word it translates'],
+    ['compare', '05-compare', 'Comparing translations', 'One verse in all seven translations'],
+    ['verse', '04-select', 'Verse options', 'Selecting a verse number: copy, share, highlight, bookmark or note'],
+    ['card', '08-card', 'A verse as an image', 'For sharing, with an optional message'],
+    ['notebook', '11-notebook', 'Notebook', 'Typed or handwritten pages, stored on the device'],
+    ['search', '13-search', 'Search', 'In Malayalam or English, without an internet connection'],
   ],
 };
 

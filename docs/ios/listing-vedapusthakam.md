@@ -6,7 +6,7 @@ Bundle ID: `org.riversresearch.bible.malayalam`. Primary category: **Reference**
 localisation.
 
 The description, keywords and promotional text were rewritten for 0.4.44 (three Malayalam
-Bibles, four English ones, the words of Jesus in red, side by side). A Malayalam speaker
+Bibles, four English ones, the words of Jesus in red, side by side), in a formal register without marketing language. A Malayalam speaker
 should read the Malayalam text before it goes live.
 
 URLs: Support `https://riversresearch.org` · Privacy policy: the riversresearch.org page.
@@ -26,10 +26,10 @@ Copyright: `2026 Rivers Research LLC`.
 എബ്രായ, ഗ്രീക്ക് മൂലപദങ്ങളോടെ
 ```
 
-**Promotional text** (131 of 170 characters)
+**Promotional text** (141 of 170 characters)
 
 ```
-പുതിയത്: യേശുവിന്റെ വാക്കുകൾ ചുവപ്പിൽ; മൂന്നു മലയാളം ബൈബിളുകളും നാല് ഇംഗ്ലീഷ് ബൈബിളുകളും; ഫോൺ ചരിച്ചാൽ രണ്ടു ബൈബിളുകൾ അടുത്തടുത്ത്.
+ഈ പതിപ്പിൽ എല്ലാ പരിഭാഷകളിലും യേശുവിന്റെ വാക്കുകൾ ചുവപ്പിൽ കാണിക്കുന്നു; ഫോൺ ചരിച്ചുപിടിക്കുമ്പോൾ രണ്ടു പരിഭാഷകൾ അടുത്തടുത്തായി കാണിക്കുന്നു.
 ```
 
 **Keywords** (56 of 100 characters)
@@ -44,37 +44,38 @@ scripts), drop words from the end.
 **Description**
 
 ```
-ഇന്റർനെറ്റ് ഇല്ലാതെ ഉപയോഗിക്കാവുന്ന മലയാളം–ഇംഗ്ലീഷ് പഠന ബൈബിൾ. സത്യവേദപുസ്തകം (1910), ഇന്ത്യൻ റിവൈസ്ഡ് വേർഷൻ, സ്വതന്ത്ര സമകാലിക മലയാളവിവർത്തനം എന്നിവ നാല് ഇംഗ്ലീഷ് ബൈബിളുകളോടൊപ്പം വായിക്കാം; വാക്കുകൾക്കു പിന്നിലെ എബ്രായ, ഗ്രീക്ക് മൂലപദങ്ങൾ കാണാം.
+വേദപുസ്തകം ഒരു മലയാളം–ഇംഗ്ലീഷ് പഠന ബൈബിളാണ്. ഇതിൽ മൂന്നു മലയാളം പരിഭാഷകളും നാല് ഇംഗ്ലീഷ് പരിഭാഷകളും എബ്രായ, ഗ്രീക്ക് മൂലപാഠങ്ങളും അടങ്ങിയിരിക്കുന്നു. എല്ലാ പാഠങ്ങളും ഫോണിൽത്തന്നെ സൂക്ഷിച്ചിരിക്കുന്നു; ഇന്റർനെറ്റ് ബന്ധം ആവശ്യമില്ല.
 
-ബൈബിളുകൾ
-• മലയാളം: സത്യവേദപുസ്തകം 1910, ഇന്ത്യൻ റിവൈസ്ഡ് വേർഷൻ (IRV), സ്വതന്ത്ര സമകാലിക മലയാളവിവർത്തനം (OMCV).
-• ഇംഗ്ലീഷ്: കിംഗ് ജെയിംസ് വേർഷൻ, ബെറിയൻ സ്റ്റാൻഡേർഡ് ബൈബിൾ, ലിറ്ററൽ സ്റ്റാൻഡേർഡ് വേർഷൻ, അമേരിക്കൻ സ്റ്റാൻഡേർഡ് വേർഷൻ.
-• എല്ലാ ബൈബിളിലും യേശുവിന്റെ വാക്കുകൾ ചുവപ്പിൽ. ക്രമീകരണങ്ങളിൽ ഇത് ഓഫാക്കാം.
-• ഫോൺ ചരിച്ചുപിടിച്ചാൽ രണ്ടു ബൈബിളുകൾ അടുത്തടുത്ത്, വാക്യം തോറും വായിക്കാം. രണ്ടാമത്തെ ബൈബിൾ തിരഞ്ഞെടുക്കാം; ഒറ്റ സ്പർശത്തിൽ സ്ഥാനം മാറ്റാം.
+പരിഭാഷകൾ
+• മലയാളം: സത്യവേദപുസ്തകം (1910), ഇന്ത്യൻ റിവൈസ്ഡ് വേർഷൻ (IRV), സ്വതന്ത്ര സമകാലിക മലയാളവിവർത്തനം (OMCV).
+• ഇംഗ്ലീഷ്: കിംഗ് ജെയിംസ് വേർഷൻ (KJV), ബെറിയൻ സ്റ്റാൻഡേർഡ് ബൈബിൾ (BSB), ലിറ്ററൽ സ്റ്റാൻഡേർഡ് വേർഷൻ (LSV), അമേരിക്കൻ സ്റ്റാൻഡേർഡ് വേർഷൻ (ASV).
+• എല്ലാ പരിഭാഷകളിലും യേശുവിന്റെ വാക്കുകൾ ചുവപ്പു നിറത്തിൽ കാണിക്കുന്നു. ക്രമീകരണങ്ങളിൽ ഇത് ഒഴിവാക്കാം.
+• ഫോൺ ചരിച്ചുപിടിക്കുമ്പോൾ രണ്ടു പരിഭാഷകൾ വാക്യം തോറും അടുത്തടുത്തായി കാണിക്കുന്നു.
 
 പഠനം
-• ഒരു വാക്കിൽ തൊട്ടാൽ അതിന്റെ എബ്രായ അല്ലെങ്കിൽ ഗ്രീക്ക് മൂലപദം: അർത്ഥം, ഉച്ചാരണം, വ്യാകരണം, സ്ട്രോങ്ങിന്റെ നിഘണ്ടു, ആ പദം വരുന്ന എല്ലാ വാക്യങ്ങളും.
-• പഴയനിയമത്തിലെ ഓരോ വാക്യത്തിന്റെയും എബ്രായ പാഠവും പുതിയനിയമത്തിലേതിന്റെ ഗ്രീക്ക് പാഠവും വാക്കുവാക്കായി, ഉച്ചാരണവും അർത്ഥവും സഹിതം.
-• ഒരു വാക്യം ഏഴു ബൈബിളുകളിലും ഒരുമിച്ച് താരതമ്യം ചെയ്യാം.
-• ഓരോ വാക്യത്തിനും ഒത്തുവാക്യങ്ങൾ; സുവിശേഷങ്ങളിലും രാജാക്കന്മാർ/ദിനവൃത്താന്തത്തിലും ഇതേ സംഭവം പറയുന്ന സമാന്തര ഭാഗങ്ങൾ.
-• ഓരോ പുസ്തകത്തിനും ആമുഖം: എഴുത്തുകാരൻ, കാലം, ആർക്കുവേണ്ടി, മുഖ്യ വിഷയങ്ങൾ, രൂപരേഖ, പ്രധാന വാക്യങ്ങൾ.
-• മലയാളത്തിലും ഇംഗ്ലീഷിലും തിരയാം; അക്ഷരരീതിയിലെ ചെറിയ വ്യത്യാസങ്ങൾ പ്രശ്നമല്ല. സങ്കീർത്തനം 23, യോഹന്നാൻ 3:16 പോലെ ടൈപ്പ് ചെയ്ത് നേരെ പോകാം.
+• ഒരു വാക്ക് തിരഞ്ഞെടുത്താൽ അതു പരിഭാഷപ്പെടുത്തുന്ന എബ്രായ അല്ലെങ്കിൽ ഗ്രീക്ക് പദം, അതിന്റെ അർത്ഥം, ഉച്ചാരണം, വ്യാകരണരൂപം, സ്ട്രോങ്ങിന്റെ നിഘണ്ടുവിലെ വിവരണം, ആ പദം വരുന്ന മറ്റു വാക്യങ്ങൾ എന്നിവ കാണിക്കുന്നു.
+• പഴയനിയമത്തിന്റെ എബ്രായ പാഠവും പുതിയനിയമത്തിന്റെ ഗ്രീക്ക് പാഠവും വാക്കുവാക്കായി, ഉച്ചാരണവും അർത്ഥവും സഹിതം കാണിക്കുന്നു.
+• ഒരു വാക്യം ഏഴു പരിഭാഷകളിലും ഒരുമിച്ചു താരതമ്യം ചെയ്യാം.
+• ഓരോ വാക്യത്തിനും ഒത്തുവാക്യങ്ങളും, ഒന്നിലധികം ഇടങ്ങളിൽ രേഖപ്പെടുത്തിയ സംഭവങ്ങൾക്കു സമാന്തര ഭാഗങ്ങളും നൽകിയിരിക്കുന്നു.
+• ഓരോ പുസ്തകത്തിനും എഴുത്തുകാരൻ, കാലം, ആരെ ഉദ്ദേശിച്ച്, മുഖ്യ വിഷയങ്ങൾ, രൂപരേഖ, പ്രധാന വാക്യങ്ങൾ എന്നിവ ഉൾപ്പെടുന്ന ആമുഖമുണ്ട്.
+• മലയാളത്തിലോ ഇംഗ്ലീഷിലോ തിരയാം. യോഹന്നാൻ 3:16 പോലെയുള്ള ഒരു വാക്യസൂചിക നൽകിയാൽ ആ ഭാഗം തുറക്കും.
 
-നിങ്ങളുടേത്
-• വാക്യനമ്പറിൽ തൊട്ടാൽ ആ വാക്യം പകർത്താം, പങ്കുവയ്ക്കാം, ഹൈലൈറ്റ് ചെയ്യാം, അടയാളപ്പെടുത്താം, കുറിപ്പ് ചേർക്കാം. കൂടുതൽ നമ്പറുകളിൽ തൊട്ട് പല വാക്യങ്ങൾ ഒരുമിച്ചു തിരഞ്ഞെടുക്കാം.
-• വാക്യം മുഴുവനായോ ചില വാക്കുകൾ മാത്രമായോ പല വാക്യങ്ങൾ ചേർന്ന ഭാഗമായോ നാല് നിറങ്ങളിൽ ഹൈലൈറ്റ് ചെയ്യാം.
-• നോട്ട്ബുക്ക്: പ്രസംഗക്കുറിപ്പുകളോ പഠനമോ ടൈപ്പ് ചെയ്തോ കൈകൊണ്ടെഴുതിയോ സൂക്ഷിക്കാം. യോഹന്നാൻ 3:16 പോലെയുള്ള വാക്യസൂചിക കണ്ണിയാകും, വാക്യം താഴെ കാണിക്കും. പേജ് ടെക്സ്റ്റായോ PDF ആയോ പങ്കിടാം.
-• വാക്യം ചിത്രകാർഡാക്കി പങ്കുവയ്ക്കാം: ജന്മദിനം, വിവാഹം, ക്രിസ്മസ്, ഏതു ദിവസത്തിനും; നിങ്ങളുടെ സന്ദേശവും ഫോട്ടോയും ചേർക്കാം.
-• നോട്ട്ബുക്കും ഹൈലൈറ്റുകളും കുറിപ്പുകളും ഒരു ഫയലിൽ ബാക്കപ്പ് ചെയ്യാം; പുതിയ ഫോണിൽ തിരികെ ചേർക്കാം.
+കുറിപ്പുകളും ഹൈലൈറ്റുകളും
+• വാക്യനമ്പർ തിരഞ്ഞെടുത്താൽ പകർത്തുക, പങ്കുവയ്ക്കുക, ഹൈലൈറ്റ് ചെയ്യുക, അടയാളപ്പെടുത്തുക, കുറിപ്പ് ചേർക്കുക എന്നിവ ലഭ്യമാകും. പല വാക്യങ്ങൾ ഒരുമിച്ചു തിരഞ്ഞെടുക്കാം.
+• വാക്യം മുഴുവനായോ ചില വാക്കുകൾ മാത്രമായോ പല വാക്യങ്ങൾ ചേർന്ന ഭാഗമായോ നാലു നിറങ്ങളിൽ ഹൈലൈറ്റ് ചെയ്യാം.
+• നോട്ട്ബുക്കിൽ ടൈപ്പ് ചെയ്തതോ കൈകൊണ്ട് എഴുതിയതോ ആയ പേജുകൾ സൂക്ഷിക്കാം. യോഹന്നാൻ 3:16 പോലെയുള്ള വാക്യസൂചിക കണ്ണിയാകുകയും വാക്യം താഴെ കാണിക്കുകയും ചെയ്യും. പേജുകൾ ടെക്സ്റ്റായോ PDF ആയോ പങ്കുവയ്ക്കാം.
+• ഒരു വാക്യം ചിത്രമായി പങ്കുവയ്ക്കാം.
+• കുറിപ്പുകളും ഹൈലൈറ്റുകളും നോട്ട്ബുക്ക് പേജുകളും ഒരു ബാക്കപ്പ് ഫയലിൽ സൂക്ഷിക്കുകയും തിരികെ ചേർക്കുകയും ചെയ്യാം.
 
 വായന
-• അദ്ധ്യായം വാക്യം തോറും വായിച്ചു കേൾക്കാം; ലോക്ക് സ്ക്രീനിൽ പ്ലെയറുണ്ട്. സത്യവേദപുസ്തകം ആപ്പിനുള്ളിലെ മലയാളം ശബ്ദത്തിൽ; മറ്റു ബൈബിളുകൾ ഫോണിന്റെ ശബ്ദത്തിൽ.
-• സ്വൈപ്പ് ചെയ്ത് അദ്ധ്യായം മാറ്റാം. വെളിച്ചം, സെപ്പിയ, ഇരുണ്ട നിറക്രമങ്ങൾ. രണ്ടു വിരൽ കൊണ്ട് അക്ഷരവലിപ്പം മാറ്റാം. വാക്യം തോറുമോ ഖണ്ഡികകളായോ വായിക്കാം.
-• മെനുകൾ മലയാളത്തിലോ ഇംഗ്ലീഷിലോ.
+• ഒരു അദ്ധ്യായം വാക്യം തോറും ഉറക്കെ വായിച്ചു കേൾക്കാം; നിയന്ത്രണങ്ങൾ ലോക്ക് സ്ക്രീനിലും ലഭ്യമാണ്. സത്യവേദപുസ്തകം ആപ്പിൽ ഉൾപ്പെടുത്തിയിരിക്കുന്ന മലയാളം ശബ്ദത്തിലും മറ്റു പരിഭാഷകൾ ഫോണിന്റെ ശബ്ദത്തിലും വായിക്കുന്നു.
+• വെളിച്ചം, സെപ്പിയ, ഇരുണ്ട നിറക്രമങ്ങൾ; അക്ഷരവലിപ്പം മാറ്റാം; വാക്യം തോറുമോ ഖണ്ഡികകളായോ വായിക്കാം.
+• മെനുകൾ മലയാളത്തിലും ഇംഗ്ലീഷിലും ലഭ്യമാണ്.
 
-ഇന്റർനെറ്റ് ആവശ്യമില്ല: എല്ലാം ആപ്പിനുള്ളിലുണ്ട്. പരസ്യങ്ങളില്ല, അക്കൗണ്ട് വേണ്ട, ഒരു വിവരവും ശേഖരിക്കുന്നില്ല. ഹൈലൈറ്റുകളും കുറിപ്പുകളും നിങ്ങളുടെ ഫോണിൽ മാത്രം.
+സ്വകാര്യത
+ഈ ആപ്പിൽ പരസ്യങ്ങളില്ല, അക്കൗണ്ട് ആവശ്യമില്ല, ഒരു വിവരവും ശേഖരിക്കുന്നില്ല. കുറിപ്പുകളും ഹൈലൈറ്റുകളും ഫോണിൽ മാത്രമാണ് സൂക്ഷിക്കുന്നത്.
 
-മലയാളം വാക്കുകളെ എബ്രായ, ഗ്രീക്ക് വാക്കുകളുമായി ബന്ധിപ്പിച്ചിരിക്കുന്നത് കമ്പ്യൂട്ടർ സഹായത്തോടെയാണ്; ചിലയിടങ്ങളിൽ പിശകുകൾ ഉണ്ടാകാം.
+മലയാളം വാക്കുകളെ എബ്രായ, ഗ്രീക്ക് പദങ്ങളുമായി ബന്ധിപ്പിച്ചിരിക്കുന്നത് കമ്പ്യൂട്ടർ സഹായത്തോടെയാണ്; ചിലയിടങ്ങളിൽ പിശകുകൾ ഉണ്ടാകാം.
 
 ഉറവിടങ്ങൾ: സത്യവേദപുസ്തകം 1910, ഇന്നത്തെ അക്ഷരരീതിയിലുള്ള പതിപ്പ്, © 2015 The Free Bible Foundation (CC BY-SA 4.0); Indian Revised Version (മലയാളം), © 2017, 2019 Bridge Connectivity Solutions (CC BY-SA 4.0); Open Malayalam Contemporary Version, Copyright © 1997, 2005, 2017, 2020 by Biblica, Inc., open.bible-ൽ സൗജന്യമായി ലഭ്യം (CC BY-SA 4.0; മാറ്റങ്ങളോടെയുള്ള പകർപ്പ്); കിംഗ് ജെയിംസ് വേർഷൻ 1769 (യുണൈറ്റഡ് കിംഗ്ഡത്തിനു പുറത്ത് പൊതുസഞ്ചയം); Berean Standard Bible (പൊതുസഞ്ചയം, CC0); Literal Standard Version, © 2020 Covenant Press (CC BY-SA 4.0); American Standard Version 1901 (പൊതുസഞ്ചയം); പാഠങ്ങൾ eBible.org-ൽ നിന്ന്; എബ്രായ, ഗ്രീക്ക് പാഠവും അർത്ഥങ്ങളും STEPBible.org, Tyndale House Cambridge (CC BY 4.0); സ്ട്രോങ്ങിന്റെ നിഘണ്ടു, Open Scriptures (CC BY-SA); ഒത്തുവാക്യങ്ങൾ OpenBible.info (CC BY 4.0); സമാന്തര ഭാഗങ്ങൾ UBS Parallel Passages Database, © 2023 United Bible Societies (CC BY-SA 4.0). വിശദാംശങ്ങൾ ആപ്പിലെ "ഉറവിടങ്ങളും അനുമതിപത്രങ്ങളും" എന്ന ഭാഗത്ത്.
 ```
@@ -93,10 +94,10 @@ Malayalam English Study Bible
 Hebrew & Greek root words
 ```
 
-**Promotional text** (131 of 170 characters)
+**Promotional text** (132 of 170 characters)
 
 ```
-New: the words of Jesus in red, three Malayalam Bibles with four English ones, and two Bibles side by side when you turn the phone.
+This version shows the words of Jesus in red in all translations, and two translations side by side when the phone is held sideways.
 ```
 
 **Keywords** (95 of 100 characters)
@@ -108,37 +109,38 @@ malayalam,sathyavedapusthakam,bible,kjv,irv,hebrew,greek,interlinear,strongs,off
 **Description**
 
 ```
-A Malayalam–English study Bible that works without the internet. Read the Sathyavedapusthakam (1910), the Indian Revised Version and the Open Malayalam Contemporary Version beside four English Bibles, and see the Hebrew and Greek behind the words.
+Vedapusthakam is a Malayalam–English study Bible. It contains three Malayalam translations and four English translations, together with the Hebrew and Greek texts. All texts are stored on the device, and no internet connection is required.
 
-THE BIBLES
-• Malayalam: Sathyavedapusthakam 1910, Indian Revised Version (IRV) and Open Malayalam Contemporary Version (OMCV).
-• English: King James Version, Berean Standard Bible, Literal Standard Version and American Standard Version.
-• The words of Jesus in red, in every Bible. You can turn this off in Settings.
-• Turn the phone on its side to read two Bibles side by side, verse by verse. Choose the second Bible, and swap the two with one tap.
+TRANSLATIONS
+• Malayalam: Sathyavedapusthakam (1910), Indian Revised Version (IRV) and Open Malayalam Contemporary Version (OMCV).
+• English: King James Version (KJV), Berean Standard Bible (BSB), Literal Standard Version (LSV) and American Standard Version (ASV).
+• The words of Jesus are shown in red in all translations. This can be turned off in Settings.
+• When the phone is held sideways, two translations are shown side by side, verse by verse.
 
 STUDY
-• Tap a word for the Hebrew or Greek it translates: meaning, pronunciation, grammar and Strong's dictionary, and every verse where that word stands.
-• The Hebrew of every Old Testament verse and the Greek of every New Testament verse, word by word, with transliteration and meaning.
-• Compare a verse in all seven Bibles at once.
-• Cross references for every verse, and parallel passages where the same event is told again (the Gospels, Kings and Chronicles).
-• An introduction to each book: who wrote it, when and for whom, its themes, an outline and key verses.
-• Search in Malayalam or English; small spelling differences don't matter. Type a reference such as സങ്കീർത്തനം 23 or John 3:16 to go straight there.
+• Selecting a word shows the Hebrew or Greek word it translates, with its meaning, pronunciation, grammatical form, Strong's dictionary entry, and the other verses in which it occurs.
+• The Hebrew text of the Old Testament and the Greek text of the New Testament are shown word by word, with transliteration and meaning.
+• A verse can be compared in all seven translations.
+• Cross references are given for each verse, and parallel passages for accounts recorded more than once.
+• Each book has an introduction covering authorship, date, audience, themes, outline and key verses.
+• The text can be searched in Malayalam or English. Entering a reference such as John 3:16 opens that passage.
 
-YOUR OWN
-• Tap a verse number to copy, share, highlight, bookmark or add a note. Tap more numbers to choose several verses.
-• Highlight a whole verse, a few words, or a passage over several verses, in four colours.
-• Notebook: typed or handwritten pages for sermon notes or study. A reference such as John 3:16 becomes a link, with the verse shown beneath. Share a page as text or a PDF.
-• Share a verse as a picture card, for a birthday, a wedding, Christmas or any day, with your own message and photo.
-• Back up your notebook, highlights and notes to one file, and restore them on a new phone.
+NOTES AND HIGHLIGHTS
+• Selecting a verse number gives options to copy, share, highlight, bookmark or add a note. Several verses can be selected together.
+• Highlighting is available in four colours, for a whole verse, a few words or a passage across several verses.
+• The notebook holds typed or handwritten pages. A reference such as John 3:16 becomes a link, with the verse shown below it. Pages can be shared as text or PDF.
+• A verse can be shared as an image.
+• Notes, highlights and notebook pages can be saved to a single backup file and restored.
 
 READING
-• Listen to a chapter read aloud, verse by verse, with a player on the lock screen. The Sathyavedapusthakam is read by a Malayalam voice built into the app; the other Bibles by your phone's own voice.
-• Swipe to turn the chapter. Light, sepia and dark themes. Pinch to change the text size. Read verse by verse or in paragraphs.
-• Menus in Malayalam or English.
+• A chapter can be read aloud verse by verse, with controls on the lock screen. The Sathyavedapusthakam is read by a Malayalam voice included in the app; the other translations use the phone's voice.
+• Light, sepia and dark themes; adjustable text size; verse or paragraph layout.
+• Menus are available in Malayalam and English.
 
-No internet needed: everything is inside the app. No ads, no account, and no data collected. Your highlights and notes stay on your phone.
+PRIVACY
+The app contains no advertising, requires no account and collects no data. Notes and highlights are stored only on the device.
 
-The links between the Malayalam words and the Hebrew and Greek were made with computer help and may be wrong in places.
+The links between the Malayalam words and the Hebrew and Greek were prepared with computer assistance and may contain errors.
 
 Sources: Sathyavedapusthakam 1910, revised edition in contemporary orthography, © 2015 The Free Bible Foundation (CC BY-SA 4.0); Indian Revised Version (Malayalam), © 2017, 2019 Bridge Connectivity Solutions (CC BY-SA 4.0); Open Malayalam Contemporary Version, Copyright © 1997, 2005, 2017, 2020 by Biblica, Inc., available free at open.bible (CC BY-SA 4.0; shown here as a changed copy); King James Version 1769 (public domain outside the United Kingdom); Berean Standard Bible (public domain, CC0); Literal Standard Version, © 2020 Covenant Press (CC BY-SA 4.0); American Standard Version 1901 (public domain); texts from eBible.org; Hebrew and Greek text and meanings from STEPBible.org, Tyndale House Cambridge (CC BY 4.0); Strong's dictionary from Open Scriptures (CC BY-SA); cross references from OpenBible.info (CC BY 4.0); parallel passages from the UBS Parallel Passages Database, © 2023 United Bible Societies (CC BY-SA 4.0). Details under Sources and licences in the app.
 ```
