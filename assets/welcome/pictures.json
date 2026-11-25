@@ -10,30 +10,30 @@
    }
   },
   "original": {
-   "shape": 0.799,
+   "shape": 0.871,
    "ring": {
     "left": 0.041,
-    "top": 0.463,
+    "top": 0.412,
     "width": 0.187,
-    "height": 0.183
+    "height": 0.2
    }
   },
   "study": {
-   "shape": 0.89,
+   "shape": 0.773,
    "ring": {
     "left": 0.035,
-    "top": 0.564,
+    "top": 0.623,
     "width": 0.929,
-    "height": 0.419
+    "height": 0.364
    }
   },
   "saved": {
-   "shape": 0.771,
+   "shape": 0.841,
    "ring": {
     "left": 0.029,
-    "top": 0.848,
+    "top": 0.836,
     "width": 0.941,
-    "height": 0.145
+    "height": 0.158
    }
   },
   "notebook": {
@@ -66,30 +66,30 @@
    }
   },
   "original": {
-   "shape": 0.795,
+   "shape": 0.868,
    "ring": {
     "left": 0.041,
-    "top": 0.465,
+    "top": 0.416,
     "width": 0.187,
-    "height": 0.182
+    "height": 0.199
    }
   },
   "study": {
-   "shape": 1.032,
+   "shape": 0.876,
    "ring": {
     "left": 0.035,
-    "top": 0.655,
+    "top": 0.705,
     "width": 0.929,
-    "height": 0.328
+    "height": 0.278
    }
   },
   "saved": {
-   "shape": 0.792,
+   "shape": 0.866,
    "ring": {
     "left": 0.029,
-    "top": 0.816,
+    "top": 0.799,
     "width": 0.941,
-    "height": 0.177
+    "height": 0.194
    }
   },
   "notebook": {
@@ -122,21 +122,21 @@
    }
   },
   "original": {
-   "shape": 0.694,
+   "shape": 0.749,
    "ring": {
     "left": 0.041,
-    "top": 0.496,
+    "top": 0.456,
     "width": 0.328,
-    "height": 0.171
+    "height": 0.185
    }
   },
   "study": {
-   "shape": 0.89,
+   "shape": 0.773,
    "ring": {
     "left": 0.035,
-    "top": 0.564,
+    "top": 0.623,
     "width": 0.929,
-    "height": 0.419
+    "height": 0.364
    }
   },
   "saved": {
@@ -178,21 +178,21 @@
    }
   },
   "original": {
-   "shape": 0.694,
+   "shape": 0.749,
    "ring": {
     "left": 0.041,
-    "top": 0.496,
+    "top": 0.456,
     "width": 0.328,
-    "height": 0.171
+    "height": 0.185
    }
   },
   "study": {
-   "shape": 0.881,
+   "shape": 0.767,
    "ring": {
     "left": 0.035,
-    "top": 0.559,
+    "top": 0.618,
     "width": 0.929,
-    "height": 0.425
+    "height": 0.37
    }
   },
   "saved": {
@@ -234,21 +234,21 @@
    }
   },
   "original": {
-   "shape": 0.792,
+   "shape": 0.725,
    "ring": {
     "left": 0.041,
-    "top": 0.643,
+    "top": 0.512,
     "width": 0.187,
-    "height": 0.182
+    "height": 0.166
    }
   },
   "study": {
-   "shape": 0.89,
+   "shape": 0.773,
    "ring": {
     "left": 0.035,
-    "top": 0.564,
+    "top": 0.623,
     "width": 0.929,
-    "height": 0.419
+    "height": 0.364
    }
   },
   "saved": {
@@ -290,21 +290,21 @@
    }
   },
   "original": {
-   "shape": 0.792,
+   "shape": 0.725,
    "ring": {
     "left": 0.041,
-    "top": 0.643,
+    "top": 0.512,
     "width": 0.187,
-    "height": 0.182
+    "height": 0.166
    }
   },
   "study": {
-   "shape": 0.89,
+   "shape": 0.773,
    "ring": {
     "left": 0.035,
-    "top": 0.564,
+    "top": 0.623,
     "width": 0.929,
-    "height": 0.419
+    "height": 0.364
    }
   },
   "saved": {
@@ -346,21 +346,21 @@
    }
   },
   "original": {
-   "shape": 0.694,
+   "shape": 0.749,
    "ring": {
     "left": 0.041,
-    "top": 0.496,
+    "top": 0.456,
     "width": 0.328,
-    "height": 0.171
+    "height": 0.185
    }
   },
   "study": {
-   "shape": 0.881,
+   "shape": 0.767,
    "ring": {
     "left": 0.035,
-    "top": 0.559,
+    "top": 0.618,
     "width": 0.929,
-    "height": 0.425
+    "height": 0.37
    }
   },
   "saved": {
@@ -402,21 +402,21 @@
    }
   },
   "original": {
-   "shape": 0.792,
+   "shape": 0.725,
    "ring": {
     "left": 0.041,
-    "top": 0.643,
+    "top": 0.512,
     "width": 0.187,
-    "height": 0.182
+    "height": 0.166
    }
   },
   "study": {
-   "shape": 0.89,
+   "shape": 0.773,
    "ring": {
     "left": 0.035,
-    "top": 0.564,
+    "top": 0.623,
     "width": 0.929,
-    "height": 0.419
+    "height": 0.364
    }
   },
   "saved": {
